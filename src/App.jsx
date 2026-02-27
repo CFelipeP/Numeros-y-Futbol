@@ -59,7 +59,7 @@ const NEWS_DATA = [
   { img: "https://picsum.photos/seed/futbol4/400/300", category: "Segunda División", title: "Emoción en la pelea por el ascenso", excerpt: "Los equipos de segunda división siguen en la lucha cerrada por conseguir el boleto.", date: "2 Feb, 2026", author: "Corresponsal" },
   // NUEVA NOTICIA: VIDEO
   {
-    videoUrl: "", // URL de embed de YouTube
+    videoUrl: "https://assets.adidas.com/videos/ar_1,w_720,c_fill,q_auto,f_auto/a2976556ab324c169e90de47889d1cb7_d98c/Germany_26_Home_Authentic_Jersey_White_JN2066_video.mp4", // URL de embed de YouTube
     category: "Video",
     title: "Resumen: Los mejores goles de la jornada",
     excerpt: "No te pierdas los mejores jugadas y golazos de la fecha 14 en la Primera División.",
