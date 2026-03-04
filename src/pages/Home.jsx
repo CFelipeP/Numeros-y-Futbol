@@ -328,63 +328,43 @@ const Footer = () => (
 
 function Home() {
   useEffect(() => {
-    const driverObj = driver({
-      showProgress: true,
-      steps: [
-        {
-          element: '#driver-header',
-          popover: {
-            title: 'Bienvenido a Números y Fútbol',
-            description: 'Tu portal oficial para el fútbol salvadoreño. Usa el menú para navegar.',
-            side: 'bottom',
-            align: 'start',
-          }
-        },
-        {
-          element: '#driver-hero',
-          popover: {
-            title: 'La Portada',
-            description: 'Aquí destacamos los eventos más importantes del fútbol nacional.',
-            side: 'bottom',
-            align: 'center',
-          }
-        },
-        {
-          element: '#driver-carousel',
-          popover: {
-            title: 'Resultados en Vivo',
-            description: 'Desliza para ver los marcadores de los partidos recientes.',
-            side: 'bottom',
-            align: 'center',
-          }
-        },
-        {
-          element: '#driver-divisions',
-          popover: {
-            title: 'Nuestras Divisiones',
-            description: 'Explora la Primera, Segunda y Tercera división del fútbol nacional.',
-            side: 'right',
-            align: 'center',
-          }
-        },
-        {
-          element: '#driver-news',
-          popover: {
-            title: 'Zona Multimedia',
-            description: 'Mantente al día con noticias, imágenes y videos destacados.',
-            side: 'top',
-            align: 'center',
-          }
-        },
-      ],
-    });
 
-    // Iniciar el tour después de 2 segundos
-    const timer = setTimeout(() => {
-      driverObj.drive();
-    }, 2000);
+    const alreadyShown = sessionStorage.getItem("tourShown");
 
-    return () => clearTimeout(timer);
+    if (!alreadyShown) {
+
+      const driverObj = driver({
+        showProgress: true,
+        steps: [
+          {
+            element: '#driver-header',
+            popover: {
+              title: 'Bienvenido a Números y Fútbol',
+              description: 'Tu portal oficial para el fútbol salvadoreño. Usa el menú para navegar.',
+              side: 'bottom',
+              align: 'start',
+            }
+          },
+          {
+            element: '#driver-hero',
+            popover: {
+              title: 'La Portada',
+              description: 'Aquí destacamos los eventos más importantes del fútbol nacional.',
+              side: 'bottom',
+              align: 'center',
+            }
+          }
+        ],
+      });
+
+      const timer = setTimeout(() => {
+        driverObj.drive();
+        sessionStorage.setItem("tourShown", "true");
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+
   }, []);
 
   return (
