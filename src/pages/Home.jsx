@@ -160,6 +160,8 @@ const Header = () => {
           <a href="/segunda">Segunda División</a>
           <a href="#tercera">Tercera División</a>
           <a href="#noticias">Noticias</a>
+          <a href="/login">Iniciar Sesión</a>
+          <a href="/register">Registrarse</a>
         </nav>
         <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Abrir menu">
           {isMenuOpen ? <CloseIcon /> : <MenuIcon />}

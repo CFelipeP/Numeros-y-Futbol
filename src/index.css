@@ -905,3 +905,271 @@ img {
     margin: 0 0.5rem;
   }
 }
+
+/* LOGIN PAGE */
+
+.login-page{
+
+min-height:100vh;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+background:
+
+linear-gradient(rgba(15,23,42,0.95),rgba(15,23,42,0.95)),
+
+url("https://upload.wikimedia.org/wikipedia/commons/b/b8/Estadio_Nacional_Jorge_%22El_M%C3%A1gico%22_Gonz%C3%A1lez.png");
+
+background-size:cover;
+
+background-position:center;
+
+}
+
+/* LOGIN CARD */
+
+.login-card{
+
+position:relative;
+
+background:var(--color-card-bg);
+
+padding:3rem;
+
+border-radius:var(--radius-md);
+
+box-shadow:var(--shadow-card);
+
+width:350px;
+
+text-align:center;
+
+border:1px solid rgba(255,255,255,0.05);
+
+}
+
+/* TITULO */
+
+.login-title{
+
+font-family:var(--font-heading);
+
+margin-bottom:1.5rem;
+
+font-size:1.8rem;
+
+color:var(--color-white);
+
+text-shadow:0 0 12px var(--color-accent);
+
+}
+
+/* INPUTS */
+
+.login-card input{
+
+width:100%;
+
+padding:0.9rem;
+
+margin-bottom:1rem;
+
+border-radius:var(--radius-sm);
+
+border:1px solid rgba(255,255,255,0.1);
+
+background:#020617;
+
+color:white;
+
+font-size:0.95rem;
+
+outline:none;
+
+transition:var(--transition);
+
+}
+
+.login-card input:focus{
+
+border-color:var(--color-accent);
+
+box-shadow:0 0 10px rgba(255,0,77,0.6);
+
+}
+
+/* BOTON LOGIN */
+
+.login-btn{
+
+width:100%;
+
+margin-top:1rem;
+
+background:var(--color-accent);
+
+color:white;
+
+font-weight:700;
+
+}
+
+.login-btn:hover{
+
+box-shadow:var(--shadow-neon);
+
+transform:translateY(-2px);
+
+}
+
+/* VOLVER HOME */
+
+.back-home{
+
+position:absolute;
+
+top:15px;
+
+left:15px;
+
+background:none;
+
+border:none;
+
+color:var(--color-text-muted);
+
+cursor:pointer;
+
+font-size:0.9rem;
+
+}
+
+.back-home:hover{
+
+color:var(--color-accent);
+
+}
+
+.register-page{
+min-height:100vh;
+background:#05070f;
+color:white;
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+/* NAVBAR */
+
+.register-navbar{
+width:100%;
+display:flex;
+justify-content:space-between;
+padding:20px 60px;
+background:#070b18;
+border-bottom:1px solid rgba(255,0,0,0.3);
+}
+
+.register-navbar h2{
+color:#ff2b2b;
+text-shadow:0 0 10px red;
+}
+
+.back-btn{
+background:transparent;
+border:1px solid red;
+color:red;
+padding:8px 18px;
+border-radius:6px;
+cursor:pointer;
+transition:.3s;
+}
+
+.back-btn:hover{
+background:red;
+color:white;
+box-shadow:0 0 10px red;
+}
+
+/* CARD */
+
+.register-card{
+margin-top:80px;
+background:#0b0f1d;
+padding:40px;
+width:360px;
+border-radius:12px;
+border:1px solid rgba(255,0,0,0.4);
+box-shadow:
+0 0 15px rgba(255,0,0,0.3),
+0 0 30px rgba(255,0,0,0.2);
+}
+
+/* TITULO */
+
+.register-title{
+text-align:center;
+color:#ff2b2b;
+margin-bottom:30px;
+text-shadow:0 0 10px red;
+}
+
+/* FORM */
+
+.register-form{
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+.register-form input{
+padding:12px;
+border-radius:6px;
+border:1px solid rgba(255,0,0,0.4);
+background:#070b18;
+color:white;
+outline:none;
+}
+
+.register-form input:focus{
+box-shadow:0 0 10px red;
+}
+
+/* BOTON */
+
+.register-form button{
+padding:12px;
+border:none;
+border-radius:6px;
+background:red;
+color:white;
+font-weight:bold;
+cursor:pointer;
+transition:.3s;
+}
+
+.register-form button:hover{
+box-shadow:0 0 15px red;
+transform:scale(1.03);
+}
+
+/* LOGIN LINK */
+
+.login-redirect{
+margin-top:20px;
+text-align:center;
+}
+
+.login-redirect a{
+color:#ff2b2b;
+text-decoration:none;
+font-weight:bold;
+}
+
+.login-redirect a:hover{
+text-shadow:0 0 8px red;
+}
