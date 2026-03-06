@@ -157,7 +157,7 @@ const Header = () => {
         </a>
         <nav className="header-nav">
           <a href="/primera">Primera División</a>
-          <a href="#segunda">Segunda División</a>
+          <a href="/segunda">Segunda División</a>
           <a href="#tercera">Tercera División</a>
           <a href="#noticias">Noticias</a>
         </nav>
