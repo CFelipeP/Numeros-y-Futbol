@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import "../admin.css";
 import Swal from "sweetalert2";
-import { motion } from "framer-motion";
+
+import StatsCard from "../components/StatsCard";
+import MatchTable from "../components/MatchTable";
+import NotificationBell from "../components/NotificationBell";
+import GoalsChart from "../components/GoalsChart";
 
 const AdminDashboard = () => {
 
@@ -32,7 +36,6 @@ const AdminDashboard = () => {
 
     Swal.fire({
       title: "¿Cerrar sesión?",
-      text: "Tu sesión se cerrará",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Sí, salir",
@@ -67,7 +70,6 @@ const AdminDashboard = () => {
       html:
         '<input id="home" class="swal2-input" placeholder="Equipo local">' +
         '<input id="away" class="swal2-input" placeholder="Equipo visitante">',
-      focusConfirm: false,
       showCancelButton: true,
       preConfirm: () => {
 
@@ -185,6 +187,8 @@ const AdminDashboard = () => {
             />
           </div>
 
+          <NotificationBell />
+
           <button className="btn-logout" onClick={handleLogout}>
             Cerrar sesión
           </button>
@@ -197,27 +201,25 @@ const AdminDashboard = () => {
 
           <div className="stats-grid">
 
-            {stats.map((stat, index) => (
+            {stats.map((stat, i) => (
 
-              <motion.div
-                key={index}
-                className="stat-card"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-
-                <div className={`stat-icon ${stat.color}`}>
-                  {stat.icon}
-                </div>
-
-                <div>
-                  <h3>{stat.value}</h3>
-                  <p>{stat.title}</p>
-                </div>
-
-              </motion.div>
+              <StatsCard
+                key={i}
+                icon={stat.icon}
+                title={stat.title}
+                value={stat.value}
+                color={stat.color}
+              />
 
             ))}
+
+          </div>
+
+          <div className="chart-container">
+
+            <h2>Estadísticas de goles</h2>
+
+            <GoalsChart />
 
           </div>
 
@@ -231,62 +233,10 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            <table className="data-table">
-
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Local</th>
-                  <th>Visitante</th>
-                  <th>Resultado</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-
-              <tbody>
-
-                {filteredMatches.map((match) => (
-
-                  <tr key={match.id}>
-
-                    <td>{match.date}</td>
-                    <td>{match.home}</td>
-                    <td>{match.away}</td>
-                    <td>{match.score}</td>
-
-                    <td>
-
-                      <span
-                        className={`status ${
-                          match.status === "Finalizado"
-                            ? "done"
-                            : "pending"
-                        }`}
-                      >
-                        {match.status}
-                      </span>
-
-                    </td>
-
-                    <td>
-
-                      <button
-                        className="btn-delete"
-                        onClick={() => deleteMatch(match.id)}
-                      >
-                        ❌
-                      </button>
-
-                    </td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
+            <MatchTable
+              matches={filteredMatches}
+              deleteMatch={deleteMatch}
+            />
 
           </div>
 
