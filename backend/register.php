@@ -1,31 +1,22 @@
 <?php
 
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Content-Type: application/json");
 
 require "db.php";
 
-$data = json_decode(file_get_contents("php://input"));
+$data = json_decode(file_get_contents("php://input"), true);
 
-$nombre = $data->nombre;
-$email = $data->email;
-$password = password_hash($data->password, PASSWORD_BCRYPT);
+$nombre = $data["nombre"];
+$email = $data["email"];
+$password = password_hash($data["password"], PASSWORD_BCRYPT);
 
-try {
+$sql = $conn->prepare("INSERT INTO usuarios (nombre,email,password,rol) VALUES (?,?,?,?)");
 
-    $sql = $conn->prepare("INSERT INTO usuarios (nombre,email,password,rol) VALUES (?,?,?,?)");
+$sql->execute([$nombre,$email,$password,"admin"]);
 
-    $sql->execute([$nombre,$email,$password,"usuario"]);
-
-    echo json_encode([
-        "success" => true,
-        "mensaje" => "Usuario creado"
-    ]);
-
-} catch(PDOException $e){
-
-    echo json_encode([
-        "success" => false,
-        "error" => $e->getMessage()
-    ]);
-
-}
+echo json_encode([
+    "success"=>true
+]);

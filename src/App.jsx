@@ -1,11 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
-import Primera from "./Divisiones/Primera";
-import Dashboard from "./dashboard/Dashboard";
-
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Dashboard from "./dashboard/Dashboard";
+import Primera from "./Divisiones/Primera";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 

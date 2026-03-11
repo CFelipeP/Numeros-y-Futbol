@@ -1,106 +1,73 @@
 import { useState } from "react";
 import axios from "axios";
-import Swal from "sweetalert2";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-export default function Login() {
+import api from "../api";
 
-    const navigate = useNavigate();
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+export default function Login(){
 
-    const login = async (e) => {
+const navigate = useNavigate();
 
-        e.preventDefault();
+const [email,setEmail] = useState("");
+const [password,setPassword] = useState("");
 
-        try {
+const login = async(e)=>{
 
-            const res = await axios.post(
-                "http://localhost/backend/login.php",
-                { email, password }
-            );
+e.preventDefault();
 
-            localStorage.setItem("user", JSON.stringify(res.data));
+try{
 
-            Swal.fire({
-                icon: "success",
-                title: "Bienvenido",
-                text: "Inicio de sesión exitoso"
-            });
+const res = await axios.post(
+"http://localhost/numeros-y-futbol/backend/login.php",
+{
+email,
+password
+}
+);
 
-            if (res.data.rol === "admin") {
-                navigate("/dashboard");
-            } else {
-                navigate("/");
-            }
 
-        } catch {
+localStorage.setItem("user",JSON.stringify(res.data));
 
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Credenciales incorrectas"
-            });
+if(res.data.rol === "admin"){
+navigate("/dashboard");
+}else{
+navigate("/");
+}
 
-        }
+}catch{
 
-    };
+alert("Credenciales incorrectas");
 
-    return (
+}
 
-        <div className="login-page">
+};
 
-            <div className="login-card">
+return(
 
-                {/* Flecha volver */}
-                <button
-                    className="back-home"
-                    onClick={() => navigate("/")}
-                >
-                    ← Volver
-                </button>
+<form onSubmit={login}>
 
-                <h2 className="login-title">
-                    Iniciar Sesión
-                </h2>
+<input
+placeholder="Email"
+value={email}
+onChange={(e)=>setEmail(e.target.value)}
+required
+/>
 
-                <form onSubmit={login}>
+<input
+type="password"
+placeholder="Password"
+value={password}
+onChange={(e)=>setPassword(e.target.value)}
+required
+/>
 
-                    <input
-                        type="email"
-                        placeholder="Correo electrónico"
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
+<button type="submit">
+Login
+</button>
 
-                    <input
-                        type="password"
-                        placeholder="Contraseña"
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+</form>
 
-                    <button className="btn login-btn">
-                        Entrar
-                    </button>
-
-                </form>
-
-                <p className="login-register">
-
-                    ¿No tienes cuenta?
-
-                    <Link to="/register">
-                        Crear cuenta
-                    </Link>
-
-                </p>
-
-            </div>
-
-        </div>
-
-    );
+);
 
 }

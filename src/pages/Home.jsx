@@ -337,12 +337,16 @@ function Home() {
 
       const driverObj = driver({
         showProgress: true,
+        allowClose: true,
+        nextBtnText: "Siguiente",
+        prevBtnText: "Atrás",
+        doneBtnText: "Listo",
         steps: [
           {
             element: '#driver-header',
             popover: {
-              title: 'Bienvenido a Números y Fútbol',
-              description: 'Tu portal oficial para el fútbol salvadoreño. Usa el menú para navegar.',
+              title: 'Menú principal',
+              description: 'Navega entre divisiones, noticias o accede a tu cuenta.',
               side: 'bottom',
               align: 'start',
             }
@@ -350,9 +354,45 @@ function Home() {
           {
             element: '#driver-hero',
             popover: {
-              title: 'La Portada',
-              description: 'Aquí destacamos los eventos más importantes del fútbol nacional.',
+              title: 'Portada',
+              description: 'Sección principal con lo más importante del fútbol nacional.',
               side: 'bottom',
+              align: 'center',
+            }
+          },
+          {
+            element: '#driver-carousel',
+            popover: {
+              title: 'Resultados',
+              description: 'Últimos marcadores de los partidos recientes.',
+              side: 'top',
+              align: 'center',
+            }
+          },
+          {
+            element: '#driver-divisions',
+            popover: {
+              title: 'Divisiones',
+              description: 'Explora Primera, Segunda y Tercera división.',
+              side: 'top',
+              align: 'center',
+            }
+          },
+          {
+            element: '#driver-news',
+            popover: {
+              title: 'Noticias',
+              description: 'Las últimas novedades del fútbol salvadoreño.',
+              side: 'top',
+              align: 'center',
+            }
+          },
+          {
+            element: '#driver-footer',
+            popover: {
+              title: 'Información',
+              description: 'Enlaces útiles y redes sociales.',
+              side: 'top',
               align: 'center',
             }
           }
@@ -368,6 +408,7 @@ function Home() {
     }
 
   }, []);
+
 
   return (
     <>
