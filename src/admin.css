@@ -97,3 +97,45 @@
     padding: 10px;
     border-bottom: 1px solid #333;
 }
+
+.btn-add{
+background:#2563eb;
+color:white;
+padding:8px 14px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+.btn-delete{
+background:#ef4444;
+color:white;
+border:none;
+padding:5px 8px;
+border-radius:6px;
+cursor:pointer;
+}
+
+.table-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:10px;
+}
+
+.status{
+padding:5px 10px;
+border-radius:8px;
+font-size:12px;
+font-weight:bold;
+}
+
+.done{
+background:#d1fae5;
+color:#065f46;
+}
+
+.pending{
+background:#fef3c7;
+color:#92400e;
+}
