@@ -29,6 +29,7 @@
     "react-router-dom": "^7.13.1",
     "react-tsparticles": "^2.12.2",
     "recharts": "^3.8.0",
+    "sonner": "^2.0.7",
     "sweetalert2": "^11.26.22",
     "tsparticles": "^3.9.1",
     "video.js": "^8.23.7"

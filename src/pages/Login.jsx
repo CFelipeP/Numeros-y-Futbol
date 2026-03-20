@@ -1,21 +1,33 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Mail, Lock, Eye, EyeOff } from "lucide-react"; // opcional, si usas lucide
+import { toast } from "sonner";                    // ← Importante
+import { ArrowLeft, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);   // ← Agregado para mejor UX
 
     const login = async (e) => {
         e.preventDefault();
+        setLoading(true);
+
+        const promise = axios.post(
+            "http://localhost/numeros-y-futbol/backend/login.php",
+            { email, password }
+        );
+
+        toast.promise(promise, {
+            loading: "Iniciando sesión...",
+            success: "¡Inicio de sesión exitoso! Bienvenido de vuelta.",
+            error: "Credenciales incorrectas. Inténtalo de nuevo.",
+        });
+
         try {
-            const res = await axios.post(
-                "http://localhost/numeros-y-futbol/backend/login.php",
-                { email, password }
-            );
+            const res = await promise;
 
             localStorage.setItem("user", JSON.stringify(res.data));
 
@@ -24,8 +36,10 @@ export default function Login() {
             } else {
                 navigate("/");
             }
-        } catch {
-            alert("Credenciales incorrectas");
+        } catch (error) {
+            // El error ya lo maneja toast.promise
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -77,14 +91,24 @@ export default function Login() {
                         </button>
                     </div>
 
-                    <button type="submit" className="login-btn">
-                        Iniciar Sesión
+                    <button
+                        type="submit"
+                        className="login-btn"
+                        disabled={loading}
+                    >
+                        {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
                     </button>
                 </form>
 
                 <p className="register-link">
                     ¿No tienes cuenta?{" "}
-                    <a href="/register" onClick={(e) => { e.preventDefault(); navigate("/register"); }}>
+                    <a
+                        href="/register"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            navigate("/register");
+                        }}
+                    >
                         Regístrate aquí
                     </a>
                 </p>

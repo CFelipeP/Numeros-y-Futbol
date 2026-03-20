@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";                    // ← Importante
 import { ArrowLeft, User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function Register() {
@@ -16,29 +17,32 @@ export default function Register() {
         e.preventDefault();
         setLoading(true);
 
+        const promise = axios.post(
+            "http://localhost/Numeros-y-Futbol/backend/register.php",
+            { nombre, email, password }
+        );
+
+        toast.promise(promise, {
+            loading: "Creando tu cuenta...",
+            success: "¡Registro exitoso! Ahora puedes iniciar sesión.",
+            error: (err) => {
+                console.log(err);
+                return "Error al registrar. Inténtalo de nuevo.";
+            },
+        });
+
         try {
-            const res = await axios.post(
-                "http://localhost/Numeros-y-Futbol/backend/register.php",
-                { nombre, email, password }
-            );
-
-            if (res.data.success) {
-                alert("¡Registro exitoso!");
-                navigate("/login");
-            } else {
-                alert(res.data.error || "Error al registrar");
-            }
-
+            await promise;
+            navigate("/login");
         } catch (error) {
-            console.log(error);
-            alert("Error de conexión");
+            // El error ya lo maneja toast.promise, solo dejamos el catch por si quieres lógica extra
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="login-page"> {/* Usamos la misma clase que el login */}
+        <div className="login-page">
             <button
                 onClick={() => navigate("/")}
                 className="back-home"
@@ -96,14 +100,24 @@ export default function Register() {
                         </button>
                     </div>
 
-                    <button type="submit" className="login-btn" disabled={loading}>
+                    <button
+                        type="submit"
+                        className="login-btn"
+                        disabled={loading}
+                    >
                         {loading ? "Registrando..." : "Registrarse"}
                     </button>
                 </form>
 
                 <p className="register-link">
                     ¿Ya tienes cuenta?{" "}
-                    <a href="/login" onClick={(e) => { e.preventDefault(); navigate("/login"); }}>
+                    <a
+                        href="/login"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            navigate("/login");
+                        }}
+                    >
                         Inicia sesión aquí
                     </a>
                 </p>
