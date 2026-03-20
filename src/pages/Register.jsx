@@ -1,73 +1,108 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
-export default function Register(){
+export default function Register() {
+    const navigate = useNavigate();
 
-const [nombre,setNombre] = useState("");
-const [email,setEmail] = useState("");
-const [password,setPassword] = useState("");
+    const [nombre, setNombre] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-const register = async(e)=>{
+    const register = async (e) => {
+        e.preventDefault();
+        setLoading(true);
 
-e.preventDefault();
+        try {
+            await axios.post(
+                "http://localhost/Numeros-y-Futbol/backend/register.php",
+                { nombre, email, password }
+            );
 
-try{
+            alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
+            navigate("/login"); // Redirige al login después de registrarse
+        } catch (error) {
+            console.log(error);
+            alert("Error al registrar. Inténtalo de nuevo.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    console.log({
-nombre,
-email,
-password
-});
+    return (
+        <div className="login-page"> {/* Usamos la misma clase que el login */}
+            <button
+                onClick={() => navigate("/")}
+                className="back-home"
+            >
+                <ArrowLeft size={20} />
+                Volver al inicio
+            </button>
 
-await axios.post(
-"http://localhost/Numeros-y-Futbol/backend/register.php",
-{
-nombre: nombre,
-email: email,
-password: password
-}
-);
+            <div className="login-card">
+                <div className="login-logo">
+                    ⚽ <span>Números y Fútbol</span>
+                </div>
 
-alert("Usuario creado");
+                <h1 className="login-title">Crear Cuenta</h1>
+                <p className="login-subtitle">Únete a la comunidad futbolera</p>
 
-}catch(error){
+                <form onSubmit={register}>
+                    <div className="input-group">
+                        <User className="input-icon" />
+                        <input
+                            type="text"
+                            placeholder="Nombre completo"
+                            value={nombre}
+                            onChange={(e) => setNombre(e.target.value)}
+                            required
+                        />
+                    </div>
 
-console.log(error);
-alert("Error al registrar");
+                    <div className="input-group">
+                        <Mail className="input-icon" />
+                        <input
+                            type="email"
+                            placeholder="Correo electrónico"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
 
-}
+                    <div className="input-group">
+                        <Lock className="input-icon" />
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Contraseña"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                        <button
+                            type="button"
+                            className="toggle-password"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                    </div>
 
-};
+                    <button type="submit" className="login-btn" disabled={loading}>
+                        {loading ? "Registrando..." : "Registrarse"}
+                    </button>
+                </form>
 
-return(
-
-<form onSubmit={register}>
-
-<input
-placeholder="Nombre"
-value={nombre}
-onChange={(e)=>setNombre(e.target.value)}
-/>
-
-<input
-placeholder="Email"
-value={email}
-onChange={(e)=>setEmail(e.target.value)}
-/>
-
-<input
-type="password"
-placeholder="Password"
-value={password}
-onChange={(e)=>setPassword(e.target.value)}
-/>
-
-<button type="submit">
-Registrarse
-</button>
-
-</form>
-
-);
-
+                <p className="register-link">
+                    ¿Ya tienes cuenta?{" "}
+                    <a href="/login" onClick={(e) => { e.preventDefault(); navigate("/login"); }}>
+                        Inicia sesión aquí
+                    </a>
+                </p>
+            </div>
+        </div>
+    );
 }

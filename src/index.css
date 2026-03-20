@@ -2,6 +2,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto:wght@300;400;500&display=swap');
 
 :root {
+  --color-accent: #ff004d;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --transition: all 0.3s ease;
   --color-primary: #b91c1c;
   --color-primary-dark: #7f1d1d;
   --color-accent: #ff004d;
@@ -387,8 +392,10 @@ img {
 }
 
 .match-card-slide {
-  width: 300px;              /* tamaño fijo uniforme */
-  height: 160px;             /* altura igual para todos */
+  width: 300px;
+  /* tamaño fijo uniforme */
+  height: 160px;
+  /* altura igual para todos */
   background: rgba(30, 41, 59, 0.75);
   backdrop-filter: blur(12px);
   border-radius: var(--radius-md);
@@ -416,7 +423,8 @@ img {
 
 .match-team-info {
   display: flex;
-  flex-direction: column;   /* nombre abajo */
+  flex-direction: column;
+  /* nombre abajo */
   align-items: center;
   justify-content: space-between;
   text-align: center;
@@ -644,44 +652,53 @@ img {
   overflow: hidden;
   transition: var(--transition);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  
+
   /* AJUSTES PARA TAMAÑO FIJO */
-  height: 450px; /* Altura fija obligatoria */
+  height: 450px;
+  /* Altura fija obligatoria */
   display: flex;
-  flex-direction: column; /* Apilar imagen, contenido y footer verticalmente */
+  flex-direction: column;
+  /* Apilar imagen, contenido y footer verticalmente */
 }
 
 .news-card:hover {
   transform: translateY(-5px);
   box-shadow: var(--shadow-card);
-  border-color: var(--color-accent); /* Añadido borde al hover para mejor feedback visual */
+  border-color: var(--color-accent);
+  /* Añadido borde al hover para mejor feedback visual */
 }
 
 .news-card-image {
-  height: 180px; /* Altura fija para la imagen */
+  height: 180px;
+  /* Altura fija para la imagen */
   width: 100%;
   background-size: cover;
   background-position: center;
-  flex-shrink: 0; /* Evita que la imagen se encoja */
+  flex-shrink: 0;
+  /* Evita que la imagen se encoja */
 }
 
 .news-card-body {
   padding: 1.5rem;
-  flex: 1; /* Ocupa el espacio disponible restante */
+  flex: 1;
+  /* Ocupa el espacio disponible restante */
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Corta cualquier contenido que desborde */
+  overflow: hidden;
+  /* Corta cualquier contenido que desborde */
 }
 
 .news-card h3 {
   font-family: var(--font-heading);
   font-size: 1.15rem;
-  margin: 0 0 0.5rem 0; /* Ajuste de márgenes */
+  margin: 0 0 0.5rem 0;
+  /* Ajuste de márgenes */
   line-height: 1.4;
-  
+
   /* Recorte de título largo */
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* Máximo 2 líneas */
+  -webkit-line-clamp: 2;
+  /* Máximo 2 líneas */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -694,7 +711,8 @@ img {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  flex-grow: 1; /* Permite que el párrafo ocupe espacio si el título es corto */
+  flex-grow: 1;
+  /* Permite que el párrafo ocupe espacio si el título es corto */
 }
 
 .news-card-footer {
@@ -704,8 +722,10 @@ img {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   padding-top: 1rem;
   font-size: 0.8rem;
-  margin-top: auto; /* Empuja el footer al fondo absoluto de la tarjeta */
-  flex-shrink: 0; /* Evita que el footer se aplaste */
+  margin-top: auto;
+  /* Empuja el footer al fondo absoluto de la tarjeta */
+  flex-shrink: 0;
+  /* Evita que el footer se aplaste */
 }
 
 .news-card-actions {
@@ -814,7 +834,8 @@ img {
 /* Estilo para video nativo */
 .news-card-video {
   width: 100%;
-  height: 180px; /* Coincide con la altura de la imagen */
+  height: 180px;
+  /* Coincide con la altura de la imagen */
   object-fit: cover;
   object-position: center;
   display: block;
@@ -906,271 +927,341 @@ img {
   }
 }
 
-/* LOGIN PAGE */
-
-.login-page{
-
-min-height:100vh;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-background:
-
-linear-gradient(rgba(15,23,42,0.95),rgba(15,23,42,0.95)),
-
-url("https://upload.wikimedia.org/wikipedia/commons/b/b8/Estadio_Nacional_Jorge_%22El_M%C3%A1gico%22_Gonz%C3%A1lez.png");
-
-background-size:cover;
-
-background-position:center;
-
+/* ====================== LOGIN PAGE ====================== */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background:
+    linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.92)),
+    url("https://upload.wikimedia.org/wikipedia/commons/b/b8/Estadio_Nacional_Jorge_%22El_M%C3%A1gico%22_Gonz%C3%A1lez.png");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+  overflow: hidden;
 }
 
-/* LOGIN CARD */
-
-.login-card{
-
-position:relative;
-
-background:var(--color-card-bg);
-
-padding:3rem;
-
-border-radius:var(--radius-md);
-
-box-shadow:var(--shadow-card);
-
-width:350px;
-
-text-align:center;
-
-border:1px solid rgba(255,255,255,0.05);
-
+/* Overlay sutil de líneas/patrón fútbol (opcional) */
+.login-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 0, 77, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(255, 0, 77, 0.06) 0%, transparent 50%);
+  pointer-events: none;
 }
 
-/* TITULO */
-
-.login-title{
-
-font-family:var(--font-heading);
-
-margin-bottom:1.5rem;
-
-font-size:1.8rem;
-
-color:var(--color-white);
-
-text-shadow:0 0 12px var(--color-accent);
-
+/* ====================== LOGIN CARD (Glassmorphism + Neon) ====================== */
+.login-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 3rem 2.5rem;
+  border-radius: var(--radius-lg, 20px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 0 40px rgba(255, 0, 77, 0.15);
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* INPUTS */
-
-.login-card input{
-
-width:100%;
-
-padding:0.9rem;
-
-margin-bottom:1rem;
-
-border-radius:var(--radius-sm);
-
-border:1px solid rgba(255,255,255,0.1);
-
-background:#020617;
-
-color:white;
-
-font-size:0.95rem;
-
-outline:none;
-
-transition:var(--transition);
-
+.login-card:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(255, 0, 77, 0.25);
 }
 
-.login-card input:focus{
-
-border-color:var(--color-accent);
-
-box-shadow:0 0 10px rgba(255,0,77,0.6);
-
+/* Logo */
+.login-logo {
+  font-size: 2.8rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--color-accent, #ff004d);
+  font-weight: 800;
 }
 
-/* BOTON LOGIN */
-
-.login-btn{
-
-width:100%;
-
-margin-top:1rem;
-
-background:var(--color-accent);
-
-color:white;
-
-font-weight:700;
-
+.login-logo span {
+  font-size: 1.6rem;
+  color: white;
+  text-shadow: 0 0 15px var(--color-accent);
 }
 
-.login-btn:hover{
-
-box-shadow:var(--shadow-neon);
-
-transform:translateY(-2px);
-
+/* Título y subtítulo */
+.login-title {
+  font-family: var(--font-heading, system-ui);
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  margin: 1rem 0 0.5rem;
+  text-shadow: 0 0 20px rgba(255, 0, 77, 0.6);
 }
 
-/* VOLVER HOME */
-
-.back-home{
-
-position:absolute;
-
-top:15px;
-
-left:15px;
-
-background:none;
-
-border:none;
-
-color:var(--color-text-muted);
-
-cursor:pointer;
-
-font-size:0.9rem;
-
+.login-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 2rem;
+  font-size: 1rem;
 }
 
-.back-home:hover{
-
-color:var(--color-accent);
-
+/* Inputs con iconos */
+.input-group {
+  position: relative;
+  margin-bottom: 1.25rem;
 }
 
-.register-page{
-min-height:100vh;
-background:#05070f;
-color:white;
-display:flex;
-flex-direction:column;
-align-items:center;
+.input-group input {
+  width: 100%;
+  padding: 0.95rem 1rem 0.95rem 3rem;
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(2, 6, 23, 0.7);
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+  border-color: var(--color-accent, #ff004d);
+  box-shadow: 0 0 0 4px rgba(255, 0, 77, 0.25);
+  background: rgba(2, 6, 23, 0.9);
+}
+
+.input-icon {
+  position: absolute;
+  left: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.3s;
+}
+
+.input-group input:focus+.input-icon,
+.input-group input:focus~.input-icon {
+  color: var(--color-accent, #ff004d);
+}
+
+.toggle-password {
+  position: absolute;
+  right: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+}
+
+/* Botón */
+.login-btn {
+  width: 100%;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  background: linear-gradient(90deg, var(--color-accent, #ff004d), #ff3366);
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: var(--radius-md, 12px);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 25px rgba(255, 0, 77, 0.5);
+}
+
+.login-btn:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 0 40px rgba(255, 0, 77, 0.7);
+  background: linear-gradient(90deg, #ff3366, var(--color-accent, #ff004d));
+}
+
+/* Enlace de registro */
+.register-link {
+  margin-top: 2rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+}
+
+.register-link a {
+  color: var(--color-accent, #ff004d);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+/* Botón volver */
+.back-home {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 10;
+}
+
+.back-home:hover {
+  background: var(--color-accent, #ff004d);
+  transform: translateX(-4px);
 }
 
 /* NAVBAR */
 
-.register-navbar{
-width:100%;
-display:flex;
-justify-content:space-between;
-padding:20px 60px;
-background:#070b18;
-border-bottom:1px solid rgba(255,0,0,0.3);
+.register-navbar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 60px;
+  background: #070b18;
+  border-bottom: 1px solid rgba(255, 0, 0, 0.3);
 }
 
-.register-navbar h2{
-color:#ff2b2b;
-text-shadow:0 0 10px red;
+.register-navbar h2 {
+  color: #ff2b2b;
+  text-shadow: 0 0 10px red;
 }
 
-.back-btn{
-background:transparent;
-border:1px solid red;
-color:red;
-padding:8px 18px;
-border-radius:6px;
-cursor:pointer;
-transition:.3s;
+.back-btn {
+  background: transparent;
+  border: 1px solid red;
+  color: red;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: .3s;
 }
 
-.back-btn:hover{
-background:red;
-color:white;
-box-shadow:0 0 10px red;
+.back-btn:hover {
+  background: red;
+  color: white;
+  box-shadow: 0 0 10px red;
 }
 
 /* CARD */
 
-.register-card{
-margin-top:80px;
-background:#0b0f1d;
-padding:40px;
-width:360px;
-border-radius:12px;
-border:1px solid rgba(255,0,0,0.4);
-box-shadow:
-0 0 15px rgba(255,0,0,0.3),
-0 0 30px rgba(255,0,0,0.2);
+.register-card {
+  margin-top: 80px;
+  background: #0b0f1d;
+  padding: 40px;
+  width: 360px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  box-shadow:
+    0 0 15px rgba(255, 0, 0, 0.3),
+    0 0 30px rgba(255, 0, 0, 0.2);
 }
 
 /* TITULO */
 
-.register-title{
-text-align:center;
-color:#ff2b2b;
-margin-bottom:30px;
-text-shadow:0 0 10px red;
+.register-title {
+  text-align: center;
+  color: #ff2b2b;
+  margin-bottom: 30px;
+  text-shadow: 0 0 10px red;
 }
 
 /* FORM */
 
-.register-form{
-display:flex;
-flex-direction:column;
-gap:15px;
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.register-form input{
-padding:12px;
-border-radius:6px;
-border:1px solid rgba(255,0,0,0.4);
-background:#070b18;
-color:white;
-outline:none;
+.register-form input {
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  background: #070b18;
+  color: white;
+  outline: none;
 }
 
-.register-form input:focus{
-box-shadow:0 0 10px red;
+.register-form input:focus {
+  box-shadow: 0 0 10px red;
 }
 
 /* BOTON */
 
-.register-form button{
-padding:12px;
-border:none;
-border-radius:6px;
-background:red;
-color:white;
-font-weight:bold;
-cursor:pointer;
-transition:.3s;
+.register-form button {
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background: red;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: .3s;
 }
 
-.register-form button:hover{
-box-shadow:0 0 15px red;
-transform:scale(1.03);
+.register-form button:hover {
+  box-shadow: 0 0 15px red;
+  transform: scale(1.03);
 }
 
 /* LOGIN LINK */
 
-.login-redirect{
-margin-top:20px;
-text-align:center;
+.login-redirect {
+  margin-top: 20px;
+  text-align: center;
 }
 
-.login-redirect a{
-color:#ff2b2b;
-text-decoration:none;
-font-weight:bold;
+.login-redirect a {
+  color: #ff2b2b;
+  text-decoration: none;
+  font-weight: bold;
 }
 
-.login-redirect a:hover{
-text-shadow:0 0 8px red;
+.login-redirect a:hover {
+  text-shadow: 0 0 8px red;
 }
 
+/* ====================== REGISTER PAGE ====================== */
+
+/* Pequeños ajustes para que se vea aún mejor en registro */
+.login-card {
+  max-width: 400px;
+  /* Un poco más ancho que el login */
+}
+
+.login-title {
+  font-size: 2.1rem;
+}
+
+/* Opcional: hacer el botón un poco diferente para distinguir registro */
+.login-btn {
+  background: linear-gradient(90deg, #00d4ff, #0099cc);
+  box-shadow: 0 0 25px rgba(0, 212, 255, 0.5);
+}
+
+.login-btn:hover {
+  background: linear-gradient(90deg, #0099cc, #00d4ff);
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.7);
+}
+
+/* Si quieres que el botón vuelva al rojo neón en hover general */
+.login-btn:hover {
+  transform: translateY(-3px) scale(1.03);
+}
