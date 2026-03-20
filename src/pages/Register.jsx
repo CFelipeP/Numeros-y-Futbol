@@ -17,16 +17,21 @@ export default function Register() {
         setLoading(true);
 
         try {
-            await axios.post(
+            const res = await axios.post(
                 "http://localhost/Numeros-y-Futbol/backend/register.php",
                 { nombre, email, password }
             );
 
-            alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
-            navigate("/login"); // Redirige al login después de registrarse
+            if (res.data.success) {
+                alert("¡Registro exitoso!");
+                navigate("/login");
+            } else {
+                alert(res.data.error || "Error al registrar");
+            }
+
         } catch (error) {
             console.log(error);
-            alert("Error al registrar. Inténtalo de nuevo.");
+            alert("Error de conexión");
         } finally {
             setLoading(false);
         }
