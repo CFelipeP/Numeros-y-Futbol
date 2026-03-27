@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./dashboard/Dashboard";
 import Primera from "./Divisiones/Primera";
+import News from "./pages/News"; // <--- IMPORT AQUÍ
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -23,6 +24,9 @@ function App() {
         <Route path="/register" element={<Register />} />
 
         <Route path="/primera" element={<Primera />} />
+
+        {/* NUEVA RUTA PARA NOTICIAS */}
+        <Route path="/news" element={<News />} />
 
         <Route
           path="/dashboard"

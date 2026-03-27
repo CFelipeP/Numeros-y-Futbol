@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import "../admin.css";
+import "../admin.css"; // Asegúrate de que apunte a tu archivo CSS actualizado
 import Swal from "sweetalert2";
 
 import StatsCard from "../components/StatsCard";
 import MatchTable from "../components/MatchTable";
-import NotificationBell from "../components/NotificationBell";
 import GoalsChart from "../components/GoalsChart";
 
 const AdminDashboard = () => {
@@ -33,17 +32,16 @@ const AdminDashboard = () => {
   );
 
   const handleLogout = () => {
-
     Swal.fire({
       title: "¿Cerrar sesión?",
+      text: "¿Estás seguro de que deseas salir?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Sí, salir",
       cancelButtonText: "Cancelar",
+      // Quitamos colores inline para usar CSS
     }).then((result) => {
-
       if (result.isConfirmed) {
-
         Swal.fire({
           toast: true,
           position: "top-end",
@@ -52,42 +50,32 @@ const AdminDashboard = () => {
           showConfirmButton: false,
           timer: 2000
         });
-
         setTimeout(() => {
           window.location.href = "/login";
         }, 1500);
-
       }
-
     });
-
   };
 
   const addMatch = () => {
-
     Swal.fire({
       title: "Agregar partido",
       html:
         '<input id="home" class="swal2-input" placeholder="Equipo local">' +
         '<input id="away" class="swal2-input" placeholder="Equipo visitante">',
       showCancelButton: true,
+      confirmButtonText: "Agregar",
+      cancelButtonText: "Cancelar",
       preConfirm: () => {
-
         const home = document.getElementById("home").value;
         const away = document.getElementById("away").value;
-
         if (!home || !away) {
           Swal.showValidationMessage("Debes completar los equipos");
         }
-
         return { home, away };
-
       }
-
     }).then((result) => {
-
       if (result.value) {
-
         const newMatch = {
           id: matches.length + 1,
           date: "Hoy",
@@ -96,9 +84,7 @@ const AdminDashboard = () => {
           score: "-",
           status: "Pendiente"
         };
-
         setMatches([...matches, newMatch]);
-
         Swal.fire({
           toast: true,
           position: "top-end",
@@ -107,26 +93,23 @@ const AdminDashboard = () => {
           showConfirmButton: false,
           timer: 2000
         });
-
       }
-
     });
-
   };
 
   const deleteMatch = (id) => {
-
     Swal.fire({
       title: "¿Eliminar partido?",
+      text: "Esta acción no se puede deshacer",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Eliminar"
+      confirmButtonText: "Eliminar",
+      cancelButtonText: "Cancelar",
+      // Usamos una clase custom para el botón rojo si queremos, 
+      // pero el CSS general ya lo adapta al tema oscuro.
     }).then((result) => {
-
       if (result.isConfirmed) {
-
         setMatches(matches.filter((m) => m.id !== id));
-
         Swal.fire({
           toast: true,
           position: "top-end",
@@ -135,74 +118,84 @@ const AdminDashboard = () => {
           showConfirmButton: false,
           timer: 2000
         });
-
       }
-
     });
-
   };
 
   return (
+    <div className={`admin-layout ${!sidebarOpen ? "sidebar-closed" : ""}`}>
 
-    <div className={`admin-layout ${sidebarOpen ? "" : "sidebar-closed"}`}>
-
+      {/* ===== SIDEBAR ===== */}
       <aside className="sidebar">
-
         <div className="sidebar-header">
-          <div className="logo-icon">⚽</div>
+          <div className="logo-icon">
+            <img 
+              src="https://z-cdn-media.chatglm.cn/files/6a05039f-e693-466c-989d-75703ba3e40b.png?auth_key=1874469668-504345165d65484d91ce9bccaebd0d21-0-4dff614536f8ead12d34cb7c436f3c20" 
+              alt="Logo Números y Fútbol" 
+            />
+          </div>
           <h2 className="sidebar-title">
-            LIGA PRO <span className="accent-text">ADMIN</span>
+            Números y Fútbol <span className="accent-text">Dashboard</span>
           </h2>
         </div>
 
         <nav className="sidebar-nav">
           <ul>
-            <li className="nav-item active">📊 Dashboard</li>
-            <li className="nav-item">📅 Gestionar Partidos</li>
-            <li className="nav-item">🛡️ Equipos</li>
-            <li className="nav-item">📝 Noticias</li>
-            <li className="nav-item">👥 Usuarios</li>
-            <li className="nav-item">⚙️ Configuración</li>
+            <li className="nav-item active">
+              <span className="nav-icon">📊</span> Dashboard
+            </li>
+            <li className="nav-item">
+              <span className="nav-icon">📅</span> Gestionar Partidos
+            </li>
+            <li className="nav-item">
+              <span className="nav-icon">🛡️</span> Equipos
+            </li>
+            <li className="nav-item">
+              <span className="nav-icon">📝</span> Noticias
+            </li>
+            <li className="nav-item">
+              <span className="nav-icon">👥</span> Usuarios
+            </li>
+            <li className="nav-item">
+              <span className="nav-icon">⚙️</span> Configuración
+            </li>
           </ul>
         </nav>
 
+        <div className="sidebar-footer">
+          <button className="nav-item btn-logout-sidebar" onClick={handleLogout}>
+            <span className="nav-icon">🚪</span> Cerrar sesión
+          </button>
+        </div>
       </aside>
 
+      {/* ===== MAIN CONTENT ===== */}
       <main className="main-content">
 
         <header className="top-bar">
-
           <button
             className="toggle-btn"
             onClick={() => setSidebarOpen(!sidebarOpen)}
+            title="Toggle Sidebar"
           >
             ☰
           </button>
 
           <div className="search-bar">
             <input
+              type="text"
               placeholder="Buscar equipo..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-
-          <NotificationBell />
-
-          <button className="btn-logout" onClick={handleLogout}>
-            Cerrar sesión
-          </button>
-
         </header>
 
         <div className="content-wrapper">
-
           <h1 className="admin-title">Dashboard</h1>
 
           <div className="stats-grid">
-
             {stats.map((stat, i) => (
-
               <StatsCard
                 key={i}
                 icon={stat.icon}
@@ -210,44 +203,30 @@ const AdminDashboard = () => {
                 value={stat.value}
                 color={stat.color}
               />
-
             ))}
-
           </div>
 
           <div className="chart-container">
-
-            <h2>Estadísticas de goles</h2>
-
+            <div className="table-header">
+              <h2>Estadísticas de goles</h2>
+            </div>
             <GoalsChart />
-
           </div>
 
           <div className="table-container">
-
             <div className="table-header">
               <h2>Últimos partidos</h2>
-
               <button className="btn-add" onClick={addMatch}>
-                ➕ Nuevo Partido
+                <span>➕</span> Nuevo Partido
               </button>
             </div>
 
-            <MatchTable
-              matches={filteredMatches}
-              deleteMatch={deleteMatch}
-            />
-
+            <MatchTable matches={filteredMatches} deleteMatch={deleteMatch} />
           </div>
-
         </div>
-
       </main>
-
     </div>
-
   );
-
 };
 
 export default AdminDashboard;

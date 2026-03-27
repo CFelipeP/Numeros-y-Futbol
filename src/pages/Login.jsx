@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";                    // ← Importante
+import Swal from "sweetalert2";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
@@ -9,37 +9,44 @@ export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading] = useState(false);   // ← Agregado para mejor UX
+    const [loading, setLoading] = useState(false);
 
     const login = async (e) => {
         e.preventDefault();
         setLoading(true);
 
-        const promise = axios.post(
-            "http://localhost/numeros-y-futbol/backend/login.php",
-            { email, password }
-        );
-
-        toast.promise(promise, {
-            loading: "Iniciando sesión...",
-            success: "¡Inicio de sesión exitoso! Bienvenido de vuelta.",
-            error: "Credenciales incorrectas. Inténtalo de nuevo.",
-        });
-
         try {
-            const res = await promise;
+            const res = await axios.post(
+                "http://localhost/numeros-y-futbol/backend/login.php",
+                { email, password }
+            );
 
             localStorage.setItem("user", JSON.stringify(res.data));
 
-            if (res.data.rol === "admin") {
-                navigate("/dashboard");
-            } else {
-                navigate("/");
-            }
+            // Popup de éxito
+            Swal.fire({
+                icon: "success",
+                title: "¡Bienvenido!",
+                text: "Inicio de sesión exitoso.",
+                timer: 2000,
+                showConfirmButton: false,
+            }).then(() => {
+                if (res.data.rol === "admin") {
+                    navigate("/dashboard");
+                } else {
+                    navigate("/");
+                }
+            });
+
         } catch (error) {
-            // El error ya lo maneja toast.promise
-        } finally {
             setLoading(false);
+            // Popup de error
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Credenciales incorrectas. Inténtalo de nuevo.",
+                confirmButtonText: "Entendido"
+            });
         }
     };
 
@@ -55,7 +62,13 @@ export default function Login() {
 
             <div className="login-card">
                 <div className="login-logo">
-                    ⚽ <span>Números y Fútbol</span>
+                    {/* LOGO ACTUALIZADO */}
+                    <img 
+                        src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" 
+                        alt="Logo Números y Fútbol" 
+                        className="login-logo-img"
+                    />
+                    <span>Números y Fútbol</span>
                 </div>
 
                 <h1 className="login-title">¡Bienvenido de vuelta!</h1>
@@ -96,7 +109,7 @@ export default function Login() {
                         className="login-btn"
                         disabled={loading}
                     >
-                        {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+                        {loading ? "Verificando..." : "Iniciar Sesión"}
                     </button>
                 </form>
 

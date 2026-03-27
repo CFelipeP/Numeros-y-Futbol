@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";                    // ← Importante
+import Swal from "sweetalert2"; // Cambio: Importamos SweetAlert2
 import { ArrowLeft, User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function Register() {
@@ -17,27 +17,31 @@ export default function Register() {
         e.preventDefault();
         setLoading(true);
 
-        const promise = axios.post(
-            "http://localhost/Numeros-y-Futbol/backend/register.php",
-            { nombre, email, password }
-        );
-
-        toast.promise(promise, {
-            loading: "Creando tu cuenta...",
-            success: "¡Registro exitoso! Ahora puedes iniciar sesión.",
-            error: (err) => {
-                console.log(err);
-                return "Error al registrar. Inténtalo de nuevo.";
-            },
-        });
-
         try {
-            await promise;
-            navigate("/login");
+            const res = await axios.post(
+                "http://localhost/Numeros-y-Futbol/backend/register.php",
+                { nombre, email, password }
+            );
+
+            // Popup de éxito (Estilo Dark Mode)
+            Swal.fire({
+                icon: "success",
+                title: "¡Registro Exitoso!",
+                text: "Tu cuenta ha sido creada correctamente.",
+                confirmButtonText: "Ir a Login"
+            }).then(() => {
+                navigate("/login");
+            });
+
         } catch (error) {
-            // El error ya lo maneja toast.promise, solo dejamos el catch por si quieres lógica extra
-        } finally {
             setLoading(false);
+            // Popup de error
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "No se pudo completar el registro. Inténtalo de nuevo.",
+                confirmButtonText: "Entendido"
+            });
         }
     };
 
@@ -53,7 +57,13 @@ export default function Register() {
 
             <div className="login-card">
                 <div className="login-logo">
-                    ⚽ <span>Números y Fútbol</span>
+                    {/* LOGO ACTUALIZADO */}
+                    <img
+                        src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a"
+                        alt="Logo Números y Fútbol"
+                        className="login-logo-img"
+                    />
+                    <span>Números y Fútbol</span>
                 </div>
 
                 <h1 className="login-title">Crear Cuenta</h1>

@@ -1,36 +1,26 @@
-// src/App.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import Particles from '@tsparticles/react';
 import { loadFull } from 'tsparticles';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
+
+// Importamos componentes compartidos
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 // --- Configuración de Animaciones ---
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.2 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.2 } },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
-// --- Componentes SVG (Iconos) ---
-const MenuIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
-);
-const CloseIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
-);
+// --- Iconos SVG (Solo los necesarios para las secciones internas) ---
 const ArrowRight = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
 );
@@ -40,148 +30,43 @@ const CalendarIcon = () => (
 const UserIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
 );
-// NUEVO: Icono de Play
 const PlayIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
 );
 
 // --- Datos Mockeados ---
 const MATCHES_DATA = [
-  {
-    team1: "FAS",
-    logo1: "https://img.sofascore.com/api/v1/team/24386/image",
-    score: "2 - 1",
-    team2: "L.A. Firpo",
-    logo2: "https://img.sofascore.com/api/v1/team/24388/image",
-    meta: "Finalizado - Jornada 1"
-  },
-  {
-    team1: "Águila",
-    logo1: "https://img.sofascore.com/api/v1/team/24385/image",
-    score: "3 - 0",
-    team2: "Inter FA",
-    logo2: "https://img.sofascore.com/api/v1/team/343177/image",
-    meta: "Finalizado - Jornada 1"
-  },
-  {
-    team1: "Alianza",
-    logo1: "https://img.sofascore.com/api/v1/team/24383/image",
-    score: "1 - 1",
-    team2: "Isidro Metapán",
-    logo2: "https://img.sofascore.com/api/v1/team/24382/image",
-    meta: "Finalizado - Jornada 1"
-  },
-  {
-    team1: "Municipal Limeño",
-    logo1: "https://img.sofascore.com/api/v1/team/228633/image",
-    score: "0 - 0",
-    team2: "CD Cacahuatique",
-    logo2: "https://img.sofascore.com/api/v1/team/335240/image",
-    meta: "Finalizado - Jornada 1"
-  },
-  {
-    team1: "C.D. Platense",
-    logo1: "https://img.sofascore.com/api/v1/team/306368/image",
-    score: "2 - 2",
-    team2: "Fuerte",
-    logo2: "https://img.sofascore.com/api/v1/team/310030/image",
-    meta: "Finalizado - Jornada 1"
-  },
-  {
-    team1: "CD Hercules",
-    logo1: "https://img.sofascore.com/api/v1/team/1099336/image",
-    score: "1 - 0",
-    team2: "Zacatecoluca FC",
-    logo2: "https://img.sofascore.com/api/v1/team/852872/image",
-    meta: "Finalizado - Jornada 1"
-  }
+  { team1: "FAS", logo1: "https://img.sofascore.com/api/v1/team/24386/image", score: "2 - 1", team2: "L.A. Firpo", logo2: "https://img.sofascore.com/api/v1/team/24388/image", meta: "Finalizado - Jornada 1" },
+  { team1: "Águila", logo1: "https://img.sofascore.com/api/v1/team/24385/image", score: "3 - 0", team2: "Inter FA", logo2: "https://img.sofascore.com/api/v1/team/343177/image", meta: "Finalizado - Jornada 1" },
+  { team1: "Alianza", logo1: "https://img.sofascore.com/api/v1/team/24383/image", score: "1 - 1", team2: "Isidro Metapán", logo2: "https://img.sofascore.com/api/v1/team/24382/image", meta: "Finalizado - Jornada 1" },
+  { team1: "Municipal Limeño", logo1: "https://img.sofascore.com/api/v1/team/228633/image", score: "0 - 0", team2: "CD Cacahuatique", logo2: "https://img.sofascore.com/api/v1/team/335240/image", meta: "Finalizado - Jornada 1" },
+  { team1: "C.D. Platense", logo1: "https://img.sofascore.com/api/v1/team/306368/image", score: "2 - 2", team2: "Fuerte", logo2: "https://img.sofascore.com/api/v1/team/310030/image", meta: "Finalizado - Jornada 1" },
+  { team1: "CD Hercules", logo1: "https://img.sofascore.com/api/v1/team/1099336/image", score: "1 - 0", team2: "Zacatecoluca FC", logo2: "https://img.sofascore.com/api/v1/team/852872/image", meta: "Finalizado - Jornada 1" }
 ];
 
 const NEWS_DATA = [
   { img: "https://picsum.photos/seed/futbol2/400/300", category: "Primera División", title: "Isidro Metapán avanza en copa con goleada", excerpt: "Los caleros derrotaron 4-0 a su rival y avanzan de ronda en la copa nacional.", date: "4 Feb, 2026", author: "Redacción" },
   { img: "https://picsum.photos/seed/futbol3/400/300", category: "Tercera División", title: "Jóvenes talentos brillan en tercera", excerpt: "Promesas del fútbol salvadoreño muestran su calidad en los partidos de la tercera división.", date: "3 Feb, 2026", author: "Análisis" },
   { img: "https://picsum.photos/seed/futbol4/400/300", category: "Segunda División", title: "Emoción en la pelea por el ascenso", excerpt: "Los equipos de segunda división siguen en la lucha cerrada por conseguir el boleto.", date: "2 Feb, 2026", author: "Corresponsal" },
-  // NUEVA NOTICIA: VIDEO
   {
-    videoUrl: "https://assets.adidas.com/videos/ar_1,w_720,c_fill,q_auto,f_auto/a2976556ab324c169e90de47889d1cb7_d98c/Germany_26_Home_Authentic_Jersey_White_JN2066_video.mp4", // URL de embed de YouTube
-    category: "Video",
-    title: "Resumen: Los mejores goles de la jornada",
-    excerpt: "No te pierdas los mejores jugadas y golazos de la fecha 14 en la Primera División.",
-    date: "1 Feb, 2026",
-    author: " Multimedia",
-    isVideo: true // Flag para identificar
+    videoUrl: "https://assets.adidas.com/videos/ar_1,w_720,c_fill,q_auto,f_auto/a2ef09f2af414cb2a11aea2103fd32a6_d98c/Japan_26_Home_Authentic_Jersey_Blue_JN1867_video.mp4",
+    category: "Video", title: "Resumen: Los mejores goles de la jornada", excerpt: "No te pierdas los mejores jugadas y golazos de la fecha 14 en la Primera División.", date: "1 Feb, 2026", author: " Multimedia", isVideo: true
   },
 ];
 
 // --- Componente Partículas Configurado ---
 const ParticleBackground = () => {
-  const particlesInit = useCallback(async (engine) => {
-    await loadFull(engine);
-  }, []);
-
+  const particlesInit = useCallback(async (engine) => { await loadFull(engine); }, []);
   const options = {
-    background: { color: { value: "transparent" } },
-    fpsLimit: 60,
-    interactivity: {
-      events: { onClick: { enable: true, mode: "push" }, onHover: { enable: true, mode: "grab" }, resize: true },
-      modes: { push: { quantity: 4 }, grab: { distance: 140, links: { opacity: 1 } } },
-    },
-    particles: {
-      color: { value: "#ff004d" },
-      links: { color: "#ff004d", distance: 150, enable: true, opacity: 0.5, width: 1 },
-      move: { direction: "none", enable: true, outModes: { default: "bounce" }, random: false, speed: 1, straight: false },
-      number: { density: { enable: true }, value: 60 },
-      opacity: { value: 0.5 },
-      shape: { type: "circle" },
-      size: { value: { min: 1, max: 3 } },
-    },
+    background: { color: { value: "transparent" } }, fpsLimit: 60,
+    interactivity: { events: { onClick: { enable: true, mode: "push" }, onHover: { enable: true, mode: "grab" }, resize: true }, modes: { push: { quantity: 4 }, grab: { distance: 140, links: { opacity: 1 } } } },
+    particles: { color: { value: "#ff004d" }, links: { color: "#ff004d", distance: 150, enable: true, opacity: 0.5, width: 1 }, move: { direction: "none", enable: true, outModes: { default: "bounce" }, random: false, speed: 1, straight: false }, number: { density: { enable: true }, value: 60 }, opacity: { value: 0.5 }, shape: { type: "circle" }, size: { value: { min: 1, max: 3 } } },
     detectRetina: true,
   };
-
   return <Particles id="tsparticles" init={particlesInit} options={options} className="hero-particles" />;
 };
 
-// --- Componentes de Sección ---
-
-const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  return (
-    <header className="header">
-      <div className="container header-inner">
-        <a href="/" className="header-brand" id="driver-header">
-          <img src="https://z-cdn-media.chatglm.cn/files/e7a0d70d-d782-469b-b96e-f5784f834623.png?auth_key=1870909668-3553d69b915747fd9924cb2f33dc7b2f-0-b54f8e47892d52b83bab715f69eacd2b" alt="Números y Fútbol" className="header-logo" />
-          <div>
-            <div className="header-title">Números y Fútbol</div>
-            <div className="header-subtitle">Portal Oficial</div>
-          </div>
-        </a>
-        <nav className="header-nav">
-          <a href="/primera">Primera División</a>
-          <a href="/segunda">Segunda División</a>
-          <a href="#tercera">Tercera División</a>
-          <a href="#noticias">Noticias</a>
-          <a href="/login">Iniciar Sesión</a>
-          <a href="/register">Registrarse</a>
-        </nav>
-        <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Abrir menu">
-          {isMenuOpen ? <CloseIcon /> : <MenuIcon />}
-        </button>
-      </div>
-      <div className="container">
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.nav initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} className="mobile-nav" style={{ overflow: "hidden" }}>
-              <a href="#primera" onClick={() => setIsMenuOpen(false)}>Primera División</a>
-              <a href="#segunda" onClick={() => setIsMenuOpen(false)}>Segunda División</a>
-              <a href="#tercera" onClick={() => setIsMenuOpen(false)}>Tercera División</a>
-              <a href="#noticias" onClick={() => setIsMenuOpen(false)}>Noticias</a>
-            </motion.nav>
-          )}
-        </AnimatePresence>
-      </div>
-    </header>
-  );
-};
+// --- Componentes de Sección (Locales de Home) ---
 
 const Hero = () => (
   <section className="hero">
@@ -205,23 +90,16 @@ const Hero = () => (
 
 const Carousel = () => {
   const displayMatches = [...MATCHES_DATA, ...MATCHES_DATA];
-
   return (
-    <div className="results-carousel-section">
+    <div className="results-carousel-section" id="driver-carousel">
       <div className="carousel-wrapper">
         <div className="carousel-track">
           {displayMatches.map((match, idx) => (
             <div className="match-card-slide" key={`match-${idx}`}>
               <div className="match-card-teams">
-                <div className="match-team-info">
-                  <img src={match.logo1} alt={match.team1} className="team-logo-small" />
-                  <span className="team-name">{match.team1}</span>
-                </div>
+                <div className="match-team-info"><img src={match.logo1} alt={match.team1} className="team-logo-small" /><span className="team-name">{match.team1}</span></div>
                 <div className="match-score-display">{match.score}</div>
-                <div className="match-team-info">
-                  <img src={match.logo2} alt={match.team2} className="team-logo-small" />
-                  <span className="team-name">{match.team2}</span>
-                </div>
+                <div className="match-team-info"><img src={match.logo2} alt={match.team2} className="team-logo-small" /><span className="team-name">{match.team2}</span></div>
               </div>
               <div className="match-meta">{match.meta}</div>
             </div>
@@ -239,35 +117,25 @@ const Divisions = () => (
       <motion.div className="divisions-grid" variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}>
         <motion.div className="division-card" variants={itemVariants} id="primera">
           <div className="division-card-banner bg-primary"><span className="division-number">1</span></div>
-          <div className="division-card-body">
-            <h3>Primera División</h3><p>La élite del fútbol salvadoreño.</p>
-            <div className="division-card-footer"><span className="team-count">12 equipos</span><a href="#" className="btn-ghost">Ver más <ArrowRight /></a></div>
-          </div>
+          <div className="division-card-body"><h3>Primera División</h3><p>La élite del fútbol salvadoreño.</p><div className="division-card-footer"><span className="team-count">12 equipos</span><a href="#" className="btn-ghost">Ver más <ArrowRight /></a></div></div>
         </motion.div>
         <motion.div className="division-card" variants={itemVariants} id="segunda">
           <div className="division-card-banner bg-secondary"><span className="division-number">2</span></div>
-          <div className="division-card-body">
-            <h3>Segunda División</h3><p>Camino hacia la élite.</p>
-            <div className="division-card-footer"><span className="team-count">24 equipos</span><a href="#" className="btn-ghost">Ver más <ArrowRight /></a></div>
-          </div>
+          <div className="division-card-body"><h3>Segunda División</h3><p>Camino hacia la élite.</p><div className="division-card-footer"><span className="team-count">24 equipos</span><a href="#" className="btn-ghost">Ver más <ArrowRight /></a></div></div>
         </motion.div>
         <motion.div className="division-card" variants={itemVariants} id="tercera">
           <div className="division-card-banner bg-dark"><span className="division-number">3</span></div>
-          <div className="division-card-body">
-            <h3>Tercera División</h3><p>Semillero de talentos.</p>
-            <div className="division-card-footer"><span className="team-count">40+ equipos</span><a href="#" className="btn-ghost">Ver más <ArrowRight /></a></div>
-          </div>
+          <div className="division-card-body"><h3>Tercera División</h3><p>Semillero de talentos.</p><div className="division-card-footer"><span className="team-count">40+ equipos</span><a href="#" className="btn-ghost">Ver más <ArrowRight /></a></div></div>
         </motion.div>
       </motion.div>
     </div>
   </section>
 );
 
-const News = () => (
+const NewsSection = () => (
   <section className="news" id="driver-news">
     <div className="container">
       <div className="section-header"><h2>Últimas Noticias</h2><p>Mantente al día con lo más relevante del fútbol salvadoreño</p></div>
-
       <motion.div className="featured-news" initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
         <div className="featured-news-image"><span className="badge badge-white" style={{ position: 'absolute', top: '1rem', left: '1rem', zIndex: 10 }}>DESTACADO</span></div>
         <div className="featured-news-content">
@@ -279,23 +147,12 @@ const News = () => (
       <motion.div className="news-grid" variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }}>
         {NEWS_DATA.map((news, idx) => (
           <motion.div className="news-card" key={`news-${idx}`} variants={itemVariants}>
-            {/* LÓGICA CONDICIONAL: Si es video, muestra iframe. Si es imagen, muestra div background */}
             {news.isVideo ? (
-              <video
-                src={news.videoUrl}
-                title={news.title}
-                className="news-card-video"
-                controls           // Muestra controles (play, pausa, volumen)
-                muted              // Inicia silenciado (mejor UX)
-                loop               // Se repite automáticamente
-                autoPlay           // Se reproduce automáticamente (funciona si está muted)
-              ></video>
+              <video src={news.videoUrl} title={news.title} className="news-card-video" controls muted loop autoPlay></video>
             ) : (
               <div className="news-card-image" style={{ backgroundImage: `url(${news.img})` }}></div>
             )}
-
             <div className="news-card-body">
-              {/* Mostramos el icono de Play si es video */}
               <span className={`badge ${news.isVideo ? 'badge-outline' : 'badge-outline-gray'}`}>
                 {news.isVideo && <span style={{ marginRight: '4px', display: 'inline-flex', alignItems: 'center' }}><PlayIcon /></span>}
                 {news.category}
@@ -314,88 +171,20 @@ const News = () => (
   </section>
 );
 
-const Footer = () => (
-  <footer className="footer">
-    <div className="container footer-inner">
-      <div className="footer-grid">
-        <div className="footer-brand"><h3>NÚMEROS Y FÚTBOL</h3><p>Portal oficial de cobertura del fútbol salvadoreño.</p></div>
-        <div className="footer-section"><h4>Divisiones</h4><ul><li><a href="#">Primera División</a></li><li><a href="#">Segunda División</a></li><li><a href="#">Tercera División</a></li></ul></div>
-        <div className="footer-section"><h4>Contenido</h4><ul><li><a href="#noticias">Noticias</a></li><li><a href="#">Resultados</a></li><li><a href="#">Clasificaciones</a></li></ul></div>
-        <div className="footer-section"><h4>Síguenos</h4><ul><li><a href="#">Facebook</a></li><li><a href="#">Twitter / X</a></li><li><a href="#">Instagram</a></li></ul></div>
-      </div>
-      <div className="footer-bottom"><p>&copy; 2026 Números y Fútbol. Todos los derechos reservados.</p><div className="footer-links"><a href="#">Privacidad</a><a href="#">Términos</a><a href="#">Contacto</a></div></div>
-    </div>
-  </footer>
-);
-
+// --- HOME PRINCIPAL ---
 function Home() {
   useEffect(() => {
-
     const alreadyShown = sessionStorage.getItem("tourShown");
-
     if (!alreadyShown) {
-
       const driverObj = driver({
-        showProgress: true,
-        allowClose: true,
-        nextBtnText: "Siguiente",
-        prevBtnText: "Atrás",
-        doneBtnText: "Listo",
+        showProgress: true, allowClose: true, nextBtnText: "Siguiente", prevBtnText: "Atrás", doneBtnText: "Listo",
         steps: [
-          {
-            element: '#driver-header',
-            popover: {
-              title: 'Menú principal',
-              description: 'Navega entre divisiones, noticias o accede a tu cuenta.',
-              side: 'bottom',
-              align: 'start',
-            }
-          },
-          {
-            element: '#driver-hero',
-            popover: {
-              title: 'Portada',
-              description: 'Sección principal con lo más importante del fútbol nacional.',
-              side: 'bottom',
-              align: 'center',
-            }
-          },
-          {
-            element: '#driver-carousel',
-            popover: {
-              title: 'Resultados',
-              description: 'Últimos marcadores de los partidos recientes.',
-              side: 'top',
-              align: 'center',
-            }
-          },
-          {
-            element: '#driver-divisions',
-            popover: {
-              title: 'Divisiones',
-              description: 'Explora Primera, Segunda y Tercera división.',
-              side: 'top',
-              align: 'center',
-            }
-          },
-          {
-            element: '#driver-news',
-            popover: {
-              title: 'Noticias',
-              description: 'Las últimas novedades del fútbol salvadoreño.',
-              side: 'top',
-              align: 'center',
-            }
-          },
-          {
-            element: '#driver-footer',
-            popover: {
-              title: 'Información',
-              description: 'Enlaces útiles y redes sociales.',
-              side: 'top',
-              align: 'center',
-            }
-          }
+          { element: '#driver-header', popover: { title: 'Menú principal', description: 'Navega entre divisiones, noticias o accede a tu cuenta.', side: 'bottom', align: 'start' } },
+          { element: '#driver-hero', popover: { title: 'Portada', description: 'Sección principal con lo más importante del fútbol nacional.', side: 'bottom', align: 'center' } },
+          { element: '#driver-carousel', popover: { title: 'Resultados', description: 'Últimos marcadores de los partidos recientes.', side: 'top', align: 'center' } },
+          { element: '#driver-divisions', popover: { title: 'Divisiones', description: 'Explora Primera, Segunda y Tercera división.', side: 'top', align: 'center' } },
+          { element: '#driver-news', popover: { title: 'Noticias', description: 'Las últimas novedades del fútbol salvadoreño.', side: 'top', align: 'center' } },
+          { element: '#driver-footer', popover: { title: 'Información', description: 'Enlaces útiles y redes sociales.', side: 'top', align: 'center' } }
         ],
       });
 
@@ -406,9 +195,7 @@ function Home() {
 
       return () => clearTimeout(timer);
     }
-
   }, []);
-
 
   return (
     <>
@@ -417,7 +204,7 @@ function Home() {
         <Hero />
         <Carousel />
         <Divisions />
-        <News />
+        <NewsSection />
       </main>
       <Footer />
     </>

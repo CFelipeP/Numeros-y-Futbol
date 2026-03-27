@@ -293,7 +293,8 @@ img {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/b8/Estadio_Nacional_Jorge_"El_Mágico"_González.png');
+  /* NUEVA IMAGEN DEL BANNER AQUI */
+  background-image: url('https://z-cdn-media.chatglm.cn/files/5838caa0-1db5-471c-a0b7-615971e5c6a9.png?auth_key=1874475322-63d59502a9bd4eccb11f4451b8b598a8-0-73a0c525630ab96d6c6d289fa8ba3645');
   background-size: cover;
   background-position: center;
   z-index: 1;
@@ -935,7 +936,8 @@ img {
   align-items: center;
   background:
     linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.92)),
-    url("https://upload.wikimedia.org/wikipedia/commons/b/b8/Estadio_Nacional_Jorge_%22El_M%C3%A1gico%22_Gonz%C3%A1lez.png");
+    /* NUEVA IMAGEN DEL BANNER AQUI */
+    url('https://z-cdn-media.chatglm.cn/files/5838caa0-1db5-471c-a0b7-615971e5c6a9.png?auth_key=1874475322-63d59502a9bd4eccb11f4451b8b598a8-0-73a0c525630ab96d6c6d289fa8ba3645');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -1264,4 +1266,362 @@ img {
 /* Si quieres que el botón vuelva al rojo neón en hover general */
 .login-btn:hover {
   transform: translateY(-3px) scale(1.03);
+}
+
+/* ===== SWEETALERT2 DARK THEME (PONER EN INDEX.CSS) ===== */
+.swal2-popup {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border: 1px solid #374151;
+  border-radius: 12px !important;
+}
+
+.swal2-title {
+  color: #f9fafb !important;
+}
+
+.swal2-html-container {
+  color: #9ca3af !important;
+}
+
+.swal2-confirm {
+  background-color: #3b82f6 !important;
+  border-radius: 8px !important;
+  border: none !important;
+  color: white !important;
+}
+
+.swal2-cancel {
+  background-color: transparent !important;
+  border: 1px solid #374151 !important;
+  color: #9ca3af !important;
+}
+
+.swal2-input {
+  background-color: #0b1120 !important;
+  color: #f9fafb !important;
+  border: 1px solid #374151 !important;
+  border-radius: 8px !important;
+}
+
+/* Estilos para el logo en el Login */
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.login-logo-img {
+  width: 40px;
+  /* Ajusta el tamaño según necesites */
+  height: 40px;
+  object-fit: contain;
+}
+
+.login-logo span {
+  font-size: 1.5rem;
+  font-weight: 700;
+  /* Hereda el color del texto principal */
+}
+
+/* ====================== NEWS PAGE (Estilos Nuevos) ====================== */
+
+.news-page-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 4rem var(--spacing-sm);
+  min-height: 100vh;
+}
+
+/* Encabezado de la página */
+.news-page-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.news-page-header h1 {
+  font-family: var(--font-heading);
+  font-size: 3.5rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  background: linear-gradient(90deg, #fff, var(--color-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px rgba(255, 0, 77, 0.4);
+}
+
+.news-page-header p {
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Grid de Spotlight (Noticia Destacada) */
+.spotlight-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 4rem;
+  height: 500px;
+}
+
+@media (max-width: 768px) {
+  .spotlight-section {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+/* Tarjeta de Noticia Principal (Grande) */
+.main-news-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  height: 100%;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.main-news-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.main-news-card:hover img {
+  transform: scale(1.05);
+}
+
+.main-news-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2.5rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.5) 50%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 60%;
+}
+
+.main-news-card h2 {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  color: white;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.main-news-card p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Barra lateral de noticias destacadas */
+.side-news-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+}
+
+.side-news-card {
+  flex: 1;
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.side-news-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.side-news-card:hover img {
+  transform: scale(1.1);
+}
+
+.side-news-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+}
+
+.side-news-card h3 {
+  font-size: 1.1rem;
+  color: white;
+  line-height: 1.3;
+}
+
+/* Sección de Grilla Regular */
+.news-grid-section {
+  margin-top: 2rem;
+}
+
+.section-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  color: white;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-accent), transparent);
+}
+
+.news-grid-new {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+/* Tarjeta de Noticia Estándar (Mejorada) */
+.article-card {
+  background: rgba(30, 41, 59, 0.5);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.article-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--color-accent);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 0, 77, 0.15);
+}
+
+.article-image {
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.article-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.article-card:hover .article-image img {
+  transform: scale(1.05);
+}
+
+/* Badge de Categoría */
+.category-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  color: var(--color-accent);
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 0, 77, 0.3);
+}
+
+.article-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.article-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.article-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.article-card h3 {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  color: white;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+  transition: color 0.3s;
+}
+
+.article-card:hover h3 {
+  color: var(--color-accent);
+}
+
+.article-card p {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  flex-grow: 1;
+  /* Empuja el autor hacia abajo */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.article-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 1rem;
+  margin-top: auto;
+  font-size: 0.85rem;
+}
+
+.author-name {
+  color: white;
+  font-weight: 500;
+}
+
+.read-more {
+  color: var(--color-accent);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: gap 0.3s;
+}
+
+.read-more:hover {
+  gap: 0.6rem;
 }
