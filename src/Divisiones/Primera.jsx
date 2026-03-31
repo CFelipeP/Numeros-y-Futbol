@@ -23,7 +23,7 @@ export default function PrimeraDivision() {
             <a href="/primera">Primera División</a>
             <a href="/segunda">Segunda División</a>
             <a href="/tercera">Tercera División</a>
-            <a href="#noticias">Noticias</a>
+            <a href="/News">Noticias</a>
           </nav>
 
           <button
@@ -40,7 +40,7 @@ export default function PrimeraDivision() {
             <a href="/primera" onClick={toggleMenu}>Primera División</a>
             <a href="/segunda" onClick={toggleMenu}>Segunda División</a>
             <a href="/tercera" onClick={toggleMenu}>Tercera División</a>
-            <a href="#noticias" onClick={toggleMenu}>Noticias</a>
+            <a href="/News" onClick={toggleMenu}>Noticias</a>
           </nav>
         </div>
       </header>

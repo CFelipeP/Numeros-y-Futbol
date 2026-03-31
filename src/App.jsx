@@ -11,6 +11,7 @@ import ManageNews from "./dashboard/ManageNews";
 import Settings from "./dashboard/Settings"; // <--- NUEVO IMPORT
 import Primera from "./Divisiones/Primera";
 import News from "./pages/News";
+import NewsDetail from "./pages/NewsDetail";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -23,6 +24,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/primera" element={<Primera />} />
         <Route path="/news" element={<News />} />
+        <Route path="/noticia/:id" element={<NewsDetail />} />
 
         {/* RUTAS PROTEGIDAS (ADMIN) */}
         <Route
