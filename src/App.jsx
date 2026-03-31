@@ -12,12 +12,15 @@ import Settings from "./dashboard/Settings"; // <--- NUEVO IMPORT
 import Primera from "./Divisiones/Primera";
 import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
+import ScrollToTop from "./components/ScrollToTop";
+import ManagePublicNews from "./dashboard/ManagePublicNews";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -25,6 +28,7 @@ function App() {
         <Route path="/primera" element={<Primera />} />
         <Route path="/news" element={<News />} />
         <Route path="/noticia/:id" element={<NewsDetail />} />
+        <Route path="/mynews" element={<ManagePublicNews />} />
 
         {/* RUTAS PROTEGIDAS (ADMIN) */}
         <Route

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
 import 'animate.css';
@@ -115,6 +116,12 @@ const ManageMatches = () => {
 
                         <li className="nav-item active">
                             <CalendarDays size={20} className="nav-icon" /> Gestionar Partidos
+                        </li>
+
+                        <li>
+                            <Link to="/mynews" className="nav-item">
+                                <CalendarDays size={20} className="nav-icon" /> Gestionar Noticias
+                            </Link>
                         </li>
 
                         <li className="nav-item">

@@ -162,6 +162,12 @@ const AdminDashboard = () => {
             </li>
 
             <li>
+              <Link to="/mynews" className="nav-item">
+                <CalendarDays size={20} className="nav-icon" /> Gestionar Noticias
+              </Link>
+            </li>
+
+            <li>
               <Link to="/teams" className="nav-item">
                 <Shield size={20} className="nav-icon" /> Equipos
               </Link>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
 import 'animate.css';
@@ -241,6 +242,12 @@ const ManageNews = () => {
                             </a>
                         </li>
 
+                        <li>
+                            <Link to="/mynews" className="nav-item active">
+                                <CalendarDays size={20} className="nav-icon" /> Gestionar Noticias
+                            </Link>
+                        </li>
+
                         <li className="nav-item">
                             <a href="/teams" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
                                 <Shield size={20} className="nav-icon" /> Equipos
@@ -368,23 +375,11 @@ const ManageNews = () => {
                                 {/* Fila 4: Imágenes (URL y Archivo) */}
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                     {/* URL Manual */}
-                                    <div className="form-group">
-                                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#334155' }}>URL de Imagen (Opcional)</label>
-                                        <input
-                                            name="image"
-                                            placeholder="URL imagen o video (YouTube o mp4)"
-                                            value={form.image}
-                                            onChange={handleChange}
-                                            style={{
-                                                width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0',
-                                                fontSize: '16px', background: '#f8fafc'
-                                            }}
-                                        />
-                                    </div>
+
 
                                     {/* Upload File */}
                                     <div className="form-group">
-                                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#334155' }}>O Subir Archivo</label>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#334155' }}>Sube lla imagen/video de la noticia</label>
                                         <input
                                             type="file"
                                             accept="image/png, image/jpeg, video/mp4"

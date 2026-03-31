@@ -3,11 +3,14 @@ import Particles from '@tsparticles/react';
 import { loadFull } from 'tsparticles';
 import { motion } from 'framer-motion';
 import { driver } from 'driver.js';
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import 'driver.js/dist/driver.css';
 
 // Importamos componentes compartidos
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+
 
 // --- Configuración de Animaciones ---
 const containerVariants = {
@@ -132,45 +135,115 @@ const Divisions = () => (
   </section>
 );
 
-const NewsSection = () => (
-  <section className="news" id="driver-news">
-    <div className="container">
-      <div className="section-header"><h2>Últimas Noticias</h2><p>Mantente al día con lo más relevante del fútbol salvadoreño</p></div>
-      <motion.div className="featured-news" initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-        <div className="featured-news-image"><span className="badge badge-white" style={{ position: 'absolute', top: '1rem', left: '1rem', zIndex: 10 }}>DESTACADO</span></div>
-        <div className="featured-news-content">
-          <div><span className="badge badge-outline">Primera División</span><h3>Santa Tecla vence a Alianza en clásico emocionante</h3><p>En un partido lleno de emociones, Santa Tecla se llevó la victoria 2-1 ante Alianza en el estadio. Un gol agónico en el tiempo de descuento definió el encuentro.</p></div>
-          <div className="featured-news-meta"><span className="meta-item"><CalendarIcon /> 5 de Febrero, 2026</span><span className="meta-item"><UserIcon /> Números y Fútbol</span></div>
+const NewsSection = () => {
+
+  const [news, setNews] = useState([]);
+
+  useEffect(() => {
+    fetch("http://numeros-y-futbol.test/backend/get_news.php")
+      .then(res => res.json())
+      .then(data => {
+        setNews(data.slice(0, 3)); // 🔥 SOLO 3 NOTICIAS
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  return (
+    <section className="news" id="driver-news">
+      <div className="container">
+        <div className="section-header">
+          <h2>Últimas Noticias</h2>
+          <p>Mantente al día con lo más relevante del fútbol salvadoreño</p>
         </div>
-      </motion.div>
 
-      <motion.div className="news-grid" variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }}>
-        {NEWS_DATA.map((news, idx) => (
-          <motion.div className="news-card" key={`news-${idx}`} variants={itemVariants}>
-            {news.isVideo ? (
-              <video src={news.videoUrl} title={news.title} className="news-card-video" controls muted loop autoPlay></video>
-            ) : (
-              <div className="news-card-image" style={{ backgroundImage: `url(${news.img})` }}></div>
-            )}
-            <div className="news-card-body">
-              <span className={`badge ${news.isVideo ? 'badge-outline' : 'badge-outline-gray'}`}>
-                {news.isVideo && <span style={{ marginRight: '4px', display: 'inline-flex', alignItems: 'center' }}><PlayIcon /></span>}
-                {news.category}
-              </span>
-              <h3>{news.title}</h3>
-              <p>{news.excerpt}</p>
-              <div className="news-card-footer">
-                <div className="meta-item"><CalendarIcon /> {news.date}</div>
-                <div className="news-card-actions"><span className="author">{news.author}</span><button className="btn-ghost-sm">Leer <ArrowRight /></button></div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
-    </div>
-  </section>
-);
+        <div className="news-grid">
+          {news.map((n) => {
 
+            const isVideo = n.imagen?.includes(".mp4");
+            const isYoutube =
+              n.imagen?.includes("youtube.com") || n.imagen?.includes("youtu.be");
+
+            const getYoutubeEmbed = (url) => {
+              if (!url) return "";
+
+              if (url.includes("watch?v=")) {
+                return url.replace("watch?v=", "embed/");
+              }
+
+              if (url.includes("youtu.be/")) {
+                return url.replace("youtu.be/", "youtube.com/embed/");
+              }
+
+              return url;
+            };
+
+            return (
+              <Link to={`/noticia/${n.id}`} className="news-card" key={n.id}>
+
+                {/* MEDIA */}
+                {isYoutube ? (
+                  <div className="news-card-image youtube-thumb">
+
+                    <img
+                      src={`https://img.youtube.com/vi/${getYoutubeEmbed(n.imagen).split("embed/")[1]}/hqdefault.jpg`}
+                      alt="video"
+                      className="youtube-img"
+                    />
+
+                    <div className="play-overlay">
+                      ▶
+                    </div>
+
+                  </div>
+                ) : isVideo ? (
+                  <video
+                    src={n.imagen}
+                    className="news-card-video"
+                    muted
+                    autoPlay
+                    loop
+                  />
+                ) : (
+                  <div
+                    className="news-card-image"
+                    style={{
+                      backgroundImage: `url(${n.imagen || "https://via.placeholder.com/400x250"})`
+                    }}
+                  />
+                )}
+
+                {/* BODY */}
+                <div className="news-card-body">
+                  <span className="badge badge-outline-gray">
+                    {n.categoria}
+                  </span>
+
+                  <h3>{n.titulo}</h3>
+
+                  <p>
+                    {n.contenido?.substring(0, 80)}...
+                  </p>
+
+                  <div className="news-card-footer">
+                    <div className="meta-item">
+                      <CalendarIcon /> {new Date(n.fecha).toLocaleDateString()}
+                    </div>
+
+                    <div className="news-card-actions">
+                      <span className="author">{n.autor}</span>
+                    </div>
+                  </div>
+                </div>
+
+              </Link>
+            );
+          })}
+        </div>
+
+      </div>
+    </section>
+  );
+};
 // --- HOME PRINCIPAL ---
 function Home() {
   useEffect(() => {
@@ -196,6 +269,7 @@ function Home() {
       return () => clearTimeout(timer);
     }
   }, []);
+
 
   return (
     <>

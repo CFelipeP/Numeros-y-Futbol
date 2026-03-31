@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useEffect } from "react";
 import "../admin.css";
 import Swal from "sweetalert2";
 import 'animate.css';
@@ -25,12 +27,17 @@ const ManageUsers = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
     // Estado inicial de usuarios (Mock Data)
-    const [users, setUsers] = useState([
-        { id: 1, name: "Carlos Martínez", email: "carlos@admin.com", role: "Administrador", status: "Activo", avatar: "https://ui-avatars.com/api/?name=Carlos+Martinez&background=ff004d&color=fff" },
-        { id: 2, name: "Ana Gómez", email: "ana@editor.com", role: "Editor", status: "Activo", avatar: "https://ui-avatars.com/api/?name=Ana+Gomez&background=3b82f6&color=fff" },
-        { id: 3, name: "Roberto Díaz", email: "roberto@user.com", role: "Usuario", status: "Inactivo", avatar: "https://ui-avatars.com/api/?name=Roberto+Diaz&background=6b7280&color=fff" },
-        { id: 4, name: "Sofía López", email: "sofia@editor.com", role: "Editor", status: "Activo", avatar: "https://ui-avatars.com/api/?name=Sofia+Lopez&background=10b981&color=fff" },
-    ]);
+    const [users, setUsers] = useState([]);
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+    useEffect(() => {
+        fetch("http://numeros-y-futbol.test/backend/get_users.php")
+            .then(res => res.json())
+            .then(data => {
+                setUsers(data);
+            })
+            .catch(err => console.error("Error cargando usuarios:", err));
+    }, []);
+
 
     const handleLogout = () => {
         Swal.fire({
@@ -88,6 +95,10 @@ const ManageUsers = () => {
 
     // Función para eliminar
     const deleteUser = (id, name) => {
+        if (currentUser?.id === id) {
+            Swal.fire("No puedes eliminarte a ti mismo");
+            return;
+        }
         Swal.fire({
             title: `¿Eliminar a ${name}?`,
             text: "Esta acción no se puede deshacer.",
@@ -241,7 +252,15 @@ const ManageUsers = () => {
                                                 <button className="btn-edit" style={{ background: '#2563eb', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
                                                     <Edit size={16} />
                                                 </button>
-                                                <button className="btn-delete" onClick={() => deleteUser(user.id, user.name)}>
+                                                <button
+                                                    className="btn-delete"
+                                                    onClick={() => deleteUser(user.id, user.name)}
+                                                    disabled={currentUser?.id === user.id}
+                                                    style={{
+                                                        opacity: currentUser?.id === user.id ? 0.4 : 1,
+                                                        cursor: currentUser?.id === user.id ? "not-allowed" : "pointer"
+                                                    }}
+                                                >
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>

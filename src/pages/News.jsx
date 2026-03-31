@@ -131,7 +131,7 @@ export default function News() {
                             <article key={n.id} className="article-card">
                                 <div className="article-image">
                                     <div className="article-media-wrap">
-                                        {renderMedia(n.imagen, n.titulo)}
+                                        {renderMedia(n.imagen, n.titulo, n.id)}
                                     </div>
                                     <div className="article-image-fade" />
                                     <span className="category-badge">

@@ -70,6 +70,24 @@ export default function NewsDetail() {
 
     const isVideo = newsItem.imagen?.includes(".mp4");
 
+    const isYoutube =
+        newsItem.imagen?.includes("youtube.com") ||
+        newsItem.imagen?.includes("youtu.be");
+
+    const getYoutubeEmbed = (url) => {
+        if (!url) return "";
+
+        if (url.includes("watch?v=")) {
+            return url.replace("watch?v=", "embed/");
+        }
+
+        if (url.includes("youtu.be/")) {
+            return url.replace("youtu.be/", "youtube.com/embed/");
+        }
+
+        return url;
+    };
+
     const fechaFormateada = new Date(newsItem.fecha).toLocaleDateString("es-ES", {
         weekday: "long",
         day: "numeric",
@@ -93,16 +111,27 @@ export default function NewsDetail() {
                     <div className="nd-grid">
 
                         {/* MEDIA */}
+
+
                         <div className="nd-media-col">
                             <div className="nd-media">
-                                {isVideo ? (
+                                {isYoutube ? (
+                                    <iframe
+                                        src={getYoutubeEmbed(newsItem.imagen)}
+                                        style={{ width: "100%", height: "100%" }}
+                                        frameBorder="0"
+                                        allow="autoplay; encrypted-media"
+                                        allowFullScreen
+                                        title="YouTube video"
+                                    />
+                                ) : isVideo ? (
                                     <video muted controls autoPlay loop playsInline>
                                         <source src={newsItem.imagen} type="video/mp4" />
                                     </video>
                                 ) : (
-                                    <img 
-                                        src={newsItem.imagen || "https://via.placeholder.com/800x500"} 
-                                        alt={newsItem.titulo} 
+                                    <img
+                                        src={newsItem.imagen || "https://via.placeholder.com/800x500"}
+                                        alt={newsItem.titulo}
                                     />
                                 )}
                                 <div className="nd-media-border" />
@@ -356,6 +385,7 @@ const css = `
             0 30px 60px -15px rgba(0,0,0,0.6),
             0 0 80px -20px rgba(239,68,68,0.08);
     }
+            
 
     .nd-media img,
     .nd-media video {
