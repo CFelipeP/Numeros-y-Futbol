@@ -1,6 +1,24 @@
 import React, { useState } from "react";
-import "../admin.css"; // Asegúrate de que apunte a tu archivo CSS actualizado
+import "../admin.css";
 import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
+import 'animate.css';
+
+// IMPORTAR ICONOS DE LUCIDE REACT
+import {
+  LayoutDashboard,
+  CalendarDays,
+  Shield,
+  Newspaper,
+  Users,
+  Settings,
+  LogOut,
+  Menu,
+  Plus,
+  CircleDot,
+  Target,
+  FileText
+} from "lucide-react";
 
 import StatsCard from "../components/StatsCard";
 import MatchTable from "../components/MatchTable";
@@ -19,10 +37,10 @@ const AdminDashboard = () => {
   ]);
 
   const stats = [
-    { title: "Partidos Pendientes", value: "12", icon: "⚽", color: "blue" },
-    { title: "Goles Temporada", value: "148", icon: "🥅", color: "green" },
-    { title: "Noticias Activas", value: "24", icon: "📰", color: "purple" },
-    { title: "Usuarios Registrados", value: "1,205", icon: "👥", color: "orange" },
+    { title: "Partidos Pendientes", value: "12", icon: <CircleDot size={24} />, color: "blue" },
+    { title: "Goles Temporada", value: "148", icon: <Target size={24} />, color: "green" },
+    { title: "Noticias Activas", value: "24", icon: <FileText size={24} />, color: "purple" },
+    { title: "Usuarios Registrados", value: "1,205", icon: <Users size={24} />, color: "orange" },
   ];
 
   const filteredMatches = matches.filter(
@@ -39,20 +57,10 @@ const AdminDashboard = () => {
       showCancelButton: true,
       confirmButtonText: "Sí, salir",
       cancelButtonText: "Cancelar",
-      // Quitamos colores inline para usar CSS
     }).then((result) => {
       if (result.isConfirmed) {
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "success",
-          title: "Sesión cerrada",
-          showConfirmButton: false,
-          timer: 2000
-        });
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 1500);
+        localStorage.removeItem("user"); // Buena práctica limpiar storage
+        window.location.href = "/login";
       }
     });
   };
@@ -105,8 +113,6 @@ const AdminDashboard = () => {
       showCancelButton: true,
       confirmButtonText: "Eliminar",
       cancelButtonText: "Cancelar",
-      // Usamos una clase custom para el botón rojo si queremos, 
-      // pero el CSS general ya lo adapta al tema oscuro.
     }).then((result) => {
       if (result.isConfirmed) {
         setMatches(matches.filter((m) => m.id !== id));
@@ -129,9 +135,9 @@ const AdminDashboard = () => {
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="logo-icon">
-            <img 
-              src="https://z-cdn-media.chatglm.cn/files/6a05039f-e693-466c-989d-75703ba3e40b.png?auth_key=1874469668-504345165d65484d91ce9bccaebd0d21-0-4dff614536f8ead12d34cb7c436f3c20" 
-              alt="Logo Números y Fútbol" 
+            <img
+              src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a"
+              alt="Logo Números y Fútbol"
             />
           </div>
           <h2 className="sidebar-title">
@@ -141,44 +147,62 @@ const AdminDashboard = () => {
 
         <nav className="sidebar-nav">
           <ul>
-            <li className="nav-item active">
-              <span className="nav-icon">📊</span> Dashboard
+            {/* Enlace Activo (Dashboard) - Usamos Link pero le ponemos la clase active manualmente */}
+            <li>
+              <Link to="/dashboard" className="nav-item active">
+                <LayoutDashboard size={20} className="nav-icon" /> Dashboard
+              </Link>
             </li>
-            <li className="nav-item">
-              <span className="nav-icon">📅</span> Gestionar Partidos
+
+            {/* Enlaces con Link para evitar recarga */}
+            <li>
+              <Link to="/matches" className="nav-item">
+                <CalendarDays size={20} className="nav-icon" /> Gestionar Partidos
+              </Link>
             </li>
-            <li className="nav-item">
-              <span className="nav-icon">🛡️</span> Equipos
+
+            <li>
+              <Link to="/teams" className="nav-item">
+                <Shield size={20} className="nav-icon" /> Equipos
+              </Link>
             </li>
-            <li className="nav-item">
-              <span className="nav-icon">📝</span> Noticias
+
+            <li>
+              <Link to="/manage-news" className="nav-item">
+                <Newspaper size={20} className="nav-icon" /> Noticias
+              </Link>
             </li>
-            <li className="nav-item">
-              <span className="nav-icon">👥</span> Usuarios
+
+            <li>
+              <Link to="/users" className="nav-item">
+                <Users size={20} className="nav-icon" /> Usuarios
+              </Link>
             </li>
-            <li className="nav-item">
-              <span className="nav-icon">⚙️</span> Configuración
+
+            <li>
+              <Link to="/settings" className="nav-item">
+                <Settings size={20} className="nav-icon" /> Configuración
+              </Link>
             </li>
           </ul>
         </nav>
 
         <div className="sidebar-footer">
           <button className="nav-item btn-logout-sidebar" onClick={handleLogout}>
-            <span className="nav-icon">🚪</span> Cerrar sesión
+            <LogOut size={20} className="nav-icon" /> Cerrar sesión
           </button>
         </div>
       </aside>
 
       {/* ===== MAIN CONTENT ===== */}
       <main className="main-content">
-
         <header className="top-bar">
           <button
             className="toggle-btn"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             title="Toggle Sidebar"
           >
-            ☰
+            <Menu size={24} />
           </button>
 
           <div className="search-bar">
@@ -217,7 +241,7 @@ const AdminDashboard = () => {
             <div className="table-header">
               <h2>Últimos partidos</h2>
               <button className="btn-add" onClick={addMatch}>
-                <span>➕</span> Nuevo Partido
+                <Plus size={18} /> Nuevo Partido
               </button>
             </div>
 
