@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from "react";
+
+// ========== ManageNews.jsx ==========
+// Este componente es para crear nuevas noticias, no para gestionar las existentes. Para eso se usará ManagePNews.jsx
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
-import { Link } from "react-router-dom";
 import 'animate.css';
 
 import {
@@ -13,162 +16,159 @@ import {
   Settings,
   LogOut,
   Menu,
-  Save,
-  X,
-  FileText
+  Plus,
+  Image as ImageIcon,
+  Send
 } from "lucide-react";
 
-export default function ManagePublicNews() {
-  const [news, setNews] = useState([]);
-  const [editing, setEditing] = useState(null);
+const ManageNews = () => {
+  const [form, setForm] = useState({
+    title: "",
+    author: "",
+    category: "",
+    content: "",
+    image: ""
+  });
+
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [search, setSearch] = useState("");
+  const location = useLocation();
 
-  useEffect(() => {
-    fetchNews();
-  }, []);
-
-  const fetchNews = async () => {
-    try {
-      const res = await fetch("http://numeros-y-futbol.test/backend/get_all_news.php");
-      const data = await res.json();
-      setNews(data);
-    } catch (error) {
-      Swal.fire("Error", "No se pudieron cargar las noticias", "error");
-    }
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const deleteNews = async (id) => {
-    const result = await Swal.fire({
-      title: "¿Eliminar esta noticia?",
-      text: "Esta acción no se puede deshacer",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Eliminar",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#d33",
-    });
+  const handleFileChange = (e) => {
+    const selected = e.target.files[0];
+    if (!selected) return;
 
-    if (!result.isConfirmed) return;
+    const allowed = ["image/jpeg", "image/png", "image/jpg", "video/mp4"];
 
-    try {
-      const res = await fetch("http://numeros-y-futbol.test/backend/delete_news.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
-
-      const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); } catch (e) { data = {}; }
-
-      if (data.success || res.ok) {
-        setNews(news.filter(n => n.id !== id));
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "success",
-          title: "Noticia eliminada",
-          showConfirmButton: false,
-          timer: 2000,
-        });
-      } else {
-        Swal.fire("Error", data.error || "No se pudo eliminar", "error");
-      }
-    } catch (error) {
-      Swal.fire("Error", "Error de conexión", "error");
-    }
-  };
-
-  const saveEdit = async () => {
-    if (!editing.titulo.trim() || !editing.contenido.trim()) {
+    if (!allowed.includes(selected.type)) {
       Swal.fire({
-        icon: "info",
-        title: "Campos requeridos",
-        text: "El título y el contenido son obligatorios",
+        icon: 'error',
+        title: 'Formato no válido',
+        text: 'Solo JPG, PNG o MP4',
         toast: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 2500,
+        position: 'top-end'
       });
       return;
     }
 
-    try {
-      Swal.fire({
-        title: "Guardando cambios...",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      });
+    setFile(selected);
+  };
 
-      const res = await fetch("http://numeros-y-futbol.test/backend/update_news.php", {
+  const uploadImage = async () => {
+    if (!file) return null;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    setUploading(true);
+
+    try {
+      const res = await fetch("http://numeros-y-futbol.test/backend/upload_image.php", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editing),
+        body: formData
       });
 
       const text = await res.text();
       let data;
-      try { data = JSON.parse(text); } catch (e) { data = {}; }
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error("JSON roto:", text);
+        setUploading(false);
+        return null;
+      }
 
-      if (data.success || res.ok) {
-        Swal.close();
-        setEditing(null);
-        fetchNews();
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "success",
-          title: "Noticia actualizada correctamente",
-          showConfirmButton: false,
-          timer: 2000,
-        });
+      if (data.success) {
+        setUploading(false);
+        return data.url;
       } else {
-        Swal.fire("Error", data.error || "No se pudo actualizar", "error");
+        setUploading(false);
+        return null;
       }
     } catch (error) {
-      Swal.fire("Error", "Error de conexión", "error");
+      setUploading(false);
+      return null;
     }
   };
 
-  const renderMedia = (url, title) => {
-    const fallback = "https://via.placeholder.com/400x200/0f172a/64748b?text=Sin+Imagen";
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    Swal.fire({
+      title: 'Subiendo archivo...',
+      text: 'Por favor espera',
+      allowOutsideClick: false,
+      didOpen: () => { Swal.showLoading(); }
+    });
 
-    if (!url) return <img src={fallback} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />;
+    let imageUrl = form.image;
 
-    if (url.includes(".mp4")) {
-      return (
-        <video
-          muted
-          autoPlay
-          loop
-          playsInline
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        >
-          <source src={url} type="video/mp4" />
-        </video>
-      );
+    try {
+      if (file) {
+        const uploadedUrl = await uploadImage();
+
+        if (!uploadedUrl) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al subir',
+            text: file?.type.startsWith("video") ? 'El video no se pudo subir' : 'La imagen no se pudo subir'
+          });
+          return;
+        }
+
+        imageUrl = uploadedUrl;
+      }
+
+      const res = await fetch("http://numeros-y-futbol.test/backend/create_news.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, image: imageUrl })
+      });
+
+      const text = await res.text();
+      console.log("CREATE NEWS RESP:", text);
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error("ERROR REAL:", text);
+        return;
+      }
+
+      if (data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: '¡Noticia creada!',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 1500
+        });
+
+        setForm({ title: "", author: "", category: "", content: "", image: "" });
+        setFile(null);
+
+        const fileInput = document.getElementById('file-input');
+        if (fileInput) fileInput.value = '';
+      } else {
+        Swal.fire("Error", data.error || "No se pudo guardar", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "Error de conexión", "error");
+    } finally {
+      setUploading(false);
     }
-
-    return (
-      <img
-        src={url}
-        alt={title}
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        onError={(e) => { e.target.src = fallback; }}
-      />
-    );
   };
 
   const handleLogout = () => {
     Swal.fire({
-      title: "¿Cerrar sesión?",
-      text: "¿Estás seguro de que deseas salir?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sí, salir",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#d33",
+      title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir",
+      confirmButtonColor: "#d33"
     }).then((result) => {
       if (result.isConfirmed) {
         localStorage.removeItem("user");
@@ -177,17 +177,18 @@ export default function ManagePublicNews() {
     });
   };
 
-  const filteredNews = news.filter(
-    (n) =>
-      n.titulo?.toLowerCase().includes(search.toLowerCase()) ||
-      n.categoria?.toLowerCase().includes(search.toLowerCase()) ||
-      n.contenido?.toLowerCase().includes(search.toLowerCase())
-  );
+  const navItems = [
+    { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+    { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
+    { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
+    { path: "/teams", icon: <Shield size={20} />, label: "Equipos" },
+    { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
+    { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
+    { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+  ];
 
   return (
     <div className={`admin-layout ${!sidebarOpen ? "sidebar-closed" : ""}`}>
-
-      {/* ===== SIDEBAR ===== */}
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="logo-icon">
@@ -197,47 +198,22 @@ export default function ManagePublicNews() {
             />
           </div>
           <h2 className="sidebar-title">
-            Números y Fútbol <span className="accent-text">Dashboard</span>
+            Números y Fútbol <span className="accent-text">Admin</span>
           </h2>
         </div>
 
         <nav className="sidebar-nav">
           <ul>
-            <li>
-              <Link to="/dashboard" className="nav-item">
-                <LayoutDashboard size={20} className="nav-icon" /> Dashboard
-              </Link>
-            </li>
-            <li>
-              <Link to="/matches" className="nav-item">
-                <CalendarDays size={20} className="nav-icon" /> Gestionar Partidos
-              </Link>
-            </li>
-            <li>
-              <Link to="/mynews" className="nav-item">
-                <CalendarDays size={20} className="nav-icon" /> Crear Noticias
-              </Link>
-            </li>
-            <li>
-              <Link to="/teams" className="nav-item">
-                <Shield size={20} className="nav-icon" /> Equipos
-              </Link>
-            </li>
-            <li>
-              <Link to="/manage-news" className="nav-item active">
-                <Newspaper size={20} className="nav-icon" /> Noticias Públicas
-              </Link>
-            </li>
-            <li>
-              <Link to="/users" className="nav-item">
-                <Users size={20} className="nav-icon" /> Usuarios
-              </Link>
-            </li>
-            <li>
-              <Link to="/settings" className="nav-item">
-                <Settings size={20} className="nav-icon" /> Configuración
-              </Link>
-            </li>
+            {navItems.map((item) => (
+              <li key={item.path}>
+                <Link
+                  to={item.path}
+                  className={`nav-item ${location.pathname === item.path ? "active" : ""}`}
+                >
+                  {item.icon} {item.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
 
@@ -248,412 +224,106 @@ export default function ManagePublicNews() {
         </div>
       </aside>
 
-      {/* ===== MAIN CONTENT ===== */}
       <main className="main-content">
         <header className="top-bar">
-          <button
-            className="toggle-btn"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            title="Toggle Sidebar"
-          >
+          <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
             <Menu size={24} />
           </button>
           <div className="search-bar">
-            <input
-              type="text"
-              placeholder="Buscar noticia por título, categoría..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <input type="text" placeholder="Buscar noticia..." readOnly />
           </div>
         </header>
 
         <div className="content-wrapper">
-          <h1 className="admin-title">Noticias Públicas</h1>
+          <h1 className="admin-title">Crear Nueva Noticia</h1>
 
-          {/* Contador de resultados */}
-          <div className="table-container" style={{ padding: 0, overflow: 'hidden', marginBottom: '0' }}>
+          <div className="table-container">
             <div className="table-header">
-              <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FileText size={20} /> Todas las Noticias
-              </h2>
-              <span style={{ color: '#64748b', fontSize: '14px', fontWeight: '500' }}>
-                {filteredNews.length} resultado{filteredNews.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-          </div>
-
-          {/* Grid de noticias */}
-          <div className="news-grid-new" style={{ padding: '0 0 20px 0' }}>
-            {filteredNews.length === 0 ? (
-              <div style={{
-                gridColumn: '1 / -1',
-                textAlign: 'center',
-                padding: '4rem 2rem',
-                color: '#64748b',
-              }}>
-                <Newspaper size={56} style={{ margin: '0 auto 1rem', opacity: 0.2, display: 'block' }} />
-                <p style={{ fontSize: '1.1rem', fontWeight: 600, color: '#94a3b8', marginBottom: '4px' }}>
-                  {search ? 'Sin resultados' : 'No hay noticias publicadas'}
-                </p>
-                <p style={{ fontSize: '0.85rem' }}>
-                  {search ? 'Intenta con otro término de búsqueda' : 'Las noticias que crees aparecerán aquí'}
-                </p>
+              <h2>Detalle de la Publicación</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#64748b', fontSize: '14px' }}>
+                <ImageIcon size={16} /> Formatos: JPG, PNG, MP4
               </div>
-            ) : (
-              filteredNews.map((n) => (
-                <article key={n.id} className="article-card">
-                  <div className="article-image">
-                    <div className="article-media-wrap">
-                      {renderMedia(n.imagen, n.titulo)}
-                    </div>
-                    <div className="article-image-fade" />
-                    <span className="category-badge">
-                      {n.categoria || "General"}
-                    </span>
-                    <div className="admin-actions">
-                      <button onClick={() => setEditing({ ...n })}>
-                        Editar
-                      </button>
-                      <button onClick={() => deleteNews(n.id)}>
-                        Eliminar
-                      </button>
-                    </div>
+            </div>
+
+            <form onSubmit={handleSubmit} style={{ padding: '20px' }}>
+              <div className="form-grid" style={{ display: 'grid', gap: '20px' }}>
+                <div className="form-group">
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#334155' }}>Título de la Noticia</label>
+                  <input
+                    name="title"
+                    placeholder="Ej: El Águila golea 3-0..."
+                    value={form.title}
+                    onChange={handleChange}
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '16px', background: '#f8fafc' }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div className="form-group">
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#334155' }}>Autor</label>
+                    <input
+                      name="author"
+                      placeholder="Nombre del autor"
+                      value={form.author}
+                      onChange={handleChange}
+                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '16px', background: '#f8fafc' }}
+                    />
                   </div>
-                  <div className="article-body">
-                    <h3>{n.titulo}</h3>
-                    <p className="article-excerpt">{n.contenido}</p>
+                  <div className="form-group">
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#334155' }}>Categoría</label>
+                    <input
+                      name="category"
+                      placeholder="Ej: Liga Mayor, Selección"
+                      value={form.category}
+                      onChange={handleChange}
+                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '16px', background: '#f8fafc' }}
+                    />
                   </div>
-                </article>
-              ))
-            )}
+                </div>
+
+                <div className="form-group">
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#334155' }}>Contenido</label>
+                  <textarea
+                    name="content"
+                    placeholder="Redacta la noticia aquí..."
+                    value={form.content}
+                    onChange={handleChange}
+                    rows="6"
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '16px', background: '#f8fafc', resize: 'vertical' }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div className="form-group">
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#334155' }}>Sube la imagen/video de la noticia</label>
+                    <input
+                      type="file"
+                      accept="image/png, image/jpeg, video/mp4"
+                      onChange={handleFileChange}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px dashed #cbd5e1', background: '#f8fafc', cursor: 'pointer' }}
+                    />
+                    {file && (
+                      <p style={{ marginTop: '8px', fontSize: '13px', color: '#10b981', fontWeight: '500' }}>
+                        Archivo listo: {file.name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '30px', borderTop: '1px solid #f1f5f9', paddingTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button type="submit" className="btn-add" disabled={uploading} style={{ minWidth: '200px', justifyContent: 'center' }}>
+                  {uploading ? "Subiendo..." : (
+                    <><Send size={18} /> Publicar Noticia</>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </main>
-
-      {/* ===== MODAL EDITAR (Estilo formulario ManageNews) ===== */}
-      {editing && (
-        <div className="modal-overlay-edit">
-          <div className="modal-edit-card animate__animated animate__fadeInUp">
-
-            {/* Header */}
-            <div className="modal-edit-header">
-              <h2 style={{ margin: 0, fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px', color: '#1e293b' }}>
-                <Newspaper size={20} style={{ color: '#e2b340' }} /> Editar Noticia
-              </h2>
-              <button className="modal-close-btn" onClick={() => setEditing(null)} title="Cerrar">
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Preview del media actual */}
-            <div className="modal-edit-preview">
-              {renderMedia(editing.imagen, editing.titulo)}
-            </div>
-
-            {/* Formulario */}
-            <div className="modal-edit-body">
-              <div className="modal-edit-grid">
-
-                {/* Título */}
-                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                  <label>Título de la Noticia</label>
-                  <input
-                    value={editing.titulo}
-                    onChange={(e) => setEditing({ ...editing, titulo: e.target.value })}
-                    placeholder="Ej: El Águila golea 3-0..."
-                  />
-                </div>
-
-                {/* Autor y Categoría */}
-                <div className="form-group">
-                  <label>Autor</label>
-                  <input
-                    value={editing.autor || ''}
-                    onChange={(e) => setEditing({ ...editing, autor: e.target.value })}
-                    placeholder="Nombre del autor"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Categoría</label>
-                  <input
-                    value={editing.categoria || ''}
-                    onChange={(e) => setEditing({ ...editing, categoria: e.target.value })}
-                    placeholder="Ej: Liga Mayor, Selección"
-                  />
-                </div>
-
-                {/* Contenido */}
-                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                  <label>Contenido</label>
-                  <textarea
-                    value={editing.contenido}
-                    onChange={(e) => setEditing({ ...editing, contenido: e.target.value })}
-                    placeholder="Redacta la noticia aquí..."
-                    rows="5"
-                  />
-                </div>
-
-                {/* URL Imagen/Video */}
-                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                  <label>URL de Imagen o Video</label>
-                  <input
-                    value={editing.imagen || ''}
-                    onChange={(e) => setEditing({ ...editing, imagen: e.target.value })}
-                    placeholder="https://ejemplo.com/imagen.jpg o video.mp4"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Footer con acciones */}
-            <div className="modal-edit-footer">
-              <button className="modal-cancel-btn" onClick={() => setEditing(null)}>
-                Cancelar
-              </button>
-              <button className="btn-add modal-save-btn" onClick={saveEdit}>
-                <Save size={18} /> Guardar Cambios
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <style>{`
-        /* ===== BOTONES DE ACCIÓN SOBRE CARDS ===== */
-        .admin-actions {
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          display: flex;
-          gap: 6px;
-          z-index: 10;
-        }
-
-        .admin-actions button {
-          background: rgba(0,0,0,0.75);
-          backdrop-filter: blur(4px);
-          border: 1px solid rgba(255,255,255,0.15);
-          color: white;
-          font-size: 0.72rem;
-          font-weight: 600;
-          padding: 6px 12px;
-          border-radius: 6px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          letter-spacing: 0.3px;
-        }
-
-        .admin-actions button:hover {
-          background: #e2b340;
-          color: #000;
-          border-color: #e2b340;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(226,179,64,0.4);
-        }
-
-        .admin-actions button:last-child:hover {
-          background: #ef4444;
-          border-color: #ef4444;
-          box-shadow: 0 4px 12px rgba(239,68,68,0.4);
-        }
-
-        /* ===== MODAL EDITAR — FONDO ===== */
-        .modal-overlay-edit {
-          position: fixed;
-          inset: 0;
-          background: rgba(15, 23, 42, 0.6);
-          backdrop-filter: blur(6px);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 1000;
-        }
-
-        /* ===== MODAL EDITAR — TARJETA ===== */
-        .modal-edit-card {
-          background: #ffffff;
-          border-radius: 16px;
-          width: 580px;
-          max-width: 95vw;
-          max-height: 92vh;
-          display: flex;
-          flex-direction: column;
-          box-shadow: 0 25px 60px -12px rgba(0,0,0,0.5);
-          overflow: hidden;
-        }
-
-        /* ===== MODAL — HEADER ===== */
-        .modal-edit-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 18px 24px;
-          border-bottom: 1px solid #f1f5f9;
-          background: #f8fafc;
-          flex-shrink: 0;
-        }
-
-        .modal-close-btn {
-          background: none;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 32px;
-          height: 32px;
-          color: #64748b;
-          transition: all 0.2s;
-        }
-
-        .modal-close-btn:hover {
-          background: #fee2e2;
-          color: #ef4444;
-          border-color: #fecaca;
-          transform: rotate(90deg);
-        }
-
-        /* ===== MODAL — PREVIEW MEDIA ===== */
-        .modal-edit-preview {
-          width: 100%;
-          height: 180px;
-          overflow: hidden;
-          background: #0f172a;
-          flex-shrink: 0;
-          position: relative;
-        }
-
-        .modal-edit-preview::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 40px;
-          background: linear-gradient(transparent, rgba(0,0,0,0.3));
-        }
-
-        /* ===== MODAL — BODY (FORMULARIO) ===== */
-        .modal-edit-body {
-          padding: 20px 24px;
-          overflow-y: auto;
-          flex: 1;
-        }
-
-        .modal-edit-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-        }
-
-        .modal-edit-grid .form-group label {
-          display: block;
-          margin-bottom: 7px;
-          font-weight: 600;
-          color: #334155;
-          font-size: 13px;
-          letter-spacing: 0.2px;
-        }
-
-        .modal-edit-grid .form-group input,
-        .modal-edit-grid .form-group textarea {
-          width: 100%;
-          padding: 11px 14px;
-          border-radius: 8px;
-          border: 1px solid #e2e8f0;
-          font-size: 14px;
-          background: #f8fafc;
-          outline: none;
-          transition: all 0.2s;
-          box-sizing: border-box;
-          font-family: inherit;
-          color: #1e293b;
-        }
-
-        .modal-edit-grid .form-group input::placeholder,
-        .modal-edit-grid .form-group textarea::placeholder {
-          color: #94a3b8;
-        }
-
-        .modal-edit-grid .form-group input:focus,
-        .modal-edit-grid .form-group textarea:focus {
-          border-color: #e2b340;
-          box-shadow: 0 0 0 3px rgba(226, 179, 64, 0.12);
-          background: #fff;
-        }
-
-        .modal-edit-grid .form-group textarea {
-          min-height: 110px;
-          resize: vertical;
-          line-height: 1.6;
-        }
-
-        /* ===== MODAL — FOOTER ===== */
-        .modal-edit-footer {
-          display: flex;
-          justify-content: flex-end;
-          gap: 10px;
-          padding: 16px 24px;
-          border-top: 1px solid #f1f5f9;
-          background: #f8fafc;
-          flex-shrink: 0;
-        }
-
-        .modal-cancel-btn {
-          padding: 10px 22px;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          background: #fff;
-          color: #64748b;
-          font-weight: 600;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .modal-cancel-btn:hover {
-          background: #f1f5f9;
-          color: #334155;
-          border-color: #cbd5e1;
-        }
-
-        .modal-save-btn {
-          min-width: 180px !important;
-          justify-content: center !important;
-        }
-
-        /* ===== RESPONSIVE MODAL ===== */
-        @media (max-width: 640px) {
-          .modal-edit-card {
-            width: 100%;
-            max-width: 100vw;
-            max-height: 100vh;
-            border-radius: 0;
-          }
-
-          .modal-edit-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .modal-edit-preview {
-            height: 140px;
-          }
-
-          .modal-edit-footer {
-            flex-direction: column-reverse;
-          }
-
-          .modal-cancel-btn,
-          .modal-save-btn {
-            width: 100%;
-            text-align: center;
-            justify-content: center !important;
-          }
-        }
-      `}</style>
-
     </div>
   );
-}
+};
+
+export default ManageNews;

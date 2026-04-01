@@ -1,153 +1,291 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+// ========== ManageMatches.jsx ==========
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
 import 'animate.css';
 
-// IMPORTAR ICONOS DE LUCIDE REACT
 import {
     LayoutDashboard,
     CalendarDays,
     Shield,
     Newspaper,
-    Users, // Importamos como 'Users'
+    Users,
     Settings,
     LogOut,
     Menu,
     Plus,
-    Trash2
+    Trash2,
+    Trophy,
+    X,
+    Minus,
+    ChevronUp,
+    Swords,
+    CheckCircle2,
+    RotateCcw,
+    Search,
+    ChevronDown
 } from "lucide-react";
 
 const ManageMatches = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [matches, setMatches] = useState([
-        { id: 1, date: "24 Oct 2023", home: "Águila", away: "FAS", score: "2 - 1", status: "Finalizado" },
-        { id: 2, date: "25 Oct 2023", home: "Alianza", away: "Jocoro", score: "0 - 0", status: "Finalizado" },
-        { id: 3, date: "28 Oct 2023", home: "Municipal", away: "Once Deportivo", score: "-", status: "Pendiente" },
-        { id: 4, date: "29 Oct 2023", home: "FAS", away: "Águila", score: "-", status: "Pendiente" },
-    ]);
+    const location = useLocation();
+
+    const [matches, setMatches] = useState([]);
+    const [teams, setTeams] = useState([]);
+    const [teamMap, setTeamMap] = useState({});
+
+    const [showNewMatch, setShowNewMatch] = useState(false);
+    const [showResult, setShowResult] = useState(false);
+    const [selectedMatch, setSelectedMatch] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+
+    const [newLocal, setNewLocal] = useState("");
+    const [newVisitante, setNewVisitante] = useState("");
+
+    // Búsqueda en selects custom
+    const [searchLocal, setSearchLocal] = useState("");
+    const [searchVisitante, setSearchVisitante] = useState("");
+    const [openSelectLocal, setOpenSelectLocal] = useState(false);
+    const [openSelectVisitante, setOpenSelectVisitante] = useState(false);
+    const localRef = useRef(null);
+    const visitanteRef = useRef(null);
+
+    const [golesLocal, setGolesLocal] = useState(0);
+    const [golesVisitante, setGolesVisitante] = useState(0);
+
+    // Cerrar selects al clickear fuera
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (localRef.current && !localRef.current.contains(e.target)) setOpenSelectLocal(false);
+            if (visitanteRef.current && !visitanteRef.current.contains(e.target)) setOpenSelectVisitante(false);
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        fetch("http://localhost/Numeros-y-Futbol/backend/get_teams.php")
+            .then(res => res.json())
+            .then(data => {
+                setTeams(data);
+                const map = {};
+                data.forEach(t => { map[t.id] = t; map[t.nombre] = t; });
+                setTeamMap(map);
+            });
+
+        fetch("http://localhost/Numeros-y-Futbol/backend/get_matches.php")
+            .then(res => res.json())
+            .then(data => { console.log("PARTIDOS:", data); setMatches(data); });
+    }, []);
+
+    const getEscudo = (idOrName) => {
+        const team = teamMap[idOrName];
+        if (team && team.logo) return `http://localhost/Numeros-y-Futbol/backend/${team.logo}`;
+        return null;
+    };
+
+    const fallbackImg = "https://ui-avatars.com/api/?name=EQ&background=0f172a&color=334155&size=40&bold=true";
+    const fallbackSelect = "https://ui-avatars.com/api/?name=EQ&background=1e293b&color=475569&size=28&bold=true";
 
     const handleLogout = () => {
         Swal.fire({
-            title: "¿Cerrar sesión?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Sí, salir",
-            confirmButtonColor: "#d33"
+            title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir", confirmButtonColor: "#d33"
         }).then((result) => {
-            if (result.isConfirmed) {
-                localStorage.removeItem("user");
-                window.location.href = "/login";
-            }
+            if (result.isConfirmed) { localStorage.removeItem("user"); window.location.href = "/login"; }
         });
     };
 
-    const addMatch = () => {
-        Swal.fire({
-            title: "Agregar partido",
-            html:
-                '<input id="home" class="swal2-input" placeholder="Equipo local">' +
-                '<input id="away" class="swal2-input" placeholder="Equipo visitante">',
-            showCancelButton: true,
-            confirmButtonText: "Agregar",
-            preConfirm: () => {
-                const home = document.getElementById("home").value;
-                const away = document.getElementById("away").value;
-                if (!home || !away) Swal.showValidationMessage("Debes completar los equipos");
-                return { home, away };
-            }
-        }).then((result) => {
-            if (result.value) {
-                const newMatch = {
-                    id: Date.now(),
-                    date: "Nuevo",
-                    home: result.value.home,
-                    away: result.value.away,
-                    score: "-",
-                    status: "Pendiente"
-                };
-                setMatches([...matches, newMatch]);
-                Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Partido agregado", timer: 1500 });
-            }
-        });
+    const openNewMatch = () => {
+        setNewLocal(""); setNewVisitante("");
+        setSearchLocal(""); setSearchVisitante("");
+        setOpenSelectLocal(false); setOpenSelectVisitante(false);
+        setShowNewMatch(true);
     };
+
+    const createMatch = () => {
+        if (!newLocal || !newVisitante) {
+            Swal.fire({ icon: "info", title: "Completa ambos equipos", toast: true, position: "top-end", timer: 2000, showConfirmButton: false });
+            return;
+        }
+        if (newLocal === newVisitante) {
+            Swal.fire({ icon: "info", title: "No pueden ser el mismo equipo", toast: true, position: "top-end", timer: 2000, showConfirmButton: false });
+            return;
+        }
+        setSubmitting(true);
+        const form = new FormData();
+        form.append("local", newLocal);
+        form.append("visitante", newVisitante);
+        fetch("http://localhost/Numeros-y-Futbol/backend/create_match.php", { method: "POST", body: form })
+            .then(res => res.json())
+            .then(data => {
+                setSubmitting(false);
+                if (data.error) { Swal.fire("Error", data.error, "error"); }
+                else {
+                    setShowNewMatch(false);
+                    Swal.fire({ icon: "success", title: "Partido creado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false })
+                        .then(() => window.location.reload());
+                }
+            })
+            .catch(() => { setSubmitting(false); Swal.fire("Error", "Error de conexión", "error"); });
+    };
+
+    const openResult = (match) => {
+        setSelectedMatch(match);
+        if (match.score && match.score !== "-") {
+            const parts = match.score.split(" - ");
+            setGolesLocal(parseInt(parts[0]) || 0);
+            setGolesVisitante(parseInt(parts[1]) || 0);
+        } else { setGolesLocal(0); setGolesVisitante(0); }
+        setShowResult(true);
+    };
+
+    const saveResult = () => {
+        setSubmitting(true);
+        const form = new FormData();
+        form.append("match_id", selectedMatch.id);
+        form.append("goles_local", golesLocal);
+        form.append("goles_visitante", golesVisitante);
+        fetch("http://localhost/Numeros-y-Futbol/backend/update_match.php", { method: "POST", body: form })
+            .then(res => res.json())
+            .then(data => {
+                setSubmitting(false);
+                if (data.error) { Swal.fire("Error", data.error, "error"); }
+                else {
+                    setShowResult(false);
+                    Swal.fire({ icon: "success", title: "Resultado guardado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false })
+                        .then(() => window.location.reload());
+                }
+            })
+            .catch(() => { setSubmitting(false); Swal.fire("Error", "Error de conexión", "error"); });
+    };
+
+    const resetGoles = () => { setGolesLocal(0); setGolesVisitante(0); };
 
     const deleteMatch = (id) => {
         Swal.fire({
-            title: "¿Eliminar?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Eliminar",
-            confirmButtonColor: "#d33"
-        })
-            .then((result) => {
-                if (result.isConfirmed) {
-                    setMatches(matches.filter((m) => m.id !== id));
-                    Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Eliminado", timer: 1500 });
-                }
-            });
+            title: "¿Eliminar partido?", text: "Esto no se puede deshacer", icon: "warning",
+            showCancelButton: true, confirmButtonText: "Sí, eliminar", confirmButtonColor: "#d33"
+        }).then(result => {
+            if (result.isConfirmed) {
+                const form = new FormData();
+                form.append("id", id);
+                fetch("http://localhost/Numeros-y-Futbol/backend/delete_match.php", { method: "POST", body: form })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) { Swal.fire("Error", data.error, "error"); }
+                        else {
+                            Swal.fire({ icon: "success", title: "Eliminado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false })
+                                .then(() => window.location.reload());
+                        }
+                    });
+            }
+        });
+    };
+
+    const localTeam = teamMap[newLocal];
+    const visitanteTeam = teamMap[newVisitante];
+
+    // Filtrar equipos por búsqueda (excluir el ya seleccionado en el otro)
+    const filteredLocal = teams.filter(t =>
+        t.nombre.toLowerCase().includes(searchLocal.toLowerCase()) && t.id != newVisitante
+    );
+    const filteredVisitante = teams.filter(t =>
+        t.nombre.toLowerCase().includes(searchVisitante.toLowerCase()) && t.id != newLocal
+    );
+
+    const navItems = [
+        { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+        { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
+        { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
+        { path: "/teams", icon: <Shield size={20} />, label: "Equipos" },
+        { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
+        { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
+        { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+    ];
+
+    // Select custom renderer
+    const renderCustomSelect = (label, selectedId, searchVal, setSearchVal, isOpen, setOpen, filtered, onSelect, inputRef) => {
+        const selectedTeam = teamMap[selectedId];
+
+        return (
+            <div className="cs-wrap" ref={inputRef}>
+                <label className="cs-label">{label}</label>
+                <div
+                    className={`cs-trigger ${isOpen ? 'cs-open' : ''} ${selectedTeam ? 'cs-has-value' : ''}`}
+                    onClick={() => { setOpen(!isOpen); setSearchVal(""); }}
+                >
+                    {selectedTeam ? (
+                        <div className="cs-selected">
+                            <img src={`http://localhost/Numeros-y-Futbol/backend/${selectedTeam.logo}`} alt=""
+                                onError={(e) => { e.target.src = fallbackSelect; }}
+                                className="cs-sel-logo" />
+                            <span className="cs-sel-name">{selectedTeam.nombre}</span>
+                        </div>
+                    ) : (
+                        <span className="cs-placeholder">Selecciona un equipo</span>
+                    )}
+                    <ChevronDown size={16} className={`cs-chevron ${isOpen ? 'cs-chevron-up' : ''}`} />
+                </div>
+
+                {isOpen && (
+                    <div className="cs-dropdown animate__animated animate__fadeInDown">
+                        <div className="cs-search-wrap">
+                            <Search size={14} className="cs-search-icon" />
+                            <input
+                                type="text"
+                                className="cs-search-input"
+                                placeholder="Buscar equipo..."
+                                value={searchVal}
+                                onChange={(e) => setSearchVal(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                        <div className="cs-options">
+                            {filtered.length === 0 ? (
+                                <div className="cs-empty">Sin resultados</div>
+                            ) : (
+                                filtered.map(t => (
+                                    <div
+                                        key={t.id}
+                                        className={`cs-option ${t.id == selectedId ? 'cs-option-active' : ''}`}
+                                        onClick={() => { onSelect(t.id.toString()); setOpen(false); setSearchVal(""); }}
+                                    >
+                                        <img src={`http://localhost/Numeros-y-Futbol/backend/${t.logo}`} alt=""
+                                            onError={(e) => { e.target.src = fallbackSelect; }}
+                                            className="cs-opt-logo" />
+                                        <span className="cs-opt-name">{t.nombre}</span>
+                                        {t.id == selectedId && <CheckCircle2 size={14} className="cs-opt-check" />}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
     };
 
     return (
         <div className={`admin-layout ${!sidebarOpen ? "sidebar-closed" : ""}`}>
-
-            {/* ===== SIDEBAR ===== */}
             <aside className="sidebar">
                 <div className="sidebar-header">
                     <div className="logo-icon">
-                        <img
-                            src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a"
-                            alt="Logo"
-                            style={{ width: '40px', height: '40px', objectFit: 'contain' }}
-                        />
+                        <img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="Logo" />
                     </div>
-                    <h2 className="sidebar-title">
-                        Números y Fútbol <span className="accent-text">Gestionar Partidos</span>
-                    </h2>
+                    <h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2>
                 </div>
-
                 <nav className="sidebar-nav">
                     <ul>
-                        <li className="nav-item">
-                            <a href="/dashboard" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-                                <LayoutDashboard size={20} className="nav-icon" /> Dashboard
-                            </a>
-                        </li>
-
-                        <li className="nav-item active">
-                            <CalendarDays size={20} className="nav-icon" /> Gestionar Partidos
-                        </li>
-
-                        <li>
-                            <Link to="/mynews" className="nav-item">
-                                <CalendarDays size={20} className="nav-icon" /> Gestionar Noticias
-                            </Link>
-                        </li>
-
-                        <li className="nav-item">
-                            <a href="/teams" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-                                <Shield size={20} className="nav-icon" /> Equipos
-                            </a>
-                        </li>
-                        <li className="nav-item">
-                            <a href="/manage-news" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-                                <Newspaper size={20} className="nav-icon" /> Noticias
-                            </a>
-                        </li>
-                        <li className="nav-item">
-                            <a href="/users" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-                                {/* CORREGIDO: Usar <Users /> en lugar de <UsersIcon /> */}
-                                <Users size={20} className="nav-icon" /> Usuarios
-                            </a>
-                        </li>
-                        <li className="nav-item">
-                            <a href="/settings" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-                                <Settings size={20} className="nav-icon" /> Configuración
-                            </a>
-                        </li>
+                        {navItems.map((item) => (
+                            <li key={item.path}>
+                                <Link to={item.path} className={`nav-item ${location.pathname === item.path ? "active" : ""}`}>
+                                    {item.icon} {item.label}
+                                </Link>
+                            </li>
+                        ))}
                     </ul>
                 </nav>
-
                 <div className="sidebar-footer">
                     <button className="nav-item btn-logout-sidebar" onClick={handleLogout}>
                         <LogOut size={20} className="nav-icon" /> Cerrar sesión
@@ -155,63 +293,558 @@ const ManageMatches = () => {
                 </div>
             </aside>
 
-            {/* ===== MAIN CONTENT ===== */}
             <main className="main-content">
                 <header className="top-bar">
-                    <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                        <Menu size={24} />
-                    </button>
-                    <div className="search-bar">
-                        <input type="text" placeholder="Buscar partido..." readOnly />
-                    </div>
+                    <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={24} /></button>
+                    <div className="search-bar"><input type="text" placeholder="Buscar partido..." readOnly /></div>
                 </header>
 
                 <div className="content-wrapper">
                     <h1 className="admin-title">Gestionar Partidos</h1>
-
                     <div className="table-container">
                         <div className="table-header">
                             <h2>Lista de Partidos</h2>
-                            <button className="btn-add" onClick={addMatch}>
-                                <Plus size={18} /> Nuevo Partido
-                            </button>
+                            <button className="btn-add" onClick={openNewMatch}><Plus size={18} /> Nuevo Partido</button>
                         </div>
-
                         <table className="data-table">
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
                                     <th>Local</th>
+                                    <th style={{ textAlign: 'center' }}>Marcador</th>
                                     <th>Visitante</th>
-                                    <th>Marcador</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {matches.map((match) => (
-                                    <tr key={match.id}>
-                                        <td>{match.date}</td>
-                                        <td>{match.home}</td>
-                                        <td>{match.away}</td>
-                                        <td><strong>{match.score}</strong></td>
-                                        <td>
-                                            <span className={`status ${match.status === 'Finalizado' ? 'done' : 'pending'}`}>
-                                                {match.status}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <button className="btn-delete" onClick={() => deleteMatch(match.id)}>
-                                                <Trash2 size={16} /> Eliminar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {matches.map((match) => {
+                                    const escudoLocal = getEscudo(match.local_id) || getEscudo(match.local_nombre);
+                                    const escudoVisitante = getEscudo(match.visitante_id) || getEscudo(match.visitante_nombre);
+                                    const isFinalizado = match.status === "Finalizado";
+                                    return (
+                                        <tr key={match.id}>
+                                            <td style={{ whiteSpace: 'nowrap', color: '#94a3b8', fontSize: '13px' }}>{match.date}</td>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    <img src={escudoLocal || fallbackImg} alt="" onError={(e) => { e.target.src = fallbackImg; }}
+                                                        style={{ width: '32px', height: '32px', objectFit: 'contain', borderRadius: '6px', background: '#fff', padding: '2px', flexShrink: 0 }} />
+                                                    <span style={{ fontWeight: '600' }}>{match.local_nombre}</span>
+                                                </div>
+                                            </td>
+                                            <td style={{ textAlign: 'center' }}>
+                                                <span style={{ fontWeight: '800', fontSize: '15px', color: isFinalizado ? '#e2b340' : '#64748b', letterSpacing: '2px' }}>
+                                                    {match.score || "-"}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    <img src={escudoVisitante || fallbackImg} alt="" onError={(e) => { e.target.src = fallbackImg; }}
+                                                        style={{ width: '32px', height: '32px', objectFit: 'contain', borderRadius: '6px', background: '#fff', padding: '2px', flexShrink: 0 }} />
+                                                    <span style={{ fontWeight: '600' }}>{match.visitante_nombre}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span className={`status ${isFinalizado ? 'done' : 'pending'}`}>{match.status}</span>
+                                            </td>
+                                            <td>
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <button className={`result-action-btn ${isFinalizado ? 'result-edit' : 'result-new'}`}
+                                                        onClick={() => openResult(match)} title={isFinalizado ? "Editar resultado" : "Ingresar resultado"}>
+                                                        <Trophy size={14} /><span>{isFinalizado ? "Editar" : "Resultado"}</span>
+                                                    </button>
+                                                    <button className="btn-delete" onClick={() => deleteMatch(match.id)} title="Eliminar"><Trash2 size={16} /></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
+                        {matches.length === 0 && (
+                            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#475569' }}>
+                                <Trophy size={40} style={{ margin: '0 auto 0.75rem', display: 'block', opacity: 0.2 }} />
+                                <p style={{ fontWeight: 600, color: '#64748b' }}>No hay partidos registrados</p>
+                                <p style={{ fontSize: '13px', marginTop: '4px' }}>Crea tu primer partido con el botón de arriba</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>
+
+            {/* ===== MODAL: NUEVO PARTIDO ===== */}
+            {showNewMatch && (
+                <div className="nm-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowNewMatch(false); }}>
+                    <div className="nm-card animate__animated animate__fadeInUp">
+
+                        <div className="nm-header">
+                            <h2><Swords size={18} style={{ color: '#e2b340' }} /> Nuevo Partido</h2>
+                            <button className="nm-close" onClick={() => setShowNewMatch(false)}><X size={18} /></button>
+                        </div>
+
+                        <div className="nm-body">
+                            <div className="nm-selects-row">
+                                {renderCustomSelect(
+                                    "Equipo Local",
+                                    newLocal,
+                                    searchLocal,
+                                    setSearchLocal,
+                                    openSelectLocal,
+                                    setOpenSelectLocal,
+                                    filteredLocal,
+                                    setNewLocal,
+                                    localRef
+                                )}
+
+                                <div className="nm-vs-badge">
+                                    <span>VS</span>
+                                </div>
+
+                                {renderCustomSelect(
+                                    "Equipo Visitante",
+                                    newVisitante,
+                                    searchVisitante,
+                                    setSearchVisitante,
+                                    openSelectVisitante,
+                                    setOpenSelectVisitante,
+                                    filteredVisitante,
+                                    setNewVisitante,
+                                    visitanteRef
+                                )}
+                            </div>
+
+                            {/* Preview del enfrentamiento */}
+                            {(localTeam || visitanteTeam) && (
+                                <div className="nm-preview">
+                                    <div className="nm-preview-side">
+                                        {localTeam ? (
+                                            <>
+                                                <div className="nm-preview-logo-wrap">
+                                                    <img src={`http://localhost/Numeros-y-Futbol/backend/${localTeam.logo}`} alt=""
+                                                        onError={(e) => { e.target.src = fallbackImg; }} className="nm-preview-logo" />
+                                                </div>
+                                                <span className="nm-preview-name">{localTeam.nombre}</span>
+                                                {localTeam.ciudad && <span className="nm-preview-city">{localTeam.ciudad}</span>}
+                                            </>
+                                        ) : (
+                                            <div className="nm-preview-empty">
+                                                <div className="nm-preview-logo-wrap nm-preview-logo-empty">
+                                                    <span>?</span>
+                                                </div>
+                                                <span className="nm-preview-name" style={{ color: '#334155' }}>Sin seleccionar</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="nm-preview-center">
+                                        <div className="nm-preview-line" />
+                                        <div className="nm-preview-vs-icon">
+                                            <Swords size={22} />
+                                        </div>
+                                        <div className="nm-preview-line" />
+                                    </div>
+
+                                    <div className="nm-preview-side">
+                                        {visitanteTeam ? (
+                                            <>
+                                                <div className="nm-preview-logo-wrap">
+                                                    <img src={`http://localhost/Numeros-y-Futbol/backend/${visitanteTeam.logo}`} alt=""
+                                                        onError={(e) => { e.target.src = fallbackImg; }} className="nm-preview-logo" />
+                                                </div>
+                                                <span className="nm-preview-name">{visitanteTeam.nombre}</span>
+                                                {visitanteTeam.ciudad && <span className="nm-preview-city">{visitanteTeam.ciudad}</span>}
+                                            </>
+                                        ) : (
+                                            <div className="nm-preview-empty">
+                                                <div className="nm-preview-logo-wrap nm-preview-logo-empty">
+                                                    <span>?</span>
+                                                </div>
+                                                <span className="nm-preview-name" style={{ color: '#334155' }}>Sin seleccionar</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {newLocal && newVisitante && newLocal === newVisitante && (
+                                <div className="nm-warning">No puedes seleccionar el mismo equipo</div>
+                            )}
+                        </div>
+
+                        <div className="nm-footer">
+                            <button className="nm-btn-cancel" onClick={() => setShowNewMatch(false)}>Cancelar</button>
+                            <button className="btn-add nm-btn-ok" onClick={createMatch}
+                                disabled={submitting || !newLocal || !newVisitante || newLocal === newVisitante}
+                                style={{
+                                    opacity: (!newLocal || !newVisitante || newLocal === newVisitante || submitting) ? 0.35 : 1,
+                                    cursor: (!newLocal || !newVisitante || newLocal === newVisitante || submitting) ? 'not-allowed' : 'pointer',
+                                    minWidth: '170px', justifyContent: 'center'
+                                }}>
+                                {submitting ? <span className="nm-spin" /> : <><Plus size={16} /> Crear Partido</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ===== MODAL: RESULTADO (sin cambios) ===== */}
+            {showResult && selectedMatch && (
+                <div className="nm-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowResult(false); }}>
+                    <div className="nm-card animate__animated animate__fadeInUp nm-score-card">
+                        <div className="nm-header">
+                            <h2><Trophy size={18} style={{ color: '#e2b340' }} /> Resultado del Partido</h2>
+                            <button className="nm-close" onClick={() => setShowResult(false)}><X size={18} /></button>
+                        </div>
+                        <div className="nm-body nm-score-body">
+                            <div className="mm-match-info">
+                                <span>{selectedMatch.date}</span>
+                                <span className={`status ${selectedMatch.status === 'Finalizado' ? 'done' : 'pending'}`} style={{ fontSize: '11px', padding: '3px 10px' }}>
+                                    {selectedMatch.status}
+                                </span>
+                            </div>
+                            <div className="mm-scoreboard">
+                                <div className="mm-score-team">
+                                    <img src={getEscudo(selectedMatch.local_id) || getEscudo(selectedMatch.local_nombre) || fallbackImg} alt=""
+                                        onError={(e) => { e.target.src = fallbackImg; }} className="mm-score-logo" />
+                                    <span className="mm-score-team-name">{selectedMatch.local_nombre}</span>
+                                </div>
+                                <div className="mm-score-controls">
+                                    <button className="mm-score-btn mm-score-down" onClick={() => setGolesLocal(p => Math.max(0, p - 1))} disabled={golesLocal === 0}>
+                                        <Minus size={20} />
+                                    </button>
+                                    <div className={`mm-score-num ${golesLocal > golesVisitante ? 'winning' : ''}`}>{golesLocal}</div>
+                                    <button className="mm-score-btn mm-score-up" onClick={() => setGolesLocal(p => p + 1)}><ChevronUp size={20} /></button>
+                                </div>
+                                <div className="mm-score-dash-wrap"><div className="mm-score-dash" /></div>
+                                <div className="mm-score-controls">
+                                    <button className="mm-score-btn mm-score-down" onClick={() => setGolesVisitante(p => Math.max(0, p - 1))} disabled={golesVisitante === 0}>
+                                        <Minus size={20} />
+                                    </button>
+                                    <div className={`mm-score-num ${golesVisitante > golesLocal ? 'winning' : ''}`}>{golesVisitante}</div>
+                                    <button className="mm-score-btn mm-score-up" onClick={() => setGolesVisitante(p => p + 1)}><ChevronUp size={20} /></button>
+                                </div>
+                                <div className="mm-score-team">
+                                    <img src={getEscudo(selectedMatch.visitante_id) || getEscudo(selectedMatch.visitante_nombre) || fallbackImg} alt=""
+                                        onError={(e) => { e.target.src = fallbackImg; }} className="mm-score-logo" />
+                                    <span className="mm-score-team-name">{selectedMatch.visitante_nombre}</span>
+                                </div>
+                            </div>
+                            {(golesLocal !== golesVisitante) && (
+                                <div className="mm-winner-badge">
+                                    <CheckCircle2 size={14} />
+                                    {golesLocal > golesVisitante ? selectedMatch.local_nombre : selectedMatch.visitante_nombre} gana
+                                </div>
+                            )}
+                            {golesLocal === golesVisitante && (golesLocal > 0) && (
+                                <div className="mm-draw-badge">Empate</div>
+                            )}
+                            <div className="mm-score-actions">
+                                <button className="mm-reset-btn" onClick={resetGoles}><RotateCcw size={14} /> Reiniciar marcador</button>
+                            </div>
+                        </div>
+                        <div className="nm-footer">
+                            <button className="nm-btn-cancel" onClick={() => setShowResult(false)}>Cancelar</button>
+                            <button className="btn-add nm-btn-ok" onClick={saveResult} disabled={submitting}
+                                style={{ opacity: submitting ? 0.35 : 1, cursor: submitting ? 'not-allowed' : 'pointer', minWidth: '190px', justifyContent: 'center' }}>
+                                {submitting ? <span className="nm-spin" /> : <><CheckCircle2 size={16} /> Guardar Resultado</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <style>{`
+                .result-action-btn {
+                    display: inline-flex; align-items: center; gap: 5px;
+                    padding: 6px 12px; border-radius: 6px; font-size: 12px;
+                    font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; white-space: nowrap;
+                }
+                .result-new { background: rgba(226,179,64,0.12); color: #e2b340; border: 1px solid rgba(226,179,64,0.2); }
+                .result-new:hover { background: rgba(226,179,64,0.22); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(226,179,64,0.2); }
+                .result-edit { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+                .result-edit:hover { background: rgba(59,130,246,0.22); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.2); }
+
+                /* ===== OVERLAY ===== */
+                .nm-overlay {
+                    position: fixed; inset: 0; background: rgba(2,6,15,0.82);
+                    backdrop-filter: blur(10px); display: flex;
+                    justify-content: center; align-items: center; z-index: 1000;
+                }
+                .nm-card {
+                    background: #0b1120; border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 18px; width: 620px; max-width: 95vw;
+                    max-height: 92vh; display: flex; flex-direction: column;
+                    box-shadow: 0 25px 60px -12px rgba(0,0,0,0.7), 0 0 100px rgba(226,179,64,0.03);
+                    overflow: hidden;
+                }
+                .nm-score-card { width: 600px; }
+                .nm-header {
+                    display: flex; justify-content: space-between; align-items: center;
+                    padding: 18px 24px; border-bottom: 1px solid rgba(255,255,255,0.06);
+                    background: rgba(255,255,255,0.015);
+                }
+                .nm-header h2 {
+                    margin: 0; font-size: 1.05rem; color: #f1f5f9;
+                    display: flex; align-items: center; gap: 8px;
+                }
+                .nm-close {
+                    background: none; border: 1px solid rgba(255,255,255,0.1);
+                    border-radius: 8px; cursor: pointer; display: flex;
+                    align-items: center; justify-content: center;
+                    width: 32px; height: 32px; color: #64748b; transition: all 0.25s;
+                }
+                .nm-close:hover {
+                    background: rgba(239,68,68,0.15); color: #ef4444;
+                    border-color: rgba(239,68,68,0.3); transform: rotate(90deg);
+                }
+                .nm-body { padding: 24px; overflow-y: auto; flex: 1; }
+                .nm-body::-webkit-scrollbar { width: 5px; }
+                .nm-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+                .nm-score-body { padding: 20px 28px 28px; }
+                .nm-footer {
+                    display: flex; justify-content: flex-end; gap: 10px;
+                    padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.06);
+                    background: rgba(255,255,255,0.015);
+                }
+                .nm-btn-cancel {
+                    padding: 10px 22px; border: 1px solid rgba(255,255,255,0.1);
+                    border-radius: 8px; background: transparent; color: #64748b;
+                    font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;
+                }
+                .nm-btn-cancel:hover { background: rgba(255,255,255,0.04); color: #94a3b8; }
+                .nm-spin {
+                    display: inline-block; width: 18px; height: 18px;
+                    border: 2px solid rgba(255,255,255,0.15); border-top-color: #fff;
+                    border-radius: 50%; animation: nmSpin 0.6s linear infinite;
+                }
+                @keyframes nmSpin { to { transform: rotate(360deg); } }
+
+                /* ===== SELECTS ROW ===== */
+                .nm-selects-row {
+                    display: grid; grid-template-columns: 1fr auto 1fr;
+                    gap: 12px; align-items: start;
+                }
+                .nm-vs-badge {
+                    display: flex; align-items: center; justify-content: center;
+                    padding-top: 26px;
+                }
+                .nm-vs-badge span {
+                    font-weight: 900; font-size: 13px; letter-spacing: 3px;
+                    color: #e2b340; background: rgba(226,179,64,0.08);
+                    border: 1px solid rgba(226,179,64,0.15);
+                    padding: 8px 14px; border-radius: 8px;
+                }
+
+                /* ===== CUSTOM SELECT ===== */
+                .cs-wrap { position: relative; }
+                .cs-label {
+                    display: block; margin-bottom: 8px; font-weight: 600;
+                    color: #94a3b8; font-size: 13px;
+                }
+                .cs-trigger {
+                    display: flex; align-items: center; justify-content: space-between;
+                    padding: 10px 12px; border-radius: 10px;
+                    border: 1px solid rgba(255,255,255,0.08);
+                    background: rgba(255,255,255,0.03);
+                    cursor: pointer; transition: all 0.2s; min-height: 44px;
+                }
+                .cs-trigger:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); }
+                .cs-open { border-color: #e2b340 !important; box-shadow: 0 0 0 3px rgba(226,179,64,0.08); }
+                .cs-has-value { background: rgba(255,255,255,0.04); }
+                .cs-placeholder { color: #334155; font-size: 14px; }
+                .cs-selected { display: flex; align-items: center; gap: 10px; }
+                .cs-sel-logo {
+                    width: 28px; height: 28px; object-fit: contain;
+                    border-radius: 6px; background: #fff; padding: 2px; flex-shrink: 0;
+                }
+                .cs-sel-name { font-weight: 700; font-size: 14px; color: #e2e8f0; }
+                .cs-chevron {
+                    color: #475569; transition: transform 0.2s; flex-shrink: 0;
+                }
+                .cs-chevron-up { transform: rotate(180deg); color: #e2b340; }
+
+                /* Dropdown */
+                .cs-dropdown {
+                    position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+                    background: #0f172a; border: 1px solid rgba(255,255,255,0.08);
+                    border-radius: 12px; box-shadow: 0 16px 40px -8px rgba(0,0,0,0.6);
+                    z-index: 50; overflow: hidden;
+                }
+                .cs-search-wrap {
+                    display: flex; align-items: center; gap: 8px;
+                    padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05);
+                }
+                .cs-search-icon { color: #334155; flex-shrink: 0; }
+                .cs-search-input {
+                    flex: 1; background: none; border: none; outline: none;
+                    color: #e2e8f0; font-size: 13px;
+                }
+                .cs-search-input::placeholder { color: #334155; }
+                .cs-options {
+                    max-height: 200px; overflow-y: auto; padding: 6px;
+                }
+                .cs-options::-webkit-scrollbar { width: 4px; }
+                .cs-options::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+                .cs-option {
+                    display: flex; align-items: center; gap: 10px;
+                    padding: 8px 10px; border-radius: 8px; cursor: pointer;
+                    transition: all 0.15s;
+                }
+                .cs-option:hover { background: rgba(255,255,255,0.05); }
+                .cs-option-active { background: rgba(226,179,64,0.08); }
+                .cs-option-active:hover { background: rgba(226,179,64,0.12); }
+                .cs-opt-logo {
+                    width: 26px; height: 26px; object-fit: contain;
+                    border-radius: 5px; background: #fff; padding: 1px; flex-shrink: 0;
+                }
+                .cs-opt-name { flex: 1; font-size: 13px; font-weight: 600; color: #cbd5e1; }
+                .cs-option-active .cs-opt-name { color: #e2b340; }
+                .cs-opt-check { color: #e2b340; flex-shrink: 0; }
+                .cs-empty {
+                    text-align: center; padding: 16px; color: #334155;
+                    font-size: 13px;
+                }
+
+                /* ===== PREVIEW ENFRENTAMIENTO ===== */
+                .nm-preview {
+                    margin-top: 20px; padding: 24px 16px;
+                    background: linear-gradient(135deg, rgba(255,255,255,0.015), rgba(255,255,255,0.005));
+                    border: 1px solid rgba(255,255,255,0.05);
+                    border-radius: 14px;
+                    display: flex; align-items: center; justify-content: center; gap: 0;
+                }
+                .nm-preview-side {
+                    flex: 1; display: flex; flex-direction: column;
+                    align-items: center; gap: 8px;
+                }
+                .nm-preview-logo-wrap {
+                    width: 68px; height: 68px; border-radius: 14px;
+                    background: #fff; padding: 6px;
+                    display: flex; align-items: center; justify-content: center;
+                    transition: all 0.3s;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                }
+                .nm-preview-logo {
+                    width: 100%; height: 100%; object-fit: contain;
+                }
+                .nm-preview-logo-empty {
+                    background: rgba(255,255,255,0.02);
+                    border: 2px dashed rgba(255,255,255,0.06);
+                }
+                .nm-preview-logo-empty span {
+                    font-size: 28px; color: #1e293b; font-weight: 800;
+                }
+                .nm-preview-name {
+                    font-weight: 800; font-size: 15px; color: #e2e8f0;
+                    text-align: center; line-height: 1.2;
+                }
+                .nm-preview-city {
+                    font-size: 11px; color: #475569; font-weight: 500;
+                }
+                .nm-preview-center {
+                    display: flex; flex-direction: column; align-items: center;
+                    gap: 8px; padding: 0 20px; flex-shrink: 0;
+                }
+                .nm-preview-line {
+                    width: 1px; height: 30px;
+                    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.08), transparent);
+                }
+                .nm-preview-vs-icon {
+                    color: #e2b340; opacity: 0.5;
+                }
+                .nm-preview-empty {
+                    display: flex; flex-direction: column; align-items: center; gap: 8px;
+                }
+
+                .nm-warning {
+                    margin-top: 14px; text-align: center; padding: 10px;
+                    border-radius: 8px; background: rgba(239,68,68,0.08);
+                    border: 1px solid rgba(239,68,68,0.15);
+                    color: #f87171; font-size: 13px; font-weight: 600;
+                }
+
+                /* ===== SCOREBOARD (modal resultado) ===== */
+                .mm-match-info {
+                    display: flex; align-items: center; justify-content: center;
+                    gap: 10px; margin-bottom: 24px; color: #475569; font-size: 13px;
+                }
+                .mm-scoreboard {
+                    display: flex; align-items: center; justify-content: center;
+                    gap: 14px; padding: 28px 12px;
+                    background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
+                    border: 1px solid rgba(255,255,255,0.05);
+                    border-radius: 16px;
+                }
+                .mm-score-team { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 110px; flex-shrink: 0; }
+                .mm-score-logo { width: 52px; height: 52px; object-fit: contain; border-radius: 10px; background: #fff; padding: 3px; }
+                .mm-score-team-name {
+                    font-size: 12px; font-weight: 700; color: #cbd5e1; text-align: center; line-height: 1.25;
+                    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+                }
+                .mm-score-controls { display: flex; align-items: center; gap: 5px; }
+                .mm-score-btn {
+                    width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.07);
+                    background: rgba(255,255,255,0.025); color: #94a3b8; cursor: pointer;
+                    display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;
+                }
+                .mm-score-btn:disabled { opacity: 0.15; cursor: not-allowed; }
+                .mm-score-down:hover:not(:disabled) {
+                    background: rgba(239,68,68,0.15); color: #f87171;
+                    border-color: rgba(239,68,68,0.3); transform: scale(1.08);
+                }
+                .mm-score-up:hover:not(:disabled) {
+                    background: rgba(16,185,129,0.15); color: #34d399;
+                    border-color: rgba(16,185,129,0.3); transform: scale(1.08);
+                }
+                .mm-score-num {
+                    width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
+                    font-size: 30px; font-weight: 900; color: #64748b; background: rgba(255,255,255,0.03);
+                    border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; transition: all 0.2s;
+                }
+                .mm-score-num.winning {
+                    color: #e2b340; background: rgba(226,179,64,0.08);
+                    border-color: rgba(226,179,64,0.2); box-shadow: 0 0 20px rgba(226,179,64,0.1);
+                }
+                .mm-score-dash-wrap { display: flex; align-items: center; padding: 0 2px; }
+                .mm-score-dash { width: 2px; height: 44px; background: rgba(255,255,255,0.08); border-radius: 1px; }
+                .mm-winner-badge {
+                    display: flex; align-items: center; justify-content: center; gap: 6px;
+                    margin-top: 18px; padding: 8px 16px; background: rgba(16,185,129,0.08);
+                    border: 1px solid rgba(16,185,129,0.15); border-radius: 8px;
+                    color: #34d399; font-size: 13px; font-weight: 700;
+                }
+                .mm-draw-badge {
+                    text-align: center; margin-top: 18px; padding: 8px 16px;
+                    background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.15);
+                    border-radius: 8px; color: #fbbf24; font-size: 13px; font-weight: 700;
+                }
+                .mm-score-actions { display: flex; justify-content: center; margin-top: 14px; }
+                .mm-reset-btn {
+                    display: flex; align-items: center; gap: 6px; padding: 7px 14px;
+                    border-radius: 8px; font-size: 12px; font-weight: 600; color: #475569;
+                    background: transparent; border: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: all 0.2s;
+                }
+                .mm-reset-btn:hover { color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.06); }
+
+                @media (max-width: 640px) {
+                    .nm-card, .nm-score-card { width: 100%; max-width: 100vw; max-height: 100vh; border-radius: 0; }
+                    .nm-selects-row { grid-template-columns: 1fr; gap: 8px; }
+                    .nm-vs-badge { padding-top: 0; }
+                    .nm-vs-badge span { padding: 6px 12px; font-size: 11px; }
+                    .nm-preview-logo-wrap { width: 50px; height: 50px; border-radius: 10px; }
+                    .nm-preview-name { font-size: 13px; }
+                    .nm-preview-center { padding: 0 12px; }
+                    .nm-footer { flex-direction: column-reverse; }
+                    .nm-btn-cancel, .nm-btn-ok { width: 100%; text-align: center; justify-content: center !important; }
+                    .mm-scoreboard { gap: 6px; flex-wrap: wrap; padding: 18px 8px; }
+                    .mm-score-team { width: 70px; }
+                    .mm-score-logo { width: 36px; height: 36px; }
+                    .mm-score-team-name { font-size: 10px; }
+                    .mm-score-num { width: 44px; height: 44px; font-size: 24px; }
+                    .mm-score-btn { width: 34px; height: 34px; }
+                    .result-action-btn span { display: none; }
+                }
+            `}</style>
         </div>
     );
 };

@@ -1,10 +1,10 @@
+// ========== AdminDashboard.jsx ==========
 import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
-import { Link } from "react-router-dom";
 import 'animate.css';
 
-// IMPORTAR ICONOS DE LUCIDE REACT
 import {
   LayoutDashboard,
   CalendarDays,
@@ -25,9 +25,9 @@ import MatchTable from "../components/MatchTable";
 import GoalsChart from "../components/GoalsChart";
 
 const AdminDashboard = () => {
-
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [search, setSearch] = useState("");
+  const location = useLocation();
 
   const [matches, setMatches] = useState([
     { id: 1, date: "24 Oct 2023", home: "Águila", away: "FAS", score: "2 - 1", status: "Finalizado" },
@@ -59,7 +59,7 @@ const AdminDashboard = () => {
       cancelButtonText: "Cancelar",
     }).then((result) => {
       if (result.isConfirmed) {
-        localStorage.removeItem("user"); // Buena práctica limpiar storage
+        localStorage.removeItem("user");
         window.location.href = "/login";
       }
     });
@@ -128,10 +128,18 @@ const AdminDashboard = () => {
     });
   };
 
+  const navItems = [
+    { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+    { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
+    { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
+    { path: "/teams", icon: <Shield size={20} />, label: "Equipos" },
+    { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
+    { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
+    { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+  ];
+
   return (
     <div className={`admin-layout ${!sidebarOpen ? "sidebar-closed" : ""}`}>
-
-      {/* ===== SIDEBAR ===== */}
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="logo-icon">
@@ -141,55 +149,22 @@ const AdminDashboard = () => {
             />
           </div>
           <h2 className="sidebar-title">
-            Números y Fútbol <span className="accent-text">Dashboard</span>
+            Números y Fútbol <span className="accent-text">Admin</span>
           </h2>
         </div>
 
         <nav className="sidebar-nav">
           <ul>
-            {/* Enlace Activo (Dashboard) - Usamos Link pero le ponemos la clase active manualmente */}
-            <li>
-              <Link to="/dashboard" className="nav-item active">
-                <LayoutDashboard size={20} className="nav-icon" /> Dashboard
-              </Link>
-            </li>
-
-            {/* Enlaces con Link para evitar recarga */}
-            <li>
-              <Link to="/matches" className="nav-item">
-                <CalendarDays size={20} className="nav-icon" /> Gestionar Partidos
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/mynews" className="nav-item">
-                <CalendarDays size={20} className="nav-icon" /> Gestionar Noticias
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/teams" className="nav-item">
-                <Shield size={20} className="nav-icon" /> Equipos
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/manage-news" className="nav-item">
-                <Newspaper size={20} className="nav-icon" /> Noticias
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/users" className="nav-item">
-                <Users size={20} className="nav-icon" /> Usuarios
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/settings" className="nav-item">
-                <Settings size={20} className="nav-icon" /> Configuración
-              </Link>
-            </li>
+            {navItems.map((item) => (
+              <li key={item.path}>
+                <Link
+                  to={item.path}
+                  className={`nav-item ${location.pathname === item.path ? "active" : ""}`}
+                >
+                  {item.icon} {item.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
 
@@ -200,24 +175,13 @@ const AdminDashboard = () => {
         </div>
       </aside>
 
-      {/* ===== MAIN CONTENT ===== */}
       <main className="main-content">
         <header className="top-bar">
-          <button
-            className="toggle-btn"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            title="Toggle Sidebar"
-          >
+          <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)} title="Toggle Sidebar">
             <Menu size={24} />
           </button>
-
           <div className="search-bar">
-            <input
-              type="text"
-              placeholder="Buscar equipo..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <input type="text" placeholder="Buscar equipo..." value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
         </header>
 
@@ -226,13 +190,7 @@ const AdminDashboard = () => {
 
           <div className="stats-grid">
             {stats.map((stat, i) => (
-              <StatsCard
-                key={i}
-                icon={stat.icon}
-                title={stat.title}
-                value={stat.value}
-                color={stat.color}
-              />
+              <StatsCard key={i} icon={stat.icon} title={stat.title} value={stat.value} color={stat.color} />
             ))}
           </div>
 
@@ -250,7 +208,6 @@ const AdminDashboard = () => {
                 <Plus size={18} /> Nuevo Partido
               </button>
             </div>
-
             <MatchTable matches={filteredMatches} deleteMatch={deleteMatch} />
           </div>
         </div>
