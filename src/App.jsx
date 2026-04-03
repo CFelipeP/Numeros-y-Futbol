@@ -14,6 +14,9 @@ import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
 import ScrollToTop from "./components/ScrollToTop";
 import ManagePublicNews from "./dashboard/ManagePublicNews";
+import AdminPosiciones from "./dashboard/AdminPosiciones";
+
+// Dentro de tus Routes:
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -29,6 +32,8 @@ function App() {
         <Route path="/news" element={<News />} />
         <Route path="/noticia/:id" element={<NewsDetail />} />
         <Route path="/mynews" element={<ManagePublicNews />} />
+        <Route path="/posiciones" element={<AdminPosiciones />} />
+
 
         {/* RUTAS PROTEGIDAS (ADMIN) */}
         <Route

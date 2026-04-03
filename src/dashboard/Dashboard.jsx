@@ -5,6 +5,7 @@ import "../admin.css";
 import Swal from "sweetalert2";
 import 'animate.css';
 
+
 import {
   LayoutDashboard,
   CalendarDays,
@@ -17,7 +18,8 @@ import {
   Plus,
   CircleDot,
   Target,
-  FileText
+  FileText,
+  Trophy
 } from "lucide-react";
 
 import StatsCard from "../components/StatsCard";
@@ -133,6 +135,7 @@ const AdminDashboard = () => {
     { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
     { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
     { path: "/teams", icon: <Shield size={20} />, label: "Equipos" },
+    { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },       // ← NUEVO
     { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
     { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
     { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
