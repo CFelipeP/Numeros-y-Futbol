@@ -8,19 +8,36 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts';
+import { BarChart3 } from 'lucide-react';
 
-// Datos de ejemplo (puedes pasarlos por props si los sacas de una API en el futuro)
-const data = [
-  { name: 'Jornada 1', goles: 4 },
-  { name: 'Jornada 2', goles: 3 },
-  { name: 'Jornada 3', goles: 5 },
-  { name: 'Jornada 4', goles: 2 },
-  { name: 'Jornada 5', goles: 6 },
-  { name: 'Jornada 6', goles: 4 },
-  { name: 'Jornada 7', goles: 8 },
-];
+const GoalsChart = ({ data }) => {
+  // Estado vacío cuando no hay datos
+  if (!data || data.length === 0) {
+    return (
+      <div style={{
+        width: '100%',
+        height: 300,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '12px',
+        color: '#475569',
+      }}>
+        <BarChart3 size={40} style={{ opacity: 0.15 }} />
+        <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#64748b' }}>
+          Sin datos de goles
+        </p>
+        <p style={{ margin: 0, fontSize: '12px', opacity: 0.5 }}>
+          Los datos aparecerán cuando se jueguen partidos
+        </p>
+      </div>
+    );
+  }
 
-const GoalsChart = () => {
+  // Calcular min/max para que el eje Y se ajuste bien
+  const maxGoles = Math.max(...data.map(d => d.goles), 1);
+
   return (
     <div style={{ width: '100%', height: 300 }}>
       <ResponsiveContainer>
@@ -28,55 +45,62 @@ const GoalsChart = () => {
           data={data}
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
         >
-          {/* Definición del degradado para el área */}
           <defs>
             <linearGradient id="colorGoles" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
             </linearGradient>
           </defs>
-          
-          {/* Líneas de fondo (Grid) - Usamos el color de borde de tu tema */}
+
           <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
-          
-          {/* Eje X (Abajo) */}
-          <XAxis 
-            dataKey="name" 
-            stroke="#9ca3af" 
-            fontSize={12} 
-            tickLine={false} 
+
+          <XAxis
+            dataKey="name"
+            stroke="#9ca3af"
+            fontSize={12}
+            tickLine={false}
             axisLine={false}
           />
-          
-          {/* Eje Y (Izquierda) */}
-          <YAxis 
-            stroke="#9ca3af" 
-            fontSize={12} 
-            tickLine={false} 
+
+          <YAxis
+            stroke="#9ca3af"
+            fontSize={12}
+            tickLine={false}
             axisLine={false}
+            domain={[0, Math.ceil(maxGoles * 1.2)]}
+            allowDecimals={false}
           />
-          
-          {/* Tooltip (Cuadro al pasar el mouse) - Estilo Dark Mode */}
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: '#1f2937', 
+
+          <Tooltip
+            contentStyle={{
+              backgroundColor: '#1f2937',
               border: '1px solid #374151',
               borderRadius: '8px',
               color: '#f9fafb',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)'
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
+              padding: '10px 14px',
             }}
-            labelStyle={{ color: '#9ca3af', marginBottom: '5px' }}
+            labelStyle={{ color: '#9ca3af', marginBottom: '5px', fontSize: '12px' }}
             itemStyle={{ color: '#3b82f6', fontWeight: 'bold' }}
+            // Muestra la fecha real en el tooltip si existe
+            labelFormatter={(label, payload) => {
+              if (payload && payload[0] && payload[0].payload.fecha) {
+                return `${label} — ${payload[0].payload.fecha}`;
+              }
+              return label;
+            }}
+            formatter={(value) => [`${value} goles`, 'Total']}
           />
-          
-          {/* El área rellena */}
-          <Area 
-            type="monotone" 
-            dataKey="goles" 
-            stroke="#3b82f6" 
+
+          <Area
+            type="monotone"
+            dataKey="goles"
+            stroke="#3b82f6"
             strokeWidth={3}
-            fillOpacity={1} 
-            fill="url(#colorGoles)" 
+            fillOpacity={1}
+            fill="url(#colorGoles)"
+            dot={{ r: 5, fill: '#3b82f6', stroke: '#1e293b', strokeWidth: 2 }}
+            activeDot={{ r: 7, fill: '#60a5fa', stroke: '#1e293b', strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>
