@@ -46,6 +46,12 @@ const IconAlert = () => (
   </svg>
 );
 
+const IconStar = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+  </svg>
+);
+
 const logoUrl = (path) => {
   if (!path) return "";
   if (path.startsWith("http")) return path;
@@ -56,8 +62,7 @@ const safeFetch = async (url) => {
   const res = await fetch(url);
   const text = await res.text();
   if (text.trim().startsWith("<")) {
-    const preview = text.substring(0, 150).replace(/<[^>]*>/g, "").trim();
-    throw new Error(`El servidor devolvió HTML en vez de JSON: "${preview}..."`);
+    throw new Error(`El servidor devolvió HTML en vez de JSON`);
   }
   return JSON.parse(text);
 };
@@ -68,10 +73,10 @@ const getDG = (gf, gc) => {
 };
 
 const getPosBadge = (index) => {
-  if (index === 0) return { bg: "rgba(16, 185, 129, 0.15)", color: "#10b981" };
-  if (index === 1) return { bg: "rgba(59, 130, 246, 0.15)", color: "#3b82f6" };
-  if (index === 2) return { bg: "rgba(245, 158, 11, 0.15)", color: "#f59e0b" };
-  if (index === 3) return { bg: "rgba(245, 158, 11, 0.10)", color: "#d97706" };
+  if (index === 0) return { bg: "rgba(16,185,129,0.15)", color: "#10b981" };
+  if (index === 1) return { bg: "rgba(59,130,246,0.15)", color: "#3b82f6" };
+  if (index === 2) return { bg: "rgba(245,158,11,0.15)", color: "#f59e0b" };
+  if (index === 3) return { bg: "rgba(245,158,11,0.10)", color: "#d97706" };
   return null;
 };
 
@@ -87,7 +92,34 @@ const getMatchStatus = (estado) => {
   return { text: estado, variant: "default" };
 };
 
-// Componente para una fila de resultado
+const normalizeMatch = (m, teamMap) => {
+  if (!m) return null;
+  const score = m.score || "";
+  let gl = m.goles_local;
+  let gv = m.goles_visitante;
+  if ((gl === null || gl === undefined || gl === "") && score && score !== "-") {
+    const parts = String(score).split(" - ");
+    gl = parts[0] !== undefined && parts[0] !== "" ? parseInt(parts[0]) : null;
+    gv = parts[1] !== undefined && parts[1] !== "" ? parseInt(parts[1]) : null;
+  }
+  const homeName = m.home_name || m.local_nombre || "";
+  const awayName = m.away_name || m.visitante_nombre || "";
+  let homeLogo = m.home_logo || m.local_logo || "";
+  let awayLogo = m.away_logo || m.visitante_logo || "";
+  if (!homeLogo && m.home_id && teamMap[String(m.home_id)]?.logo) homeLogo = teamMap[String(m.home_id)].logo;
+  if (!homeLogo && m.local_id && teamMap[String(m.local_id)]?.logo) homeLogo = teamMap[String(m.local_id)].logo;
+  if (!awayLogo && m.away_id && teamMap[String(m.away_id)]?.logo) awayLogo = teamMap[String(m.away_id)].logo;
+  if (!awayLogo && m.visitante_id && teamMap[String(m.visitante_id)]?.logo) awayLogo = teamMap[String(m.visitante_id)].logo;
+  if (!homeLogo && homeName) { const found = Object.values(teamMap).find(t => t.nombre === homeName); if (found?.logo) homeLogo = found.logo; }
+  if (!awayLogo && awayName) { const found = Object.values(teamMap).find(t => t.nombre === awayName); if (found?.logo) awayLogo = found.logo; }
+  return {
+    home_name: homeName, away_name: awayName, home_logo: homeLogo, away_logo: awayLogo,
+    goles_local: gl !== null && gl !== undefined ? gl : null,
+    goles_visitante: gv !== null && gv !== undefined ? gv : null,
+    fecha: m.fecha || m.date || "", estado: m.estado || m.status || "",
+  };
+};
+
 const ResultRow = ({ m }) => {
   const isHomeWin = parseInt(m.goles_local) > parseInt(m.goles_visitante);
   const isAwayWin = parseInt(m.goles_visitante) > parseInt(m.goles_local);
@@ -102,23 +134,14 @@ const ResultRow = ({ m }) => {
     onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
     onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)"; }}
     >
-      {/* Escudo local */}
       <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: "3px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <img src={logoUrl(m.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
       </div>
-      {/* Nombre local */}
-      <span style={{ fontSize: "0.75rem", fontWeight: isHomeWin ? 800 : 600, color: isHomeWin ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {m.home_name}
-      </span>
-      {/* Marcador */}
+      <span style={{ fontSize: "0.75rem", fontWeight: isHomeWin ? 800 : 600, color: isHomeWin ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.home_name}</span>
       <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "var(--color-white)", fontFamily: "var(--font-heading)", letterSpacing: "1px", flexShrink: 0, textShadow: "0 0 10px rgba(255,0,77,0.3)" }}>
         {m.goles_local ?? "-"} - {m.goles_visitante ?? "-"}
       </span>
-      {/* Nombre visitante */}
-      <span style={{ fontSize: "0.75rem", fontWeight: isAwayWin ? 800 : 600, color: isAwayWin ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>
-        {m.away_name}
-      </span>
-      {/* Escudo visitante */}
+      <span style={{ fontSize: "0.75rem", fontWeight: isAwayWin ? 800 : 600, color: isAwayWin ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{m.away_name}</span>
       <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: "3px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <img src={logoUrl(m.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
       </div>
@@ -126,8 +149,236 @@ const ResultRow = ({ m }) => {
   );
 };
 
-export default function PrimeraDivision() {
+/* ============================================================
+   TARJETA PARTIDO DESTACADO — REDISEÑO PREMIUM
+   ============================================================ */
+const FeaturedMatchCard = ({ match }) => {
+  const status = getMatchStatus(match.estado);
+  const isFinished = status.variant === "finished";
+  const isLive = status.variant === "live";
+  const isScheduled = status.variant === "scheduled";
+  const homeWin = match.goles_local !== null && match.goles_visitante !== null && match.goles_local > match.goles_visitante;
+  const awayWin = match.goles_local !== null && match.goles_visitante !== null && match.goles_visitante > match.goles_local;
 
+  const statusColor = isLive ? "#ef4444" : isFinished ? "#10b981" : "#f59e0b";
+  const statusBg = isLive ? "rgba(239,68,68,0.15)" : isFinished ? "rgba(16,185,129,0.12)" : "rgba(245,158,11,0.12)";
+
+  return (
+    <div style={{
+      position: "relative",
+      borderRadius: "20px",
+      overflow: "hidden",
+      background: "linear-gradient(160deg, #1a1f35 0%, #0d1117 40%, #111827 100%)",
+      border: "1px solid rgba(255,255,255,0.06)",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
+    }}>
+      {/* Barra superior con gradiente sutil */}
+      <div style={{
+        height: "3px",
+        background: `linear-gradient(90deg, transparent 0%, ${statusColor}66 30%, ${statusColor} 50%, ${statusColor}66 70%, transparent 100%)`,
+      }} />
+
+      {/* Fondo decorativo con glow */}
+      <div style={{
+        position: "absolute",
+        top: "-60px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "280px",
+        height: "180px",
+        borderRadius: "50%",
+        background: `radial-gradient(ellipse, ${statusColor}12 0%, transparent 70%)`,
+        pointerEvents: "none",
+      }} />
+
+      {/* Contenido */}
+      <div style={{ position: "relative", padding: "1.6rem 1.4rem 1.4rem" }}>
+
+        {/* Header: etiqueta + estado */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.8rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <IconStar />
+            <span style={{
+              fontSize: "0.65rem", fontWeight: 800, textTransform: "uppercase",
+              letterSpacing: "2px", color: "rgba(255,255,255,0.4)",
+            }}>
+              Destacado
+            </span>
+          </div>
+          <span style={{
+            fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase",
+            letterSpacing: "1.5px", color: statusColor, background: statusBg,
+            padding: "4px 12px", borderRadius: "20px",
+            border: `1px solid ${statusColor}25`,
+            animation: isLive ? "featuredPulse 2s ease-in-out infinite" : "none",
+          }}>
+            {status.text}
+          </span>
+        </div>
+
+        {/* Equipos y marcador */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem" }}>
+
+          {/* Equipo Local */}
+          <div style={{
+            flex: 1, display: "flex", flexDirection: "column",
+            alignItems: "center", gap: "10px", maxWidth: "130px",
+          }}>
+            <div style={{
+              width: "62px", height: "62px", borderRadius: "50%",
+              background: "rgba(255,255,255,0.04)",
+              border: "2px solid rgba(255,255,255,0.06)",
+              padding: "8px", display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+              transition: "all 0.3s ease",
+            }}>
+              <img
+                src={logoUrl(match.home_logo)}
+                alt={match.home_name}
+                style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}
+              />
+            </div>
+            <span style={{
+              fontSize: "0.72rem", fontWeight: homeWin ? 800 : 600,
+              color: homeWin ? "#ffffff" : "rgba(255,255,255,0.55)",
+              textAlign: "center", lineHeight: 1.25,
+              maxWidth: "110px", overflow: "hidden",
+              textOverflow: "ellipsis", display: "-webkit-box",
+              WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+              transition: "color 0.3s ease",
+            }}>
+              {match.home_name}
+            </span>
+            {homeWin && (
+              <span style={{
+                fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase",
+                letterSpacing: "1px", color: "#10b981",
+                background: "rgba(16,185,129,0.1)", padding: "2px 8px",
+                borderRadius: "4px", border: "1px solid rgba(16,185,129,0.15)",
+              }}>
+                Ganador
+              </span>
+            )}
+          </div>
+
+          {/* Marcador central */}
+          <div style={{
+            display: "flex", flexDirection: "column", alignItems: "center",
+            gap: "6px", padding: "0 0.8rem", flexShrink: 0,
+          }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: "0",
+              background: "rgba(0,0,0,0.35)",
+              borderRadius: "14px", padding: "6px 4px",
+              border: "1px solid rgba(255,255,255,0.04)",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)",
+            }}>
+              <span style={{
+                fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)",
+                color: homeWin ? "#ffffff" : "rgba(255,255,255,0.6)",
+                width: "48px", textAlign: "center", lineHeight: 1,
+                textShadow: homeWin ? "0 0 20px rgba(255,255,255,0.3)" : "none",
+                transition: "color 0.3s ease",
+              }}>
+                {match.goles_local ?? "-"}
+              </span>
+              <span style={{
+                fontSize: "1rem", fontWeight: 400, color: "rgba(255,255,255,0.2)",
+                margin: "0 2px", alignSelf: "center",
+              }}>:</span>
+              <span style={{
+                fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)",
+                color: awayWin ? "#ffffff" : "rgba(255,255,255,0.6)",
+                width: "48px", textAlign: "center", lineHeight: 1,
+                textShadow: awayWin ? "0 0 20px rgba(255,255,255,0.3)" : "none",
+                transition: "color 0.3s ease",
+              }}>
+                {match.goles_visitante ?? "-"}
+              </span>
+            </div>
+            <span style={{
+              fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase",
+              letterSpacing: "2px", color: "rgba(255,255,255,0.25)",
+            }}>
+              {isScheduled ? "VS" : "FT"}
+            </span>
+          </div>
+
+          {/* Equipo Visitante */}
+          <div style={{
+            flex: 1, display: "flex", flexDirection: "column",
+            alignItems: "center", gap: "10px", maxWidth: "130px",
+          }}>
+            <div style={{
+              width: "62px", height: "62px", borderRadius: "50%",
+              background: "rgba(255,255,255,0.04)",
+              border: "2px solid rgba(255,255,255,0.06)",
+              padding: "8px", display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+              transition: "all 0.3s ease",
+            }}>
+              <img
+                src={logoUrl(match.away_logo)}
+                alt={match.away_name}
+                style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}
+              />
+            </div>
+            <span style={{
+              fontSize: "0.72rem", fontWeight: awayWin ? 800 : 600,
+              color: awayWin ? "#ffffff" : "rgba(255,255,255,0.55)",
+              textAlign: "center", lineHeight: 1.25,
+              maxWidth: "110px", overflow: "hidden",
+              textOverflow: "ellipsis", display: "-webkit-box",
+              WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+              transition: "color 0.3s ease",
+            }}>
+              {match.away_name}
+            </span>
+            {awayWin && (
+              <span style={{
+                fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase",
+                letterSpacing: "1px", color: "#10b981",
+                background: "rgba(16,185,129,0.1)", padding: "2px 8px",
+                borderRadius: "4px", border: "1px solid rgba(16,185,129,0.15)",
+              }}>
+                Ganador
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Separador */}
+        <div style={{
+          height: "1px", margin: "1.4rem 0 1rem",
+          background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.06) 70%, transparent 100%)",
+        }} />
+
+        {/* Footer con fecha */}
+        {match.fecha && (
+          <div style={{
+            display: "flex", justifyContent: "center", alignItems: "center",
+            gap: "6px", fontSize: "0.7rem", color: "rgba(255,255,255,0.3)",
+          }}>
+            <IconCalendar />
+            <span>{match.fecha}</span>
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes featuredPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
+          50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+/* ============================================================
+   COMPONENTE PRINCIPAL
+   ============================================================ */
+export default function PrimeraDivision() {
   const [tabla, setTabla] = useState([]);
   const [match, setMatch] = useState(null);
   const [equipos, setEquipos] = useState([]);
@@ -139,29 +390,57 @@ export default function PrimeraDivision() {
   useEffect(() => {
     setLoading(true);
     setError(null);
-
-    Promise.all([
+    Promise.allSettled([
       safeFetch(`${API_BASE}get_tabla.php`),
-      safeFetch(`${API_BASE}get_featured_match.php`),
+      safeFetch(`${API_BASE}get_featured_match.php?t=${Date.now()}`),
       safeFetch(`${API_BASE}get_teams.php`),
       safeFetch(`${API_BASE}get_sidebar_matches.php`),
-    ])
-      .then(([tablaData, matchData, equiposData, sidebarData]) => {
-        setTabla(Array.isArray(tablaData) ? tablaData : []);
-        setMatch((matchData && !Array.isArray(matchData) && Object.keys(matchData).length > 0) ? matchData : null);
-        setEquipos(Array.isArray(equiposData) ? equiposData : []);
-        setSidebar(sidebarData && typeof sidebarData === "object" ? sidebarData : { next: null, recent: [] });
-      })
-      .catch(err => {
-        console.error("Error cargando datos:", err);
-        setError(err.message);
-      })
-      .finally(() => setLoading(false));
+    ]).then((results) => {
+      const tablaData = results[0].status === "fulfilled" ? results[0].value : [];
+      const matchData = results[1].status === "fulfilled" ? results[1].value : null;
+      const equiposData = results[2].status === "fulfilled" ? results[2].value : [];
+      const sidebarData = results[3].status === "fulfilled" ? results[3].value : null;
+
+      const tablaArr = Array.isArray(tablaData) ? tablaData : [];
+      const equiposArr = Array.isArray(equiposData) ? equiposData : [];
+      setTabla(tablaArr);
+      setEquipos(equiposArr);
+      setSidebar(sidebarData && typeof sidebarData === "object" ? sidebarData : { next: null, recent: [] });
+
+      const teamMap = {};
+      equiposArr.forEach((t) => { teamMap[String(t.id)] = t; if (t.nombre) teamMap[t.nombre] = t; });
+
+      let featured = null;
+      if (matchData && !Array.isArray(matchData) && Object.keys(matchData).length > 0) {
+        featured = normalizeMatch(matchData, teamMap);
+      }
+      if (!featured || !featured.home_name) {
+        if (sidebarData?.recent?.length) {
+          const found = sidebarData.recent.find(m => m.featured == 1 || m.destacado == 1);
+          if (found) featured = normalizeMatch(found, teamMap);
+        }
+      }
+      if (!featured || !featured.home_name) {
+        if (sidebarData?.next && (sidebarData.next.featured == 1 || sidebarData.next.destacado == 1)) {
+          featured = normalizeMatch(sidebarData.next, teamMap);
+        }
+      }
+      setMatch(featured);
+
+      if (!featured || !featured.home_name) {
+        safeFetch(`${API_BASE}get_matches.php`).then((allMatches) => {
+          const arr = Array.isArray(allMatches) ? allMatches : [];
+          const found = arr.find(m => m.featured == 1 || m.destacado == 1);
+          if (found) setMatch(normalizeMatch(found, teamMap));
+        }).catch(() => {});
+      }
+    }).catch((err) => {
+      console.error("Error cargando datos:", err);
+      setError(err.message);
+    }).finally(() => setLoading(false));
   }, []);
 
-  const getTeamStats = (equipoId) => {
-    return tabla.find(t => t.equipo_id === equipoId);
-  };
+  const getTeamStats = (equipoId) => tabla.find((t) => t.equipo_id === equipoId);
 
   if (loading) {
     return (
@@ -187,13 +466,6 @@ export default function PrimeraDivision() {
             <div style={{ color: "#ef4444", marginBottom: "1rem" }}><IconAlert /></div>
             <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.3rem", fontWeight: 800, color: "#ef4444", marginBottom: "0.8rem" }}>Error al cargar los datos</h3>
             <p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem", lineHeight: 1.6, marginBottom: "1.5rem" }}>{error}</p>
-            <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "1rem", fontSize: "0.8rem", color: "var(--color-text-muted)", textAlign: "left", fontFamily: "monospace", marginBottom: "1.5rem", wordBreak: "break-all" }}>
-              <div style={{ marginBottom: "0.3rem", color: "#f59e0b" }}>Endpoints verificados:</div>
-              <div>• {API_BASE}get_tabla.php</div>
-              <div>• {API_BASE}get_featured_match.php</div>
-              <div>• {API_BASE}get_teams.php</div>
-              <div>• {API_BASE}get_sidebar_matches.php</div>
-            </div>
             <button onClick={() => window.location.reload()} style={{ background: "linear-gradient(90deg, var(--color-accent), #ff3366)", color: "white", border: "none", padding: "0.8rem 2rem", borderRadius: "10px", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px" }}>Reintentar</button>
           </div>
         </section>
@@ -204,9 +476,7 @@ export default function PrimeraDivision() {
   return (
     <>
       <Header />
-
       <section className="table-section" style={{ paddingBottom: 0 }}>
-
         <div className="container" style={{ marginBottom: "1.5rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}>
             <IconTrophy />
@@ -220,7 +490,7 @@ export default function PrimeraDivision() {
             {[
               { key: "clasificacion", label: "Clasificación", icon: "📊" },
               { key: "equipos", label: "Equipos", icon: "🛡️" },
-            ].map(tab => (
+            ].map((tab) => (
               <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{ flex: 1, padding: "0.75rem 1rem", borderRadius: "10px", border: "none", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.85rem", letterSpacing: "0.5px", textTransform: "uppercase", background: activeTab === tab.key ? "linear-gradient(135deg, rgba(255,0,77,0.2), rgba(255,0,77,0.08))" : "transparent", color: activeTab === tab.key ? "var(--color-accent)" : "var(--color-text-muted)", boxShadow: activeTab === tab.key ? "0 0 15px rgba(255,0,77,0.15)" : "none", transition: "all 0.3s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
                 <span>{tab.icon}</span>{tab.label}
               </button>
@@ -228,92 +498,52 @@ export default function PrimeraDivision() {
           </div>
         </div>
 
-        {/* ===================== CLASIFICACIÓN ===================== */}
         {activeTab === "clasificacion" && (
           <div className="dashboard-grid">
-
             <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
 
-              {/* --- PARTIDO DESTACADO --- */}
-              <div className="glass-card" style={{ padding: "1.8rem" }}>
-                <div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--color-accent)", boxShadow: "0 0 8px var(--color-accent)", display: "inline-block" }} />
-                  Partido Destacado
-                </div>
-
-                {match ? (
-                  <div className="compact-match-card" style={{ background: "linear-gradient(135deg, rgba(255,0,77,0.06) 0%, rgba(30,41,59,0.5) 100%)", border: "1px solid rgba(255,0,77,0.12)", padding: "1.5rem 1.2rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
-                      <span style={{ fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--color-text-muted)" }}>Jornada Actual</span>
-                      <span className="live-badge-small" style={{ background: getMatchStatus(match.estado).variant === "live" ? "var(--color-loss)" : getMatchStatus(match.estado).variant === "finished" ? "var(--color-success)" : "var(--color-draw)", animation: getMatchStatus(match.estado).variant === "live" ? "pulse 2s infinite" : "none" }}>
-                        {getMatchStatus(match.estado).text}
-                      </span>
-                    </div>
-                    <div className="compact-match-teams" style={{ marginBottom: "1.2rem" }}>
-                      <div className="compact-team" style={{ alignItems: "center" }}>
-                        <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: "6px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "0.5rem" }}>
-                          <img src={logoUrl(match.home_logo)} alt={match.home_name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                        </div>
-                        <span className="compact-team-name" style={{ fontSize: "0.8rem", fontWeight: 700, maxWidth: "100px", color: "var(--color-text-main)", textAlign: "center" }}>{match.home_name}</span>
-                      </div>
-                      <div style={{ textAlign: "center" }}>
-                        <div className="compact-match-score" style={{ fontSize: "2.2rem", letterSpacing: "4px", textShadow: "0 0 20px rgba(255,0,77,0.5)" }}>
-                          {match.goles_local ?? "-"} - {match.goles_visitante ?? "-"}
-                        </div>
-                        <span style={{ fontSize: "0.6rem", color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>
-                          {getMatchStatus(match.estado).variant === "scheduled" ? "VS" : "FT"}
-                        </span>
-                      </div>
-                      <div className="compact-team" style={{ alignItems: "center" }}>
-                        <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: "6px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "0.5rem" }}>
-                          <img src={logoUrl(match.away_logo)} alt={match.away_name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                        </div>
-                        <span className="compact-team-name" style={{ fontSize: "0.8rem", fontWeight: 700, maxWidth: "100px", color: "var(--color-text-main)", textAlign: "center" }}>{match.away_name}</span>
-                      </div>
-                    </div>
-                    <div className="compact-match-info" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.8rem", marginTop: "0.5rem" }}>
-                      {match.fecha && (
-                        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><IconCalendar /> {match.fecha}</span>
-                      )}
-                    </div>
-                  </div>
+              {/* PARTIDO DESTACADO — NUEVO DISEÑO */}
+              <div>
+                {match && match.home_name ? (
+                  <FeaturedMatchCard match={match} />
                 ) : (
-                  <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "var(--color-text-muted)" }}>
-                    <div style={{ fontSize: "2rem", marginBottom: "0.5rem", opacity: 0.4 }}>⚽</div>
-                    <p style={{ fontSize: "0.9rem", margin: 0 }}>No hay partido destacado disponible</p>
-                    <p style={{ fontSize: "0.78rem", margin: "0.3rem 0 0", opacity: 0.6 }}>Se mostrará cuando se registre un partido</p>
+                  <div className="glass-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}>
+                    <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
+                      <span style={{ fontSize: "1.5rem", opacity: 0.3 }}>⚽</span>
+                    </div>
+                    <p style={{ fontSize: "0.9rem", margin: "0 0 0.3rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Sin partido destacado</p>
+                    <p style={{ fontSize: "0.75rem", margin: 0, color: "rgba(255,255,255,0.25)" }}>Se mostrará cuando se configure desde el panel</p>
                   </div>
                 )}
               </div>
 
-              {/* --- PRÓXIMO PARTIDO --- */}
+              {/* PRÓXIMO PARTIDO */}
               <div className="glass-card" style={{ padding: "1.8rem" }}>
                 <div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", boxShadow: "0 0 8px #f59e0b", display: "inline-block" }} />
                   Próximo Partido
                 </div>
-
                 {sidebar.next ? (
                   <div style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(30,41,59,0.4) 100%)", border: "1px solid rgba(245,158,11,0.12)", borderRadius: "16px", padding: "1.5rem 1.2rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
                       <span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#f59e0b", background: "rgba(245,158,11,0.12)", padding: "0.2rem 0.6rem", borderRadius: "6px" }}>
-                        {getMatchStatus(sidebar.next.estado).text}
+                        {getMatchStatus(sidebar.next.estado || sidebar.next.status).text}
                       </span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0 }}>
                         <div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <img src={logoUrl(sidebar.next.home_logo)} alt={sidebar.next.home_name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                          <img src={logoUrl(sidebar.next.home_logo || sidebar.next.local_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                         </div>
-                        <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sidebar.next.home_name}</span>
+                        <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sidebar.next.home_name || sidebar.next.local_nombre}</span>
                       </div>
                       <div style={{ flexShrink: 0 }}>
                         <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--color-text-muted)", background: "rgba(255,255,255,0.04)", padding: "0.35rem 0.7rem", borderRadius: "8px", letterSpacing: "1px" }}>VS</span>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0, justifyContent: "flex-end" }}>
-                        <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{sidebar.next.away_name}</span>
+                        <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{sidebar.next.away_name || sidebar.next.visitante_nombre}</span>
                         <div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <img src={logoUrl(sidebar.next.away_logo)} alt={sidebar.next.away_name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                          <img src={logoUrl(sidebar.next.away_logo || sidebar.next.visitante_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                         </div>
                       </div>
                     </div>
@@ -331,13 +561,12 @@ export default function PrimeraDivision() {
                 )}
               </div>
 
-              {/* --- ÚLTIMOS RESULTADOS --- */}
+              {/* ÚLTIMOS RESULTADOS */}
               <div className="glass-card" style={{ padding: "1.8rem" }}>
                 <div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981", display: "inline-block" }} />
                   Últimos Resultados
                 </div>
-
                 {sidebar.recent && sidebar.recent.length > 0 ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                     {sidebar.recent.map((m) => (
@@ -359,7 +588,7 @@ export default function PrimeraDivision() {
                 )}
               </div>
 
-              {/* --- LEYENDA --- */}
+              {/* LEYENDA */}
               <div className="glass-card" style={{ padding: "1.5rem" }}>
                 <div className="section-subtitle" style={{ marginTop: 0, fontSize: "0.85rem" }}>Leyenda</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
@@ -381,13 +610,12 @@ export default function PrimeraDivision() {
               </div>
             </div>
 
-            {/* --- TABLA CLASIFICACIÓN --- */}
+            {/* TABLA CLASIFICACIÓN */}
             <div className="glass-card" style={{ padding: "1.8rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
                 <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.3rem", fontWeight: 800, margin: 0, color: "var(--color-white)" }}>Clasificación General</h3>
                 <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", background: "rgba(255,255,255,0.05)", padding: "0.3rem 0.8rem", borderRadius: "20px", fontWeight: 600 }}>{tabla.length} equipos</span>
               </div>
-
               <div className="table-container">
                 <table className="standings-table">
                   <thead>
@@ -433,7 +661,6 @@ export default function PrimeraDivision() {
                   </tbody>
                 </table>
               </div>
-
               {tabla.length > 0 && (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
                   <span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span>
@@ -444,7 +671,7 @@ export default function PrimeraDivision() {
           </div>
         )}
 
-        {/* ===================== EQUIPOS ===================== */}
+        {/* TAB EQUIPOS */}
         {activeTab === "equipos" && (
           <div className="container" style={{ paddingBottom: "var(--spacing-lg)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
@@ -456,11 +683,9 @@ export default function PrimeraDivision() {
               </div>
               <span style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", background: "rgba(255,255,255,0.05)", padding: "0.4rem 1rem", borderRadius: "20px", fontWeight: 600 }}>{equipos.length} clubes</span>
             </div>
-
             {equipos.length === 0 ? (
               <div style={{ textAlign: "center", padding: "4rem 1rem", color: "var(--color-text-muted)" }}>
                 <p style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>No hay equipos registrados</p>
-                <p style={{ fontSize: "0.85rem" }}>Los equipos aparecerán aquí una vez sean dados de alta en el sistema.</p>
               </div>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
@@ -468,7 +693,6 @@ export default function PrimeraDivision() {
                   const stats = getTeamStats(equipo.id);
                   const pos = stats ? tabla.indexOf(stats) : -1;
                   const badge = pos >= 0 ? getPosBadge(pos) : null;
-
                   return (
                     <div key={equipo.id} className="glass-card" style={{ padding: 0, overflow: "hidden", transition: "all 0.3s ease", cursor: "default", borderLeft: badge ? `3px solid ${badge.color}` : "3px solid transparent" }}
                       onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 15px 40px rgba(0,0,0,0.4), 0 0 20px rgba(255,0,77,0.1)"; e.currentTarget.style.borderColor = "rgba(255,0,77,0.3)"; if (badge) e.currentTarget.style.borderLeftColor = badge.color; }}
@@ -482,48 +706,33 @@ export default function PrimeraDivision() {
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <h4 style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem", fontWeight: 800, margin: "0 0 0.2rem 0", color: "var(--color-white)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{equipo.nombre}</h4>
-                            {badge && (
-                              <span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: badge.color, background: badge.bg, padding: "0.15rem 0.5rem", borderRadius: "4px" }}>Pos. {pos + 1}</span>
-                            )}
+                            {badge && <span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: badge.color, background: badge.bg, padding: "0.15rem 0.5rem", borderRadius: "4px" }}>Pos. {pos + 1}</span>}
                           </div>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", marginBottom: "1.2rem" }}>
-                          {equipo.ciudad && (
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
-                              <IconMapPin /><span>{equipo.ciudad}</span>
-                            </div>
-                          )}
-                          {equipo.estadio && (
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
-                              <IconStadium /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{equipo.estadio}</span>
-                            </div>
-                          )}
+                          {equipo.ciudad && <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-text-muted)" }}><IconMapPin /><span>{equipo.ciudad}</span></div>}
+                          {equipo.estadio && <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-text-muted)" }}><IconStadium /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{equipo.estadio}</span></div>}
                         </div>
                         {stats && (
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "1rem" }}>
-                            {[
-                              { label: "PJ", value: stats.partidos_jugados, color: "var(--color-text-main)" },
-                              { label: "G", value: stats.ganados, color: "#10b981" },
-                              { label: "E", value: stats.empatados, color: "#f59e0b" },
-                              { label: "P", value: stats.perdidos, color: "#ef4444" },
-                            ].map((stat, i) => (
-                              <div key={i} style={{ textAlign: "center" }}>
-                                <div style={{ fontSize: "1.1rem", fontWeight: 800, color: stat.color, fontFamily: "var(--font-heading)", lineHeight: 1 }}>{stat.value}</div>
-                                <div style={{ fontSize: "0.65rem", color: "var(--color-text-muted)", marginTop: "0.2rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>{stat.label}</div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {stats && (
-                          <div style={{ marginTop: "1rem", paddingTop: "0.8rem", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: "0.78rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Puntos</span>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                              <div style={{ width: 80, height: 4, borderRadius: "2px", background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                                <div style={{ height: "100%", borderRadius: "2px", background: "linear-gradient(90deg, var(--color-accent), #ff3366)", width: `${Math.min((stats.puntos / (tabla[0]?.puntos || 1)) * 100, 100)}%`, transition: "width 0.5s ease" }} />
-                              </div>
-                              <span style={{ fontSize: "1.2rem", fontWeight: 900, color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 10px rgba(255,0,77,0.4)" }}>{stats.puntos}</span>
+                          <>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "1rem" }}>
+                              {[{ label: "PJ", value: stats.partidos_jugados, color: "var(--color-text-main)" }, { label: "G", value: stats.ganados, color: "#10b981" }, { label: "E", value: stats.empatados, color: "#f59e0b" }, { label: "P", value: stats.perdidos, color: "#ef4444" }].map((stat, i) => (
+                                <div key={i} style={{ textAlign: "center" }}>
+                                  <div style={{ fontSize: "1.1rem", fontWeight: 800, color: stat.color, fontFamily: "var(--font-heading)", lineHeight: 1 }}>{stat.value}</div>
+                                  <div style={{ fontSize: "0.65rem", color: "var(--color-text-muted)", marginTop: "0.2rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>{stat.label}</div>
+                                </div>
+                              ))}
                             </div>
-                          </div>
+                            <div style={{ marginTop: "1rem", paddingTop: "0.8rem", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: "0.78rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Puntos</span>
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                <div style={{ width: 80, height: 4, borderRadius: "2px", background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                                  <div style={{ height: "100%", borderRadius: "2px", background: "linear-gradient(90deg, var(--color-accent), #ff3366)", width: `${Math.min((stats.puntos / (tabla[0]?.puntos || 1)) * 100, 100)}%`, transition: "width 0.5s ease" }} />
+                                </div>
+                                <span style={{ fontSize: "1.2rem", fontWeight: 900, color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 10px rgba(255,0,77,0.4)" }}>{stats.puntos}</span>
+                              </div>
+                            </div>
+                          </>
                         )}
                       </div>
                     </div>
@@ -533,7 +742,6 @@ export default function PrimeraDivision() {
             )}
           </div>
         )}
-
       </section>
 
       <footer className="footer" id="driver-footer">

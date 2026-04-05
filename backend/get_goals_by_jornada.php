@@ -1,4 +1,6 @@
 <?php
+error_reporting(0);
+ini_set('display_errors', 0);
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 
@@ -8,11 +10,21 @@ if ($conn->connect_error) {
     exit;
 }
 
-// Traer TODOS los partidos finalizados ordenados cronológicamente
+ $division = $_GET['division'] ?? 'primera';
+
+if ($division === 'primera') {
+    $tablaPartidos = 'partidos';
+    $colEstado = 'estado';
+} else {
+    $sufijo = $division === 'segunda' ? '_segunda' : '_tercera';
+    $tablaPartidos = 'partidos' . $sufijo;
+    $colEstado = 'status';
+}
+
  $res = $conn->query("
     SELECT goles_local, goles_visitante, fecha
-    FROM partidos
-    WHERE estado = 'Finalizado'
+    FROM $tablaPartidos
+    WHERE $colEstado = 'Finalizado'
     ORDER BY fecha ASC, id ASC
 ");
 
@@ -21,13 +33,11 @@ if (!$res) {
     exit;
 }
 
-// Pasar todos a un array
  $rows = [];
 while ($row = $res->fetch_assoc()) {
     $rows[] = $row;
 }
 
-// Agrupar de 6 en 6
  $data = [];
  $jornada = 1;
  $total = count($rows);

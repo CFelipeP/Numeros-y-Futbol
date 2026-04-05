@@ -1,7 +1,6 @@
-
 // ========== ManageNews.jsx ==========
-// Este componente es para crear nuevas noticias, no para gestionar las existentes. Para eso se usará ManagePNews.jsx
-import React, { useState } from "react";
+// Este componente es para crear nuevas noticias, no para gestionar las existentes.
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
@@ -19,7 +18,8 @@ import {
   Plus,
   Image as ImageIcon,
   Send,
-  Trophy
+  Trophy,
+  ChevronDown,
 } from "lucide-react";
 
 const ManageNews = () => {
@@ -34,7 +34,12 @@ const ManageNews = () => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [teamsOpen, setTeamsOpen] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/teams/")) setTeamsOpen(true);
+  }, [location.pathname]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -52,7 +57,9 @@ const ManageNews = () => {
         title: 'Formato no válido',
         text: 'Solo JPG, PNG o MP4',
         toast: true,
-        position: 'top-end'
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000
       });
       return;
     }
@@ -182,7 +189,14 @@ const ManageNews = () => {
     { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
     { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
     { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
-    { path: "/teams", icon: <Shield size={20} />, label: "Equipos" },
+    {
+      type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
+      children: [
+        { path: "/teams/primera", label: "Primera División" },
+        { path: "/teams/segunda", label: "Segunda División" },
+        { path: "/teams/tercera", label: "Tercera División" },
+      ]
+    },
     { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
     { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
     { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
@@ -206,16 +220,53 @@ const ManageNews = () => {
 
         <nav className="sidebar-nav">
           <ul>
-            {navItems.map((item) => (
-              <li key={item.path}>
-                <Link
-                  to={item.path}
-                  className={`nav-item ${location.pathname === item.path ? "active" : ""}`}
-                >
-                  {item.icon} {item.label}
-                </Link>
-              </li>
-            ))}
+            {navItems.map((item, idx) => {
+              if (item.type === "dropdown") {
+                return (
+                  <li key={idx}>
+                    <button
+                      className="nav-item"
+                      onClick={() => setTeamsOpen(!teamsOpen)}
+                      style={{ width: "100%", justifyContent: "space-between" }}
+                    >
+                      <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                        {item.icon} {item.label}
+                      </span>
+                      <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: teamsOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
+                    </button>
+                    <ul style={{
+                      maxHeight: teamsOpen ? "200px" : "0",
+                      opacity: teamsOpen ? "1" : "0",
+                      overflow: "hidden",
+                      transition: "max-height 0.3s ease, opacity 0.2s ease",
+                      listStyle: "none", padding: teamsOpen ? "2px 0 4px 0" : "0", margin: 0,
+                    }}>
+                      {item.children.map(child => (
+                        <li key={child.path}>
+                          <Link
+                            to={child.path}
+                            className={`nav-item${location.pathname === child.path ? " active" : ""}`}
+                            style={{ paddingLeft: "48px", fontSize: "13.5px" }}
+                          >
+                            {child.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                );
+              }
+              return (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    className={`nav-item${location.pathname === item.path ? " active" : ""}`}
+                  >
+                    {item.icon} {item.label}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
@@ -299,6 +350,7 @@ const ManageNews = () => {
                   <div className="form-group">
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#334155' }}>Sube la imagen/video de la noticia</label>
                     <input
+                      id="file-input"
                       type="file"
                       accept="image/png, image/jpeg, video/mp4"
                       onChange={handleFileChange}
@@ -324,6 +376,15 @@ const ManageNews = () => {
           </div>
         </div>
       </main>
+
+      <style>{`
+        button.nav-item {
+          background: none;
+          border: none;
+          color: var(--text-muted);
+          font-family: inherit;
+        }
+      `}</style>
     </div>
   );
 };

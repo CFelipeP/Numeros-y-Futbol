@@ -16,6 +16,20 @@ if ($conn->connect_error) {
     exit;
 }
 
+ $division = $_GET['division'] ?? 'primera';
+
+// Nombres de tablas y columnas según la división
+if ($division === 'primera') {
+    $tablaPartidos = 'partidos';
+    $colEstado = 'estado';
+    $tablaPosiciones = 'tabla_posiciones';
+} else {
+    $sufijo = $division === 'segunda' ? '_segunda' : '_tercera';
+    $tablaPartidos = 'partidos' . $sufijo;
+    $colEstado = 'status';
+    $tablaPosiciones = 'tabla_posiciones' . $sufijo;
+}
+
  $pendientes = 0;
  $jugados    = 0;
  $goles      = 0;
@@ -24,26 +38,24 @@ if ($conn->connect_error) {
  $usuarios   = 0;
 
 try {
-    $pendientes = (int)$conn->query("SELECT COUNT(*) FROM partidos WHERE estado IS NULL OR estado != 'Finalizado'")->fetch_row()[0];
+    $pendientes = (int)$conn->query("SELECT COUNT(*) FROM $tablaPartidos WHERE $colEstado IS NULL OR $colEstado != 'Finalizado'")->fetch_row()[0];
 } catch (Exception $e) {}
 
 try {
-    $jugados = (int)$conn->query("SELECT COUNT(*) FROM partidos WHERE estado = 'Finalizado'")->fetch_row()[0];
+    $jugados = (int)$conn->query("SELECT COUNT(*) FROM $tablaPartidos WHERE $colEstado = 'Finalizado'")->fetch_row()[0];
 } catch (Exception $e) {}
 
 try {
-    // CORREGIDO: paréntesis mal cerrados y SUM mal escrito
-    $r = $conn->query("SELECT COALESCE(SUM(goles_local), 0) + COALESCE(SUM(goles_visitante), 0) AS total FROM partidos WHERE estado = 'Finalizado'");
+    $r = $conn->query("SELECT COALESCE(SUM(goles_local), 0) + COALESCE(SUM(goles_visitante), 0) AS total FROM $tablaPartidos WHERE $colEstado = 'Finalizado'");
     $goles = (int)($r->fetch_row()[0] ?? 0);
 } catch (Exception $e) {}
 
 try {
-    // CORREGIDO: tu tabla no tiene columna "activa", usa "estado = 'Publicado'"
     $noticias = (int)$conn->query("SELECT COUNT(*) FROM noticias WHERE estado = 'Publicado'")->fetch_row()[0];
 } catch (Exception $e) {}
 
 try {
-    $equipos = (int)$conn->query("SELECT COUNT(*) FROM tabla_posiciones")->fetch_row()[0];
+    $equipos = (int)$conn->query("SELECT COUNT(*) FROM $tablaPosiciones")->fetch_row()[0];
 } catch (Exception $e) {}
 
 try {

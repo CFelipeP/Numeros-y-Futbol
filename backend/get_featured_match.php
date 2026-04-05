@@ -1,28 +1,29 @@
 <?php
-error_reporting(0);
-ini_set('display_errors', 0);
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=utf-8");
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 
 try {
-    $conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
-    
-    if ($conn->connect_error) {
-        echo "{}";
-        exit;
-    }
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+    $con = new mysqli('localhost', 'root', 'Info2026/*-', 'numeros-y-futbol');
+    $con->set_charset('utf8');
 
-    $sql = "SELECT p.*, e1.nombre as home_name, e1.logo as home_logo, e2.nombre as away_name, e2.logo as away_logo FROM partidos p JOIN equipos e1 ON p.equipo_local_id = e1.id JOIN equipos e2 ON p.equipo_visitante_id = e2.id ORDER BY p.fecha DESC LIMIT 1";
-    
-    $result = $conn->query($sql);
-    
-    if (!$result || $result->num_rows === 0) {
-        echo "{}";
-        exit;
+    $r = $con->query("SELECT p.*,
+        el.nombre AS home_name, el.logo AS home_logo,
+        ev.nombre AS away_name, ev.logo AS away_logo
+        FROM partidos p
+        JOIN equipos el ON p.local_id = el.id
+        JOIN equipos ev ON p.visitante_id = ev.id
+        WHERE p.featured = 1
+        LIMIT 1");
+
+    if ($r && $f = $r->fetch_assoc()) {
+        echo json_encode($f);
+    } else {
+        echo json_encode([]);
     }
-    
-    $row = $result->fetch_assoc();
-    echo json_encode($row ?: (object)[]);
-} catch (Throwable $e) {
-    echo "{}";
+    $con->close();
+
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => $e->getMessage()]);
 }

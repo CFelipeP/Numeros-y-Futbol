@@ -16,16 +16,34 @@ if ($conn->connect_error) {
     exit;
 }
 
+ $division = $_GET['division'] ?? 'primera';
+
+// Primera usa equipo_local/equipo_visitante, Segunda/Tercera usan local_id/visitante_id
+if ($division === 'primera') {
+    $tablaPartidos = 'partidos';
+    $tablaEquipos  = 'equipos';
+    $colEstado     = 'estado';
+    $colLocal      = 'equipo_local';
+    $colVisitante  = 'equipo_visitante';
+} else {
+    $sufijo = $division === 'segunda' ? '_segunda' : '_tercera';
+    $tablaPartidos = 'partidos' . $sufijo;
+    $tablaEquipos  = 'equipos' . $sufijo;
+    $colEstado     = 'status';
+    $colLocal      = 'local_id';
+    $colVisitante  = 'visitante_id';
+}
+
  $recent = [];
 try {
     $res = $conn->query("
-        SELECT p.id, p.fecha, p.goles_local, p.goles_visitante, p.estado AS status,
+        SELECT p.id, p.fecha, p.goles_local, p.goles_visitante, p.$colEstado AS status,
                e1.nombre AS home_name, e1.logo AS home_logo,
                e2.nombre AS away_name, e2.logo AS away_logo
-        FROM partidos p
-        LEFT JOIN equipos e1 ON p.equipo_local = e1.id
-        LEFT JOIN equipos e2 ON p.equipo_visitante = e2.id
-        WHERE p.estado = 'Finalizado'
+        FROM $tablaPartidos p
+        LEFT JOIN $tablaEquipos e1 ON p.$colLocal = e1.id
+        LEFT JOIN $tablaEquipos e2 ON p.$colVisitante = e2.id
+        WHERE p.$colEstado = 'Finalizado'
         ORDER BY p.fecha DESC, p.id DESC
         LIMIT 5
     ");
@@ -42,14 +60,13 @@ try {
         SELECT p.id, p.fecha,
                e1.nombre AS home_name, e1.logo AS home_logo,
                e2.nombre AS away_name, e2.logo AS away_logo
-        FROM partidos p
-        LEFT JOIN equipos e1 ON p.equipo_local = e1.id
-        LEFT JOIN equipos e2 ON p.equipo_visitante = e2.id
-        WHERE p.estado IS NULL OR p.estado != 'Finalizado'
+        FROM $tablaPartidos p
+        LEFT JOIN $tablaEquipos e1 ON p.$colLocal = e1.id
+        LEFT JOIN $tablaEquipos e2 ON p.$colVisitante = e2.id
+        WHERE p.$colEstado IS NULL OR p.$colEstado != 'Finalizado'
         ORDER BY p.fecha ASC, p.id ASC
         LIMIT 1
     ");
-    // CORREGIDO: $row2 nunca estaba definido, faltaba fetch_assoc()
     $row2 = $res2->fetch_assoc();
     if ($row2) {
         $next = $row2;

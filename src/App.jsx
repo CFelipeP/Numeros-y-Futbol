@@ -6,10 +6,13 @@ import Register from "./pages/Register";
 import Dashboard from "./dashboard/Dashboard";
 import ManageMatches from "./dashboard/ManageMatches";
 import ManageTeams from "./dashboard/ManageTeams";
+import ManageTeamsSegunda from "./dashboard/ManageTeamsSegunda";
+import ManageTeamsTercera from "./dashboard/ManageTeamsTercera";
 import ManageUsers from "./dashboard/ManageUsers";
 import ManageNews from "./dashboard/ManageNews";
 import Settings from "./dashboard/Settings"; // <--- NUEVO IMPORT
 import Primera from "./Divisiones/Primera";
+import Segunda from "./Divisiones/Segunda";
 import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
 import ScrollToTop from "./components/ScrollToTop";
@@ -33,6 +36,10 @@ function App() {
         <Route path="/noticia/:id" element={<NewsDetail />} />
         <Route path="/mynews" element={<ManagePublicNews />} />
         <Route path="/posiciones" element={<AdminPosiciones />} />
+        <Route path="/teams/primera" element={<ManageTeams />} />
+        <Route path="/teams/segunda" element={<ManageTeamsSegunda />} />
+        <Route path="/teams/tercera" element={<ManageTeamsTercera />} />
+        <Route path="/segunda" element={<Segunda />} />
 
 
         {/* RUTAS PROTEGIDAS (ADMIN) */}

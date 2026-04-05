@@ -18,14 +18,20 @@ import {
   Trash2,
   Edit,
   Mail,
-  Trophy
+  Trophy,
+  ChevronDown,
 } from "lucide-react";
 
 const ManageUsers = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [teamsOpen, setTeamsOpen] = useState(false);
   const location = useLocation();
   const [users, setUsers] = useState([]);
   const currentUser = JSON.parse(localStorage.getItem("user"));
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/teams/")) setTeamsOpen(true);
+  }, [location.pathname]);
 
   useEffect(() => {
     fetch("http://numeros-y-futbol.test/backend/get_users.php")
@@ -50,9 +56,9 @@ const ManageUsers = () => {
     Swal.fire({
       title: "Agregar Nuevo Usuario",
       html:
-        '<input id="name" class="swal2-input" placeholder="Nombre completo">' +
-        '<input id="email" type="email" class="swal2-input" placeholder="Correo electrónico">' +
-        '<select id="role" class="swal2-select" style="width: 100%; margin-top: 1rem; padding: 0.8rem; background: #0b1120; color: white; border-radius: 8px; border: 1px solid #374151;">' +
+        '<input id="swal-name" class="swal2-input" placeholder="Nombre completo">' +
+        '<input id="swal-email" type="email" class="swal2-input" placeholder="Correo electrónico">' +
+        '<select id="swal-role" class="swal2-select" style="width: 100%; margin-top: 1rem; padding: 0.8rem; background: #0b1120; color: white; border-radius: 8px; border: 1px solid #374151;">' +
         '<option value="Usuario">Usuario</option>' +
         '<option value="Editor">Editor</option>' +
         '<option value="Administrador">Administrador</option>' +
@@ -60,9 +66,9 @@ const ManageUsers = () => {
       showCancelButton: true,
       confirmButtonText: "Agregar",
       preConfirm: () => {
-        const name = document.getElementById("name").value;
-        const email = document.getElementById("email").value;
-        const role = document.getElementById("role").value;
+        const name = document.getElementById("swal-name").value;
+        const email = document.getElementById("swal-email").value;
+        const role = document.getElementById("swal-role").value;
 
         if (!name || !email) {
           Swal.showValidationMessage("Nombre y email son obligatorios");
@@ -75,7 +81,7 @@ const ManageUsers = () => {
         const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(result.value.name)}&background=random&color=fff`;
         const newUser = { id: Date.now(), ...result.value, avatar: avatarUrl, status: "Activo" };
         setUsers([...users, newUser]);
-        Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Usuario creado", timer: 1500 });
+        Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Usuario creado", showConfirmButton: false, timer: 1500 });
       }
     });
   };
@@ -95,7 +101,7 @@ const ManageUsers = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         setUsers(users.filter((u) => u.id !== id));
-        Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Usuario eliminado", timer: 1500 });
+        Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Usuario eliminado", showConfirmButton: false, timer: 1500 });
       }
     });
   };
@@ -104,7 +110,14 @@ const ManageUsers = () => {
     { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
     { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
     { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
-    { path: "/teams", icon: <Shield size={20} />, label: "Equipos" },
+    {
+      type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
+      children: [
+        { path: "/teams/primera", label: "Primera División" },
+        { path: "/teams/segunda", label: "Segunda División" },
+        { path: "/teams/tercera", label: "Tercera División" },
+      ]
+    },
     { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
     { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
     { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
@@ -128,16 +141,53 @@ const ManageUsers = () => {
 
         <nav className="sidebar-nav">
           <ul>
-            {navItems.map((item) => (
-              <li key={item.path}>
-                <Link
-                  to={item.path}
-                  className={`nav-item ${location.pathname === item.path ? "active" : ""}`}
-                >
-                  {item.icon} {item.label}
-                </Link>
-              </li>
-            ))}
+            {navItems.map((item, idx) => {
+              if (item.type === "dropdown") {
+                return (
+                  <li key={idx}>
+                    <button
+                      className="nav-item"
+                      onClick={() => setTeamsOpen(!teamsOpen)}
+                      style={{ width: "100%", justifyContent: "space-between" }}
+                    >
+                      <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                        {item.icon} {item.label}
+                      </span>
+                      <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: teamsOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
+                    </button>
+                    <ul style={{
+                      maxHeight: teamsOpen ? "200px" : "0",
+                      opacity: teamsOpen ? "1" : "0",
+                      overflow: "hidden",
+                      transition: "max-height 0.3s ease, opacity 0.2s ease",
+                      listStyle: "none", padding: teamsOpen ? "2px 0 4px 0" : "0", margin: 0,
+                    }}>
+                      {item.children.map(child => (
+                        <li key={child.path}>
+                          <Link
+                            to={child.path}
+                            className={`nav-item${location.pathname === child.path ? " active" : ""}`}
+                            style={{ paddingLeft: "48px", fontSize: "13.5px" }}
+                          >
+                            {child.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                );
+              }
+              return (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    className={`nav-item${location.pathname === item.path ? " active" : ""}`}
+                  >
+                    {item.icon} {item.label}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
@@ -233,6 +283,15 @@ const ManageUsers = () => {
           </div>
         </div>
       </main>
+
+      <style>{`
+        button.nav-item {
+          background: none;
+          border: none;
+          color: var(--text-muted);
+          font-family: inherit;
+        }
+      `}</style>
     </div>
   );
 };

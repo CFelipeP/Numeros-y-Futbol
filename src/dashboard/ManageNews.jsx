@@ -19,19 +19,24 @@ import {
   FileText,
   Upload,
   Image,
-  Trophy
+  Trophy,
+  ChevronDown,
 } from "lucide-react";
 
 export default function ManagePublicNews() {
   const [news, setNews] = useState([]);
   const [editing, setEditing] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [teamsOpen, setTeamsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const location = useLocation();
 
-  // Estado para el archivo nuevo al editar
   const [editFile, setEditFile] = useState(null);
   const [editUploading, setEditUploading] = useState(false);
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/teams/")) setTeamsOpen(true);
+  }, [location.pathname]);
 
   useEffect(() => {
     fetchNews();
@@ -85,7 +90,6 @@ export default function ManagePublicNews() {
     }
   };
 
-  // Subir archivo nuevo al editar
   const uploadEditFile = async () => {
     if (!editFile) return null;
 
@@ -160,7 +164,6 @@ export default function ManagePublicNews() {
 
       let finalImage = editing.imagen || "";
 
-      // Si hay archivo nuevo, subirlo primero
       if (editFile) {
         const uploadedUrl = await uploadEditFile();
         if (!uploadedUrl) {
@@ -204,7 +207,6 @@ export default function ManagePublicNews() {
     }
   };
 
-  // Cierra el modal y limpia el archivo
   const closeEdit = () => {
     setEditing(null);
     setEditFile(null);
@@ -232,7 +234,6 @@ export default function ManagePublicNews() {
     );
   };
 
-  // Preview del archivo seleccionado antes de guardar
   const renderEditPreview = () => {
     if (editFile) {
       const url = URL.createObjectURL(editFile);
@@ -276,7 +277,14 @@ export default function ManagePublicNews() {
     { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
     { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
     { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
-    { path: "/teams", icon: <Shield size={20} />, label: "Equipos" },
+    {
+      type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
+      children: [
+        { path: "/teams/primera", label: "Primera División" },
+        { path: "/teams/segunda", label: "Segunda División" },
+        { path: "/teams/tercera", label: "Tercera División" },
+      ]
+    },
     { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
     { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
     { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
@@ -300,16 +308,53 @@ export default function ManagePublicNews() {
 
         <nav className="sidebar-nav">
           <ul>
-            {navItems.map((item) => (
-              <li key={item.path}>
-                <Link
-                  to={item.path}
-                  className={`nav-item ${location.pathname === item.path ? "active" : ""}`}
-                >
-                  {item.icon} {item.label}
-                </Link>
-              </li>
-            ))}
+            {navItems.map((item, idx) => {
+              if (item.type === "dropdown") {
+                return (
+                  <li key={idx}>
+                    <button
+                      className="nav-item"
+                      onClick={() => setTeamsOpen(!teamsOpen)}
+                      style={{ width: "100%", justifyContent: "space-between" }}
+                    >
+                      <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                        {item.icon} {item.label}
+                      </span>
+                      <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: teamsOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
+                    </button>
+                    <ul style={{
+                      maxHeight: teamsOpen ? "200px" : "0",
+                      opacity: teamsOpen ? "1" : "0",
+                      overflow: "hidden",
+                      transition: "max-height 0.3s ease, opacity 0.2s ease",
+                      listStyle: "none", padding: teamsOpen ? "2px 0 4px 0" : "0", margin: 0,
+                    }}>
+                      {item.children.map(child => (
+                        <li key={child.path}>
+                          <Link
+                            to={child.path}
+                            className={`nav-item${location.pathname === child.path ? " active" : ""}`}
+                            style={{ paddingLeft: "48px", fontSize: "13.5px" }}
+                          >
+                            {child.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                );
+              }
+              return (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    className={`nav-item${location.pathname === item.path ? " active" : ""}`}
+                  >
+                    {item.icon} {item.label}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
@@ -389,7 +434,6 @@ export default function ManagePublicNews() {
         <div className="modal-overlay-edit" onClick={(e) => { if (e.target === e.currentTarget) closeEdit(); }}>
           <div className="modal-edit-card animate__animated animate__fadeInUp">
 
-            {/* Header */}
             <div className="modal-edit-header">
               <h2 style={{ margin: 0, fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '8px', color: '#f1f5f9' }}>
                 <Newspaper size={20} style={{ color: '#e2b340' }} /> Editar Noticia
@@ -399,7 +443,6 @@ export default function ManagePublicNews() {
               </button>
             </div>
 
-            {/* Preview del media actual o del nuevo archivo */}
             <div className="modal-edit-preview">
               {renderEditPreview()}
               {editFile && (
@@ -415,11 +458,9 @@ export default function ManagePublicNews() {
               )}
             </div>
 
-            {/* Formulario */}
             <div className="modal-edit-body">
               <div className="modal-edit-grid">
 
-                {/* Título */}
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                   <label>Título de la Noticia</label>
                   <input
@@ -429,7 +470,6 @@ export default function ManagePublicNews() {
                   />
                 </div>
 
-                {/* Autor y Categoría */}
                 <div className="form-group">
                   <label>Autor</label>
                   <input
@@ -447,7 +487,6 @@ export default function ManagePublicNews() {
                   />
                 </div>
 
-                {/* Contenido */}
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                   <label>Contenido</label>
                   <textarea
@@ -458,7 +497,6 @@ export default function ManagePublicNews() {
                   />
                 </div>
 
-                {/* Subir archivo nuevo */}
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Upload size={14} /> Cambiar Imagen / Video
@@ -483,7 +521,6 @@ export default function ManagePublicNews() {
                   </div>
                 </div>
 
-                {/* URL manual (opcional) */}
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                   <label>URL de Imagen o Video <span style={{ fontWeight: 400, opacity: 0.5 }}>(opcional, se ignora si subes archivo)</span></label>
                   <input
@@ -496,7 +533,6 @@ export default function ManagePublicNews() {
               </div>
             </div>
 
-            {/* Footer con acciones */}
             <div className="modal-edit-footer">
               <button className="modal-cancel-btn" onClick={closeEdit}>
                 Cancelar
@@ -523,7 +559,6 @@ export default function ManagePublicNews() {
       )}
 
       <style>{`
-        /* ===== BOTONES DE ACCIÓN SOBRE CARDS ===== */
         .admin-actions {
           position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; z-index: 10;
         }
@@ -541,14 +576,12 @@ export default function ManagePublicNews() {
           background: #ef4444; border-color: #ef4444; box-shadow: 0 4px 12px rgba(239,68,68,0.4);
         }
 
-        /* ===== MODAL — FONDO ===== */
         .modal-overlay-edit {
           position: fixed; inset: 0; background: rgba(2, 6, 15, 0.75);
           backdrop-filter: blur(8px); display: flex; justify-content: center;
           align-items: center; z-index: 1000;
         }
 
-        /* ===== MODAL — TARJETA (AZUL OSCURO) ===== */
         .modal-edit-card {
           background: #0b1120;
           border: 1px solid rgba(255,255,255,0.06);
@@ -558,7 +591,6 @@ export default function ManagePublicNews() {
           overflow: hidden;
         }
 
-        /* ===== MODAL — HEADER ===== */
         .modal-edit-header {
           display: flex; justify-content: space-between; align-items: center;
           padding: 18px 24px; border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -575,7 +607,6 @@ export default function ManagePublicNews() {
           border-color: rgba(239,68,68,0.3); transform: rotate(90deg);
         }
 
-        /* ===== MODAL — PREVIEW MEDIA ===== */
         .modal-edit-preview {
           width: 100%; height: 180px; overflow: hidden; background: #060a13;
           flex-shrink: 0; position: relative;
@@ -586,7 +617,6 @@ export default function ManagePublicNews() {
           pointer-events: none;
         }
 
-        /* ===== MODAL — BODY ===== */
         .modal-edit-body {
           padding: 20px 24px; overflow-y: auto; flex: 1;
         }
@@ -622,7 +652,6 @@ export default function ManagePublicNews() {
           min-height: 110px; resize: vertical; line-height: 1.6;
         }
 
-        /* ===== ÁREA DE SUBIR ARCHIVO ===== */
         .edit-file-upload-area {
           position: relative;
         }
@@ -649,7 +678,6 @@ export default function ManagePublicNews() {
           color: #475569; font-weight: 400;
         }
 
-        /* ===== MODAL — FOOTER ===== */
         .modal-edit-footer {
           display: flex; justify-content: flex-end; gap: 10px;
           padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.06);
@@ -666,7 +694,6 @@ export default function ManagePublicNews() {
         }
         .modal-save-btn { min-width: 180px !important; justify-content: center !important; }
 
-        /* ===== SPINNER DE SUBIDA ===== */
         .edit-spinner {
           display: inline-block; width: 16px; height: 16px;
           border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff;
@@ -677,7 +704,13 @@ export default function ManagePublicNews() {
           to { transform: rotate(360deg); }
         }
 
-        /* ===== RESPONSIVE ===== */
+        button.nav-item {
+          background: none;
+          border: none;
+          color: var(--text-muted);
+          font-family: inherit;
+        }
+
         @media (max-width: 640px) {
           .modal-edit-card { width: 100%; max-width: 100vw; max-height: 100vh; border-radius: 0; }
           .modal-edit-grid { grid-template-columns: 1fr; }

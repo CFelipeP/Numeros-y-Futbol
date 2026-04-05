@@ -120,11 +120,11 @@ const Divisions = () => (
       <motion.div className="divisions-grid" variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}>
         <motion.div className="division-card" variants={itemVariants} id="primera">
           <div className="division-card-banner bg-primary"><span className="division-number">1</span></div>
-          <div className="division-card-body"><h3>Primera División</h3><p>La élite del fútbol salvadoreño.</p><div className="division-card-footer"><span className="team-count">12 equipos</span><a href="#" className="btn-ghost">Ver más <ArrowRight /></a></div></div>
+          <div className="division-card-body"><h3>Primera División</h3><p>La élite del fútbol salvadoreño.</p><div className="division-card-footer"><span className="team-count">12 equipos</span><a href="/primera" className="btn-ghost">Ver más <ArrowRight /></a></div></div>
         </motion.div>
         <motion.div className="division-card" variants={itemVariants} id="segunda">
           <div className="division-card-banner bg-secondary"><span className="division-number">2</span></div>
-          <div className="division-card-body"><h3>Segunda División</h3><p>Camino hacia la élite.</p><div className="division-card-footer"><span className="team-count">24 equipos</span><a href="#" className="btn-ghost">Ver más <ArrowRight /></a></div></div>
+          <div className="division-card-body"><h3>Segunda División</h3><p>Camino hacia la élite.</p><div className="division-card-footer"><span className="team-count">24 equipos</span><a href="/segunda" className="btn-ghost">Ver más <ArrowRight /></a></div></div>
         </motion.div>
         <motion.div className="division-card" variants={itemVariants} id="tercera">
           <div className="division-card-banner bg-dark"><span className="division-number">3</span></div>
