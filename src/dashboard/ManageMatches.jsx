@@ -392,7 +392,7 @@ const ManageMatches = () => {
                                 <span style={{ fontSize: "0.85rem" }}>Cargando partidos de {currentDiv?.label}...</span>
                             </div>
                         ) : (
-                            
+                           
                             <table className="data-table">
                                 <thead>
                                     <tr>
@@ -529,12 +529,7 @@ const ManageMatches = () => {
     @keyframes nmSpin { to { transform: rotate(360deg); } }
 
     .hide-on-mobile { display: table-cell; }
-    .admin-layout .top-bar {
-            position: sticky !important; 
-            top: 0 !important;
-            z-index: 60 !important; 
-            background-color: inherit; 
-        }
+    .admin-layout .top-bar { position: sticky !important; top: 0 !important; z-index: 60 !important; background-color: inherit; }
 
     /* === Sidebar overlay bajo 900px === */
     @media (max-width: 900px) {
