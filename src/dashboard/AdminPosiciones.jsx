@@ -51,9 +51,10 @@ const normalizeRow = (row, div) => {
 };
 
 const AdminPosiciones = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false); // Cambiado a false por defecto para móviles
     const [teamsOpen, setTeamsOpen] = useState(false);
-    const [division, setDivision] = useState("primera");
+    const [division, setDivision] = useState(() => localStorage.getItem("admin_division") || "primera");
+    useEffect(() => { localStorage.setItem("admin_division", division); }, [division]);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [filterGrupo, setFilterGrupo] = useState("todos");
     const dropdownRef = useRef(null);
@@ -106,7 +107,7 @@ const AdminPosiciones = () => {
 
     useEffect(() => { fetchTabla(); }, [division]);
 
-        const handleReset = () => {
+    const handleReset = () => {
         const div = DIVISIONES.find(d => d.value === division);
         const ep = getEndpoints().reset;
         const fileName = ep.split("/").pop();
@@ -205,7 +206,7 @@ const AdminPosiciones = () => {
         if (!grupo) return null;
         const isEast = grupo.toLowerCase() === "east";
         return (
-            <span style={{
+            <span className="hide-on-mobile" style={{
                 display: "inline-flex", alignItems: "center", gap: "3px", padding: "1px 6px",
                 borderRadius: "4px", fontSize: "9px", fontWeight: 800,
                 background: isEast ? "rgba(59,130,246,0.12)" : "rgba(249,115,22,0.12)",
@@ -261,46 +262,48 @@ const AdminPosiciones = () => {
                 onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = pos % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)"; }}
             >
-                <td style={{ padding: "0.85rem 0.8rem", textAlign: "center" }}>
+                <td style={{ padding: "0.85rem 0.5rem", textAlign: "center" }}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.15rem" }}>
                         {posColor ? (
                             <span style={{ width: 28, height: 28, borderRadius: "8px", background: `${posColor}18`, color: posColor, fontSize: "0.78rem", fontWeight: 800, fontFamily: "monospace", display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${posColor}25` }}>{pos}</span>
                         ) : (
                             <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isBottom ? "#ef4444" : "#475569", fontFamily: "monospace" }}>{pos}</span>
                         )}
-                        {posLabel && <span style={{ fontSize: "0.55rem", color: posColor, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px" }}>{posLabel}</span>}
+                        {posLabel && <span className="hide-on-mobile" style={{ fontSize: "0.55rem", color: posColor, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.3px" }}>{posLabel}</span>}
                     </div>
                 </td>
-                <td style={{ padding: "0.85rem 0.8rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
-                        <div style={{ width: 36, height: 36, borderRadius: "10px", background: "rgba(255,255,255,0.05)", padding: "4px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid rgba(255,255,255,0.05)" }}>
+                <td style={{ padding: "0.85rem 0.5rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <div style={{ width: 32, height: 32, borderRadius: "8px", background: "rgba(255,255,255,0.05)", padding: "3px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid rgba(255,255,255,0.05)" }}>
                             <img src={logoUrl(team.logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                         </div>
-                        <div style={{ display: "flex", alignItems: "center" }}>
-                            <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "#e2e8f0", whiteSpace: "nowrap" }}>{team.nombre}</span>
-                            <GrupoBadge grupo={team.grupo} />
-                        </div>
+                        <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#e2e8f0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{team.nombre}</span>
+                        <GrupoBadge grupo={team.grupo} />
                     </div>
                 </td>
-                <td style={{ padding: "0.85rem 0.5rem", textAlign: "center", fontSize: "0.85rem", color: "#94a3b8", fontWeight: 500 }}>{team.pj}</td>
-                <td style={{ padding: "0.85rem 0.5rem", textAlign: "center" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 24, borderRadius: "6px", background: team.pg > 0 ? "rgba(16,185,129,0.1)" : "transparent", fontSize: "0.85rem", fontWeight: 700, color: team.pg > 0 ? "#10b981" : "#475569" }}>{team.pg}</span>
+                <td style={{ padding: "0.85rem 0.4rem", textAlign: "center", fontSize: "0.85rem", color: "#94a3b8", fontWeight: 500 }}>{team.pj}</td>
+                <td style={{ padding: "0.85rem 0.4rem", textAlign: "center" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 24, borderRadius: "6px", background: team.pg > 0 ? "rgba(16,185,129,0.1)" : "transparent", fontSize: "0.85rem", fontWeight: 700, color: team.pg > 0 ? "#10b981" : "#475569" }}>{team.pg}</span>
                 </td>
-                <td style={{ padding: "0.85rem 0.5rem", textAlign: "center" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 24, borderRadius: "6px", background: team.pe > 0 ? "rgba(245,158,11,0.1)" : "transparent", fontSize: "0.85rem", fontWeight: 700, color: team.pe > 0 ? "#f59e0b" : "#475569" }}>{team.pe}</span>
+                <td style={{ padding: "0.85rem 0.4rem", textAlign: "center" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 24, borderRadius: "6px", background: team.pe > 0 ? "rgba(245,158,11,0.1)" : "transparent", fontSize: "0.85rem", fontWeight: 700, color: team.pe > 0 ? "#f59e0b" : "#475569" }}>{team.pe}</span>
                 </td>
-                <td style={{ padding: "0.85rem 0.5rem", textAlign: "center" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 24, borderRadius: "6px", background: team.pp > 0 ? "rgba(239,68,68,0.1)" : "transparent", fontSize: "0.85rem", fontWeight: 700, color: team.pp > 0 ? "#ef4444" : "#475569" }}>{team.pp}</span>
+                <td style={{ padding: "0.85rem 0.4rem", textAlign: "center" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 24, borderRadius: "6px", background: team.pp > 0 ? "rgba(239,68,68,0.1)" : "transparent", fontSize: "0.85rem", fontWeight: 700, color: team.pp > 0 ? "#ef4444" : "#475569" }}>{team.pp}</span>
                 </td>
-                <td style={{ padding: "0.85rem 0.5rem", textAlign: "center", fontSize: "0.85rem", color: "#94a3b8", fontWeight: 500 }}>{team.gf}</td>
-                <td style={{ padding: "0.85rem 0.5rem", textAlign: "center", fontSize: "0.85rem", color: "#94a3b8", fontWeight: 500 }}>{team.gc}</td>
-                <td style={{ padding: "0.85rem 0.5rem", textAlign: "center" }}>
+                
+                {/* Columnas ocultas en móvil para ahorrar espacio */}
+                <td className="hide-on-mobile" style={{ padding: "0.85rem 0.5rem", textAlign: "center", fontSize: "0.85rem", color: "#94a3b8", fontWeight: 500 }}>{team.gf}</td>
+                <td className="hide-on-mobile" style={{ padding: "0.85rem 0.5rem", textAlign: "center", fontSize: "0.85rem", color: "#94a3b8", fontWeight: 500 }}>{team.gc}</td>
+                
+                <td style={{ padding: "0.85rem 0.4rem", textAlign: "center" }}>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: "0.2rem", fontSize: "0.8rem", fontWeight: 700, color: team.dg > 0 ? "#10b981" : team.dg < 0 ? "#ef4444" : "#475569" }}>
                         {team.dg > 0 ? <TrendingUp size={12} /> : team.dg < 0 ? <TrendingDown size={12} /> : <Minus size={12} />}
                         {getDG(team.dg)}
                     </span>
                 </td>
-                <td style={{ padding: "0.85rem 0.8rem" }}>
+                
+                <td className="hide-on-mobile" style={{ padding: "0.85rem 0.8rem" }}>
                     {team.pj > 0 ? (
                         <div style={{ display: "flex", height: 6, borderRadius: "3px", overflow: "hidden", gap: "1px", background: "rgba(255,255,255,0.03)" }}>
                             <div style={{ width: `${winRate}%`, background: "#10b981", borderRadius: "3px", transition: "width 0.5s ease", minWidth: winRate > 0 ? "3px" : 0 }} title={`Ganados: ${winRate.toFixed(0)}%`} />
@@ -311,7 +314,8 @@ const AdminPosiciones = () => {
                         <div style={{ height: 6, borderRadius: "3px", background: "rgba(255,255,255,0.03)" }} />
                     )}
                 </td>
-                <td style={{ padding: "0.85rem 1rem", textAlign: "center" }}>
+                
+                <td style={{ padding: "0.85rem 0.8rem", textAlign: "center" }}>
                     <span style={{ fontSize: "1.1rem", fontWeight: 900, fontFamily: "monospace", color: team.pts > 0 ? "#f1f5f9" : "#475569" }}>{team.pts}</span>
                 </td>
             </tr>
@@ -357,33 +361,33 @@ const AdminPosiciones = () => {
             <main className="main-content">
                 <header className="top-bar">
                     <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={24} /></button>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#94a3b8", fontSize: "0.9rem" }}>
-                        <Trophy size={18} /> {currentDiv?.label} División — Temporada 2026
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#94a3b8", fontSize: "0.85rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <Trophy size={18} /> <span className="hide-on-mobile">{currentDiv?.label} División — Temporada 2026</span><span className="show-on-mobile">{currentDiv?.label}</span>
                     </div>
                 </header>
 
-                <div className="content-wrapper">
-                    <div style={{
+                <div className="content-wrapper" style={{ padding: "1rem" }}>
+                    <div className="header-responsive-container" style={{
                         background: "linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(139,92,246,0.06) 50%, rgba(16,185,129,0.05) 100%)",
                         border: "1px solid rgba(59,130,246,0.1)", borderRadius: "16px",
-                        padding: "1.8rem 2rem", marginBottom: "1.5rem",
+                        padding: "1.5rem", marginBottom: "1.5rem",
                         display: "flex", justifyContent: "space-between", alignItems: "center",
                         flexWrap: "wrap", gap: "1rem",
                     }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                            <div style={{ width: 42, height: 42, borderRadius: "12px", background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 15px rgba(59,130,246,0.3)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap", flex: "1 1 300px" }}>
+                            <div style={{ width: 42, height: 42, borderRadius: "12px", background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 15px rgba(59,130,246,0.3)", flexShrink: 0 }}>
                                 <Trophy size={22} color="#fff" />
                             </div>
-                            <div>
-                                <h1 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em" }}>Clasificación General</h1>
-                                <p style={{ margin: "2px 0 0", fontSize: "0.85rem", color: "#64748b" }}>
-                                    {currentDiv?.label} División de El Salvador · {tabla.length} equipos
+                            <div style={{ minWidth: "150px" }}>
+                                <h1 style={{ margin: 0, fontSize: "1.3rem", fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.02em" }}>Clasificación General</h1>
+                                <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "#64748b" }}>
+                                    {currentDiv?.label} División · {tabla.length} equipos
                                 </p>
                             </div>
                             <div ref={dropdownRef} style={{ position: "relative" }}>
                                 <button
                                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                                    style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", color: "#60a5fa", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", letterSpacing: "0.3px" }}
+                                    style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", color: "#60a5fa", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", letterSpacing: "0.3px", whiteSpace: "nowrap" }}
                                     onMouseEnter={(e) => { if (!dropdownOpen) { e.currentTarget.style.background = "rgba(59,130,246,0.18)"; e.currentTarget.style.borderColor = "rgba(59,130,246,0.35)"; } }}
                                     onMouseLeave={(e) => { if (!dropdownOpen) { e.currentTarget.style.background = "rgba(59,130,246,0.1)"; e.currentTarget.style.borderColor = "rgba(59,130,246,0.2)"; } }}
                                 >
@@ -407,9 +411,9 @@ const AdminPosiciones = () => {
                             </div>
                         </div>
                         <button onClick={handleReset} disabled={resetting} style={{
-                            display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.75rem 1.4rem", borderRadius: "12px",
+                            display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.75rem 1.2rem", borderRadius: "12px",
                             border: "1px solid rgba(239,68,68,0.25)", background: resetting ? "#334155" : "linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.06))",
-                            color: resetting ? "#64748b" : "#f87171", fontSize: "0.85rem", fontWeight: 600, cursor: resetting ? "not-allowed" : "pointer", transition: "all 0.3s ease",
+                            color: resetting ? "#64748b" : "#f87171", fontSize: "0.82rem", fontWeight: 600, cursor: resetting ? "not-allowed" : "pointer", transition: "all 0.3s ease", whiteSpace: "nowrap",
                         }}
                             onMouseEnter={(e) => { if (!resetting) e.currentTarget.style.background = "linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1))"; }}
                             onMouseLeave={(e) => { e.currentTarget.style.background = resetting ? "#334155" : "linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.06))"; }}>
@@ -418,7 +422,8 @@ const AdminPosiciones = () => {
                         </button>
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: `repeat(${statCards.length}, 1fr)`, gap: "1rem", marginBottom: "1.5rem" }}>
+                    {/* GRID TARJETAS MEJORADO */}
+                    <div className="stats-grid" style={{ marginBottom: "1.5rem" }}>
                         {statCards.map((s) => (
                             <div key={s.label} style={{ background: s.gradient, border: `1px solid ${s.border}`, borderRadius: "14px", padding: "1.2rem 1.3rem", transition: "all 0.3s ease" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = `0 8px 25px ${s.border}`; }}
@@ -430,7 +435,8 @@ const AdminPosiciones = () => {
                         ))}
                     </div>
 
-                    <div className="table-container" style={{ padding: 0, overflow: "hidden" }}>
+                    {/* TABLA CON SCROLL HORIZONTAL SEGURIDAD */}
+                    <div className="table-container" style={{ padding: 0, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
                         {isSegunda && (
                             <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "1rem 1.5rem", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                                 <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginRight: "4px" }}>Filtrar:</span>
@@ -465,20 +471,20 @@ const AdminPosiciones = () => {
                                 <p style={{ fontSize: "0.85rem", margin: 0, opacity: 0.5 }}>Agrega equipos desde la sección de Equipos</p>
                             </div>
                         ) : (
-                            <table style={{ width: "100%", borderCollapse: "collapse", userSelect: "none" }}>
+                            <table style={{ width: "100%", borderCollapse: "collapse", userSelect: "none", minWidth: "650px" }}>
                                 <thead>
                                     <tr style={{ background: "rgba(255,255,255,0.02)" }}>
-                                        <th style={{ padding: "1rem 0.8rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569", width: 50 }}>Pos</th>
-                                        <th style={{ padding: "1rem 0.8rem", textAlign: "left", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>Equipo</th>
-                                        <th style={{ padding: "1rem 0.5rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>PJ</th>
-                                        <th style={{ padding: "1rem 0.5rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>G</th>
-                                        <th style={{ padding: "1rem 0.5rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>E</th>
-                                        <th style={{ padding: "1rem 0.5rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>P</th>
-                                        <th style={{ padding: "1rem 0.5rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>GF</th>
-                                        <th style={{ padding: "1rem 0.5rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>GC</th>
-                                        <th style={{ padding: "1rem 0.5rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>DG</th>
-                                        <th style={{ padding: "1rem 0.8rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569", minWidth: 130 }}>Rendimiento</th>
-                                        <th style={{ padding: "1rem 1rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569", width: 80 }}>PTS</th>
+                                        <th style={{ padding: "1rem 0.5rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569", width: 50 }}>Pos</th>
+                                        <th style={{ padding: "1rem 0.5rem", textAlign: "left", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>Equipo</th>
+                                        <th style={{ padding: "1rem 0.4rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>PJ</th>
+                                        <th style={{ padding: "1rem 0.4rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>G</th>
+                                        <th style={{ padding: "1rem 0.4rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>E</th>
+                                        <th style={{ padding: "1rem 0.4rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>P</th>
+                                        <th className="hide-on-mobile" style={{ padding: "1rem 0.5rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>GF</th>
+                                        <th className="hide-on-mobile" style={{ padding: "1rem 0.5rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>GC</th>
+                                        <th style={{ padding: "1rem 0.4rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569" }}>DG</th>
+                                        <th className="hide-on-mobile" style={{ padding: "1rem 0.8rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569", minWidth: 130 }}>Rendimiento</th>
+                                        <th style={{ padding: "1rem 0.8rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569", width: 80 }}>PTS</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -513,14 +519,14 @@ const AdminPosiciones = () => {
                                         ? [
                                             { color: "#3b82f6", label: "Grupo Este" },
                                             { color: "#f97316", label: "Grupo Oeste" },
-                                          ]
+                                        ]
                                         : [
                                             { color: "#10b981", label: "Concacaf" },
                                             { color: "#3b82f6", label: "Clasificación" },
                                             { color: "#f59e0b", label: "Playoff" },
                                             { color: "#d97706", label: "Repechaje" },
                                             { color: "#ef4444", label: "Descenso" },
-                                          ]
+                                        ]
                                     ).map((item) => (
                                         <div key={item.label} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                                             <span style={{ width: 8, height: 8, borderRadius: "2px", background: item.color, flexShrink: 0 }} />
@@ -528,7 +534,7 @@ const AdminPosiciones = () => {
                                         </div>
                                     ))}
                                 </div>
-                                <div style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.72rem", color: "#475569" }}>
+                                <div className="hide-on-mobile" style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.72rem", color: "#475569" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 10, height: 3, borderRadius: "1px", background: "#10b981" }} /> G</div>
                                     <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 10, height: 3, borderRadius: "1px", background: "#f59e0b" }} /> E</div>
                                     <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 10, height: 3, borderRadius: "1px", background: "#ef4444" }} /> P</div>
@@ -541,15 +547,62 @@ const AdminPosiciones = () => {
                 </div>
             </main>
 
+            {/* ESTILOS RESPONSIVE GLOBALES PARA ESTE COMPONENTE */}
             <style>{`
                 @keyframes spin { to { transform: rotate(360deg); } }
                 @keyframes ddFadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
                 button.nav-item { background: none; border: none; color: var(--text-muted); font-family: inherit; }
-                @media (max-width: 900px) {
-                    div[style*="grid-template-columns"] { grid-template-columns: repeat(3, 1fr) !important; }
+                
+                /* Grid de tarjetas estadísticas */
+                .stats-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1rem;
                 }
-                @media (max-width: 640px) {
-                    div[style*="grid-template-columns"] { grid-template-columns: repeat(2, 1fr) !important; }
+                @media (min-width: 768px) {
+                    .stats-grid {
+                        grid-template-columns: repeat(3, 1fr);
+                    }
+                }
+                @media (min-width: 1024px) {
+                    .stats-grid {
+                        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                    }
+                }
+
+                /* Ocultar columnas no esenciales en pantallas pequeñas */
+                .hide-on-mobile {
+                    display: table-cell; /* Asegura que se muestre en PC */
+                }
+                .show-on-mobile {
+                    display: none;
+                }
+
+                @media (max-width: 768px) {
+                    .hide-on-mobile {
+                        display: none !important; /* Oculta en móvil */
+                    }
+                    .show-on-mobile {
+                        display: block !important; /* Muestra en móvil */
+                    }
+                    
+                    /* Asegurar que el sidebar no empuje el contenido si admin.css falla */
+                    .admin-layout {
+                        display: flex;
+                        flex-direction: row;
+                    }
+                    .admin-layout .sidebar {
+                        position: fixed;
+                        z-index: 50;
+                        height: 100vh;
+                    }
+                    .admin-layout.sidebar-closed .sidebar {
+                        transform: translateX(-100%);
+                    }
+                    .admin-layout .main-content {
+                        margin-left: 0 !important;
+                        width: 100% !important;
+                    }
                 }
             `}</style>
         </div>

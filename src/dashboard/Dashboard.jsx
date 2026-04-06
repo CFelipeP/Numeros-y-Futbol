@@ -5,22 +5,8 @@ import Swal from "sweetalert2";
 import "animate.css";
 
 import {
-  LayoutDashboard,
-  CalendarDays,
-  Shield,
-  Newspaper,
-  Users,
-  Settings,
-  LogOut,
-  Menu,
-  CircleDot,
-  Target,
-  FileText,
-  Trophy,
-  Zap,
-  TrendingUp,
-  RotateCcw,
-  ChevronDown,
+  LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
+  CircleDot, Target, FileText, Trophy, Zap, TrendingUp, RotateCcw, ChevronDown,
 } from "lucide-react";
 
 import GoalsChart from "../components/GoalsChart";
@@ -72,20 +58,18 @@ const DIVISIONES = [
 ];
 
 const AdminDashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState(false);
-  const [division, setDivision] = useState("primera");
+  const [division, setDivision] = useState(() => localStorage.getItem("admin_division") || "primera");
+  useEffect(() => { localStorage.setItem("admin_division", division); }, [division]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [teamsOpen, setTeamsOpen] = useState(true);
   const dropdownRef = useRef(null);
   const location = useLocation();
 
-  const [stats, setStats] = useState({
-    pendientes: 0, goles: 0, noticias: 0,
-    usuarios: 0, equipos: 0, jugados: 0,
-  });
+  const [stats, setStats] = useState({ pendientes: 0, goles: 0, noticias: 0, usuarios: 0, equipos: 0, jugados: 0 });
   const [matches, setMatches] = useState([]);
   const [chartData, setChartData] = useState([]);
 
@@ -165,14 +149,7 @@ const AdminDashboard = () => {
     { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
     { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
     { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
-    {
-      type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
-      children: [
-        { path: "/teams/primera", label: "Primera División" },
-        { path: "/teams/segunda", label: "Segunda División" },
-        { path: "/teams/tercera", label: "Tercera División" },
-      ]
-    },
+    { type: "dropdown", icon: <Shield size={20} />, label: "Equipos", children: [{ path: "/teams/primera", label: "Primera División" }, { path: "/teams/segunda", label: "Segunda División" }, { path: "/teams/tercera", label: "Tercera División" }] },
     { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
     { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
     { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
@@ -197,60 +174,28 @@ const AdminDashboard = () => {
           </div>
           <h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2>
         </div>
-
         <nav className="sidebar-nav">
           <ul>
             {navItems.map((item, idx) => {
               if (item.type === "dropdown") {
                 return (
                   <li key={idx}>
-                    <button
-                      className="nav-item"
-                      onClick={() => setTeamsOpen(!teamsOpen)}
-                      style={{ width: "100%", justifyContent: "space-between" }}
-                    >
-                      <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                        {item.icon} {item.label}
-                      </span>
+                    <button className="nav-item" onClick={() => setTeamsOpen(!teamsOpen)} style={{ width: "100%", justifyContent: "space-between" }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>{item.icon} {item.label}</span>
                       <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: teamsOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
                     </button>
-                    <ul style={{
-                      maxHeight: teamsOpen ? "200px" : "0",
-                      opacity: teamsOpen ? "1" : "0",
-                      overflow: "hidden",
-                      transition: "max-height 0.3s ease, opacity 0.2s ease",
-                      listStyle: "none", padding: teamsOpen ? "2px 0 4px 0" : "0", margin: 0,
-                    }}>
-                      {item.children.map(child => (
-                        <li key={child.path}>
-                          <Link
-                            to={child.path}
-                            className={`nav-item${location.pathname === child.path ? " active" : ""}`}
-                            style={{ paddingLeft: "48px", fontSize: "13.5px" }}
-                          >
-                            {child.label}
-                          </Link>
-                        </li>
-                      ))}
+                    <ul style={{ maxHeight: teamsOpen ? "200px" : "0", opacity: teamsOpen ? "1" : "0", overflow: "hidden", transition: "max-height 0.3s ease, opacity 0.2s ease", listStyle: "none", padding: teamsOpen ? "2px 0 4px 0" : "0", margin: 0 }}>
+                      {item.children.map(child => (<li key={child.path}><Link to={child.path} className={`nav-item${location.pathname === child.path ? " active" : ""}`} style={{ paddingLeft: "48px", fontSize: "13.5px" }}>{child.label}</Link></li>))}
                     </ul>
                   </li>
                 );
               }
-              return (
-                <li key={item.path}>
-                  <Link to={item.path} className={`nav-item${location.pathname === item.path ? " active" : ""}`}>
-                    {item.icon} {item.label}
-                  </Link>
-                </li>
-              );
+              return <li key={item.path}><Link to={item.path} className={`nav-item${location.pathname === item.path ? " active" : ""}`}>{item.icon} {item.label}</Link></li>;
             })}
           </ul>
         </nav>
-
         <div className="sidebar-footer">
-          <button className="nav-item btn-logout-sidebar" onClick={handleLogout}>
-            <LogOut size={20} className="nav-icon" /> Cerrar sesión
-          </button>
+          <button className="nav-item btn-logout-sidebar" onClick={handleLogout}><LogOut size={20} className="nav-icon" /> Cerrar sesión</button>
         </div>
       </aside>
 
@@ -262,28 +207,19 @@ const AdminDashboard = () => {
           </div>
         </header>
 
-        <div className="content-wrapper">
+        <div className="content-wrapper" style={{ padding: '1rem' }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.2rem", flexWrap: "wrap", gap: "0.75rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
               <h1 className="admin-title" style={{ margin: 0 }}>Dashboard</h1>
               <div ref={dropdownRef} style={{ position: "relative" }}>
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", color: "#60a5fa", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", letterSpacing: "0.3px" }}
-                  onMouseEnter={(e) => { if (!dropdownOpen) { e.currentTarget.style.background = "rgba(59,130,246,0.18)"; e.currentTarget.style.borderColor = "rgba(59,130,246,0.35)"; } }}
-                  onMouseLeave={(e) => { if (!dropdownOpen) { e.currentTarget.style.background = "rgba(59,130,246,0.1)"; e.currentTarget.style.borderColor = "rgba(59,130,246,0.2)"; } }}
-                >
+                <button onClick={() => setDropdownOpen(!dropdownOpen)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", color: "#60a5fa", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", letterSpacing: "0.3px" }}>
                   <Trophy size={14} />{currentDiv?.label} División
                   <ChevronDown size={15} style={{ transition: "transform 0.25s ease", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.7 }} />
                 </button>
                 {dropdownOpen && (
                   <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, zIndex: 100, background: "#1e293b", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", overflow: "hidden", minWidth: "190px", boxShadow: "0 12px 40px rgba(0,0,0,0.5)", animation: "ddFadeIn 0.15s ease-out" }}>
                     {DIVISIONES.map((d) => (
-                      <button key={d.value} onClick={() => { setDivision(d.value); setDropdownOpen(false); }}
-                        style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "12px 18px", border: "none", background: division === d.value ? "rgba(59,130,246,0.15)" : "transparent", color: division === d.value ? "#60a5fa" : "#94a3b8", fontSize: "13px", fontWeight: division === d.value ? 700 : 500, cursor: "pointer", transition: "background 0.12s", textAlign: "left" }}
-                        onMouseEnter={(e) => { if (division !== d.value) e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-                        onMouseLeave={(e) => { if (division !== d.value) e.currentTarget.style.background = "transparent"; }}
-                      >
+                      <button key={d.value} onClick={() => { setDivision(d.value); setDropdownOpen(false); }} style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "12px 18px", border: "none", background: division === d.value ? "rgba(59,130,246,0.15)" : "transparent", color: division === d.value ? "#60a5fa" : "#94a3b8", fontSize: "13px", fontWeight: division === d.value ? 700 : 500, cursor: "pointer", transition: "background 0.12s", textAlign: "left" }}>
                         <Trophy size={13} style={{ opacity: division === d.value ? 1 : 0.4 }} />{d.label} División
                         {division === d.value && <span style={{ marginLeft: "auto", width: 7, height: 7, borderRadius: "50%", background: "#3b82f6", boxShadow: "0 0 8px rgba(59,130,246,0.6)" }} />}
                       </button>
@@ -292,22 +228,18 @@ const AdminDashboard = () => {
                 )}
               </div>
             </div>
-            <button onClick={handleReset} disabled={resetting || loading}
-              style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "9px 18px", borderRadius: "10px", background: resetting ? "rgba(239,68,68,0.15)" : "linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.08))", border: "1px solid rgba(239,68,68,0.25)", color: resetting ? "#f87171" : "#fca5a5", fontSize: "13px", fontWeight: 600, cursor: resetting || loading ? "not-allowed" : "pointer", transition: "all 0.25s ease", opacity: resetting || loading ? 0.6 : 1 }}
-              onMouseEnter={(e) => { if (!resetting && !loading) { e.currentTarget.style.background = "linear-gradient(135deg, rgba(239,68,68,0.35), rgba(239,68,68,0.15))"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.5)"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 15px rgba(239,68,68,0.2)"; } }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = resetting ? "rgba(239,68,68,0.15)" : "linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.08))"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.25)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
-            >
+            <button onClick={handleReset} disabled={resetting || loading} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "9px 18px", borderRadius: "10px", background: resetting ? "rgba(239,68,68,0.15)" : "linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.08))", border: "1px solid rgba(239,68,68,0.25)", color: resetting ? "#f87171" : "#fca5a5", fontSize: "13px", fontWeight: 600, cursor: resetting || loading ? "not-allowed" : "pointer", transition: "all 0.25s ease", opacity: resetting || loading ? 0.6 : 1 }}>
               <RotateCcw size={15} style={resetting ? { animation: "spin 0.8s linear infinite" } : {}} />
               {resetting ? "Reiniciando..." : "Reiniciar Temporada"}
             </button>
           </div>
 
           {loading ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginBottom: "1.5rem" }}>
+            <div className="dash-stats-grid">
               {[...Array(6)].map((_, i) => (<div key={i} style={{ background: "rgba(255,255,255,0.02)", borderRadius: "14px", padding: "1.5rem", border: "1px solid rgba(255,255,255,0.04)" }}><div style={{ width: 28, height: 28, borderRadius: "8px", background: "rgba(255,255,255,0.05)", animation: "pulse 1.5s ease-in-out infinite" }} /></div>))}
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "1rem", marginBottom: "1.5rem" }}>
+            <div className="dash-stats-grid">
               {statCards.map((s) => (
                 <div key={s.key} style={{ background: s.gradient, border: `1px solid ${s.border}`, borderRadius: "14px", padding: "1.3rem 1.2rem", transition: "all 0.3s ease", cursor: "default" }}
                   onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = `0 8px 25px ${s.border}`; }}
@@ -322,7 +254,7 @@ const AdminDashboard = () => {
           )}
 
           <div className="chart-container">
-            <div className="table-header">
+            <div className="table-header" style={{ flexWrap: "wrap", gap: "10px" }}>
               <h2>Estadísticas de goles</h2>
               <span style={{ fontSize: "11px", color: "#64748b", background: "rgba(255,255,255,0.04)", padding: "4px 10px", borderRadius: "6px" }}>
                 {chartData.length > 0 ? `${chartData.length} jornada${chartData.length > 1 ? "s" : ""} registrada${chartData.length > 1 ? "s" : ""}` : "Sin jornadas"}
@@ -331,8 +263,8 @@ const AdminDashboard = () => {
             <GoalsChart data={chartData} />
           </div>
 
-          <div className="table-container">
-            <div className="table-header">
+          <div className="table-container" style={{ overflowX: 'auto' }}>
+            <div className="table-header" style={{ flexWrap: "wrap", gap: "10px" }}>
               <h2>Últimos Partidos</h2>
               <Link to="/matches" style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 16px", borderRadius: "8px", background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "#fff", fontSize: "13px", fontWeight: 600, textDecoration: "none", transition: "all 0.2s" }}
                 onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 15px rgba(59,130,246,0.3)"; }}
@@ -344,8 +276,14 @@ const AdminDashboard = () => {
             ) : filteredMatches.length === 0 ? (
               <div style={{ textAlign: "center", padding: "3rem 1rem", color: "#475569" }}><Trophy size={36} style={{ margin: "0 auto 0.75rem", display: "block", opacity: 0.15 }} /><p style={{ fontWeight: 600, color: "#64748b", margin: "0 0 0.3rem" }}>{search ? "Sin resultados para la búsqueda" : "No hay partidos registrados"}</p><p style={{ fontSize: "13px", margin: 0, opacity: 0.5 }}>{search ? "Intenta con otro nombre" : "Crea partidos desde Gestionar Partidos"}</p></div>
             ) : (
-              <table className="data-table" style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead><tr><th>Fecha</th><th>Local</th><th style={{ textAlign: "center" }}>Marcador</th><th>Visitante</th><th>Estado</th></tr></thead>
+              <table className="data-table" style={{ width: "100%", borderCollapse: "collapse", minWidth: '500px' }}>
+                <thead><tr>
+                  <th className="hide-on-mobile">Fecha</th>
+                  <th>Local</th>
+                  <th style={{ textAlign: "center" }}>Marcador</th>
+                  <th>Visitante</th>
+                  <th className="hide-on-mobile">Estado</th>
+                </tr></thead>
                 <tbody>
                   {filteredMatches.map((m, i) => {
                     const st = getStatusStyle(m.status);
@@ -356,11 +294,11 @@ const AdminDashboard = () => {
                     const score = m.goles_local != null && m.goles_visitante != null ? `${m.goles_local} - ${m.goles_visitante}` : "-";
                     return (
                       <tr key={m.id || `m-${i}`} style={{ transition: "background 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }} onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
-                        <td style={{ whiteSpace: "nowrap", color: "#94a3b8", fontSize: "13px", padding: "12px 14px" }}>{m.fecha || "—"}</td>
-                        <td style={{ padding: "12px 14px" }}><div style={{ display: "flex", alignItems: "center", gap: "10px" }}><img src={escudoL || fallback} alt="" onError={(e) => { e.target.src = fallback; }} style={{ width: "30px", height: "30px", objectFit: "contain", borderRadius: "6px", background: "#fff", padding: "2px", flexShrink: 0 }} /><span style={{ fontWeight: 600, fontSize: "14px" }}>{m.home_name || "—"}</span></div></td>
+                        <td className="hide-on-mobile" style={{ whiteSpace: "nowrap", color: "#94a3b8", fontSize: "13px", padding: "12px 14px" }}>{m.fecha || "—"}</td>
+                        <td style={{ padding: "12px 14px" }}><div style={{ display: "flex", alignItems: "center", gap: "10px" }}><img src={escudoL || fallback} alt="" onError={(e) => { e.target.src = fallback; }} style={{ width: "30px", height: "30px", objectFit: "contain", borderRadius: "6px", background: "#fff", padding: "2px", flexShrink: 0 }} /><span style={{ fontWeight: 600, fontSize: "14px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.home_name || "—"}</span></div></td>
                         <td style={{ textAlign: "center", padding: "12px 14px" }}><span style={{ fontWeight: 800, fontSize: "15px", color: isFinal ? "#e2b340" : "#475569", letterSpacing: "2px", fontFamily: "monospace" }}>{score}</span></td>
-                        <td style={{ padding: "12px 14px" }}><div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "flex-end" }}><span style={{ fontWeight: 600, fontSize: "14px" }}>{m.away_name || "—"}</span><img src={escudoV || fallback} alt="" onError={(e) => { e.target.src = fallback; }} style={{ width: "30px", height: "30px", objectFit: "contain", borderRadius: "6px", background: "#fff", padding: "2px", flexShrink: 0 }} /></div></td>
-                        <td style={{ padding: "12px 14px" }}><span style={{ display: "inline-block", padding: "4px 10px", borderRadius: "6px", background: st.bg, color: st.color, fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>{st.label}</span></td>
+                        <td style={{ padding: "12px 14px" }}><div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "flex-end" }}><span style={{ fontWeight: 600, fontSize: "14px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.away_name || "—"}</span><img src={escudoV || fallback} alt="" onError={(e) => { e.target.src = fallback; }} style={{ width: "30px", height: "30px", objectFit: "contain", borderRadius: "6px", background: "#fff", padding: "2px", flexShrink: 0 }} /></div></td>
+                        <td className="hide-on-mobile" style={{ padding: "12px 14px" }}><span style={{ display: "inline-block", padding: "4px 10px", borderRadius: "6px", background: st.bg, color: st.color, fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>{st.label}</span></td>
                       </tr>
                     );
                   })}
@@ -371,14 +309,71 @@ const AdminDashboard = () => {
         </div>
       </main>
 
-      <style>{`
+                        <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes ddFadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-        button.nav-item {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-family: inherit;
+        button.nav-item { background: none; border: none; color: var(--text-muted); font-family: inherit; }
+
+        /* =========================================
+           1. TOPBAR
+           ========================================= */
+        .admin-layout .top-bar {
+            position: sticky !important; 
+            top: 0 !important;
+            z-index: 60 !important; 
+            background-color: inherit; 
+        }
+
+        /* =========================================
+           2. GRID RESPONSIVO TARJETAS
+           ========================================= */
+        .dash-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .dash-stats-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (min-width: 1280px) {
+            .dash-stats-grid { grid-template-columns: repeat(6, 1fr); }
+        }
+
+        /* =========================================
+           3. OCULTAR COLUMNAS EN MOVIL
+           ========================================= */
+        .hide-on-mobile { display: table-cell; }
+        @media (max-width: 768px) {
+            .hide-on-mobile { display: none !important; }
+        }
+
+        /* =========================================
+           4. SIDEBAR EN MOVIL (Forzando bajada)
+           ========================================= */
+        @media (max-width: 768px) {
+            .admin-layout {
+                display: flex;
+                flex-direction: row;
+            }
+            .admin-layout .sidebar {
+                position: fixed !important;
+                z-index: 50 !important;
+                top: 50px !important; /* Baja la caja entera 25px para salir de la barra de estado del celular */
+                height: calc(100% - 50px) !important; /* Ajusta la altura para no generar scroll vertical */
+                transform: translateX(-100%);
+                transition: transform 0.3s ease !important;
+            }
+            
+            /* Cuando el sidebar está abierto, lo movemos a la vista */
+            .admin-layout:not(.sidebar-closed) .sidebar {
+                transform: translateX(0) !important;
+            }
+
+            .admin-layout .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
         }
       `}</style>
     </div>
