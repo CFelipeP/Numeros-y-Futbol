@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Header from "../components/Header";
 import "./styles2.css";
 
@@ -79,13 +79,8 @@ const getDG = (gf, gc) => {
   return diff > 0 ? `+${diff}` : `${diff}`;
 };
 
-const getPosBadge = (index) => {
-  if (index === 0) return { bg: "rgba(16, 185, 129, 0.15)", color: "#10b981" };
-  if (index === 1) return { bg: "rgba(59, 130, 246, 0.15)", color: "#3b82f6" };
-  if (index === 2) return { bg: "rgba(245, 158, 11, 0.15)", color: "#f59e0b" };
-  if (index === 3) return { bg: "rgba(245, 158, 11, 0.10)", color: "#d97706" };
-  return null;
-};
+/* ====== PlayOff badge genérico ====== */
+const PLAYOFF_BADGE = { bg: "rgba(16, 185, 129, 0.15)", color: "#10b981", label: "PlayOff" };
 
 const getMatchStatus = (status) => {
   if (!status) return { text: "Por definir", variant: "default" };
@@ -138,8 +133,8 @@ const ResultRow = ({ m }) => {
       border: "1px solid rgba(255,255,255,0.04)",
       transition: "all 0.2s ease", cursor: "default"
     }}
-    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
-    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)"; }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)"; }}
     >
       <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: "3px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
         {m.home_logo && <img src={logoUrl(m.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}
@@ -173,7 +168,8 @@ const ZonaHeader = ({ zona, color }) => (
   </div>
 );
 
-const TablaClasificacion = ({ datos, titulo }) => (
+/* ====== Tabla ahora recibe playoffTeamIds en vez de usar índice ====== */
+const TablaClasificacion = ({ datos, titulo, playoffTeamIds }) => (
   <div className="table-container">
     {titulo && (
       <div style={{ marginBottom: "0.5rem" }}>
@@ -194,21 +190,33 @@ const TablaClasificacion = ({ datos, titulo }) => (
           <tr><td colSpan={10} style={{ textAlign: "center", padding: "2rem 1rem", color: "var(--color-text-muted)" }}>Sin equipos en esta zona</td></tr>
         )}
         {datos.map((team, index) => {
-          const badge = getPosBadge(index);
+          const isPlayoff = playoffTeamIds && playoffTeamIds.has(team.equipo_id);
+          const badge = isPlayoff ? PLAYOFF_BADGE : null;
           const dg = getDG(team.gf, team.gc);
-          const isBottom = index >= datos.length - 2 && datos.length > 4;
           return (
-            <tr key={team.id} style={{ borderLeft: badge ? `3px solid ${badge.color}` : isBottom ? "3px solid rgba(239,68,68,0.4)" : "3px solid transparent", transition: "all 0.2s ease" }}>
+            <tr key={team.id} style={{ borderLeft: badge ? `3px solid ${badge.color}` : "3px solid transparent", transition: "all 0.2s ease" }}>
               <td style={{ textAlign: "center" }}>
                 {badge ? (
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: "6px", background: badge.bg, color: badge.color, fontSize: "0.7rem", fontWeight: 800, fontFamily: "var(--font-heading)" }}>{index + 1}</span>
                 ) : (
-                  <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isBottom ? "#ef4444" : "var(--color-text-muted)" }}>{index + 1}</span>
+                  <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-muted)" }}>{index + 1}</span>
                 )}
               </td>
               <td className="team-cell" style={{ paddingLeft: "16px" }}>
                 {team.logo && <img src={logoUrl(team.logo)} alt={team.nombre} style={{ width: 28, height: 28, objectFit: "contain", background: "rgba(255,255,255,0.06)", borderRadius: "50%", padding: "3px" }} />}
                 <span style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--color-text-main)", whiteSpace: "nowrap" }}>{team.nombre}</span>
+                {badge && (
+                  <span style={{
+                    fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px",
+                    color: badge.color, background: badge.bg,
+                    padding: "2px 7px", borderRadius: "4px",
+                    border: `1px solid ${badge.color}30`,
+                    marginLeft: "8px", verticalAlign: "middle",
+                    whiteSpace: "nowrap",
+                  }}>
+                    PlayOff
+                  </span>
+                )}
               </td>
               <td>{team.pj}</td>
               <td style={{ color: "#10b981", fontWeight: 600 }}>{team.pg}</td>
@@ -435,7 +443,6 @@ export default function SegundaDivision() {
       const teamMap = {};
       equiposArr.forEach((t) => { teamMap[String(t.id)] = t; if (t.nombre) teamMap[t.nombre] = t; });
 
-      /* ====== ÚNICO cambio clave: solo usar el endpoint dedicado ====== */
       let featured = null;
       if (
         matchData &&
@@ -445,13 +452,11 @@ export default function SegundaDivision() {
         (matchData.home_name || matchData.local_nombre)
       ) {
         const normalized = normalizeMatch(matchData, teamMap);
-        /* Verificación final: solo aceptar si tiene ambos nombres de equipo */
         if (normalized && normalized.home_name && normalized.away_name) {
           featured = normalized;
         }
       }
       setMatch(featured);
-      /* ====== fin del cambio ====== */
 
     }).catch((err) => {
       console.error("Error cargando datos:", err);
@@ -465,6 +470,24 @@ export default function SegundaDivision() {
   const tablaWest = tabla.filter(t => t.grupo === "West");
   const equiposEast = equipos.filter(e => e.grupo === "East");
   const equiposWest = equipos.filter(e => e.grupo === "West");
+
+  /* ====== CAMBIO CLAVE: Calcular IDs de PlayOff según la vista ====== */
+  const playoffTeamIds = useMemo(() => {
+    const ids = new Set();
+    const sortDesc = (arr) => [...arr].sort((a, b) => b.pts - a.pts);
+
+    if (vistaZona === "general") {
+      /* General: top 4 de East + top 4 de West = 8 equipos */
+      sortDesc(tablaEast).slice(0, 4).forEach(t => ids.add(t.equipo_id));
+      sortDesc(tablaWest).slice(0, 4).forEach(t => ids.add(t.equipo_id));
+    } else if (vistaZona === "East") {
+      sortDesc(tablaEast).slice(0, 4).forEach(t => ids.add(t.equipo_id));
+    } else if (vistaZona === "West") {
+      sortDesc(tablaWest).slice(0, 4).forEach(t => ids.add(t.equipo_id));
+    }
+
+    return ids;
+  }, [vistaZona, tablaEast, tablaWest]);
 
   const zonaButtons = [
     { key: "general", label: "General", icon: "📊" },
@@ -627,16 +650,10 @@ export default function SegundaDivision() {
               <div className="glass-card" style={{ padding: "1.5rem" }}>
                 <div className="section-subtitle" style={{ marginTop: 0, fontSize: "0.85rem" }}>Leyenda</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
-                  {[
-                    { color: "#10b981", label: "Ascenso a Primera División" },
-                    { color: "#f59e0b", label: "Playoffs / Repechaje" },
-                    { color: "#ef4444", label: "Descenso directo" },
-                  ].map((item, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                      <span style={{ width: 10, height: 10, borderRadius: "2px", background: item.color, flexShrink: 0, boxShadow: `0 0 6px ${item.color}40` }} />
-                      <span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>{item.label}</span>
-                    </div>
-                  ))}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                    <span style={{ width: 10, height: 10, borderRadius: "2px", background: "#10b981", flexShrink: 0, boxShadow: "0 0 6px rgba(16,185,129,0.4)" }} />
+                    <span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>PlayOff — {vistaZona === "general" ? "Top 4 de cada zona (8 equipos)" : "Top 4 de la zona"}</span>
+                  </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
                     <span style={{ fontSize: "0.7rem", fontWeight: 800, color: "var(--color-text-muted)", width: 18, textAlign: "center", flexShrink: 0 }}>DG</span>
                     <span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>Diferencia de goles</span>
@@ -679,7 +696,8 @@ export default function SegundaDivision() {
 
               {vistaZona === "general" && (
                 <>
-                  <TablaClasificacion datos={tabla} />
+                  {/* ====== Se pasa playoffTeamIds que contiene los 8 equipos ====== */}
+                  <TablaClasificacion datos={[...tabla].sort((a, b) => (b.pts - a.pts))} playoffTeamIds={playoffTeamIds} />
                   {tabla.length > 0 && (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
                       <span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span>
@@ -692,7 +710,7 @@ export default function SegundaDivision() {
               {vistaZona === "East" && (
                 <>
                   <ZonaHeader zona="Este" color="#3b82f6" />
-                  <TablaClasificacion datos={tablaEast} titulo="Grupo Este" />
+                  <TablaClasificacion datos={tablaEast} titulo="Grupo Este" playoffTeamIds={playoffTeamIds} />
                   {tablaEast.length > 0 && (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
                       <span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span>
@@ -705,7 +723,7 @@ export default function SegundaDivision() {
               {vistaZona === "West" && (
                 <>
                   <ZonaHeader zona="Oeste" color="#f59e0b" />
-                  <TablaClasificacion datos={tablaWest} titulo="Grupo Oeste" />
+                  <TablaClasificacion datos={tablaWest} titulo="Grupo Oeste" playoffTeamIds={playoffTeamIds} />
                   {tablaWest.length > 0 && (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
                       <span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span>
@@ -768,15 +786,16 @@ export default function SegundaDivision() {
                 {(vistaZona === "general" ? equipos : vistaZona === "East" ? equiposEast : equiposWest).map((equipo) => {
                   const stats = getTeamStats(equipo.id);
                   const zonaTabla = vistaZona === "general" ? tabla : vistaZona === "East" ? tablaEast : tablaWest;
-                  const pos = stats ? zonaTabla.findIndex(t => t.equipo_id === equipo.id) : -1;
-                  const badge = pos >= 0 ? getPosBadge(pos) : null;
+                  /* ====== CAMBIO: Usar playoffTeamIds en vez de posición por índice ====== */
+                  const isPlayoff = playoffTeamIds.has(equipo.id);
+                  const badge = isPlayoff ? PLAYOFF_BADGE : null;
 
                   return (
                     <div key={equipo.id} className="glass-card" style={{ padding: 0, overflow: "hidden", transition: "all 0.3s ease", cursor: "default", borderLeft: badge ? `3px solid ${badge.color}` : "3px solid transparent" }}
                       onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 15px 40px rgba(0,0,0,0.4), 0 0 20px rgba(34,197,94,0.1)"; e.currentTarget.style.borderColor = "rgba(34,197,94,0.3)"; if (badge) e.currentTarget.style.borderLeftColor = badge.color; }}
                       onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-card)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderLeftColor = badge ? badge.color : "transparent"; }}
                     >
-                      <div style={{ height: "6px", background: badge ? `linear-gradient(90deg, ${badge.color}, transparent)` : "linear-gradient(90deg, #22c55e, transparent)" }} />
+                      <div style={{ height: "6px", background: badge ? `linear-gradient(90deg, ${badge.color}, transparent)` : "linear-gradient(90deg, rgba(255,255,255,0.06), transparent)" }} />
                       <div style={{ padding: "1.5rem" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.2rem" }}>
                           <div style={{ width: 60, height: 60, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: badge ? `2px solid ${badge.color}40` : "2px solid rgba(255,255,255,0.08)" }}>
@@ -784,9 +803,9 @@ export default function SegundaDivision() {
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <h4 style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem", fontWeight: 800, margin: "0 0 0.2rem 0", color: "var(--color-white)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{equipo.nombre}</h4>
-                            <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
+                            <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap" }}>
                               {badge && (
-                                <span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: badge.color, background: badge.bg, padding: "0.15rem 0.5rem", borderRadius: "4px" }}>Pos. {pos + 1}</span>
+                                <span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: badge.color, background: badge.bg, padding: "0.15rem 0.5rem", borderRadius: "4px", border: `1px solid ${badge.color}30` }}>PlayOff</span>
                               )}
                               <span style={{
                                 fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px",
