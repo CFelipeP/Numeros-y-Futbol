@@ -128,7 +128,7 @@ const Divisions = () => (
         </motion.div>
         <motion.div className="division-card" variants={itemVariants} id="tercera">
           <div className="division-card-banner bg-dark"><span className="division-number">3</span></div>
-          <div className="division-card-body"><h3>Tercera División</h3><p>Semillero de talentos.</p><div className="division-card-footer"><span className="team-count">40+ equipos</span><a href="#" className="btn-ghost">Ver más <ArrowRight /></a></div></div>
+          <div className="division-card-body"><h3>Tercera División</h3><p>Semillero de talentos.</p><div className="division-card-footer"><span className="team-count">40+ equipos</span><a href="/tercera" className="btn-ghost">Ver más <ArrowRight /></a></div></div>
         </motion.div>
       </motion.div>
     </div>

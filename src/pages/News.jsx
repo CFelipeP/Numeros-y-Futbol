@@ -158,9 +158,9 @@ export default function News() {
                                     </p>
 
                                     <div className="article-footer">
-                                        <a href="#" className="read-more">
+                                        <Link to={`/noticia/${n.id}`} className="read-more">
                                             Leer más <ArrowRight size={15} />
-                                        </a>
+                                        </Link>
                                     </div>
                                 </div>
                             </article>

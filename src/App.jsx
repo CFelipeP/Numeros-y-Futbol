@@ -12,12 +12,16 @@ import ManageUsers from "./dashboard/ManageUsers";
 import ManageNews from "./dashboard/ManageNews";
 import Settings from "./dashboard/Settings"; // <--- NUEVO IMPORT
 import Primera from "./Divisiones/Primera";
+import Tercera from "./Divisiones/Tercera";
 import Segunda from "./Divisiones/Segunda";
 import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
 import ScrollToTop from "./components/ScrollToTop";
 import ManagePublicNews from "./dashboard/ManagePublicNews";
 import AdminPosiciones from "./dashboard/AdminPosiciones";
+import PlantillaEquipos from "./dashboard/PlantillaEquipos";
+
+// Dentro de <Routes>:
 
 // Dentro de tus Routes:
 
@@ -32,6 +36,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/primera" element={<Primera />} />
+        <Route path="/tercera" element={<Tercera />} />
         <Route path="/news" element={<News />} />
         <Route path="/noticia/:id" element={<NewsDetail />} />
         <Route path="/mynews" element={<ManagePublicNews />} />
@@ -40,6 +45,7 @@ function App() {
         <Route path="/teams/segunda" element={<ManageTeamsSegunda />} />
         <Route path="/teams/tercera" element={<ManageTeamsTercera />} />
         <Route path="/segunda" element={<Segunda />} />
+        <Route path="/admin/plantilla" element={<PlantillaEquipos />} />
 
 
         {/* RUTAS PROTEGIDAS (ADMIN) */}

@@ -4,11 +4,10 @@ import "../admin.css";
 import Swal from "sweetalert2";
 import "animate.css";
 import {
-    LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
-    Plus, Trash2, Trophy, X, Minus, ChevronUp, Swords, CheckCircle2, RotateCcw,
-    Search, ChevronDown, Filter, Star, StarOff,
+  LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
+  CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
+  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft
 } from "lucide-react";
-
 const API = "http://localhost/Numeros-y-Futbol/backend/";
 
 const DIVISIONES = [
@@ -245,15 +244,21 @@ const ManageMatches = () => {
     const currentDiv = DIVISIONES.find(d => d.value === division);
 
     const navItems = [
-        { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
-        { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
-        { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
-        { type: "dropdown", icon: <Shield size={20} />, label: "Equipos", children: [{ path: "/teams/primera", label: "Primera División" }, { path: "/teams/segunda", label: "Segunda División" }, { path: "/teams/tercera", label: "Tercera División" }] },
-        { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
-        { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
-        { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
-        { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
-    ];
+  { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+  { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
+  { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
+  { type: "dropdown", icon: <Shield size={20} />, label: "Equipos", children: [
+    { path: "/teams/primera", label: "Primera División" },
+    { path: "/teams/segunda", label: "Segunda División" },
+    { path: "/teams/tercera", label: "Tercera División" },
+  ]},
+  { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
+  { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
+  { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
+  { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
+  { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+  
+];
 
     const GrupoBadge = ({ grupo, size = "sm" }) => {
         if (!grupo) return null;
@@ -262,7 +267,7 @@ const ManageMatches = () => {
         return (
             <span style={{ display: "inline-flex", alignItems: "center", gap: s.gap, padding: s.padding, borderRadius: s.borderRadius, fontSize: s.fontSize, fontWeight: 800, letterSpacing: "0.3px", background: isEast ? "rgba(59,130,246,0.12)" : "rgba(249,115,22,0.12)", color: isEast ? "#60a5fa" : "#fb923c", border: `1px solid ${isEast ? "rgba(59,130,246,0.2)" : "rgba(249,115,22,0.2)"}`, flexShrink: 0 }}>
                 <span style={{ width: size === "lg" ? 5 : 4, height: size === "lg" ? 5 : 4, borderRadius: "50%", background: isEast ? "#3b82f6" : "#f97316" }} />
-                {isEast ? "Este" : "Oeste"}
+                {isEast ? "Grupo A" : "Grupo B"}
             </span>
         );
     };
@@ -462,7 +467,7 @@ const ManageMatches = () => {
                             {division === "segunda" && (
                                 <div style={{ padding: "12px 18px", borderRadius: "12px", marginBottom: "22px", background: activeGrupo ? (activeGrupo.toLowerCase() === "east" ? "rgba(59,130,246,0.08)" : "rgba(249,115,22,0.08)") : "rgba(255,255,255,0.025)", border: `1px solid ${activeGrupo ? (activeGrupo.toLowerCase() === "east" ? "rgba(59,130,246,0.18)" : "rgba(249,115,22,0.18)") : "rgba(255,255,255,0.06)"}`, display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", fontWeight: 600, color: activeGrupo ? (activeGrupo.toLowerCase() === "east" ? "#60a5fa" : "#fb923c") : "#64748b" }}>
                                     <Shield size={16} style={{ flexShrink: 0 }} />
-                                    <span>{activeGrupo ? <>Filtrado: solo equipos del <strong>Grupo {activeGrupo === "East" ? "Este" : "Oeste"}</strong></> : "Los partidos son entre equipos del mismo grupo"}</span>
+                                    <span>{activeGrupo ? <>Filtrado: solo equipos del <strong>Grupo {activeGrupo === "East" ? "Grupo A" : "Grupo B"}</strong></> : "Los partidos son entre equipos del mismo grupo"}</span>
                                 </div>
                             )}
                             <div className="nm-selects-row nm-selects-row-lg">

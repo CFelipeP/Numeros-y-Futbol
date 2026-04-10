@@ -6,20 +6,9 @@ import Swal from "sweetalert2";
 import 'animate.css';
 
 import {
-  LayoutDashboard,
-  CalendarDays,
-  Shield,
-  Newspaper,
-  Users,
-  Settings,
-  LogOut,
-  Menu,
-  Plus,
-  Trash2,
-  Edit,
-  Mail,
-  Trophy,
-  ChevronDown,
+  LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
+  CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
+  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, Upload, Mail
 } from "lucide-react";
 
 const ManageUsers = () => {
@@ -118,6 +107,7 @@ const ManageUsers = () => {
         { path: "/teams/tercera", label: "Tercera División" },
       ]
     },
+    { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
     { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
     { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
     { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
@@ -264,7 +254,7 @@ const ManageUsers = () => {
                     <td>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button className="btn-edit" style={{ background: '#2563eb', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
-                          <Edit size={16} />
+                          <Pencil size={16} />
                         </button>
                         <button
                           className="btn-delete"

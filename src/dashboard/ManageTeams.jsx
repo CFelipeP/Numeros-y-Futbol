@@ -6,24 +6,9 @@ import Swal from "sweetalert2";
 import 'animate.css';
 
 import {
-    LayoutDashboard,
-    CalendarDays,
-    Shield,
-    Newspaper,
-    Users,
-    Settings,
-    LogOut,
-    Menu,
-    Plus,
-    Trash2,
-    Edit,
-    X,
-    Upload,
-    Image,
-    CheckCircle2,
-    Save,
-    Trophy,
-    ChevronDown,
+  LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
+  CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
+  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft
 } from "lucide-react";
 
 const API = "http://localhost/Numeros-y-Futbol/backend/";
@@ -252,6 +237,7 @@ const ManageTeams = () => {
                 { path: "/teams/tercera", label: "Tercera División" },
             ]
         },
+        { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
         { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
         { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
         { path: "/users", icon: <Users size={20} />, label: "Usuarios" },

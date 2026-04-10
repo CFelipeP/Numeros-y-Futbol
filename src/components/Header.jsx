@@ -32,7 +32,7 @@ const Header = () => {
                 <nav className="header-nav">
                     <a href="/primera">Primera División</a>
                     <a href="/segunda">Segunda División</a>
-                    <a href="#tercera">Tercera División</a>
+                    <a href="/tercera">Tercera División</a>
                     <a href="/news">Noticias</a>
                     <a href="/login">Iniciar Sesión</a>
                     <a href="/register">Registrarse</a>

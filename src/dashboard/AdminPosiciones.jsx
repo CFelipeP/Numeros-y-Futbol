@@ -7,7 +7,7 @@ import "animate.css";
 import {
     LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings,
     LogOut, Menu, Trophy, RotateCcw, TrendingUp, TrendingDown, Minus,
-    BarChart3, Activity, ChevronDown,
+    BarChart3, Activity, ChevronDown, Target
 } from "lucide-react";
 
 const API_BASE = "http://numeros-y-futbol.test/backend/";
@@ -179,9 +179,9 @@ const AdminPosiciones = () => {
     const totalWest = tabla.filter(t => (t.grupo || "").toLowerCase() === "west").length;
 
     const getDisplayRows = () => {
-        if (!isSegunda || filterGrupo !== "todos") {
+        
             return filteredTabla.map((t, i) => ({ ...t, displayPos: i + 1, isGroupHeader: false }));
-        }
+        
         const rows = [];
         const east = filteredTabla.filter(t => (t.grupo || "").toLowerCase() === "east");
         const west = filteredTabla.filter(t => (t.grupo || "").toLowerCase() === "west");
@@ -234,20 +234,26 @@ const AdminPosiciones = () => {
     ];
 
     const navItems = [
-        { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
-        { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
-        { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
-        { type: "dropdown", icon: <Shield size={20} />, label: "Equipos", children: [{ path: "/teams/primera", label: "Primera División" }, { path: "/teams/segunda", label: "Segunda División" }, { path: "/teams/tercera", label: "Tercera División" }] },
-        { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
-        { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
-        { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
-        { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
-    ];
+  { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+  { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
+  { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
+  { type: "dropdown", icon: <Shield size={20} />, label: "Equipos", children: [
+    { path: "/teams/primera", label: "Primera División" },
+    { path: "/teams/segunda", label: "Segunda División" },
+    { path: "/teams/tercera", label: "Tercera División" },
+  ]},
+  { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
+  { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
+  { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
+  { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
+  { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+  
+];
 
     const renderTeamRow = (team, pos) => {
         const posColor = getPosColor(pos - 1);
         const posLabel = getPosLabel(pos - 1);
-        const isBottom = !isSegunda && pos >= tabla.length - 2 && tabla.length > 4;
+        const isBottom = !isSegunda && pos >= tabla.length - 0 && tabla.length > 4;
         const winRate = team.pj > 0 ? (team.pg / team.pj) * 100 : 0;
         const drawRate = team.pj > 0 ? (team.pe / team.pj) * 100 : 0;
         const lossRate = team.pj > 0 ? (team.pp / team.pj) * 100 : 0;
@@ -323,7 +329,7 @@ const AdminPosiciones = () => {
     };
 
     return (
-        <div className={`admin-layout ${!sidebarOpen ? "sidebar-closed" : ""}`}>
+        <div className={`admin-layout ${sidebarOpen ? "sidebar-closed" : ""}`}>
             <aside className="sidebar">
                 <div className="sidebar-header">
                     <div className="logo-icon">

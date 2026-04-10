@@ -79,7 +79,6 @@ const getDG = (gf, gc) => {
   return diff > 0 ? `+${diff}` : `${diff}`;
 };
 
-/* ====== PlayOff badge genérico ====== */
 const PLAYOFF_BADGE = { bg: "rgba(16, 185, 129, 0.15)", color: "#10b981", label: "PlayOff" };
 
 const getMatchStatus = (status) => {
@@ -99,6 +98,8 @@ const normalizeMatch = (m, teamMap) => {
   const score = m.score || "";
   let gl = m.goles_local;
   let gv = m.goles_visitante;
+  if (gl === "-1" || gl === -1) gl = null;
+  if (gv === "-1" || gv === -1) gv = null;
   if ((gl === null || gl === undefined || gl === "") && score && score !== "-") {
     const parts = String(score).split(" - ");
     gl = parts[0] !== undefined && parts[0] !== "" ? parseInt(parts[0]) : null;
@@ -168,8 +169,8 @@ const ZonaHeader = ({ zona, color }) => (
   </div>
 );
 
-/* ====== Tabla ahora recibe playoffTeamIds en vez de usar índice ====== */
-const TablaClasificacion = ({ datos, titulo, playoffTeamIds }) => (
+/* ====== TABLA: solo verde para playoff, nada más ====== */
+const TablaClasificacion = ({ datos, titulo, playoffTeamIds, showGrupo }) => (
   <div className="table-container">
     {titulo && (
       <div style={{ marginBottom: "0.5rem" }}>
@@ -191,30 +192,27 @@ const TablaClasificacion = ({ datos, titulo, playoffTeamIds }) => (
         )}
         {datos.map((team, index) => {
           const isPlayoff = playoffTeamIds && playoffTeamIds.has(team.equipo_id);
-          const badge = isPlayoff ? PLAYOFF_BADGE : null;
           const dg = getDG(team.gf, team.gc);
           return (
-            <tr key={team.id} style={{ borderLeft: badge ? `3px solid ${badge.color}` : "3px solid transparent", transition: "all 0.2s ease" }}>
+            <tr key={team.id} style={{
+              borderLeft: isPlayoff ? "3px solid #10b981" : "3px solid transparent",
+              transition: "all 0.2s ease",
+              background: isPlayoff ? "rgba(16,185,129,0.04)" : "transparent",
+            }}>
               <td style={{ textAlign: "center" }}>
-                {badge ? (
-                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: "6px", background: badge.bg, color: badge.color, fontSize: "0.7rem", fontWeight: 800, fontFamily: "var(--font-heading)" }}>{index + 1}</span>
-                ) : (
-                  <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-muted)" }}>{index + 1}</span>
-                )}
+                <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-muted)" }}>{index + 1}</span>
               </td>
               <td className="team-cell" style={{ paddingLeft: "16px" }}>
                 {team.logo && <img src={logoUrl(team.logo)} alt={team.nombre} style={{ width: 28, height: 28, objectFit: "contain", background: "rgba(255,255,255,0.06)", borderRadius: "50%", padding: "3px" }} />}
                 <span style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--color-text-main)", whiteSpace: "nowrap" }}>{team.nombre}</span>
-                {badge && (
+                {showGrupo && team.grupo && (
                   <span style={{
-                    fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px",
-                    color: badge.color, background: badge.bg,
-                    padding: "2px 7px", borderRadius: "4px",
-                    border: `1px solid ${badge.color}30`,
-                    marginLeft: "8px", verticalAlign: "middle",
-                    whiteSpace: "nowrap",
+                    fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px",
+                    color: team.grupo === "East" ? "#3b82f6" : "#f59e0b",
+                    background: team.grupo === "East" ? "rgba(59,130,246,0.1)" : "rgba(245,158,11,0.1)",
+                    padding: "0.1rem 0.4rem", borderRadius: "3px", marginLeft: "6px",
                   }}>
-                    PlayOff
+                    {team.grupo === "East" ? "A" : "B"}
                   </span>
                 )}
               </td>
@@ -244,163 +242,60 @@ const FeaturedMatchCard = ({ match }) => {
   const isScheduled = status.variant === "scheduled";
   const homeWin = match.goles_local !== null && match.goles_visitante !== null && match.goles_local > match.goles_visitante;
   const awayWin = match.goles_local !== null && match.goles_visitante !== null && match.goles_visitante > match.goles_local;
-
   const statusColor = isLive ? "#ef4444" : isFinished ? "#10b981" : "#f59e0b";
   const statusBg = isLive ? "rgba(239,68,68,0.15)" : isFinished ? "rgba(16,185,129,0.12)" : "rgba(245,158,11,0.12)";
 
   return (
     <div style={{
-      position: "relative",
-      borderRadius: "20px",
-      overflow: "hidden",
+      position: "relative", borderRadius: "20px", overflow: "hidden",
       background: "linear-gradient(160deg, #1a1f35 0%, #0d1117 40%, #111827 100%)",
       border: "1px solid rgba(255,255,255,0.06)",
       boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
     }}>
-      <div style={{
-        height: "3px",
-        background: `linear-gradient(90deg, transparent 0%, ${statusColor}66 30%, ${statusColor} 50%, ${statusColor}66 70%, transparent 100%)`,
-      }} />
-
-      <div style={{
-        position: "absolute",
-        top: "-60px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: "280px",
-        height: "180px",
-        borderRadius: "50%",
-        background: `radial-gradient(ellipse, ${statusColor}12 0%, transparent 70%)`,
-        pointerEvents: "none",
-      }} />
-
+      <div style={{ height: "3px", background: `linear-gradient(90deg, transparent 0%, ${statusColor}66 30%, ${statusColor} 50%, ${statusColor}66 70%, transparent 100%)` }} />
+      <div style={{ position: "absolute", top: "-60px", left: "50%", transform: "translateX(-50%)", width: "280px", height: "180px", borderRadius: "50%", background: `radial-gradient(ellipse, ${statusColor}12 0%, transparent 70%)`, pointerEvents: "none" }} />
       <div style={{ position: "relative", padding: "1.6rem 1.4rem 1.4rem" }}>
-
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.8rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <IconStar />
-            <span style={{ fontSize: "0.65rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", color: "rgba(255,255,255,0.4)" }}>
-              Destacado
-            </span>
+            <span style={{ fontSize: "0.65rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", color: "rgba(255,255,255,0.4)" }}>Destacado</span>
           </div>
-          <span style={{
-            fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase",
-            letterSpacing: "1.5px", color: statusColor, background: statusBg,
-            padding: "4px 12px", borderRadius: "20px",
-            border: `1px solid ${statusColor}25`,
-            animation: isLive ? "featuredPulse 2s ease-in-out infinite" : "none",
-          }}>
+          <span style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", color: statusColor, background: statusBg, padding: "4px 12px", borderRadius: "20px", border: `1px solid ${statusColor}25`, animation: isLive ? "featuredPulse 2s ease-in-out infinite" : "none" }}>
             {status.text}
           </span>
         </div>
-
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem" }}>
-
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", maxWidth: "130px" }}>
-            <div style={{
-              width: "62px", height: "62px", borderRadius: "50%",
-              background: "rgba(255,255,255,0.04)",
-              border: "2px solid rgba(255,255,255,0.06)",
-              padding: "8px", display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-            }}>
+            <div style={{ width: "62px", height: "62px", borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
               <img src={logoUrl(match.home_logo)} alt={match.home_name} style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} />
             </div>
-            <span style={{
-              fontSize: "0.72rem", fontWeight: homeWin ? 800 : 600,
-              color: homeWin ? "#ffffff" : "rgba(255,255,255,0.55)",
-              textAlign: "center", lineHeight: 1.25,
-              maxWidth: "110px", overflow: "hidden",
-              textOverflow: "ellipsis", display: "-webkit-box",
-              WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-            }}>
-              {match.home_name}
-            </span>
-            {homeWin && (
-              <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: "4px", border: "1px solid rgba(16,185,129,0.15)" }}>
-                Ganador
-              </span>
-            )}
+            <span style={{ fontSize: "0.72rem", fontWeight: homeWin ? 800 : 600, color: homeWin ? "#ffffff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: "110px", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.home_name}</span>
+            {homeWin && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: "4px", border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}
           </div>
-
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", padding: "0 0.8rem", flexShrink: 0 }}>
-            <div style={{
-              display: "flex", alignItems: "center", gap: "0",
-              background: "rgba(0,0,0,0.35)",
-              borderRadius: "14px", padding: "6px 4px",
-              border: "1px solid rgba(255,255,255,0.04)",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)",
-            }}>
-              <span style={{
-                fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)",
-                color: homeWin ? "#ffffff" : "rgba(255,255,255,0.6)",
-                width: "48px", textAlign: "center", lineHeight: 1,
-                textShadow: homeWin ? "0 0 20px rgba(255,255,255,0.3)" : "none",
-              }}>
-                {match.goles_local ?? "-"}
-              </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "0", background: "rgba(0,0,0,0.35)", borderRadius: "14px", padding: "6px 4px", border: "1px solid rgba(255,255,255,0.04)", boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)" }}>
+              <span style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: homeWin ? "#ffffff" : "rgba(255,255,255,0.6)", width: "48px", textAlign: "center", lineHeight: 1, textShadow: homeWin ? "0 0 20px rgba(255,255,255,0.3)" : "none" }}>{match.goles_local ?? "-"}</span>
               <span style={{ fontSize: "1rem", fontWeight: 400, color: "rgba(255,255,255,0.2)", margin: "0 2px", alignSelf: "center" }}>:</span>
-              <span style={{
-                fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)",
-                color: awayWin ? "#ffffff" : "rgba(255,255,255,0.6)",
-                width: "48px", textAlign: "center", lineHeight: 1,
-                textShadow: awayWin ? "0 0 20px rgba(255,255,255,0.3)" : "none",
-              }}>
-                {match.goles_visitante ?? "-"}
-              </span>
+              <span style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: awayWin ? "#ffffff" : "rgba(255,255,255,0.6)", width: "48px", textAlign: "center", lineHeight: 1, textShadow: awayWin ? "0 0 20px rgba(255,255,255,0.3)" : "none" }}>{match.goles_visitante ?? "-"}</span>
             </div>
-            <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", color: "rgba(255,255,255,0.25)" }}>
-              {isScheduled ? "VS" : "FT"}
-            </span>
+            <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", color: "rgba(255,255,255,0.25)" }}>{isScheduled ? "VS" : "FT"}</span>
           </div>
-
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", maxWidth: "130px" }}>
-            <div style={{
-              width: "62px", height: "62px", borderRadius: "50%",
-              background: "rgba(255,255,255,0.04)",
-              border: "2px solid rgba(255,255,255,0.06)",
-              padding: "8px", display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-            }}>
+            <div style={{ width: "62px", height: "62px", borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
               <img src={logoUrl(match.away_logo)} alt={match.away_name} style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} />
             </div>
-            <span style={{
-              fontSize: "0.72rem", fontWeight: awayWin ? 800 : 600,
-              color: awayWin ? "#ffffff" : "rgba(255,255,255,0.55)",
-              textAlign: "center", lineHeight: 1.25,
-              maxWidth: "110px", overflow: "hidden",
-              textOverflow: "ellipsis", display: "-webkit-box",
-              WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-            }}>
-              {match.away_name}
-            </span>
-            {awayWin && (
-              <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: "4px", border: "1px solid rgba(16,185,129,0.15)" }}>
-                Ganador
-              </span>
-            )}
+            <span style={{ fontSize: "0.72rem", fontWeight: awayWin ? 800 : 600, color: awayWin ? "#ffffff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: "110px", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.away_name}</span>
+            {awayWin && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: "4px", border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}
           </div>
         </div>
-
-        <div style={{
-          height: "1px", margin: "1.4rem 0 1rem",
-          background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.06) 70%, transparent 100%)",
-        }} />
-
+        <div style={{ height: "1px", margin: "1.4rem 0 1rem", background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.06) 70%, transparent 100%)" }} />
         {match.fecha && (
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", fontSize: "0.7rem", color: "rgba(255,255,255,0.3)" }}>
-            <IconCalendar />
-            <span>{match.fecha}</span>
+            <IconCalendar /><span>{match.fecha}</span>
           </div>
         )}
       </div>
-
-      <style>{`
-        @keyframes featuredPulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
-          50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
-        }
-      `}</style>
+      <style>{`@keyframes featuredPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); } 50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); } }`}</style>
     </div>
   );
 };
@@ -422,7 +317,6 @@ export default function SegundaDivision() {
   useEffect(() => {
     setLoading(true);
     setError(null);
-
     Promise.allSettled([
       safeFetch(`${API_BASE}get_tabla_segunda.php`),
       safeFetch(`${API_BASE}get_featured_match_segunda.php?t=${Date.now()}`),
@@ -433,31 +327,19 @@ export default function SegundaDivision() {
       const matchData = results[1].status === "fulfilled" ? results[1].value : null;
       const equiposData = results[2].status === "fulfilled" ? results[2].value : [];
       const sidebarData = results[3].status === "fulfilled" ? results[3].value : null;
-
       const tablaArr = Array.isArray(tablaData) ? tablaData : [];
       const equiposArr = Array.isArray(equiposData) ? equiposData : [];
       setTabla(tablaArr);
       setEquipos(equiposArr);
       setSidebar(sidebarData && typeof sidebarData === "object" ? sidebarData : { next: null, recent: [] });
-
       const teamMap = {};
       equiposArr.forEach((t) => { teamMap[String(t.id)] = t; if (t.nombre) teamMap[t.nombre] = t; });
-
       let featured = null;
-      if (
-        matchData &&
-        !Array.isArray(matchData) &&
-        typeof matchData === "object" &&
-        Object.keys(matchData).length > 0 &&
-        (matchData.home_name || matchData.local_nombre)
-      ) {
+      if (matchData && !Array.isArray(matchData) && typeof matchData === "object" && Object.keys(matchData).length > 0 && (matchData.home_name || matchData.local_nombre)) {
         const normalized = normalizeMatch(matchData, teamMap);
-        if (normalized && normalized.home_name && normalized.away_name) {
-          featured = normalized;
-        }
+        if (normalized && normalized.home_name && normalized.away_name) featured = normalized;
       }
       setMatch(featured);
-
     }).catch((err) => {
       console.error("Error cargando datos:", err);
       setError(err.message);
@@ -471,13 +353,10 @@ export default function SegundaDivision() {
   const equiposEast = equipos.filter(e => e.grupo === "East");
   const equiposWest = equipos.filter(e => e.grupo === "West");
 
-  /* ====== CAMBIO CLAVE: Calcular IDs de PlayOff según la vista ====== */
   const playoffTeamIds = useMemo(() => {
     const ids = new Set();
-    const sortDesc = (arr) => [...arr].sort((a, b) => b.pts - a.pts);
-
+    const sortDesc = (arr) => [...arr].sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc));
     if (vistaZona === "general") {
-      /* General: top 4 de East + top 4 de West = 8 equipos */
       sortDesc(tablaEast).slice(0, 4).forEach(t => ids.add(t.equipo_id));
       sortDesc(tablaWest).slice(0, 4).forEach(t => ids.add(t.equipo_id));
     } else if (vistaZona === "East") {
@@ -485,14 +364,13 @@ export default function SegundaDivision() {
     } else if (vistaZona === "West") {
       sortDesc(tablaWest).slice(0, 4).forEach(t => ids.add(t.equipo_id));
     }
-
     return ids;
   }, [vistaZona, tablaEast, tablaWest]);
 
   const zonaButtons = [
     { key: "general", label: "General", icon: "📊" },
-    { key: "East", label: "ESTE", icon: "🧭" },
-    { key: "West", label: "OESTE", icon: "🧭" },
+    { key: "East", label: "Grupo A", icon: "🧭" },
+    { key: "West", label: "Grupo B", icon: "🧭" },
   ];
 
   if (loading) {
@@ -579,7 +457,6 @@ export default function SegundaDivision() {
                   <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", boxShadow: "0 0 8px #f59e0b", display: "inline-block" }} />
                   Próximo Partido
                 </div>
-
                 {sidebar.next ? (
                   <div style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(30,41,59,0.4) 100%)", border: "1px solid rgba(245,158,11,0.12)", borderRadius: "16px", padding: "1.5rem 1.2rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
@@ -624,7 +501,6 @@ export default function SegundaDivision() {
                   <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981", display: "inline-block" }} />
                   Últimos Resultados
                 </div>
-
                 {sidebar.recent && sidebar.recent.length > 0 ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                     {sidebar.recent.map((m) => (
@@ -653,6 +529,14 @@ export default function SegundaDivision() {
                   <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
                     <span style={{ width: 10, height: 10, borderRadius: "2px", background: "#10b981", flexShrink: 0, boxShadow: "0 0 6px rgba(16,185,129,0.4)" }} />
                     <span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>PlayOff — {vistaZona === "general" ? "Top 4 de cada zona (8 equipos)" : "Top 4 de la zona"}</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                    <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", color: "#3b82f6", background: "rgba(59,130,246,0.1)", padding: "0.1rem 0.4rem", borderRadius: "3px" }}>A</span>
+                    <span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>Grupo A (Este)</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                    <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", color: "#f59e0b", background: "rgba(245,158,11,0.1)", padding: "0.1rem 0.4rem", borderRadius: "3px" }}>B</span>
+                    <span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>Grupo B (Oeste)</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
                     <span style={{ fontSize: "0.7rem", fontWeight: 800, color: "var(--color-text-muted)", width: 18, textAlign: "center", flexShrink: 0 }}>DG</span>
@@ -696,8 +580,11 @@ export default function SegundaDivision() {
 
               {vistaZona === "general" && (
                 <>
-                  {/* ====== Se pasa playoffTeamIds que contiene los 8 equipos ====== */}
-                  <TablaClasificacion datos={[...tabla].sort((a, b) => (b.pts - a.pts))} playoffTeamIds={playoffTeamIds} />
+                  <TablaClasificacion
+                    datos={[...tabla].sort((a, b) => (b.pts - a.pts) || ((b.gf - b.gc) - (a.gf - a.gc)))}
+                    playoffTeamIds={playoffTeamIds}
+                    showGrupo={true}
+                  />
                   {tabla.length > 0 && (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
                       <span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span>
@@ -710,7 +597,11 @@ export default function SegundaDivision() {
               {vistaZona === "East" && (
                 <>
                   <ZonaHeader zona="Este" color="#3b82f6" />
-                  <TablaClasificacion datos={tablaEast} titulo="Grupo Este" playoffTeamIds={playoffTeamIds} />
+                  <TablaClasificacion
+                    datos={[...tablaEast].sort((a, b) => (b.pts - a.pts) || ((b.gf - b.gc) - (a.gf - a.gc)))}
+                    playoffTeamIds={playoffTeamIds}
+                    showGrupo={false}
+                  />
                   {tablaEast.length > 0 && (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
                       <span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span>
@@ -723,7 +614,11 @@ export default function SegundaDivision() {
               {vistaZona === "West" && (
                 <>
                   <ZonaHeader zona="Oeste" color="#f59e0b" />
-                  <TablaClasificacion datos={tablaWest} titulo="Grupo Oeste" playoffTeamIds={playoffTeamIds} />
+                  <TablaClasificacion
+                    datos={[...tablaWest].sort((a, b) => (b.pts - a.pts) || ((b.gf - b.gc) - (a.gf - a.gc)))}
+                    playoffTeamIds={playoffTeamIds}
+                    showGrupo={false}
+                  />
                   {tablaWest.length > 0 && (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
                       <span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span>
@@ -738,7 +633,6 @@ export default function SegundaDivision() {
 
         {activeTab === "equipos" && (
           <div className="container" style={{ paddingBottom: "var(--spacing-lg)" }}>
-
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <div>
                 <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.4rem", fontWeight: 800, margin: "0 0 0.3rem 0", color: "var(--color-white)", display: "flex", alignItems: "center", gap: "0.6rem" }}>
@@ -786,7 +680,6 @@ export default function SegundaDivision() {
                 {(vistaZona === "general" ? equipos : vistaZona === "East" ? equiposEast : equiposWest).map((equipo) => {
                   const stats = getTeamStats(equipo.id);
                   const zonaTabla = vistaZona === "general" ? tabla : vistaZona === "East" ? tablaEast : tablaWest;
-                  /* ====== CAMBIO: Usar playoffTeamIds en vez de posición por índice ====== */
                   const isPlayoff = playoffTeamIds.has(equipo.id);
                   const badge = isPlayoff ? PLAYOFF_BADGE : null;
 
