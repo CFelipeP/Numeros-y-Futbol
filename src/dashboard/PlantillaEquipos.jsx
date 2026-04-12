@@ -11,137 +11,178 @@ import {
 
 const API = "http://numeros-y-futbol.test/backend/";
 
-const posiciones = [
-  { value: "portero", label: "Portero", color: "#f59e0b" },
-  { value: "defensa", label: "Defensa", color: "#3b82f6" },
-  { value: "medio", label: "Mediocampista", color: "#10b981" },
-  { value: "delantero", label: "Delantero", color: "#ef4444" },
+const DIVISIONES = [
+  { key: "primera", label: "Primera", icon: "🔴" },
+  { key: "segunda", label: "Segunda", icon: "🟢" },
+  { key: "tercera", label: "Tercera", icon: "🟡" },
 ];
 
-const posConfig = {
-  portero: { color: "#f59e0b", border: "rgba(245,158,11,0.2)", label: "PORTEROS", grad: "linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.02))" },
-  defensa: { color: "#3b82f6", border: "rgba(59,130,246,0.2)", label: "DEFENSAS", grad: "linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.02))" },
-  medio: { color: "#10b981", border: "rgba(16,185,129,0.2)", label: "MEDIOS", grad: "linear-gradient(135deg, rgba(16,185,129,0.08), rgba(16,185,129,0.02))" },
-  delantero: { color: "#ef4444", border: "rgba(239,68,68,0.2)", label: "DELANTEROS", grad: "linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.02))" },
+const getEndpoints = (div) => {
+  const s = div === "segunda" ? "_segunda" : div === "tercera" ? "_tercera" : "";
+  return {
+    teams: API + "get_teams" + s + ".php",
+    crud: API + "crud_jugadores" + s + ".php",
+    upload: API + "upload_jugador_foto" + s + ".php",
+  };
 };
 
+const posiciones = [
+  { value: "portero", label: "Portero", cat: "portero", color: "#f59e0b", abbr: "POR" },
+  { value: "lateral_izquierdo", label: "Lat. Izquierdo", cat: "defensa", color: "#3b82f6", abbr: "LI" },
+  { value: "lateral_derecho", label: "Lat. Derecho", cat: "defensa", color: "#3b82f6", abbr: "LD" },
+  { value: "central", label: "Central", cat: "defensa", color: "#3b82f6", abbr: "DFC" },
+  { value: "medio_defensivo", label: "Medio Defensivo", cat: "medio", color: "#10b981", abbr: "MCD" },
+  { value: "medio_central", label: "Medio Central", cat: "medio", color: "#10b981", abbr: "MC" },
+  { value: "medio_ofensivo", label: "Medio Ofensivo", cat: "medio", color: "#059669", abbr: "MCO" },
+  { value: "extremo_izquierdo", label: "Ext. Izquierdo", cat: "medio", color: "#6ee7b7", abbr: "EI" },
+  { value: "extremo_derecho", label: "Ext. Derecho", cat: "medio", color: "#6ee7b7", abbr: "ED" },
+  { value: "centrodelantero", label: "Centrodelantero", cat: "delantero", color: "#ef4444", abbr: "DC" },
+  { value: "segundo_delantero", label: "2do Delantero", cat: "delantero", color: "#f87171", abbr: "SD" },
+];
+
+const posGroups = [
+  { label: "Portero", items: posiciones.filter(p => p.cat === "portero") },
+  { label: "Defensas", items: posiciones.filter(p => p.cat === "defensa") },
+  { label: "Mediocampistas", items: posiciones.filter(p => p.cat === "medio") },
+  { label: "Delanteros", items: posiciones.filter(p => p.cat === "delantero") },
+];
+
+const catCfg = {
+  portero: { color: "#f59e0b", label: "PORTEROS" },
+  defensa: { color: "#3b82f6", label: "DEFENSAS" },
+  medio: { color: "#10b981", label: "MEDIOCAMPISTAS" },
+  delantero: { color: "#ef4444", label: "DELANTEROS" },
+};
+
+const posCompat = {
+  lateral_izquierdo: ["lateral_izquierdo", "lateral_derecho"],
+  lateral_derecho: ["lateral_derecho", "lateral_izquierdo"],
+  medio_defensivo: ["medio_defensivo", "medio_central"],
+  medio_central: ["medio_central", "medio_defensivo", "medio_ofensivo"],
+  medio_ofensivo: ["medio_ofensivo", "medio_central"],
+  extremo_izquierdo: ["extremo_izquierdo", "extremo_derecho"],
+  extremo_derecho: ["extremo_derecho", "extremo_izquierdo"],
+  centrodelantero: ["centrodelantero", "segundo_delantero"],
+  segundo_delantero: ["segundo_delantero", "centrodelantero"],
+};
+
+function getPosInfo(v) {
+  const p = posiciones.find(x => x.value === v);
+  if (p) return p;
+  const fb = { portero: "portero", defensa: "defensa", medio: "medio", delantero: "delantero" };
+  const cat = fb[v];
+  if (cat) return { label: v.charAt(0).toUpperCase() + v.slice(1), cat, color: catCfg[cat].color, abbr: v.substring(0, 2).toUpperCase() };
+  return { label: v || "?", cat: "delantero", color: "#64748b", abbr: "??" };
+}
+
 const statFields = [
-  { key: "pj", label: "PJ" }, { key: "goles", label: "Goles" },
-  { key: "asistencias", label: "Asist." }, { key: "goles_penal", label: "Pen." },
-  { key: "goles_cabeza", label: "Cabeza" }, { key: "goles_tiro_libre", label: "T. Libre" },
-  { key: "tarjetas_amarillas", label: "Amar." }, { key: "tarjetas_rojas", label: "Rojas" },
-  { key: "minutos_jugados", label: "Min." },
+  { key: "pj", label: "PJ" }, { key: "goles", label: "Gol" }, { key: "asistencias", label: "Asis" },
+  { key: "goles_penal", label: "Pen" }, { key: "goles_cabeza", label: "Cab" }, { key: "goles_tiro_libre", label: "TL" },
+  { key: "tarjetas_amarillas", label: "Ama" }, { key: "tarjetas_rojas", label: "Roj" }, { key: "minutos_jugados", label: "Min" },
 ];
-const porteroStatFields = [
-  { key: "pj", label: "PJ" }, { key: "goles_recibidos", label: "Gol. Rec." },
-  { key: "vaya_invicta", label: "V. Inv." }, { key: "tarjetas_amarillas", label: "Amar." },
-  { key: "tarjetas_rojas", label: "Rojas" }, { key: "minutos_jugados", label: "Min." },
+const gkStatFields = [
+  { key: "pj", label: "PJ" }, { key: "goles_recibidos", label: "G.R" }, { key: "vaya_invicta", label: "V.I" },
+  { key: "tarjetas_amarillas", label: "Ama" }, { key: "tarjetas_rojas", label: "Roj" }, { key: "minutos_jugados", label: "Min" },
 ];
+
+const formations = {
+  "4-4-2": [
+    { sp: "portero", sc: "portero", x: 50, y: 90 }, { sp: "lateral_izquierdo", sc: "defensa", x: 12, y: 70 },
+    { sp: "central", sc: "defensa", x: 36, y: 74 }, { sp: "central", sc: "defensa", x: 64, y: 74 },
+    { sp: "lateral_derecho", sc: "defensa", x: 88, y: 70 }, { sp: "extremo_izquierdo", sc: "medio", x: 18, y: 48 },
+    { sp: "medio_central", sc: "medio", x: 40, y: 46 }, { sp: "medio_central", sc: "medio", x: 60, y: 46 },
+    { sp: "extremo_derecho", sc: "medio", x: 82, y: 48 }, { sp: "centrodelantero", sc: "delantero", x: 36, y: 22 },
+    { sp: "centrodelantero", sc: "delantero", x: 64, y: 22 },
+  ],
+  "4-3-3": [
+    { sp: "portero", sc: "portero", x: 50, y: 90 }, { sp: "lateral_izquierdo", sc: "defensa", x: 12, y: 70 },
+    { sp: "central", sc: "defensa", x: 36, y: 74 }, { sp: "central", sc: "defensa", x: 64, y: 74 },
+    { sp: "lateral_derecho", sc: "defensa", x: 88, y: 70 }, { sp: "medio_defensivo", sc: "medio", x: 28, y: 48 },
+    { sp: "medio_central", sc: "medio", x: 50, y: 44 }, { sp: "medio_defensivo", sc: "medio", x: 72, y: 48 },
+    { sp: "extremo_izquierdo", sc: "medio", x: 18, y: 22 }, { sp: "centrodelantero", sc: "delantero", x: 50, y: 18 },
+    { sp: "extremo_derecho", sc: "medio", x: 82, y: 22 },
+  ],
+  "3-5-2": [
+    { sp: "portero", sc: "portero", x: 50, y: 90 }, { sp: "central", sc: "defensa", x: 25, y: 74 },
+    { sp: "central", sc: "defensa", x: 50, y: 76 }, { sp: "central", sc: "defensa", x: 75, y: 74 },
+    { sp: "lateral_izquierdo", sc: "defensa", x: 10, y: 50 }, { sp: "medio_central", sc: "medio", x: 30, y: 48 },
+    { sp: "medio_central", sc: "medio", x: 50, y: 44 }, { sp: "medio_central", sc: "medio", x: 70, y: 48 },
+    { sp: "lateral_derecho", sc: "defensa", x: 90, y: 50 }, { sp: "centrodelantero", sc: "delantero", x: 36, y: 22 },
+    { sp: "centrodelantero", sc: "delantero", x: 64, y: 22 },
+  ],
+  "4-2-3-1": [
+    { sp: "portero", sc: "portero", x: 50, y: 90 }, { sp: "lateral_izquierdo", sc: "defensa", x: 12, y: 70 },
+    { sp: "central", sc: "defensa", x: 36, y: 74 }, { sp: "central", sc: "defensa", x: 64, y: 74 },
+    { sp: "lateral_derecho", sc: "defensa", x: 88, y: 70 }, { sp: "medio_defensivo", sc: "medio", x: 38, y: 56 },
+    { sp: "medio_defensivo", sc: "medio", x: 62, y: 56 }, { sp: "extremo_izquierdo", sc: "medio", x: 20, y: 38 },
+    { sp: "medio_ofensivo", sc: "medio", x: 50, y: 34 }, { sp: "extremo_derecho", sc: "medio", x: 80, y: 38 },
+    { sp: "centrodelantero", sc: "delantero", x: 50, y: 18 },
+  ],
+  "5-3-2": [
+    { sp: "portero", sc: "portero", x: 50, y: 90 }, { sp: "lateral_izquierdo", sc: "defensa", x: 8, y: 66 },
+    { sp: "central", sc: "defensa", x: 28, y: 74 }, { sp: "central", sc: "defensa", x: 50, y: 76 },
+    { sp: "central", sc: "defensa", x: 72, y: 74 }, { sp: "lateral_derecho", sc: "defensa", x: 92, y: 66 },
+    { sp: "medio_central", sc: "medio", x: 28, y: 48 }, { sp: "medio_central", sc: "medio", x: 50, y: 44 },
+    { sp: "medio_central", sc: "medio", x: 72, y: 48 }, { sp: "centrodelantero", sc: "delantero", x: 36, y: 22 },
+    { sp: "centrodelantero", sc: "delantero", x: 64, y: 22 },
+  ],
+  "3-4-3": [
+    { sp: "portero", sc: "portero", x: 50, y: 90 }, { sp: "central", sc: "defensa", x: 25, y: 74 },
+    { sp: "central", sc: "defensa", x: 50, y: 76 }, { sp: "central", sc: "defensa", x: 75, y: 74 },
+    { sp: "extremo_izquierdo", sc: "medio", x: 12, y: 50 }, { sp: "medio_central", sc: "medio", x: 38, y: 48 },
+    { sp: "medio_central", sc: "medio", x: 62, y: 48 }, { sp: "extremo_derecho", sc: "medio", x: 88, y: 50 },
+    { sp: "extremo_izquierdo", sc: "medio", x: 18, y: 22 }, { sp: "centrodelantero", sc: "delantero", x: 50, y: 18 },
+    { sp: "extremo_derecho", sc: "medio", x: 82, y: 22 },
+  ],
+};
+
+function autoAssign(jugadores, fKey) {
+  const tpl = formations[fKey];
+  if (!tpl || !jugadores?.length) return { starters: [], subs: [...jugadores] };
+  const isTit = j => j.es_titular == 1 || j.es_titular === true;
+  const sorted = [...jugadores].sort((a, b) => (isTit(b) ? 1 : 0) - (isTit(a) ? 1 : 0));
+  const used = new Set(), starters = [], filled = new Set();
+  const pick = (fn) => sorted.find(j => fn(j) && !used.has(j.id));
+  for (let i = 0; i < tpl.length; i++) { const s = tpl[i]; const compat = posCompat[s.sp] || [s.sp]; const p = pick(j => compat.includes(j.posicion)); if (p) { starters.push({ ...p, px: s.x, py: s.y }); used.add(p.id); filled.add(i); } }
+  for (let i = 0; i < tpl.length; i++) { if (filled.has(i)) continue; const s = tpl[i]; const p = pick(j => getPosInfo(j.posicion).cat === s.sc); if (p) { starters.push({ ...p, px: s.x, py: s.y }); used.add(p.id); filled.add(i); } }
+  for (let i = 0; i < tpl.length; i++) { if (filled.has(i)) continue; const slot = tpl[i]; const p = pick(() => true); if (p) { starters.push({ ...p, px: slot.x, py: slot.y }); used.add(p.id); filled.add(i); } }
+  return { starters, subs: jugadores.filter(j => !used.has(j.id)) };
+}
 
 const navItems = [
   { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
   { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
   { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
   { type: "dropdown", icon: <Shield size={20} />, label: "Equipos", children: [
-    { path: "/teams/primera", label: "Primera División" },
-    { path: "/teams/segunda", label: "Segunda División" },
-    { path: "/teams/tercera", label: "Tercera División" },
+    { path: "/teams/primera", label: "Primera Division" },
+    { path: "/teams/segunda", label: "Segunda Division" },
+    { path: "/teams/tercera", label: "Tercera Division" },
   ]},
   { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
   { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
-  { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
+  { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Publicas" },
   { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
-  { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+  { path: "/settings", icon: <Settings size={20} />, label: "Configuracion" },
 ];
 
-const formationData = {
-  "4-4-2": [
-    { pos: "portero", x: 50, y: 90, role: "POR" }, { pos: "defensa", x: 12, y: 70, role: "LI" },
-    { pos: "defensa", x: 36, y: 74, role: "DFC" }, { pos: "defensa", x: 64, y: 74, role: "DFC" },
-    { pos: "defensa", x: 88, y: 70, role: "LD" }, { pos: "medio", x: 18, y: 48, role: "MI" },
-    { pos: "medio", x: 40, y: 46, role: "MC" }, { pos: "medio", x: 60, y: 46, role: "MC" },
-    { pos: "medio", x: 82, y: 48, role: "MD" }, { pos: "delantero", x: 36, y: 22, role: "DC" },
-    { pos: "delantero", x: 64, y: 22, role: "DC" },
-  ],
-  "4-3-3": [
-    { pos: "portero", x: 50, y: 90, role: "POR" }, { pos: "defensa", x: 12, y: 70, role: "LI" },
-    { pos: "defensa", x: 36, y: 74, role: "DFC" }, { pos: "defensa", x: 64, y: 74, role: "DFC" },
-    { pos: "defensa", x: 88, y: 70, role: "LD" }, { pos: "medio", x: 28, y: 48, role: "MC" },
-    { pos: "medio", x: 50, y: 44, role: "MC" }, { pos: "medio", x: 72, y: 48, role: "MC" },
-    { pos: "delantero", x: 18, y: 22, role: "EI" }, { pos: "delantero", x: 50, y: 18, role: "DC" },
-    { pos: "delantero", x: 82, y: 22, role: "ED" },
-  ],
-  "3-5-2": [
-    { pos: "portero", x: 50, y: 90, role: "POR" }, { pos: "defensa", x: 25, y: 74, role: "DFC" },
-    { pos: "defensa", x: 50, y: 76, role: "DFC" }, { pos: "defensa", x: 75, y: 74, role: "DFC" },
-    { pos: "medio", x: 10, y: 50, role: "CAI" }, { pos: "medio", x: 30, y: 48, role: "MC" },
-    { pos: "medio", x: 50, y: 44, role: "MC" }, { pos: "medio", x: 70, y: 48, role: "MC" },
-    { pos: "medio", x: 90, y: 50, role: "CAD" }, { pos: "delantero", x: 36, y: 22, role: "DC" },
-    { pos: "delantero", x: 64, y: 22, role: "DC" },
-  ],
-  "4-2-3-1": [
-    { pos: "portero", x: 50, y: 90, role: "POR" }, { pos: "defensa", x: 12, y: 70, role: "LI" },
-    { pos: "defensa", x: 36, y: 74, role: "DFC" }, { pos: "defensa", x: 64, y: 74, role: "DFC" },
-    { pos: "defensa", x: 88, y: 70, role: "LD" }, { pos: "medio", x: 38, y: 56, role: "MCD" },
-    { pos: "medio", x: 62, y: 56, role: "MCD" }, { pos: "medio", x: 20, y: 38, role: "MCO" },
-    { pos: "medio", x: 50, y: 34, role: "MCO" }, { pos: "medio", x: 80, y: 38, role: "MCO" },
-    { pos: "delantero", x: 50, y: 18, role: "DC" },
-  ],
-  "5-3-2": [
-    { pos: "portero", x: 50, y: 90, role: "POR" }, { pos: "defensa", x: 8, y: 66, role: "CAI" },
-    { pos: "defensa", x: 28, y: 74, role: "DFC" }, { pos: "defensa", x: 50, y: 76, role: "DFC" },
-    { pos: "defensa", x: 72, y: 74, role: "DFC" }, { pos: "defensa", x: 92, y: 66, role: "CAD" },
-    { pos: "medio", x: 28, y: 48, role: "MC" }, { pos: "medio", x: 50, y: 44, role: "MC" },
-    { pos: "medio", x: 72, y: 48, role: "MC" }, { pos: "delantero", x: 36, y: 22, role: "DC" },
-    { pos: "delantero", x: 64, y: 22, role: "DC" },
-  ],
-  "3-4-3": [
-    { pos: "portero", x: 50, y: 90, role: "POR" }, { pos: "defensa", x: 25, y: 74, role: "DFC" },
-    { pos: "defensa", x: 50, y: 76, role: "DFC" }, { pos: "defensa", x: 75, y: 74, role: "DFC" },
-    { pos: "medio", x: 12, y: 50, role: "MI" }, { pos: "medio", x: 38, y: 48, role: "MC" },
-    { pos: "medio", x: 62, y: 48, role: "MC" }, { pos: "medio", x: 88, y: 50, role: "MD" },
-    { pos: "delantero", x: 18, y: 22, role: "EI" }, { pos: "delantero", x: 50, y: 18, role: "DC" },
-    { pos: "delantero", x: 82, y: 22, role: "ED" },
-  ],
-};
-
-function autoAssign(jugadores, fKey) {
-  const tpl = formationData[fKey];
-  if (!tpl || !jugadores?.length) return { starters: [], subs: [...jugadores] };
-  const byPos = { portero: [], defensa: [], medio: [], delantero: [] };
-  jugadores.forEach(j => { if (byPos[j.posicion]) byPos[j.posicion].push(j); });
-  const used = new Set();
-  const starters = [];
-  for (const slot of tpl) {
-    const avail = byPos[slot.pos]?.filter(j => !used.has(j.id));
-    const pick = avail?.[0] || jugadores.find(j => !used.has(j.id));
-    if (pick) { starters.push({ ...pick, posicion_x: slot.x, posicion_y: slot.y, slot_role: slot.role }); used.add(pick.id); }
-  }
-  return { starters, subs: jugadores.filter(j => !used.has(j.id)) };
-}
-
-const TeamDropdown = memo(function TeamDropdown({ equipos, value, onChange }) {
+const TeamSelect = memo(function TeamSelect({ equipos, value, onChange }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  useEffect(() => {
-    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
-  }, []);
-  const sel = equipos.find(eq => String(eq.id) === String(value));
+  useEffect(() => { const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }; document.addEventListener("mousedown", h); return () => document.removeEventListener("mousedown", h); }, []);
+  const sel = equipos.find(e => String(e.id) === String(value));
   return (
-    <div className="pa-td" ref={ref}>
-      <button className="pa-td-btn" onClick={() => setOpen(!open)}>
-        {sel?.logo ? <img src={`${API}${sel.logo}`} className="pa-td-logo" /> : <div className="pa-td-logo-ph"><Shield size={14} /></div>}
-        <span className="pa-td-name">{sel?.nombre || "Selecciona un equipo"}</span>
-        <ChevronDown size={16} className="pa-td-arrow" style={{ transform: open ? "rotate(180deg)" : "" }} />
+    <div ref={ref} className="pl-team-sel">
+      <button className="pl-team-sel-btn" onClick={() => setOpen(!open)}>
+        {sel?.logo ? <img src={API + sel.logo} className="pl-team-sel-logo" alt="" /> : <Shield size={18} className="pl-team-sel-icon" />}
+        <span className="pl-team-sel-name">{sel?.nombre || "Selecciona un equipo"}</span>
+        <ChevronDown size={16} className={"pl-team-sel-arrow" + (open ? " open" : "")} />
       </button>
       {open && (
-        <div className="pa-td-list">
+        <div className="pl-team-sel-drop">
+          {equipos.length === 0 && <div className="pl-team-sel-empty">Sin equipos</div>}
           {equipos.map(eq => (
-            <button key={eq.id} className={`pa-td-item${String(eq.id) === String(value) ? " active" : ""}`}
-              onClick={() => { onChange(eq.id); setOpen(false); }}>
-              {eq.logo ? <img src={`${API}${eq.logo}`} className="pa-td-logo" /> : <div className="pa-td-logo-ph"><Shield size={12} /></div>}
+            <button key={eq.id} className={"pl-team-sel-opt" + (String(eq.id) === String(value) ? " active" : "")} onClick={() => { onChange(eq.id); setOpen(false); }}>
+              {eq.logo ? <img src={API + eq.logo} className="pl-team-sel-opt-logo" alt="" /> : <Shield size={14} className="pl-team-sel-icon" />}
               <span>{eq.nombre}</span>
             </button>
           ))}
@@ -151,66 +192,62 @@ const TeamDropdown = memo(function TeamDropdown({ equipos, value, onChange }) {
   );
 });
 
-const SearchBox = memo(function SearchBox({ value, onChange, onClear }) {
-  return (
-    <div className="pa-sw">
-      <Search size={15} className="pa-sw-icon" />
-      <input className="pa-input pa-sw-input" value={value} onChange={onChange} placeholder="Buscar jugador..." />
-      {value && <button className="pa-sw-x" onClick={onClear} type="button"><X size={12} /></button>}
-    </div>
-  );
-});
+const PlayerCard = memo(function PlayerCard({ j, onStats, onEdit, onDelete, onToggle }) {
+  const pi = getPosInfo(j.posicion);
+  const isGK = pi.cat === "portero";
+  const fotoUrl = j.foto ? API + j.foto : null;
 
-const PlayerRow = memo(function PlayerRow({ j, onStats, onEdit, onDelete, onToggle, showTitular }) {
-  const cfg = posConfig[j.posicion] || posConfig.delantero;
-  const isGK = j.posicion === "portero";
   return (
-    <div className={`pa-row${j.es_titular ? " pa-row-tit" : ""}`}>
-      {showTitular && (
-        <button className={`pa-toggle${j.es_titular ? " active" : ""}`} onClick={() => onToggle(j)} title={j.es_titular ? "Quitar titular" : "Hacer titular"}>
-          <Star size={13} />
-        </button>
-      )}
-      <div className="pa-row-num" style={{ background: `${cfg.color}15`, color: cfg.color }}>{j.numero_camiseta || "–"}</div>
-      <div className="pa-row-photo">
-        {j.foto ? <img src={`${API}${j.foto}`} alt="" /> : <User size={15} style={{ color: "rgba(255,255,255,0.15)" }} />}
+    <div className={"pl-card" + (j.es_titular ? " pl-card-tit" : "")}>
+      <div className="pl-card-num" data-color={pi.color}>{j.numero_camiseta || "-"}</div>
+      <div className="pl-card-photo">
+        {fotoUrl ? <img src={fotoUrl} alt="" /> : <User size={18} />}
       </div>
-      <div className="pa-row-info">
-        <span className="pa-row-name">{j.nombre}</span>
-        <span className="pa-row-meta">{[j.edad && `${j.edad} años`, j.nacionalidad].filter(Boolean).join(" · ")}</span>
+      <div className="pl-card-info">
+        <span className="pl-card-name">{j.nombre}</span>
+        <span className="pl-card-meta">
+          {[j.edad && j.edad + " a\u00f1os", j.nacionalidad].filter(Boolean).join(" \u00b7 ")}
+        </span>
       </div>
-      <span className="pa-row-pos" style={{ color: cfg.color, borderColor: `${cfg.color}25` }}>
-        {posiciones.find(p => p.value === j.posicion)?.label || j.posicion}
-      </span>
-      <div className="pa-row-stats">
+      <span className="pl-card-pos" data-color={pi.color}>{pi.abbr}</span>
+      <div className="pl-card-stats">
         {isGK ? (
-          <><b style={{ color: "#f59e0b" }}>{j.goles_recibidos || 0}</b><small>GR</small><b style={{ color: "#10b981" }}>{j.vaya_invicta || 0}</b><small>VI</small></>
+          <>
+            <div className="pl-stat"><b className="gk-gr">{j.goles_recibidos || 0}</b><small>GR</small></div>
+            <div className="pl-stat"><b className="gk-vi">{j.vaya_invicta || 0}</b><small>VI</small></div>
+          </>
         ) : (
-          <><b style={{ color: "#ef4444" }}>{j.goles || 0}</b><small>G</small><b style={{ color: "#3b82f6" }}>{j.asistencias || 0}</b><small>A</small></>
+          <>
+            <div className="pl-stat"><b className="fwd-g">{j.goles || 0}</b><small>GOL</small></div>
+            <div className="pl-stat"><b className="mid-a">{j.asistencias || 0}</b><small>ASIS</small></div>
+          </>
         )}
       </div>
-      <span className="pa-row-pj">{j.pj || 0} <small>PJ</small></span>
-      <div className="pa-row-actions">
-        <button className="pa-bic pa-bic-b" onClick={() => onStats(j)} title="Stats"><Pencil size={12} /></button>
-        <button className="pa-bic pa-bic-a" onClick={() => onEdit(j)} title="Editar"><EyeIcon size={12} /></button>
-        <button className="pa-bic pa-bic-r" onClick={() => onDelete(j)} title="Eliminar"><Trash2 size={12} /></button>
+      <div className="pl-card-pj"><b>{j.pj || 0}</b><small>PJ</small></div>
+      <button className={"pl-card-tit" + (j.es_titular ? " active" : "")} onClick={() => onToggle(j)}>
+        {j.es_titular ? "TIT" : "SUP"}
+      </button>
+      <div className="pl-card-actions">
+        <button className="ab ab-blue" onClick={() => onStats(j)} title="Estadisticas"><Pencil size={13} /></button>
+        <button className="ab ab-yellow" onClick={() => onEdit(j)} title="Editar"><EyeIcon size={13} /></button>
+        <button className="ab ab-red" onClick={() => onDelete(j)} title="Eliminar"><Trash2 size={13} /></button>
       </div>
     </div>
   );
 });
 
-const PosGroup = memo(function PosGroup({ pos, jugadores, ...handlers }) {
-  const cfg = posConfig[pos];
+const PosSection = memo(function PosSection({ cat, jugadores, ...h }) {
+  const cfg = catCfg[cat];
   if (!jugadores?.length) return null;
   return (
-    <div className="pa-g">
-      <div className="pa-g-head" style={{ borderColor: cfg.border, background: cfg.grad }}>
-        <i className="pa-g-dot" style={{ background: cfg.color, boxShadow: `0 0 8px ${cfg.color}40` }} />
-        <span className="pa-g-lbl" style={{ color: cfg.color }}>{cfg.label}</span>
-        <span className="pa-g-cnt" style={{ color: cfg.color, background: `${cfg.color}12` }}>{jugadores.length}</span>
+    <div className="pl-section">
+      <div className="pl-section-head">
+        <div className="pl-section-bar" data-color={cfg.color}></div>
+        <span className="pl-section-label" data-color={cfg.color}>{cfg.label}</span>
+        <span className="pl-section-count" data-color={cfg.color}>{jugadores.length}</span>
       </div>
-      <div className="pa-g-list">
-        {jugadores.map(j => <PlayerRow key={j.id} j={j} showTitular {...handlers} />)}
+      <div className="pl-section-list">
+        {jugadores.map(j => <PlayerCard key={j.id} j={j} {...h} />)}
       </div>
     </div>
   );
@@ -228,311 +265,730 @@ export default function PlantillaAdmin() {
   const [equipoId, setEquipoId] = useState("");
   const [plantilla, setPlantilla] = useState(null);
   const [formacion, setFormacion] = useState("4-4-2");
-  const [showModal, setShowModal] = useState(null);
+  const [modal, setModal] = useState(null);
   const [editPlayer, setEditPlayer] = useState(null);
   const [editStats, setEditStats] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ nombre: "", posicion: "delantero", numero_camiseta: "", edad: "", nacionalidad: "", foto: "" });
+  const [form, setForm] = useState({ nombre: "", posicion: "centrodelantero", numero_camiseta: "", edad: "", nacionalidad: "", foto: "", es_titular: false });
   const [statsForm, setStatsForm] = useState({});
-  const dRef = useRef(null);
+  const debounceRef = useRef(null);
+  const [division, setDivision] = useState(() => localStorage.getItem("admin_division") || "primera");
+  const [divDD, setDivDD] = useState(false);
+  const divRef = useRef(null);
 
+  useEffect(() => { localStorage.setItem("admin_division", division); }, [division]);
   useEffect(() => { if (window.innerWidth > 768) setSidebarOpen(true); }, []);
-  useEffect(() => { axios.get(`${API}get_teams.php`).then(r => setEquipos(Array.isArray(r.data) ? r.data : [])).catch(() => {}); }, []);
+  useEffect(() => { const h = e => { if (divRef.current && !divRef.current.contains(e.target)) setDivDD(false); }; document.addEventListener("mousedown", h); return () => document.removeEventListener("mousedown", h); }, []);
 
-  const handleSearchChange = useCallback((e) => {
-    const v = e.target.value; setSearchInput(v);
-    if (dRef.current) clearTimeout(dRef.current);
-    dRef.current = setTimeout(() => setSearch(v), 300);
+  useEffect(() => {
+    const ep = getEndpoints(division);
+    setLoading(true);
+    setEquipos([]);
+    setEquipoId("");
+    setPlantilla(null);
+    axios.get(ep.teams).then(r => {
+      const d = Array.isArray(r.data) ? r.data : (r.data?.equipos || []);
+      setEquipos(d);
+    }).catch(() => setEquipos([])).finally(() => setLoading(false));
+  }, [division]);
+
+  const onSearchChange = useCallback(e => {
+    const v = e.target.value;
+    setSearchInput(v);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setSearch(v), 300);
   }, []);
-  const clearSearch = useCallback(() => { setSearchInput(""); setSearch(""); }, []);
+
+  const clearSearch = useCallback(() => {
+    setSearchInput("");
+    setSearch("");
+  }, []);
 
   const loadPlantilla = useCallback(async (id) => {
     if (!id) { setPlantilla(null); return; }
     setLoading(true);
+    const ep = getEndpoints(division);
     try {
-      const r = await axios.get(`${API}crud_jugadores.php?equipo_id=${id}`);
-      if (r.data.success) { setPlantilla(r.data); if (r.data.equipo?.formacion) setFormacion(r.data.equipo.formacion); }
-    } catch { Swal.fire("Error", "No se pudo cargar", "error"); }
-    finally { setLoading(false); }
-  }, []);
+      const r = await axios.get(ep.crud + "?equipo_id=" + id);
+      if (r.data.success) {
+        const jugadores = (r.data.jugadores || []).map(j => ({
+          ...j,
+          es_titular: j.es_titular == 1 || j.es_titular === true,
+        }));
+        setPlantilla({ ...r.data, jugadores: jugadores });
+        if (r.data.equipo && r.data.equipo.formacion) setFormacion(r.data.equipo.formacion);
+      } else {
+        console.log("Respuesta del servidor:", r.data);
+        Swal.fire({
+          background: "#1e293b",
+          color: "#fff",
+          icon: "warning",
+          title: r.data.error || "No se pudo cargar",
+          text: "URL: " + ep.crud + "?equipo_id=" + id,
+          footer: '<pre style="text-align:left;font-size:11px;color:#94a3b8;max-height:120px;overflow:auto">' + JSON.stringify(r.data, null, 2) + '</pre>',
+        });
+      }
+    } catch (err) {
+      const msg =
+        err.response && err.response && err.response.status === 404
+          ? "Archivo no encontrado: " + ep.crud.split("/").pop()
+          : "Error de conexion";
+      Swal.fire({ background: "#1e293b", color: "#fff", icon: "error", title: msg });
+    } finally {
+      setLoading(false);
+    }
+  }, [division]);
 
-  const handleEquipoChange = useCallback((id) => { setEquipoId(id); setSearchInput(""); setSearch(""); setTab("plantilla"); loadPlantilla(id); }, [loadPlantilla]);
+  const handleEquipoChange = useCallback((id) => {
+    setEquipoId(id);
+    setSearchInput("");
+    setSearch("");
+    setTab("plantilla");
+    loadPlantilla(id);
+  }, [loadPlantilla]);
 
   const toggleTitular = useCallback(async (j) => {
-    try { await axios.post(`${API}crud_jugadores.php`, new URLSearchParams({ action: "toggle_titular", id: j.id })); loadPlantilla(equipoId); }
-    catch { Swal.fire("Error", "No se pudo cambiar", "error"); }
-  }, [equipoId, loadPlantilla]);
+    const ep = getEndpoints(division);
+    try {
+      await axios.post(ep.crud, { action: "toggle_titular", id: j.id });
+      loadPlantilla(equipoId);
+    } catch {
+      Swal.fire({ background: "#1e293b", color: "#fff", icon: "error", title: "Error al cambiar estado" });
+    }
+  }, [equipoId, loadPlantilla, division]);
 
-  const openCreate = useCallback(() => { setForm({ nombre: "", posicion: "delantero", numero_camiseta: "", edad: "", nacionalidad: "", foto: "" }); setEditPlayer(null); setShowModal("player"); }, []);
-  const openEditPlayer = useCallback((j) => { setForm({ nombre: j.nombre, posicion: j.posicion, numero_camiseta: j.numero_camiseta || "", edad: j.edad || "", nacionalidad: j.nacionalidad || "", foto: j.foto || "" }); setEditPlayer(j); setShowModal("player"); }, []);
-  const openEditStats = useCallback((j) => {
-    const fields = j.posicion === "portero" ? porteroStatFields : statFields;
+  const openCreate = useCallback(() => {
+    setForm({
+      nombre: "",
+      posicion: "centrodelantero",
+      numero_camiseta: "",
+      edad: "",
+      nacionalidad: "",
+      foto: "",
+      es_titular: false,
+    });
+    setEditPlayer(null);
+    setModal("player");
+  }, []);
+
+  const openEdit = useCallback((j) => {
+    setForm({
+      nombre: j.nombre,
+      posicion: j.posicion,
+      numero_camiseta: j.numero_camiseta || "",
+      edad: j.edad || "",
+      nacionalidad: j.nacionalidad || "",
+      foto: j.foto || "",
+      es_titular: !!j.es_titular,
+    });
+    setEditPlayer(j);
+    setModal("player");
+  }, []);
+
+  const openStats = useCallback((j) => {
+    const fields =
+      getPosInfo(j.posicion).cat === "portero" ? gkStatFields : statFields;
     const init = { temporada: j.temporada || "2025-2026" };
-    fields.forEach(f => { init[f.key] = j[f.key] || 0; });
-    setStatsForm(init); setEditStats(j); setShowModal("stats");
+    fields.forEach((f) => { init[f.key] = j[f.key] || 0; });
+    setStatsForm(init);
+    setEditStats(j);
+    setModal("stats");
   }, []);
 
   const deletePlayer = useCallback(async (j) => {
-    const ok = await Swal.fire({ title: `¿Eliminar a ${j.nombre}?`, icon: "warning", showCancelButton: true, confirmButtonColor: "#ef4444", confirmButtonText: "Eliminar", cancelButtonText: "Cancelar", background: "#1e293b", color: "#fff" });
+    const ok = await Swal.fire({
+      background: "#1e293b",
+      color: "#fff",
+      title: "Eliminar a " + j.nombre + "?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      confirmButtonText: "Eliminar",
+      cancelButtonText: "Cancelar",
+    });
     if (!ok.isConfirmed) return;
+
+    const ep = getEndpoints(division);
     try {
-      const r = await axios.delete(`${API}crud_jugadores.php?id=${j.id}`);
-      if (r.data.success) { Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Eliminado", showConfirmButton: false, timer: 1500, background: "#1e293b", color: "#fff" }); loadPlantilla(equipoId); }
-    } catch { Swal.fire("Error", "No se pudo eliminar", "error"); }
-  }, [equipoId, loadPlantilla]);
+      const r = await axios.delete(ep.crud + "?id=" + j.id);
+      if (r.data.success) {
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "success",
+          title: "Eliminado",
+          showConfirmButton: false,
+          timer: 1500,
+          background: "#1e293b",
+          color: "#fff",
+        });
+        loadPlantilla(equipoId);
+      }
+    } catch {
+      Swal.fire({
+        background: "#1e293b",
+        color: "#fff",
+        icon: "error",
+        title: "No se pudo eliminar",
+      });
+    }
+  }, [equipoId, loadPlantilla, division]);
+
+  const validateForm = useCallback(() => {
+    if (!form.nombre.trim()) {
+      Swal.fire({ background: "#1e293b", color: "#fff", icon: "error", title: "El nombre es obligatorio" });
+      return false;
+    }
+    if (form.edad !== "") {
+      const e = parseInt(form.edad);
+      if (isNaN(e) || e < 16 || e > 50) {
+        Swal.fire({ background: "#1e293b", color: "#fff", icon: "error", title: "Edad: 16-50" });
+        return false;
+      }
+    }
+    if (form.numero_camiseta !== "") {
+      const d = parseInt(form.numero_camiseta);
+      if (isNaN(d) || d < 1 || d > 99) {
+        Swal.fire({ background: "#1e293b", color: "#fff", icon: "error", title: "Dorsal: 1-99" });
+        return false;
+      }
+    }
+    return true;
+  }, [form]);
 
   const savePlayer = async () => {
-    if (!form.nombre.trim()) { Swal.fire("Error", "Nombre obligatorio", "error"); return; }
+    if (!validateForm()) return;
     setSaving(true);
+    const ep = getEndpoints(division);
     try {
-      const p = { action: editPlayer ? "update" : "create", equipo_id: editPlayer ? editPlayer.equipo_id : parseInt(equipoId), ...form, numero_camiseta: form.numero_camiseta ? parseInt(form.numero_camiseta) : null, edad: form.edad ? parseInt(form.edad) : null };
+      const p = {
+        action: editPlayer ? "update" : "create",
+        equipo_id: editPlayer ? editPlayer.equipo_id : parseInt(equipoId),
+        nombre: form.nombre.trim(),
+        posicion: form.posicion,
+        numero_camiseta: form.numero_camiseta ? parseInt(form.numero_camiseta) : null,
+        edad: form.edad ? parseInt(form.edad) : null,
+        nacionalidad: form.nacionalidad.trim(),
+        foto: form.foto,
+        es_titular: form.es_titular ? 1 : 0,
+      };
       if (editPlayer) p.id = editPlayer.id;
-      const r = await axios.post(`${API}crud_jugadores.php`, p);
-      if (r.data.success) { setShowModal(null); Swal.fire({ toast: true, position: "top-end", icon: "success", title: r.data.message, showConfirmButton: false, timer: 1500, background: "#1e293b", color: "#fff" }); loadPlantilla(equipoId); }
-    } catch (e) { Swal.fire("Error", e.response?.data?.error || "Error", "error"); }
-    finally { setSaving(false); }
+      const r = await axios.post(ep.crud, p);
+      if (r.data.success) {
+        setModal(null);
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "success",
+          title: "Guardado",
+          showConfirmButton: false,
+          timer: 1500,
+          background: "#1e293b",
+          color: "#fff",
+        });
+        loadPlantilla(equipoId);
+      } else {
+        Swal.fire({
+          background: "#1e293b",
+          color: "#fff",
+          icon: "error",
+          title: r.data.error || "Error",
+        });
+      }
+    } catch (e) {
+      Swal.fire({
+        background: "#1e293b",
+        color: "#fff",
+        icon: "error",
+        title: e.response?.data?.error || "Error de conexion",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const saveStats = async () => {
     setSaving(true);
+    const ep = getEndpoints(division);
     try {
-      const r = await axios.post(`${API}crud_jugadores.php`, { action: "update_stats", jugador_id: editStats.id, ...statsForm });
-      if (r.data.success) { setShowModal(null); Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Stats actualizadas", showConfirmButton: false, timer: 1500, background: "#1e293b", color: "#fff" }); loadPlantilla(equipoId); }
-    } catch (e) { Swal.fire("Error", e.response?.data?.error || "Error", "error"); }
-    finally { setSaving(false); }
+      const r = await axios.post(ep.crud, {
+        action: "update_stats",
+        jugador_id: editStats.id,
+        ...statsForm,
+      });
+      if (r.data.success) {
+        setModal(null);
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "success",
+          title: "Estadisticas guardadas",
+          showConfirmButton: false,
+          timer: 1500,
+          background: "#1e293b",
+          color: "#fff",
+        });
+        loadPlantilla(equipoId);
+      }
+    } catch (e) {
+      Swal.fire({
+        background: "#1e293b",
+        color: "#fff",
+        icon: "error",
+        title: e.response?.data?.error || "Error",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleFotoUpload = async (e) => {
-    const f = e.target.files[0]; if (!f) return;
-    const fd = new FormData(); fd.append("foto", f);
-    try { const r = await axios.post(`${API}upload_jugador_foto.php`, fd); if (r.data.success) setForm(p => ({ ...p, foto: r.data.path })); } catch { Swal.fire("Error", "No se subió", "error"); }
+  const handleFoto = async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const fd = new FormData();
+    fd.append("foto", f);
+    const ep = getEndpoints(division);
+    try {
+      const r = await axios.post(ep.upload, fd);
+      if (r.data.success) setForm((p) => ({ ...p, foto: r.data.path }));
+    } catch {
+      Swal.fire({
+        background: "#1e293b",
+        color: "#fff",
+        icon: "error",
+        title: "No se pudo subir la foto",
+      });
+    }
   };
 
   const saveFormation = useCallback(async () => {
     const { starters } = autoAssign(plantilla.jugadores, formacion);
     setSaving(true);
+    const ep = getEndpoints(division);
     try {
-      const r = await axios.post(`${API}crud_jugadores.php`, { action: "save_formation", equipo_id: equipoId, formacion, titulares: JSON.stringify(starters.map(s => ({ id: s.id, x: s.posicion_x, y: s.posicion_y }))) });
-      if (r.data.success) { Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Formación guardada", showConfirmButton: false, timer: 1500, background: "#1e293b", color: "#fff" }); loadPlantilla(equipoId); }
-    } catch { Swal.fire("Error", "No se guardó", "error"); }
-    finally { setSaving(false); }
-  }, [plantilla, formacion, equipoId, loadPlantilla]);
+      const r = await axios.post(ep.crud, {
+        action: "save_formation",
+        equipo_id: equipoId,
+        formacion: formacion,
+        titulares: JSON.stringify(starters.map((s) => ({ id: s.id, x: s.px, y: s.py }))),
+      });
+      if (r.data.success) {
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "success",
+          title: "Formacion guardada",
+          showConfirmButton: false,
+          timer: 1500,
+          background: "#1e293b",
+          color: "#fff",
+        });
+        loadPlantilla(equipoId);
+      }
+    } catch {
+      Swal.fire({
+        background: "#1e293b",
+        color: "#fff",
+        icon: "error",
+        title: "No se pudo guardar",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }, [plantilla, formacion, equipoId, loadPlantilla, division]);
 
   const groups = useMemo(() => {
     if (!plantilla?.jugadores) return { portero: [], defensa: [], medio: [], delantero: [] };
     const all = { portero: [], defensa: [], medio: [], delantero: [] };
-    plantilla.jugadores.forEach(j => { if (all[j.posicion]) all[j.posicion].push(j); });
+    plantilla.jugadores.forEach((j) => {
+      const c = getPosInfo(j.posicion).cat;
+      if (all[c]) all[c].push(j);
+    });
     if (!search.trim()) return all;
     const s = search.toLowerCase();
     const out = { portero: [], defensa: [], medio: [], delantero: [] };
-    for (const p of Object.keys(all)) out[p] = all[p].filter(j => j.nombre.toLowerCase().includes(s));
+    for (const c of Object.keys(all)) {
+      out[c] = all[c].filter((j) => j.nombre.toLowerCase().includes(s));
+    }
     return out;
   }, [plantilla, search]);
 
   const total = plantilla?.jugadores?.length || 0;
   const filteredCount = useMemo(() => Object.values(groups).reduce((a, b) => a + b.length, 0), [groups]);
-  const { starters, subs } = useMemo(() => autoAssign(plantilla?.jugadores || [], formacion), [plantilla, formacion]);
+  const { starters, subs } = useMemo(
+    () => autoAssign(plantilla?.jugadores || [], formacion),
+    [plantilla, formacion],
+  );
+
+  const curDiv = DIVISIONES.find((d) => d.key === division);
 
   const handleLogout = () => {
-    Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "No", background: "#1e293b", color: "#fff" })
-      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); window.location.href = "/login"; } });
+    Swal.fire({
+      background: "#1e293b",
+      color: "#fff",
+      title: "Cerrar sesion?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Si",
+      cancelButtonText: "No",
+    }).then((r) => {
+      if (r.isConfirmed) {
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+      }
+    });
   };
-  const navClick = useCallback(() => { if (window.innerWidth <= 768) setSidebarOpen(false); setDdOpen(false); }, []);
-  const handlers = useMemo(() => ({ onStats: openEditStats, onEdit: openEditPlayer, onDelete: deletePlayer, onToggle: toggleTitular }), [openEditStats, openEditPlayer, deletePlayer, toggleTitular]);
+
+  const navClick = useCallback(() => {
+    if (window.innerWidth <= 768) setSidebarOpen(false);
+    setDdOpen(false);
+  }, []);
+
+  const handlers = useMemo(
+    () => ({
+      onStats: openStats,
+      onEdit: openEdit,
+      onDelete: deletePlayer,
+      onToggle: toggleTitular,
+    }),
+    [openStats, openEdit, deletePlayer, toggleTitular],
+  );
 
   return (
-    <div className={`admin-layout${sidebarOpen ? " sidebar-open" : ""}`}>
+    <div className={"admin-layout" + (sidebarOpen ? " sidebar-open" : "")}>
       <aside className="sidebar">
         <div className="sidebar-header">
-          <div className="logo-icon"><img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="" /></div>
-          <h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2>
+          <div className="logo-icon">
+            <img
+              src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a"
+              alt=""
+            />
+          </div>
+          <h2 className="sidebar-title">
+            Números y Fútbol{" "}
+            <span className="accent-text">Admin</span>
+          </h2>
         </div>
-        <nav className="sidebar-nav"><ul>
-          {navItems.map((item, i) => {
-            if (item.type === "dropdown") {
-              const a = item.children.some(c => location.pathname === c.path);
-              return (<li key={i}>
-                <button className={`nav-item${a ? " active" : ""}`} onClick={() => setDdOpen(!ddOpen)} style={{ width: "100%", justifyContent: "space-between" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>{item.icon} {item.label}</span>
-                  <ChevronDown size={16} style={{ transform: ddOpen ? "rotate(180deg)" : "", transition: "transform 0.2s" }} />
-                </button>
-                <ul className={`teams-dropdown${ddOpen ? " dropdown-visible" : ""}`}>
-                  {item.children.map(c => <li key={c.path}><Link to={c.path} className={`nav-item nav-subitem${location.pathname === c.path ? " active" : ""}`} onClick={navClick}>{c.label}</Link></li>)}
-                </ul>
-              </li>);
-            }
-            return <li key={item.path}><Link to={item.path} className={`nav-item${location.pathname === item.path ? " active" : ""}`} onClick={navClick}>{item.icon} {item.label}</Link></li>;
-          })}
-        </ul></nav>
-        <div className="sidebar-footer"><button className="nav-item btn-logout-sidebar" onClick={handleLogout}><LogOut size={20} className="nav-icon" /> Cerrar sesión</button></div>
+        <nav className="sidebar-nav">
+          <ul>
+            {navItems.map((item, i) => {
+              if (item.type === "dropdown") {
+                const a = item.children.some((c) => location.pathname === c.path);
+                return (
+                  <li key={i}>
+                    <button
+                      className={"nav-item" + (a ? " active" : "")}
+                      onClick={() => setDdOpen(!ddOpen)}
+                      style={{ width: "100%", justifyContent: "space-between" }}
+                    >
+                      <span style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                        {item.icon} {item.label}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        style={{
+                          transform: ddOpen ? "rotate(180deg)" : "",
+                          transition: "transform 0.2s",
+                        }}
+                      />
+                    </button>
+                    <ul className={"teams-dropdown" + (ddOpen ? " dropdown-visible" : "")}>
+                      {item.children.map((c) => (
+                        <li key={c.path}>
+                          <Link
+                            to={c.path}
+                            className={"nav-item nav-subitem" + (location.pathname === c.path ? " active" : "")}
+                            onClick={navClick}
+                          >
+                            {c.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                );
+              }
+              return (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    className={"nav-item" + (location.pathname === item.path ? " active" : "")}
+                    onClick={navClick}
+                  >
+                    {item.icon} {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+        <div className="sidebar-footer">
+          <button
+            className="nav-item btn-logout-sidebar"
+            onClick={handleLogout}
+          >
+            <LogOut size={20} className="nav-icon" /> Cerrar sesion
+          </button>
+        </div>
       </aside>
 
-      {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && (
+        <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />
+      )}
 
       <main className="main-content">
         <header className="top-bar">
-          <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={24} /></button>
-          <span className="top-bar-title">Gestión de Plantillas</span>
+          <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <Menu size={24} />
+          </button>
+          <span className="top-bar-title">Gestion de Plantillas</span>
         </header>
 
-        <div className="pa-page">
-          {/* Header centrado */}
-          <div className="pa-hero">
-            <h1 className="admin-title">Plantillas</h1>
-            <p>Gestiona jugadores, estadísticas y formaciones por equipo</p>
+        <div className="pl-page">
+          <div className="pl-header">
+            <h1>Plantillas</h1>
+            <div ref={divRef} className="pl-div-dd">
+              <button className="pl-div-btn" onClick={() => setDivDD(!divDD)}>
+                <Trophy size={14} />
+                {curDiv.icon}
+                {" "}{curDiv.label} Division
+                <ChevronDown size={15} className={"pl-div-arrow" + (divDD ? " open" : "")} />
+              </button>
+              <div className={"pl-div-drop" + (divDD ? " show" : "")}>
+                {DIVISIONES.map((d) => (
+                  <button
+                    key={d.key}
+                    className={"pl-div-opt" + (division === d.key ? " active" : "")}
+                    onClick={() => {
+                      setDivision(d.key);
+                      setDivDD(false);
+                    }}
+                  >
+                    <span>{d.icon}</span>
+                    {d.label} Division
+                    {division === d.key && <span className="pl-div-dot" />}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Controles */}
-          <div className="pa-toolbar">
-            <TeamDropdown equipos={equipos} value={equipoId} onChange={handleEquipoChange} />
-            {plantilla && <SearchBox value={searchInput} onChange={handleSearchChange} onClear={clearSearch} />}
-            {plantilla && <button className="pa-btn-add" onClick={openCreate}><Plus size={15} /> Agregar</button>}
+          <div className="pl-toolbar">
+            <TeamSelect equipos={equipos} value={equipoId} onChange={handleEquipoChange} />
+            {plantilla && (
+              <div className="pl-search">
+                <Search size={15} className="pl-search-ic" />
+                <input
+                  value={searchInput}
+                  onChange={onSearchChange}
+                  placeholder="Buscar jugador..."
+                />
+                {searchInput && (
+                  <button className="pl-search-x" onClick={clearSearch}>
+                    <X size={11} />
+                  </button>
+                )}
+              </div>
+            )}
+            {plantilla && (
+              <button className="pl-add-btn" onClick={openCreate}>
+                <Plus size={15} /> Agregar
+              </button>
+            )}
           </div>
 
-          {/* Info equipo — card centrada */}
+          {!loading && equipos.length === 0 && (
+            <div className="pl-empty">
+              <Shield size={40} />
+              <p>No hay equipos en {curDiv?.label} Division</p>
+              <p>Crea equipos desde la seccion de Equipos primero</p>
+            </div>
+          )}
+
           {plantilla && (
-            <div className="pa-team-card">
-              <div className="pa-team-logo-wrap">
-                <div className="pa-team-logo-ring">
-                  <img src={`${API}${plantilla.equipo.logo}`} alt="" />
-                </div>
+            <div className="pl-team-card">
+              <div className="pl-tc-logo">
+                <img src={API + plantilla.equipo.logo} alt="" />
               </div>
-              <div className="pa-team-data">
+              <div className="pl-tc-info">
                 <h3>{plantilla.equipo.nombre}</h3>
-                <p>{[plantilla.equipo.ciudad, plantilla.equipo.estadio].filter(Boolean).join(" · ")}</p>
+                <p>
+                  {[plantilla.equipo.ciudad, plantilla.equipo.estadio].filter(Boolean).join(" - ")}
+                </p>
               </div>
-              <div className="pa-team-metrics">
-                <div className="pa-metric">
-                  <strong>{total}</strong>
+              <div className="pl-tc-stats">
+                <div className="pl-tc-stat">
+                  <b>{total}</b>
                   <span>Jugadores</span>
                 </div>
-                <div className="pa-metric-divider" />
-                <div className="pa-metric">
-                  <strong style={{ color: "#10b981" }}>{plantilla.jugadores.filter(j => j.es_titular).length}</strong>
+                <div className="pl-tc-div" />
+                <div className="pl-tc-stat">
+                  <b className="text-amber">{plantilla.jugadores.filter((j) => j.es_titular).length}</b>
                   <span>Titulares</span>
                 </div>
+                <div className="pl-tc-div" />
+                <div className="pl-tc-stat">
+                  <b className="text-slate">{plantilla.jugadores.filter((j) => !j.es_titular).length}</b>
+                  <span>Suplentes</span>
+                </div>
               </div>
             </div>
           )}
 
-          {/* Tabs */}
           {plantilla && total > 0 && (
-            <div className="pa-tabs">
-              <button className={`pa-tab${tab === "plantilla" ? " active" : ""}`} onClick={() => setTab("plantilla")}>
+            <div className="pl-tabs">
+              <button
+                className={"pl-tab" + (tab === "plantilla" ? " active" : "")}
+                onClick={() => setTab("plantilla")}
+              >
                 <Users size={14} /> Plantilla
               </button>
-              <button className={`pa-tab${tab === "formacion" ? " active" : ""}`} onClick={() => setTab("formacion")}>
-                <Target size={14} /> Formación
+              <button
+                className={"pl-tab" + (tab === "formacion" ? " active" : "")}
+                onClick={() => setTab("formacion")}
+              >
+                <Target size={14} /> Formacion
               </button>
             </div>
           )}
 
-          {loading && <div className="pa-center"><div className="pa-spinner" /><p style={{ color: "#64748b", marginTop: "0.75rem" }}>Cargando...</p></div>}
-
-          {!loading && !plantilla && (
-            <div className="pa-center">
-              <div className="pa-empty-icon"><Users size={28} /></div>
-              <p style={{ fontWeight: 700, color: "#e2e8f0" }}>Selecciona un equipo</p>
-              <p style={{ color: "#64748b", fontSize: "0.85rem" }}>Elige del menú para ver su plantilla</p>
+          {loading && (
+            <div className="pl-empty">
+              <div className="pl-spinner" />
+              <p>Cargando {curDiv?.label}...</p>
             </div>
           )}
 
-          {/* TAB PLANTILLA */}
+          {!loading && !plantilla && equipos.length > 0 && (
+            <div className="pl-empty">
+              <Users size={40} />
+              <p>Selecciona un equipo</p>
+              <p>Elige del menu desplegable para ver su plantilla</p>
+            </div>
+          )}
+
           {!loading && plantilla && tab === "plantilla" && (
             total === 0 ? (
-              <div className="pa-empty-box">
-                <p style={{ color: "#64748b" }}>Sin jugadores registrados</p>
-                <button className="pa-btn-add" onClick={openCreate}><Plus size={15} /> Agregar primero</button>
+              <div className="pl-empty">
+                <p>Sin jugadores registrados</p>
+                <button className="pl-add-btn" onClick={openCreate}>
+                  <Plus size={15} /> Agregar primero
+                </button>
               </div>
             ) : (
-              <div className="pa-list-wrap">
+              <div>
                 {searchInput.trim() && (
-                  <div className="pa-filter-info">
-                    {filteredCount > 0 ? `${filteredCount} resultado${filteredCount !== 1 ? "s" : ""} para "${searchInput}"` : `Sin resultados para "${searchInput}"`}
+                  <div className="pl-filter-msg">
+                    {filteredCount > 0
+                      ? filteredCount + " resultado" + (filteredCount !== 1 ? "s" : "") + " para " + searchInput
+                      : "Sin resultados para " + searchInput}
                   </div>
                 )}
-                {Object.keys(posConfig).map(pos => <PosGroup key={pos} pos={pos} jugadores={groups[pos]} {...handlers} />)}
-                <div className="pa-legend">
-                  {[{ c: "#f59e0b", i: <Star size={11} />, t: "Titular" }, { c: "#3b82f6", i: <Pencil size={11} />, t: "Stats" }, { c: "#f59e0b", i: <EyeIcon size={11} />, t: "Editar" }, { c: "#ef4444", i: <Trash2 size={11} />, t: "Eliminar" }].map((l, i) => (
-                    <span key={i}><i style={{ color: l.c }}>{l.i}</i> {l.t}</span>
-                  ))}
-                </div>
+                {Object.keys(catCfg).map((cat) => (
+                  <PosSection key={cat} cat={cat} jugadores={groups[cat]} {...handlers} />
+                ))}
               </div>
             )
           )}
 
-          {/* TAB FORMACIÓN */}
           {!loading && plantilla && tab === "formacion" && (
-            <div className="pa-fm-section">
-              <div className="pa-fm-bar">
-                <span className="pa-fm-label">FORMACIÓN</span>
-                <div className="pa-fm-btns">
-                  {Object.keys(formationData).map(f => (
-                    <button key={f} className={`pa-fm-btn${formacion === f ? " active" : ""}`} onClick={() => setFormacion(f)}>{f}</button>
+            <div>
+              <div className="pl-fm-bar">
+                <div className="pl-fm-btns">
+                  {Object.keys(formations).map((f) => (
+                    <button
+                      key={f}
+                      className={"pl-fm-btn" + (formacion === f ? " active" : "")}
+                      onClick={() => setFormacion(f)}
+                    >
+                      {f}
+                    </button>
                   ))}
                 </div>
-                <button className="pa-btn-save" onClick={saveFormation} disabled={saving}>
-                  <Save size={13} /> {saving ? "Guardando..." : "Guardar"}
+                <button
+                  className="pl-save-btn"
+                  onClick={saveFormation}
+                  disabled={saving}
+                >
+                  <Save size={14} />
+                  {saving ? "..." : "Guardar"}
                 </button>
               </div>
 
-              <div className="pa-pitch-wrap">
-                <div className="pa-pitch">
-                  <svg className="pa-pitch-svg" viewBox="0 0 680 1050" preserveAspectRatio="none">
-                    <rect x="1" y="1" width="678" height="1048" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" rx="2" />
-                    <line x1="0" y1="525" x2="680" y2="525" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
-                    <circle cx="340" cy="525" r="91" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
-                    <circle cx="340" cy="525" r="4" fill="rgba(255,255,255,0.15)" />
-                    <rect x="136" y="1" width="408" height="165" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
-                    <rect x="224" y="1" width="232" height="55" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
-                    <circle cx="340" cy="110" r="3" fill="rgba(255,255,255,0.15)" />
-                    <path d="M 248 165 A 91 91 0 0 0 432 165" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
-                    <rect x="136" y="884" width="408" height="165" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
-                    <rect x="224" y="994" width="232" height="55" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
-                    <circle cx="340" cy="940" r="3" fill="rgba(255,255,255,0.15)" />
-                    <path d="M 248 885 A 91 91 0 0 1 432 885" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
-                    <path d="M 1 20 A 20 20 0 0 0 21 1" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
-                    <path d="M 659 1 A 20 20 0 0 0 679 20" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
-                    <path d="M 1 1030 A 20 20 0 0 1 21 1049" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
-                    <path d="M 659 1049 A 20 20 0 0 1 679 1030" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
-                  </svg>
-                  {starters.map((s, idx) => {
-                    const cfg = posConfig[s.posicion] || posConfig.delantero;
-                    return (
-                      <div key={s.id || idx} className="pa-pp" style={{ left: `${s.posicion_x}%`, top: `${s.posicion_y}%` }}>
-                        <div className="pa-pp-dot" style={{ background: cfg.color, boxShadow: `0 0 12px ${cfg.color}50, inset 0 -2px 6px rgba(0,0,0,0.3)` }}>
-                          {s.foto ? <img src={`${API}${s.foto}`} alt="" /> : <span>{s.numero_camiseta || "–"}</span>}
-                        </div>
-                        <span className="pa-pp-name">{s.nombre.split(" ").pop()}</span>
-                        <span className="pa-pp-role">{s.slot_role}</span>
+              <div className="pl-pitch">
+                <svg
+                  className="pl-pitch-svg"
+                  viewBox="0 0 680 1050"
+                  preserveAspectRatio="none"
+                >
+                  <line x1="0" y1="525" x2="680" y2="525" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                  <circle cx="340" cy="525" r="91" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                  <rect x="136" y="1" width="408" height="165" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                  <rect x="224" y="1" width="232" height="55" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                  <path d="M 248 165 A 91 91 0 0 0 432 165" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                  <rect x="136" y="884" width="408" height="165" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                  <rect x="224" y="994" width="232" height="55" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                  <path d="M 248 885 A 91 91 0 0 1 432 885" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                </svg>
+
+                {starters.map((s, idx) => {
+                  const pi = getPosInfo(s.posicion);
+                  return (
+                    <div
+                      key={s.id || idx}
+                      className="pl-pitch-player"
+                      style={{
+                        left: s.px + "%",
+                        top: s.py + "%",
+                      }}
+                    >
+                      <div className="pl-pitch-dot" data-color={pi.color}>
+                        {s.foto
+                          ? <img src={API + s.foto} alt="" />
+                          : <span>{s.numero_camiseta || ""}</span>}
                       </div>
-                    );
-                  })}
-                  {starters.length < 11 && (
-                    <div className="pa-pitch-empty">
-                      <p>Faltan jugadores</p>
-                      <span>{starters.length}/11 titulares</span>
+                      <div className="pl-pitch-name">
+                        {s.nombre.split(" ").pop()}
+                      </div>
                     </div>
-                  )}
-                </div>
+                  );
+                })}
+
+                {starters.length < 11 && (
+                  <div className="pl-pitch-msg">
+                    {starters.length}/11 titulares
+                  </div>
+                )}
               </div>
 
               {subs.length > 0 && (
-                <div className="pa-subs-card">
-                  <h4 className="pa-subs-title"><ArrowRightLeft size={13} /> Suplentes <span>{subs.length}</span></h4>
-                  <div className="pa-subs-grid">
-                    {subs.map(s => {
-                      const cfg = posConfig[s.posicion] || posConfig.delantero;
+                <div className="pl-subs-card">
+                  <h4 className="pl-subs-title">
+                    Suplentes ({subs.length})
+                  </h4>
+                  <div className="pl-subs-grid">
+                    {subs.map((s) => {
+                      const pi = getPosInfo(s.posicion);
                       return (
-                        <div key={s.id} className="pa-sub-item" style={{ borderLeftColor: cfg.color }}>
-                          <div className="pa-sub-photo">
-                            {s.foto ? <img src={`${API}${s.foto}`} alt="" /> : <User size={13} style={{ color: "rgba(255,255,255,0.15)" }} />}
+                        <div key={s.id} className="pl-sub-item" data-color={pi.color}>
+                          <div className="pl-sub-photo">
+                            {s.foto
+                              ? <img src={API + s.foto} alt="" />
+                              : <User size={14} />}
                           </div>
-                          <div className="pa-sub-info">
-                            <span className="pa-sub-name">{s.nombre}</span>
-                            <span className="pa-sub-meta">#{s.numero_camiseta || "–"} {posiciones.find(p => p.value === s.posicion)?.label || ""}</span>
+                          <div className="pl-sub-info">
+                            <span className="pl-sub-name">{s.nombre}</span>
+                            <span className="pl-sub-meta">
+                              #{s.numero_camiseta || "-"} - {pi.label}
+                            </span>
                           </div>
-                          <button className="pa-sub-prom" onClick={() => toggleTitular(s)} title="Hacer titular"><Star size={12} /></button>
+                          <button
+                            className="pl-sub-prom"
+                            onClick={() => toggleTitular(s)}
+                            title="Hacer titular"
+                          >
+                            <Star size={12} />
+                          </button>
                         </div>
                       );
                     })}
@@ -544,262 +1000,511 @@ export default function PlantillaAdmin() {
         </div>
       </main>
 
-      {showModal === "player" && (
-        <div className="pa-modal-bg" onClick={() => setShowModal(null)}>
-          <div className="pa-modal" onClick={e => e.stopPropagation()}>
-            <div className="pa-modal-head"><h3>{editPlayer ? "Editar Jugador" : "Nuevo Jugador"}</h3><button onClick={() => setShowModal(null)} className="pa-modal-x"><X size={18} /></button></div>
-            <div className="pa-modal-body">
-              <div className="pa-foto-section">
-                <div className="pa-foto-circle">{form.foto ? <img src={`${API}${form.foto}`} alt="" /> : <User size={22} style={{ color: "rgba(255,255,255,0.1)" }} />}</div>
-                <label className="pa-upload-label"><Plus size={12} /> Subir foto<input type="file" accept="image/*" onChange={handleFotoUpload} hidden /></label>
+      {modal === "player" && (
+        <div className="pl-modal-bg" onClick={() => setModal(null)}>
+          <div className="pl-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="pl-modal-top">
+              <h3>{editPlayer ? "Editar Jugador" : "Nuevo Jugador"}</h3>
+              <button className="pl-modal-x" onClick={() => setModal(null)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="pl-modal-body">
+              <div className="pl-foto-area">
+                <div className="pl-foto-circle">
+                  {form.foto
+                    ? <img src={API + form.foto} alt="" />
+                    : <User size={28} />}
+                </div>
+                <label className="pl-upload-btn">
+                  <Plus size={12} /> Subir foto
+                  <input type="file" accept="image/*" onChange={handleFoto} hidden />
+                </label>
               </div>
-              <label className="pa-flbl">Nombre completo *</label>
-              <input className="pa-input" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} placeholder="Juan Pérez" />
-              <div className="pa-duo">
-                <div><label className="pa-flbl">Posición</label><div className="pa-sel-w"><select className="pa-input pa-sel" value={form.posicion} onChange={e => setForm({ ...form, posicion: e.target.value })}>{posiciones.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}</select><ChevronDown size={13} className="pa-sel-a" /></div></div>
-                <div><label className="pa-flbl">Dorsal</label><input className="pa-input" type="number" value={form.numero_camiseta} onChange={e => setForm({ ...form, numero_camiseta: e.target.value })} placeholder="10" min="1" max="99" /></div>
+
+              <div className="pl-field">
+                <label>
+                  Nombre completo <span className="req">*</span>
+                </label>
+                <input
+                  className="pl-input"
+                  value={form.nombre}
+                  onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
+                  placeholder="Juan Perez"
+                />
               </div>
-              <div className="pa-duo">
-                <div><label className="pa-flbl">Edad</label><input className="pa-input" type="number" value={form.edad} onChange={e => setForm({ ...form, edad: e.target.value })} placeholder="25" min="15" max="50" /></div>
-                <div><label className="pa-flbl">Nacionalidad</label><input className="pa-input" value={form.nacionalidad} onChange={e => setForm({ ...form, nacionalidad: e.target.value })} placeholder="Salvadoreño" /></div>
+
+              <div className="pl-field">
+                <label>Posicion</label>
+                <div className="pl-select-w">
+                  <select
+                    className="pl-input pl-select"
+                    value={form.posicion}
+                    onChange={(e) => setForm((f) => ({ ...f, posicion: e.target.value }))}
+                  >
+                    {posGroups.map((g) => (
+                      <optgroup key={g.label} label={g.label}>
+                        {g.items.map((p) => (
+                          <option key={p.value} value={p.value}>
+                            {p.label} ({p.abbr})
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="pl-row2">
+                <div className="pl-field">
+                  <label>Dorsal <span className="text-slate">(1-99)</span></label>
+                  <input
+                    className="pl-input"
+                    type="number"
+                    value={form.numero_camiseta}
+                    onChange={(e) => setForm((f) => ({ ...f, numero_camiseta: e.target.value }))}
+                    placeholder="10"
+                    min="1"
+                    max="99"
+                  />
+                </div>
+                <div className="pl-field">
+                  <label>Edad <span className="text-slate">(16-50)</span></label>
+                  <input
+                    className="pl-input"
+                    type="number"
+                    value={form.edad}
+                    onChange={(e) => setForm((f) => ({ ...f, edad: e.target.value }))}
+                    placeholder="20"
+                    min="16"
+                    max="50"
+                  />
+                </div>
+              </div>
+
+              <div className="pl-field">
+                <label>Nacionalidad</label>
+                <input
+                  className="pl-input"
+                  value={form.nacionalidad}
+                  onChange={(e) => setForm((f) => ({ ...f, nacionalidad: e.target.value }))}
+                  placeholder="Salvadoreno"
+                />
+              </div>
+
+              <div className="pl-tit-row">
+                <label style={{ marginBottom: 0 }}>Estado</label>
+                <div className="pl-tit-btns">
+                  <button
+                    type="button"
+                    className={"pl-tit-opt" + (!form.es_titular ? " active" : "")}
+                    onClick={() => setForm((f) => ({ ...f, es_titular: false }))}
+                  >
+                    <User size={14} /> Suplente
+                  </button>
+                  <button
+                    type="button"
+                    className={"pl-tit-opt tit" + (form.es_titular ? " active" : "")}
+                    onClick={() => setForm((f) => ({ ...f, es_titular: true }))}
+                  >
+                    <Star size={14} /> Titular
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="pa-modal-foot">
-              <button className="pa-btn-cancel" onClick={() => setShowModal(null)}>Cancelar</button>
-              <button className="pa-btn-save" onClick={savePlayer} disabled={saving}><Save size={13} /> {saving ? "Guardando..." : "Guardar"}</button>
+
+            <div className="pl-modal-bottom">
+              <button
+                className="pl-cancel-btn"
+                onClick={() => setModal(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="pl-save-btn"
+                onClick={savePlayer}
+                disabled={saving}
+              >
+                <Save size={14} />
+                {saving ? "..." : "Guardar"}
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {showModal === "stats" && editStats && (
-        <div className="pa-modal-bg" onClick={() => setShowModal(null)}>
-          <div className="pa-modal" onClick={e => e.stopPropagation()}>
-            <div className="pa-modal-head">
-              <div><h3>Estadísticas</h3><p style={{ margin: "2px 0 0", fontSize: "0.78rem", color: "#64748b" }}>{editStats.nombre} — Temp. 2025-2026</p></div>
-              <button onClick={() => setShowModal(null)} className="pa-modal-x"><X size={18} /></button>
+      {modal === "stats" && editStats && (
+        <div className="pl-modal-bg" onClick={() => setModal(null)}>
+          <div
+            className="pl-modal pl-modal-stats"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="pl-modal-top">
+              <div>
+                <h3>Estadisticas</h3>
+                <p className="pl-modal-sub">
+                  {editStats.nombre} - {getPosInfo(editStats.posicion).label}
+                </p>
+              </div>
+              <button className="pl-modal-x" onClick={() => setModal(null)}>
+                <X size={18} />
+              </button>
             </div>
-            <div className="pa-stats-grid">
-              {(editStats.posicion === "portero" ? porteroStatFields : statFields).map(f => (
-                <div key={f.key}><label className="pa-flbl">{f.label}</label><input className="pa-stat-in" type="number" min="0" value={statsForm[f.key] || 0} onChange={e => setStatsForm({ ...statsForm, [f.key]: parseInt(e.target.value) || 0 })} /></div>
+
+            <div className="pl-stats-grid">
+              {(getPosInfo(editStats.posicion).cat === "portero" ? gkStatFields : statFields).map((f) => (
+                <div key={f.key} className="pl-stat-field">
+                  <label>{f.label}</label>
+                  <input
+                    className="pl-stat-input"
+                    type="number"
+                    min="0"
+                    value={statsForm[f.key] || 0}
+                    onChange={(e) => setStatsForm((s) => ({ ...s, [f.key]: parseInt(e.target.value) || 0 }))}
+                  />
+                </div>
               ))}
             </div>
-            <div className="pa-modal-foot">
-              <button className="pa-btn-cancel" onClick={() => setShowModal(null)}>Cancelar</button>
-              <button className="pa-btn-save pa-btn-save-g" onClick={saveStats} disabled={saving}><Save size={13} /> {saving ? "Guardando..." : "Guardar"}</button>
+
+            <div className="pl-modal-bottom">
+              <button
+                className="pl-cancel-btn"
+                onClick={() => setModal(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="pl-save-btn green"
+                onClick={saveStats}
+                disabled={saving}
+              >
+                <Save size={14} />
+                {saving ? "..." : "Guardar"}
+              </button>
             </div>
           </div>
         </div>
       )}
 
       <style>{`
-@keyframes pa-spin{to{transform:rotate(360deg)}}
-@keyframes pa-in{from{opacity:0;transform:translateY(6px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes plspin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes pulseGlow{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* --- SIDEBAR MOBILE --- */
 .sidebar-backdrop{display:none}
-@media(max-width:768px){.sidebar-backdrop{display:block;position:fixed;inset:0;z-index:49;background:rgba(0,0,0,.55)}}
-.teams-dropdown{list-style:none;padding:0;margin:0;max-height:0;overflow:hidden;transition:max-height .25s}
-.teams-dropdown.dropdown-visible{max-height:200px}
-.nav-subitem{padding-left:52px!important;font-size:13px!important;opacity:.65}
-.nav-subitem.active{opacity:1}
-.top-bar-title{font-size:.95rem;font-weight:700;color:#e2e8f0}
-button.nav-item{background:none;border:none;color:var(--text-muted,#94a3b8);font-family:inherit;width:100%;text-align:left}
-
-/* ── Page ── */
-.pa-page{padding:2rem 1.5rem;max-width:960px;margin:0 auto}
-
-/* ── Hero header ── */
-.pa-hero{text-align:center;margin-bottom:2rem}
-.pa-hero p{margin:6px 0 0;font-size:.82rem;color:#64748b;letter-spacing:.3px}
-
-/* ── Inputs ── */
-.pa-input{width:100%;padding:.55rem .85rem;border-radius:10px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);color:#f1f5f9;font-size:.84rem;outline:none;box-sizing:border-box;transition:all .2s}
-.pa-input:focus{border-color:rgba(124,58,237,.4);background:rgba(255,255,255,.05)}
-.pa-input option{background:#1e293b;color:#f1f5f9}
-.pa-sel{appearance:none;cursor:pointer;padding-right:2.2rem}
-.pa-sel-w{position:relative}
-.pa-sel-a{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#64748b;pointer-events:none}
-
-/* ── Team dropdown ── */
-.pa-td{position:relative;flex:1;min-width:240px;z-index:20}
-.pa-td-btn{width:100%;display:flex;align-items:center;gap:.6rem;padding:.55rem .9rem;border-radius:10px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);color:#f1f5f9;font-size:.84rem;cursor:pointer;transition:all .15s;text-align:left}
-.pa-td-btn:hover{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
-.pa-td-logo{width:26px;height:26px;border-radius:50%;object-fit:contain;flex-shrink:0}
-.pa-td-logo-ph{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;color:#64748b;flex-shrink:0}
-.pa-td-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pa-td-arrow{color:#64748b;transition:transform .2s;flex-shrink:0}
-.pa-td-list{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#1e293b;border:1px solid rgba(255,255,255,.08);border-radius:12px;max-height:280px;overflow-y:auto;box-shadow:0 16px 40px rgba(0,0,0,.45);z-index:30;animation:pa-in .15s ease-out}
-.pa-td-item{width:100%;display:flex;align-items:center;gap:.55rem;padding:.5rem .8rem;border:none;background:none;color:#cbd5e1;font-size:.82rem;cursor:pointer;transition:all .1s;text-align:left}
-.pa-td-item:hover{background:rgba(255,255,255,.05)}
-.pa-td-item.active{background:rgba(124,58,237,.1);color:#c4b5fd}
-.pa-td-item .pa-td-logo{width:22px;height:22px}
-
-/* ── Search ── */
-.pa-sw{position:relative;flex:.5;min-width:180px}
-.pa-sw-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#64748b;pointer-events:none}
-.pa-sw-input{padding-left:2.2rem!important;padding-right:1.6rem!important}
-.pa-sw-x{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.06);border:none;color:#64748b;width:18px;height:18px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.pa-sw-x:hover{background:rgba(255,255,255,.12);color:#f1f5f9}
-
-/* ── Toolbar ── */
-.pa-toolbar{display:flex;gap:.6rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center;justify-content:center}
-.pa-btn-add{padding:.55rem 1.2rem;border-radius:10px;border:none;background:linear-gradient(135deg,#1e40af,#7c3aed);color:#fff;font-weight:700;font-size:.82rem;cursor:pointer;display:inline-flex;align-items:center;gap:.35rem;transition:all .2s;white-space:nowrap;flex-shrink:0}
-.pa-btn-add:hover{box-shadow:0 4px 16px rgba(124,58,237,.35);transform:translateY(-1px)}
-
-/* ── Team card ── */
-.pa-team-card{display:flex;align-items:center;gap:1.2rem;padding:1.2rem 1.5rem;border-radius:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);margin-bottom:1.5rem;max-width:560px;margin-left:auto;margin-right:auto}
-.pa-team-logo-wrap{flex-shrink:0}
-.pa-team-logo-ring{width:52px;height:52px;border-radius:50%;padding:5px;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.08)}
-.pa-team-logo-ring img{width:100%;height:100%;object-fit:contain}
-.pa-team-data{flex:1;min-width:0;text-align:left}
-.pa-team-data h3{margin:0;font-size:1.05rem;font-weight:800;color:#f1f5f9}
-.pa-team-data p{margin:3px 0 0;font-size:.75rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pa-team-metrics{display:flex;align-items:center;gap:1rem;flex-shrink:0}
-.pa-metric{text-align:center}
-.pa-metric strong{display:block;font-size:1.5rem;font-weight:900;font-family:monospace;line-height:1}
-.pa-metric span{font-size:.58rem;color:#64748b;text-transform:uppercase;letter-spacing:1px}
-.pa-metric-divider{width:1px;height:32px;background:rgba(255,255,255,.06);border-radius:1px}
-
-/* ── Tabs ── */
-.pa-tabs{display:flex;gap:0;margin-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.05);max-width:320px;margin-left:auto;margin-right:auto}
-.pa-tab{flex:1;padding:.6rem 0;border:none;background:none;color:#64748b;font-weight:600;font-size:.82rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;border-bottom:2px solid transparent;transition:all .15s;margin-bottom:-1px}
-.pa-tab:hover{color:#94a3b8}
-.pa-tab.active{color:#c4b5fd;border-bottom-color:#7c3aed}
-
-/* ── List wrap ── */
-.pa-list-wrap{max-width:720px;margin:0 auto}
-
-/* ── Row ── */
-.pa-row{display:grid;grid-template-columns:30px 36px 1fr 78px auto auto auto;gap:.5rem;align-items:center;padding:.5rem .7rem;border-radius:10px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.03);transition:all .15s}
-.pa-row.pa-row-tit{background:rgba(245,158,11,.03);border-color:rgba(245,158,11,.08)}
-.pa-row:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.06)}
-.pa-toggle{width:26px;height:26px;border-radius:6px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:#3f3f46;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
-.pa-toggle:hover{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.15)}
-.pa-toggle.active{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.25);color:#f59e0b}
-.pa-row-num{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;font-family:monospace}
-.pa-row-photo{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.04);overflow:hidden;display:flex;align-items:center;justify-content:center}
-.pa-row-photo img{width:100%;height:100%;object-fit:cover}
-.pa-row-info{min-width:0;display:flex;flex-direction:column}
-.pa-row-name{font-size:.82rem;font-weight:700;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pa-row-meta{font-size:.64rem;color:#64748b;margin-top:1px}
-.pa-row-pos{font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:5px;text-align:center;border:1px solid;letter-spacing:.3px}
-.pa-row-stats{display:flex;gap:.4rem;font-size:.72rem;align-items:center}
-.pa-row-stats small{color:#3f3f46;font-size:.58rem}
-.pa-row-pj{font-size:.72rem;color:#64748b;font-weight:600;text-align:center}
-.pa-row-pj small{font-weight:400}
-.pa-row-actions{display:flex;gap:.2rem}
-.pa-bic{width:26px;height:26px;border-radius:6px;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .12s}
-.pa-bic-b{background:rgba(59,130,246,.08);color:#3b82f6}.pa-bic-b:hover{background:rgba(59,130,246,.18)}
-.pa-bic-a{background:rgba(245,158,11,.08);color:#f59e0b}.pa-bic-a:hover{background:rgba(245,158,11,.18)}
-.pa-bic-r{background:rgba(239,68,68,.08);color:#ef4444}.pa-bic-r:hover{background:rgba(239,68,68,.18)}
-
-/* ── Groups ── */
-.pa-g{margin-bottom:1.4rem}
-.pa-g-head{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;padding:.45rem .7rem;border-bottom:2px solid transparent;border-radius:8px 8px 0 0}
-.pa-g-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.pa-g-lbl{font-size:.62rem;font-weight:800;letter-spacing:2.5px;text-transform:uppercase}
-.pa-g-cnt{font-size:.58rem;font-weight:700;padding:1px 7px;border-radius:4px;margin-left:auto}
-.pa-g-list{display:flex;flex-direction:column;gap:.25rem}
-
-/* ── Legend ── */
-.pa-legend{display:flex;gap:1.2rem;justify-content:center;margin-top:.8rem;padding:.45rem;border-radius:8px;background:rgba(255,255,255,.015);font-size:.68rem;color:#64748b}
-
-/* ── Empty ── */
-.pa-center{text-align:center;padding:3.5rem 1rem}
-.pa-empty-icon{width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.02);border:2px dashed rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem;color:rgba(255,255,255,.1)}
-.pa-empty-box{text-align:center;padding:2.5rem 1rem;background:rgba(255,255,255,.015);border-radius:14px;border:1px dashed rgba(255,255,255,.06);max-width:400px;margin:0 auto}
-.pa-empty-box p{color:#64748b;margin:0 0 1rem}
-.pa-spinner{width:32px;height:32px;border-radius:50%;border:3px solid rgba(124,58,237,.15);border-top-color:#7c3aed;animation:pa-spin .7s linear infinite;margin:0 auto}
-.pa-filter-info{font-size:.72rem;color:#64748b;margin-bottom:.5rem;padding:.35rem .6rem;background:rgba(255,255,255,.02);border-radius:7px;border-left:3px solid #7c3aed;max-width:400px;margin-left:auto;margin-right:auto}
-
-/* ═══ FORMACIÓN ═══ */
-.pa-fm-section{display:flex;flex-direction:column;gap:1.2rem;max-width:640px;margin:0 auto}
-.pa-fm-bar{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;justify-content:center}
-.pa-fm-label{font-size:.72rem;color:#64748b;font-weight:700;letter-spacing:1.5px}
-.pa-fm-btns{display:flex;gap:.3rem;flex-wrap:wrap}
-.pa-fm-btn{padding:.35rem .7rem;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:#64748b;font-weight:700;font-size:.73rem;cursor:pointer;transition:all .15s;font-family:monospace;letter-spacing:.5px}
-.pa-fm-btn:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1)}
-.pa-fm-btn.active{background:rgba(124,58,237,.12);border-color:rgba(124,58,237,.3);color:#c4b5fd}
-
-/* ── Cancha ── */
-.pa-pitch-wrap{width:100%;max-width:420px;margin:0 auto}
-.pa-pitch{position:relative;width:100%;aspect-ratio:68/105;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(0deg,#091f12 0px,#091f12 52px,#0c2815 52px,#0c2815 105px);box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 0 80px rgba(0,0,0,.2)}
-.pa-pitch-svg{position:absolute;inset:0;width:100%;height:100%}
-.pa-pitch-empty{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;opacity:.25}
-.pa-pitch-empty p{color:#fff;font-weight:700;font-size:.85rem;margin:0}
-.pa-pitch-empty span{color:#94a3b8;font-size:.72rem}
-
-/* ── Player en cancha ── */
-.pa-pp{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:2;transition:left .45s cubic-bezier(.4,0,.2,1),top .45s cubic-bezier(.4,0,.2,1)}
-.pa-pp-dot{width:34px;height:34px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.2);transition:transform .2s;font-size:.62rem;font-weight:800;color:#fff}
-.pa-pp:hover .pa-pp-dot{transform:scale(1.18)}
-.pa-pp-dot img{width:100%;height:100%;object-fit:cover}
-.pa-pp-name{font-size:.55rem;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9);white-space:nowrap;max-width:65px;overflow:hidden;text-overflow:ellipsis;text-align:center}
-.pa-pp-role{font-size:.45rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-
-/* ── Suplentes ── */
-.pa-subs-card{background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);border-radius:14px;padding:1rem 1.1rem}
-.pa-subs-title{margin:0 0 .65rem;font-size:.78rem;font-weight:700;color:#94a3b8;display:flex;align-items:center;gap:.4rem}
-.pa-subs-title span{font-size:.68rem;font-weight:800;color:#64748b;background:rgba(255,255,255,.04);padding:1px 8px;border-radius:4px;margin-left:.3rem}
-.pa-subs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.35rem}
-.pa-sub-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .55rem;border-radius:8px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.03);border-left:3px solid;transition:all .15s}
-.pa-sub-item:hover{background:rgba(255,255,255,.035)}
-.pa-sub-photo{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.04);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.pa-sub-photo img{width:100%;height:100%;object-fit:cover}
-.pa-sub-info{flex:1;min-width:0;display:flex;flex-direction:column}
-.pa-sub-name{font-size:.76rem;font-weight:600;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pa-sub-meta{font-size:.6rem;color:#64748b}
-.pa-sub-prom{width:24px;height:24px;border-radius:6px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:#3f3f46;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
-.pa-sub-prom:hover{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.2);color:#f59e0b}
-
-/* ── Modal ── */
-.pa-modal-bg{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:1rem}
-.pa-modal{background:#1e293b;border-radius:16px;border:1px solid rgba(255,255,255,.06);width:100%;max-width:430px;max-height:90vh;overflow-y:auto;animation:pa-in .18s ease-out;box-shadow:0 25px 60px rgba(0,0,0,.4)}
-.pa-modal-head{display:flex;justify-content:space-between;align-items:center;padding:.9rem 1.2rem;border-bottom:1px solid rgba(255,255,255,.04)}
-.pa-modal-head h3{margin:0;font-size:.95rem;font-weight:800;color:#f1f5f9}
-.pa-modal-x{background:none;border:none;color:#64748b;cursor:pointer;padding:4px;border-radius:6px;transition:all .15s}
-.pa-modal-x:hover{background:rgba(255,255,255,.04);color:#f1f5f9}
-.pa-modal-body{padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.75rem}
-.pa-modal-foot{padding:.8rem 1.2rem;border-top:1px solid rgba(255,255,255,.04);display:flex;justify-content:flex-end;gap:.5rem}
-.pa-foto-section{display:flex;align-items:center;gap:.85rem}
-.pa-foto-circle{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.03);border:2px dashed rgba(255,255,255,.08);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.pa-foto-circle img{width:100%;height:100%;object-fit:cover}
-.pa-upload-label{display:inline-flex;align-items:center;gap:.3rem;padding:.4rem .7rem;border-radius:8px;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:#94a3b8;font-size:.74rem;font-weight:600;transition:all .15s}
-.pa-upload-label:hover{background:rgba(255,255,255,.06)}
-.pa-flbl{display:block;font-size:.68rem;font-weight:700;color:#64748b;margin-bottom:.2rem;text-transform:uppercase;letter-spacing:.5px}
-.pa-duo{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
-.pa-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;padding:1.1rem 1.2rem}
-.pa-stat-in{width:100%;padding:.5rem .6rem;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);color:#f1f5f9;font-size:.84rem;outline:none;font-weight:700;text-align:center;font-family:monospace;box-sizing:border-box;transition:all .2s}
-.pa-stat-in:focus{border-color:rgba(16,185,129,.35);background:rgba(255,255,255,.05)}
-.pa-btn-cancel{padding:.5rem 1rem;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:#64748b;cursor:pointer;font-weight:600;font-size:.8rem;transition:all .15s}
-.pa-btn-cancel:hover{background:rgba(255,255,255,.03);color:#94a3b8}
-.pa-btn-save{padding:.5rem 1.1rem;border-radius:8px;border:none;background:linear-gradient(135deg,#1e40af,#7c3aed);color:#fff;cursor:pointer;font-weight:700;font-size:.8rem;display:inline-flex;align-items:center;gap:.3rem;transition:all .2s}
-.pa-btn-save:hover{box-shadow:0 3px 12px rgba(124,58,237,.3)}
-.pa-btn-save-g{background:linear-gradient(135deg,#10b981,#059669)}
-.pa-btn-save-g:hover{box-shadow:0 3px 12px rgba(16,185,129,.3)}
-.pa-btn-save:disabled{opacity:.4;cursor:not-allowed}
-
-@media(min-width:769px){.admin-layout.sidebar-open .sidebar{transform:translateX(0)!important}}
 @media(max-width:768px){
-  .admin-layout .sidebar{position:fixed!important;z-index:50!important;top:0!important;left:0!important;height:100%!important;width:260px!important;transform:translateX(-100%);transition:transform .3s!important}
-  .admin-layout.sidebar-open .sidebar{transform:translateX(0)!important;box-shadow:4px 0 20px rgba(0,0,0,.4)}
+  .sidebar-backdrop{display:block;position:fixed;inset:0;z-index:49;background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
+  .admin-layout .sidebar{position:fixed!important;z-index:50!important;top:0!important;left:0!important;width:260px!important;height:100vh!important;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1)!important}
+  .admin-layout.sidebar-open .sidebar{transform:translateX(0)!important;box-shadow:4px 0 30px rgba(0,0,0,.5)}
   .admin-layout .main-content{margin-left:0!important;width:100%!important}
-  .pa-page{padding:1rem}
-  .pa-row{grid-template-columns:26px 30px 1fr auto;gap:.3rem;padding:.4rem .5rem}
-  .pa-toggle,.pa-row-pos,.pa-row-stats,.pa-row-pj{display:none!important}
-  .pa-bic{width:24px;height:24px}.pa-bic svg{width:11px;height:11px}
-  .pa-toolbar{flex-direction:column;align-items:stretch}
-  .pa-sw{min-width:0;flex:1}
-  .pa-team-card{flex-direction:column;text-align:center;padding:1rem;gap:.6rem}
-  .pa-team-data{text-align:center}
-  .pa-team-metrics{justify-content:center}
-  .pa-metric-divider{display:none}
-  .pa-duo{grid-template-columns:1fr}
-  .pa-subs-grid{grid-template-columns:1fr}
-  .pa-pitch-wrap{max-width:300px}
-  .pa-pp-dot{width:28px;height:28px;font-size:.55rem}
-  .pa-pp-name{font-size:.48rem}
-  .pa-fm-bar{flex-direction:column;align-items:stretch}
-  .pa-fm-btns{justify-content:center}
+}
+@media(min-width:769px){
+  .admin-layout.sidebar-open .sidebar{transform:translateX(0)!important}
+}
+.teams-dropdown{list-style:none;padding:0;margin:0;max-height:0;overflow:hidden;transition:max-height .3s cubic-bezier(.4,0,.2,1)}
+.teams-dropdown.dropdown-visible{max-height:200px}
+.nav-subitem{padding-left:52px!important;font-size:13px!important;opacity:.6;transition:opacity .15s}
+.nav-subitem.active{opacity:1}
+.top-bar-title{font-size:.95rem;font-weight:700;color:#e2e8f0;letter-spacing:-.01em}
+button.nav-item{background:none;border:none;color:#94a3b8;font-family:inherit;width:100%;text-align:left}
+
+/* --- PAGE LAYOUT --- */
+.pl-page{padding:28px 24px;max-width:1060px;margin:0 auto;animation:slideUp .4s ease-out}
+
+/* --- HEADER --- */
+.pl-header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.04)}
+.pl-header h1{margin:0;font-size:26px;font-weight:900;color:#f8fafc;letter-spacing:-.04em;background:linear-gradient(135deg,#f8fafc 0%,#64748b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* --- DIVISION DROPDOWN --- */
+.pl-div-dd{position:relative}
+.pl-div-btn{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);color:#94a3b8;font-size:13px;font-weight:700;cursor:pointer;transition:all .25s;letter-spacing:-.01em;backdrop-filter:blur(8px)}
+.pl-div-btn:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:#cbd5e1}
+.pl-div-arrow{transition:transform .25s cubic-bezier(.4,0,.2,1)}.pl-div-arrow.open{transform:rotate(180deg)}
+.pl-div-drop{position:absolute;top:calc(100% + 10px);right:0;background:rgba(15,23,42,.95);border:1px solid rgba(255,255,255,.06);border-radius:16px;overflow:hidden;min-width:220px;box-shadow:0 25px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.02) inset;opacity:0;pointer-events:none;transform:translateY(-8px) scale(.98);transition:all .25s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(20px)}
+.pl-div-drop.show{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
+.pl-div-opt{display:flex;align-items:center;gap:10px;width:100%;padding:13px 20px;border:none;background:transparent;color:#94a3b8;font-size:13px;font-weight:500;cursor:pointer;text-align:left;transition:all .15s}
+.pl-div-opt:hover{background:rgba(255,255,255,.04);color:#e2e8f0}
+.pl-div-opt.active{background:rgba(255,255,255,.06);color:#f1f5f9;font-weight:700}
+.pl-div-dot{margin-left:auto;width:6px;height:6px;border-radius:50%;background:#22d3ee;box-shadow:0 0 10px rgba(34,211,238,.5)}
+
+/* --- TOOLBAR --- */
+.pl-toolbar{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
+
+/* --- TEAM SELECT --- */
+.pl-team-sel{position:relative;flex:1;min-width:260px;z-index:20}
+.pl-team-sel-btn{width:100%;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:#f1f5f9;font-size:14px;cursor:pointer;text-align:left;transition:all .25s;backdrop-filter:blur(4px)}
+.pl-team-sel-btn:hover{border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
+.pl-team-sel-logo{width:30px;height:30px;border-radius:10px;object-fit:contain;flex-shrink:0;background:rgba(255,255,255,.04);padding:3px}
+.pl-team-sel-icon{color:#475569;flex-shrink:0}
+.pl-team-sel-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.pl-team-sel-arrow{color:#475569;transition:transform .25s cubic-bezier(.4,0,.2,1);flex-shrink:0}.pl-team-sel-arrow.open{transform:rotate(180deg)}
+.pl-team-sel-drop{position:absolute;top:calc(100% + 8px);left:0;right:0;background:rgba(15,23,42,.95);border:1px solid rgba(255,255,255,.06);border-radius:16px;max-height:300px;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.5);z-index:30;animation:fadeIn .2s ease-out;backdrop-filter:blur(20px)}
+.pl-team-sel-drop::-webkit-scrollbar{width:3px}.pl-team-sel-drop::-webkit-scrollbar-track{background:transparent}.pl-team-sel-drop::-webkit-scrollbar-thumb{background:rgba(255,255,255,.06);border-radius:4px}
+.pl-team-sel-opt{width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border:none;background:transparent;color:#cbd5e1;font-size:13px;cursor:pointer;transition:all .12s;text-align:left;border-bottom:1px solid rgba(255,255,255,.02)}
+.pl-team-sel-opt:last-child{border-bottom:none}
+.pl-team-sel-opt:hover{background:rgba(255,255,255,.04)}
+.pl-team-sel-opt.active{background:rgba(255,255,255,.06);color:#f1f5f9}
+.pl-team-sel-opt .pl-team-sel-opt-logo{width:26px;height:26px;border-radius:8px}
+.pl-team-sel-empty{padding:20px;text-align:center;color:#475569;font-size:13px}
+
+/* --- SEARCH --- */
+.pl-search{position:relative;min-width:200px;flex:.4}
+.pl-search input{width:100%;padding:12px 38px 12px 40px;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:#e2e8f0;font-size:13px;outline:none;box-sizing:border-box;transition:all .25s}
+.pl-search input:focus{border-color:rgba(34,211,238,.25);background:rgba(255,255,255,.03);box-shadow:0 0 0 4px rgba(34,211,238,.06)}
+.pl-search input::placeholder{color:#334155}
+.pl-search-ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#334155;pointer-events:none}
+.pl-search-x{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.05);border:none;color:#475569;width:22px;height:22px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.pl-search-x:hover{background:rgba(239,68,68,.12);color:#f87171}
+
+/* --- ADD BUTTON --- */
+.pl-add-btn{display:flex;align-items:center;gap:7px;padding:12px 24px;border-radius:14px;border:none;background:#0f766e;color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:all .25s;letter-spacing:-.01em;box-shadow:0 2px 12px rgba(15,118,110,.2)}
+.pl-add-btn:hover{background:#0d9488;box-shadow:0 4px 20px rgba(15,118,110,.3);transform:translateY(-1px)}
+.pl-add-btn:active{transform:translateY(0)}
+
+/* --- EMPTY STATE --- */
+.pl-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:#475569;gap:8px}
+.pl-empty svg{opacity:.2;margin-bottom:8px}
+.pl-empty p{margin:0;text-align:center}
+.pl-empty p:first-of-type{font-weight:700;color:#64748b;font-size:15px}
+.pl-empty p:last-of-type{color:#334155;font-size:13px}
+.pl-spinner{width:36px;height:36px;border-radius:50%;border:3px solid rgba(255,255,255,.04);border-top-color:#22d3ee;animation:plspin .7s linear infinite;margin:0 auto 16px}
+
+/* --- TEAM CARD --- */
+.pl-team-card{display:flex;align-items:center;gap:20px;padding:22px 24px;border-radius:20px;background:linear-gradient(135deg,rgba(255,255,255,.025),rgba(255,255,255,.008));border:1px solid rgba(255,255,255,.04);margin-bottom:24px;transition:all .3s;position:relative;overflow:hidden}
+.pl-team-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(34,211,238,.2),transparent)}
+.pl-team-card:hover{border-color:rgba(255,255,255,.06)}
+.pl-tc-logo{width:56px;height:56px;border-radius:16px;overflow:hidden;flex-shrink:0;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;padding:8px;border:1px solid rgba(255,255,255,.05)}
+.pl-tc-logo img{width:100%;height:100%;object-fit:contain}
+.pl-tc-info{flex:1;min-width:0}
+.pl-tc-info h3{margin:0;font-size:20px;font-weight:900;color:#f1f5f9;letter-spacing:-.03em}
+.pl-tc-info p{margin:4px 0 0;font-size:12px;color:#334155;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-tc-stats{display:flex;align-items:center;gap:20px;flex-shrink:0}
+.pl-tc-stat{text-align:center}
+.pl-tc-stat b{display:block;font-size:24px;font-weight:900;font-family:'Inter',system-ui,sans-serif;line-height:1;letter-spacing:-.04em}
+.pl-tc-stat span{font-size:9px;color:#334155;text-transform:uppercase;letter-spacing:.1em;margin-top:3px;display:block}
+.pl-tc-div{width:1px;height:36px;background:rgba(255,255,255,.04);border-radius:1px}
+
+/* --- TABS --- */
+.pl-tabs{display:flex;gap:2px;margin-bottom:24px;padding:3px;background:rgba(255,255,255,.02);border-radius:16px;border:1px solid rgba(255,255,255,.04);width:fit-content}
+.pl-tab{display:flex;align-items:center;gap:8px;padding:11px 24px;border-radius:14px;border:none;background:transparent;color:#475569;font-size:13px;font-weight:600;cursor:pointer;transition:all .25s}
+.pl-tab:hover{color:#94a3b8;background:rgba(255,255,255,.02)}
+.pl-tab.active{background:rgba(34,211,238,.08);color:#22d3ee;box-shadow:0 0 20px rgba(34,211,238,.06)}
+
+/* --- FILTER MSG --- */
+.pl-filter-msg{margin-bottom:16px;font-size:12px;color:#475569;padding:10px 16px;background:rgba(255,255,255,.015);border-radius:10px;border-left:2px solid rgba(34,211,238,.3)}
+
+/* --- SECTIONS --- */
+.pl-section{margin-bottom:22px}
+.pl-section-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:0 4px}
+.pl-section-bar{width:3px;height:16px;border-radius:2px}
+.pl-section-bar[data-color="#f59e0b"]{background:#f59e0b}
+.pl-section-bar[data-color="#3b82f6"]{background:#3b82f6}
+.pl-section-bar[data-color="#10b981"]{background:#10b981}
+.pl-section-bar[data-color="#ef4444"]{background:#ef4444}
+.pl-section-label{font-size:10px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.15em}
+.pl-section-label[data-color="#f59e0b"]{color:#fbbf24}
+.pl-section-label[data-color="#3b82f6"]{color:#60a5fa}
+.pl-section-label[data-color="#10b981"]{color:#34d399}
+.pl-section-label[data-color="#ef4444"]{color:#f87171}
+.pl-section-count{font-size:9px;font-weight:800;color:#334155;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(255,255,255,.03)}
+.pl-section-count[data-color="#f59e0b"]{background:rgba(245,158,11,.08);color:#fbbf24}
+.pl-section-count[data-color="#3b82f6"]{background:rgba(59,130,246,.08);color:#60a5fa}
+.pl-section-count[data-color="#10b981"]{background:rgba(16,185,129,.08);color:#34d399}
+.pl-section-count[data-color="#ef4444"]{background:rgba(239,68,68,.08);color:#f87171}
+.pl-section-list{display:flex;flex-direction:column;gap:3px}
+
+/* --- PLAYER CARD --- */
+.pl-card{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.025);background:rgba(255,255,255,.012);transition:all .2s;cursor:default;position:relative;overflow:hidden}
+.pl-card::after{content:'';position:absolute;inset:0;border-radius:14px;opacity:0;transition:opacity .2s;pointer-events:none;background:linear-gradient(135deg,rgba(34,211,238,.03),transparent 60%)}
+.pl-card:hover{border-color:rgba(255,255,255,.05);background:rgba(255,255,255,.03)}
+.pl-card:hover::after{opacity:1}
+.pl-card-tit{border-color:rgba(245,158,11,.08)!important;background:rgba(245,158,11,.03)!important}
+.pl-card-tit::after{background:linear-gradient(135deg,rgba(245,158,11,.04),transparent 60%)!important;opacity:1!important}
+
+.pl-card-num{font-size:15px;font-weight:900;font-family:'Inter',system-ui,sans-serif;width:28px;text-align:center;flex-shrink:0;letter-spacing:-.04em}
+.pl-card-num[data-color="#f59e0b"]{color:#fbbf24}
+.pl-card-num[data-color="#3b82f6"]{color:#60a5fa}
+.pl-card-num[data-color="#10b981"]{color:#34d399}
+.pl-card-num[data-color="#ef4444"]{color:#f87171}
+.pl-card-num[data-color="#059669"]{color:#34d399}
+.pl-card-num[data-color="#6ee7b7"]{color:#6ee7b7}
+.pl-card-num[data-color="#f87171"]{color:#f87171}
+.pl-card-num[data-color="#64748b"]{color:#94a3b8}
+
+.pl-card-photo{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.03);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#1e293b;border:1px solid rgba(255,255,255,.03)}
+.pl-card-photo img{width:100%;height:100%;object-fit:cover}
+.pl-card-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pl-card-name{font-size:13px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.pl-card-meta{font-size:10px;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.pl-card-pos{font-size:9px;font-weight:800;letter-spacing:.08em;padding:4px 8px;border-radius:8px;flex-shrink:0;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.04)}
+.pl-card-pos[data-color="#f59e0b"]{color:#fbbf24;border-color:rgba(245,158,11,.15)}
+.pl-card-pos[data-color="#3b82f6"]{color:#60a5fa;border-color:rgba(59,130,246,.15)}
+.pl-card-pos[data-color="#10b981"]{color:#34d399;border-color:rgba(16,185,129,.15)}
+.pl-card-pos[data-color="#ef4444"]{color:#f87171;border-color:rgba(239,68,68,.15)}
+.pl-card-pos[data-color="#059669"]{color:#34d399;border-color:rgba(5,150,105,.15)}
+.pl-card-pos[data-color="#6ee7b7"]{color:#6ee7b7;border-color:rgba(110,231,183,.15)}
+.pl-card-pos[data-color="#f87171"]{color:#f87171;border-color:rgba(248,113,113,.15)}
+.pl-card-pos[data-color="#64748b"]{color:#94a3b8;border-color:rgba(100,116,139,.15)}
+
+.pl-card-stats{display:flex;gap:12px;flex-shrink:0}
+.pl-stat{text-align:center}
+.pl-stat b{display:block;font-size:13px;font-weight:800;font-family:'Inter',system-ui,sans-serif;line-height:1.1;letter-spacing:-.03em}
+.pl-stat small{font-size:8px;color:#334155;text-transform:uppercase;letter-spacing:.06em;display:block}
+.fwd-g{color:#f87171}.mid-a{color:#60a5fa}.gk-gr{color:#fbbf24}.gk-vi{color:#34d399}
+
+.pl-card-pj{text-align:center;flex-shrink:0;min-width:32px}
+.pl-card-pj b{display:block;font-size:13px;font-weight:800;color:#64748b;font-family:'Inter',system-ui,sans-serif;line-height:1.1}
+.pl-card-pj small{font-size:8px;color:#334155;text-transform:uppercase;letter-spacing:.06em}
+
+.pl-card-tit{padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.015);color:#475569;font-size:9px;font-weight:800;cursor:pointer;letter-spacing:.1em;transition:all .2s;flex-shrink:0;text-transform:uppercase}
+.pl-card-tit.active{background:rgba(245,158,11,.1)!important;color:#fbbf24!important;border-color:rgba(245,158,11,.2)!important;box-shadow:0 0 12px rgba(245,158,11,.06)}
+.pl-card-tit:hover{background:rgba(255,255,255,.03)}
+
+.pl-card-actions{display:flex;gap:3px;flex-shrink:0;opacity:0;transition:opacity .2s}
+.pl-card:hover .pl-card-actions{opacity:1}
+.ab{width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.015);color:#475569;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.ab:hover{transform:scale(1.1)}
+.ab-blue:hover{color:#60a5fa;border-color:rgba(59,130,246,.2);background:rgba(59,130,246,.06)}
+.ab-yellow:hover{color:#fbbf24;border-color:rgba(245,158,11,.2);background:rgba(245,158,11,.06)}
+.ab-red:hover{color:#f87171;border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.06)}
+
+/* --- FORMATION BAR --- */
+.pl-fm-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.pl-fm-btns{display:flex;gap:3px;padding:3px;background:rgba(255,255,255,.015);border-radius:14px;border:1px solid rgba(255,255,255,.04)}
+.pl-fm-btn{padding:9px 18px;border-radius:12px;border:none;background:transparent;color:#475569;font-size:13px;font-weight:700;cursor:pointer;transition:all .25s;font-family:'Inter',system-ui,sans-serif;letter-spacing:.03em}
+.pl-fm-btn:hover{color:#94a3b8;background:rgba(255,255,255,.02)}
+.pl-fm-btn.active{background:rgba(34,211,238,.08);color:#22d3ee;box-shadow:0 0 16px rgba(34,211,238,.06)}
+
+/* --- SAVE BUTTON --- */
+.pl-save-btn{padding:11px 24px;border-radius:12px;border:none;background:#0f766e;color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .25s;letter-spacing:-.01em;box-shadow:0 2px 12px rgba(15,118,110,.2)}
+.pl-save-btn:hover{background:#0d9488;box-shadow:0 4px 20px rgba(15,118,110,.3);transform:translateY(-1px)}
+.pl-save-btn:disabled{opacity:.3;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.pl-save-btn.green{background:#0f766e;box-shadow:0 2px 12px rgba(15,118,110,.2)}
+.pl-save-btn.green:hover{background:#0d9488;box-shadow:0 4px 20px rgba(15,118,110,.3)}
+.pl-save-btn.green:disabled{opacity:.3;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+/* --- PITCH (SIN CAMBIOS) --- */
+.pl-pitch{position:relative;width:100%;max-width:480px;margin:0 auto 24px;aspect-ratio:.65;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,#15803d 0%,#166534 40%,#14532d 100%);border:2px solid rgba(255,255,255,.12);box-shadow:0 20px 60px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05)}
+.pl-pitch-svg{position:absolute;inset:0;width:100%;height:100%}
+.pl-pitch-player{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;z-index:2;transition:all .3s cubic-bezier(.4,0,.2,1)}
+.pl-pitch-player:hover{transform:translate(-50%,-50%) scale(1.12);z-index:5}
+.pl-pitch-dot{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;font-family:'SF Mono',SFMono-Regular,monospace;color:#fff;border:2.5px solid rgba(255,255,255,.9);box-shadow:0 3px 12px rgba(0,0,0,.4);overflow:hidden;transition:all .2s}
+.pl-pitch-dot img{width:100%;height:100%;object-fit:cover}
+.pl-pitch-dot[data-color="#f59e0b"]{background:linear-gradient(135deg,#d97706,#f59e0b)}
+.pl-pitch-dot[data-color="#3b82f6"]{background:linear-gradient(135deg,#2563eb,#3b82f6)}
+.pl-pitch-dot[data-color="#10b981"]{background:linear-gradient(135deg,#059669,#10b981)}
+.pl-pitch-dot[data-color="#ef4444"]{background:linear-gradient(135deg,#dc2626,#ef4444)}
+.pl-pitch-dot[data-color="#059669"]{background:linear-gradient(135deg,#047857,#059669)}
+.pl-pitch-dot[data-color="#6ee7b7"]{background:linear-gradient(135deg,#34d399,#6ee7b7)}
+.pl-pitch-dot[data-color="#f87171"]{background:linear-gradient(135deg,#ef4444,#f87171)}
+.pl-pitch-dot[data-color="#64748b"]{background:linear-gradient(135deg,#475569,#64748b)}
+.pl-pitch-name{font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7),0 0 8px rgba(0,0,0,.4);white-space:nowrap;letter-spacing:.02em}
+.pl-pitch-msg{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);padding:6px 14px;border-radius:8px;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);color:#94a3b8;font-size:11px;font-weight:600;z-index:10;border:1px solid rgba(255,255,255,.06)}
+
+/* --- SUBS CARD --- */
+.pl-subs-card{background:rgba(255,255,255,.012);border:1px solid rgba(255,255,255,.035);border-radius:20px;padding:20px;animation:slideUp .3s ease-out}
+.pl-subs-title{margin:0 0 14px;font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.12em}
+.pl-subs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:5px}
+.pl-sub-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.025);background:rgba(255,255,255,.01);transition:all .2s}
+.pl-sub-item:hover{background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.05)}
+.pl-sub-item[data-color="#f59e0b"]{border-left:2px solid rgba(245,158,11,.3)}
+.pl-sub-item[data-color="#3b82f6"]{border-left:2px solid rgba(59,130,246,.3)}
+.pl-sub-item[data-color="#10b981"]{border-left:2px solid rgba(16,185,129,.3)}
+.pl-sub-item[data-color="#ef4444"]{border-left:2px solid rgba(239,68,68,.3)}
+.pl-sub-item[data-color="#059669"]{border-left:2px solid rgba(5,150,105,.3)}
+.pl-sub-item[data-color="#6ee7b7"]{border-left:2px solid rgba(110,231,183,.3)}
+.pl-sub-item[data-color="#f87171"]{border-left:2px solid rgba(248,113,113,.3)}
+.pl-sub-photo{width:30px;height:30px;border-radius:10px;background:rgba(255,255,255,.03);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#1e293b;border:1px solid rgba(255,255,255,.03)}
+.pl-sub-photo img{width:100%;height:100%;object-fit:cover}
+.pl-sub-info{flex:1;min-width:0}
+.pl-sub-name{display:block;font-size:12px;font-weight:600;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-sub-meta{display:block;font-size:10px;color:#334155}
+.pl-sub-prom{width:26px;height:26px;border-radius:8px;border:1px solid rgba(245,158,11,.1);background:rgba(245,158,11,.04);color:#f59e0b;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.pl-sub-prom:hover{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.25);box-shadow:0 0 10px rgba(245,158,11,.08);transform:scale(1.1)}
+
+/* --- MODAL --- */
+.pl-modal-bg{position:fixed;inset:0;background:rgba(2,6,23,.9);backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:center;z-index:1000;animation:fadeInBg .2s ease-out}
+@keyframes fadeInBg{from{opacity:0}to{opacity:1}}
+.pl-modal{background:linear-gradient(180deg,#0f172a,#0a0f1a);border:1px solid rgba(255,255,255,.05);border-radius:24px;width:520px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.015) inset;animation:fadeIn .3s cubic-bezier(.4,0,.2,1)}
+.pl-modal-stats{width:580px}
+.pl-modal-top{display:flex;justify-content:space-between;align-items:center;padding:22px 26px;border-bottom:1px solid rgba(255,255,255,.04)}
+.pl-modal-top h3{margin:0;font-size:18px;color:#f1f5f9;font-weight:800;letter-spacing:-.02em}
+.pl-modal-sub{margin:3px 0 0;font-size:12px;color:#334155}
+.pl-modal-x{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:12px;cursor:pointer;width:36px;height:36px;color:#475569;display:flex;align-items:center;justify-content:center;transition:all .25s}
+.pl-modal-x:hover{background:rgba(239,68,68,.08);color:#f87171;border-color:rgba(239,68,68,.15);transform:rotate(90deg)}
+.pl-modal-body{padding:26px;overflow-y:auto;flex:1}
+.pl-modal-body::-webkit-scrollbar{width:3px}.pl-modal-body::-webkit-scrollbar-track{background:transparent}.pl-modal-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.04);border-radius:4px}
+.pl-modal-bottom{display:flex;justify-content:flex-end;gap:10px;padding:18px 26px;border-top:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.008)}
+
+/* --- FORM ELEMENTS --- */
+.pl-foto-area{text-align:center;margin-bottom:26px}
+.pl-foto-circle{width:92px;height:92px;border-radius:20px;background:rgba(255,255,255,.02);border:2px dashed rgba(255,255,255,.06);overflow:hidden;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;transition:all .25s;color:#1e293b}
+.pl-foto-circle img{width:100%;height:100%;object-fit:cover;border-style:solid;border-color:rgba(34,211,238,.2)}
+.pl-upload-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.015);color:#94a3b8;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.pl-upload-btn:hover{border-color:rgba(34,211,238,.2);color:#22d3ee;background:rgba(34,211,238,.05)}
+.pl-field{margin-bottom:18px}
+.pl-field label{display:block;margin-bottom:7px;font-size:11px;font-weight:700;color:#475569;letter-spacing:.03em;text-transform:uppercase}
+.req{color:#f87171}
+.pl-input{width:100%;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.015);color:#e2e8f0;font-size:13px;outline:none;box-sizing:border-box;transition:all .25s}
+.pl-input:focus{border-color:rgba(34,211,238,.25);background:rgba(255,255,255,.025);box-shadow:0 0 0 4px rgba(34,211,238,.06)}
+.pl-input::placeholder{color:#1e293b}
+.pl-input option{background:#0f172a;color:#f1f5f9}
+.pl-input optgroup{background:#0f172a;color:#94a3b8;font-weight:700}
+.pl-select{appearance:none;cursor:pointer;padding-right:2.5rem}
+.pl-select-w{position:relative}
+.pl-row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.pl-tit-row{display:flex;gap:10px;align-items:center;margin-bottom:18px}
+.pl-tit-btns{display:flex;gap:8px;flex:1}
+.pl-tit-opt{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.01);color:#475569;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.pl-tit-opt:hover{background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.06)}
+.pl-tit-opt.active{background:rgba(100,116,139,.06)!important;color:#94a3b8!important;border-color:rgba(100,116,139,.12)!important}
+.pl-tit-opt.tit.active{background:rgba(245,158,11,.08)!important;color:#fbbf24!important;border-color:rgba(245,158,11,.15)!important;box-shadow:0 0 14px rgba(245,158,11,.04)}
+
+/* --- STATS GRID --- */
+.pl-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.pl-stat-field label{display:block;margin-bottom:7px;font-size:10px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.12em}
+.pl-stat-input{width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.015);color:#e2e8f0;font-size:20px;font-weight:800;text-align:center;outline:none;font-family:'Inter',system-ui,sans-serif;box-sizing:border-box;transition:all .25s;letter-spacing:-.04em}
+.pl-stat-input:focus{border-color:rgba(15,118,110,.25);background:rgba(255,255,255,.025);box-shadow:0 0 0 4px rgba(15,118,110,.06)}
+
+/* --- CANCEL BUTTON --- */
+.pl-cancel-btn{padding:11px 26px;border-radius:12px;border:1px solid rgba(255,255,255,.05);background:transparent;color:#475569;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s}
+.pl-cancel-btn:hover{background:rgba(255,255,255,.025);color:#94a3b8;border-color:rgba(255,255,255,.08)}
+
+/* --- RESPONSIVE --- */
+@media(max-width:640px){
+  .pl-page{padding:16px 14px}
+  .pl-header{flex-direction:column;align-items:stretch;gap:12px}
+  .pl-header h1{font-size:20px}
+  .pl-div-dd{align-self:flex-start}
+  .pl-toolbar{flex-direction:column;align-items:stretch}
+  .pl-search{min-width:0;flex:1}
+  .pl-add-btn{justify-content:center}
+  .pl-team-card{flex-direction:column;text-align:center;padding:18px;gap:12px}
+  .pl-tc-stats{justify-content:center;gap:20px}
+  .pl-tabs{width:100%}
+  .pl-tab{flex:1;justify-content:center;padding:11px 12px;font-size:12px}
+  .pl-card{flex-wrap:wrap;gap:8px;padding:10px 12px}
+  .pl-card-pos,.pl-card-stats,.pl-card-pj{display:none!important}
+  .pl-card-actions{width:100%;justify-content:flex-end;opacity:1}
+  .ab{width:30px;height:30px}
+  .pl-pitch{max-width:100%;aspect-ratio:.7}
+  .pl-pitch-dot{width:34px;height:34px;font-size:10px}
+  .pl-pitch-name{font-size:8px}
+  .pl-subs-grid{grid-template-columns:1fr}
+  .pl-fm-bar{flex-direction:column;align-items:stretch;gap:10px}
+  .pl-fm-btns{justify-content:center;flex-wrap:wrap}
+  .pl-fm-btn{padding:8px 14px;font-size:12px}
+  .pl-tit-row{flex-direction:column;align-items:stretch}
+  .pl-stats-grid{grid-template-columns:repeat(2,1fr)}
+  .pl-modal{border-radius:20px}
+  .pl-modal-top,.pl-modal-bottom{padding:18px 20px}
+  .pl-modal-body{padding:20px}
+  .pl-row2{grid-template-columns:1fr;gap:0}
 }
       `}</style>
     </div>

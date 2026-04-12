@@ -55,7 +55,7 @@ if ($method === 'GET') {
         exit();
     }
 
-    $stmt = $pdo->prepare("SELECT * FROM equipos WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT * FROM equipos_segunda WHERE id = ?");
     $stmt->execute([$equipo_id]);
     $equipo = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -80,8 +80,8 @@ if ($method === 'GET') {
             est.goles_recibidos,
             est.vaya_invicta,
             est.temporada
-        FROM jugadores j
-        LEFT JOIN estadisticas_jugadores est 
+        FROM jugadores_segunda j
+        LEFT JOIN estadisticas_jugadores_segunda est 
             ON est.jugador_id = j.id AND est.temporada = '2025-2026'
         WHERE j.equipo_id = ?
         ORDER BY 
@@ -142,7 +142,7 @@ if ($method === 'POST') {
         $es_titular = isset($data['es_titular']) ? (int)$data['es_titular'] : 0;
 
         $stmt = $pdo->prepare("
-            INSERT INTO jugadores (equipo_id, nombre, posicion, numero_camiseta, foto, edad, nacionalidad, es_titular)
+            INSERT INTO jugadores_segunda (equipo_id, nombre, posicion, numero_camiseta, foto, edad, nacionalidad, es_titular)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
@@ -159,7 +159,7 @@ if ($method === 'POST') {
         $jugador_id = $pdo->lastInsertId();
 
         $stmt = $pdo->prepare("
-            INSERT INTO estadisticas_jugadores (jugador_id, temporada) VALUES (?, '2025-2026')
+            INSERT INTO estadisticas_jugadores_segunda (jugador_id, temporada) VALUES (?, '2025-2026')
         ");
         $stmt->execute([$jugador_id]);
 
@@ -182,7 +182,7 @@ if ($method === 'POST') {
         $es_titular = isset($data['es_titular']) ? (int)$data['es_titular'] : 0;
 
         $stmt = $pdo->prepare("
-            UPDATE jugadores 
+            UPDATE jugadores_segunda 
             SET nombre = ?, posicion = ?, numero_camiseta = ?, foto = ?, edad = ?, nacionalidad = ?, es_titular = ?
             WHERE id = ?
         ");
@@ -212,7 +212,7 @@ if ($method === 'POST') {
         $temporada = !empty($data['temporada']) ? $data['temporada'] : '2025-2026';
 
         $stmt = $pdo->prepare("
-            SELECT id FROM estadisticas_jugadores 
+            SELECT id FROM estadisticas_jugadores_segunda 
             WHERE jugador_id = ? AND temporada = ?
         ");
         $stmt->execute([$jid, $temporada]);
@@ -240,11 +240,11 @@ if ($method === 'POST') {
         }
 
         if ($exists) {
-            $sql = "UPDATE estadisticas_jugadores SET " . implode(", ", $placeholders) . " WHERE jugador_id = ? AND temporada = ?";
+            $sql = "UPDATE estadisticas_jugadores_segunda SET " . implode(", ", $placeholders) . " WHERE jugador_id = ? AND temporada = ?";
             $valores[] = $jid;
             $valores[] = $temporada;
         } else {
-            $sql = "INSERT INTO estadisticas_jugadores (jugador_id, temporada, " . implode(", ", array_keys($campos)) . ") VALUES (?, ?, " . implode(", ", array_fill(0, count($campos), "?")) . ")";
+            $sql = "INSERT INTO estadisticas_jugadores_segunda (jugador_id, temporada, " . implode(", ", array_keys($campos)) . ") VALUES (?, ?, " . implode(", ", array_fill(0, count($campos), "?")) . ")";
             array_unshift($valores, $jid);
             array_unshift($valores, $temporada);
         }
@@ -263,7 +263,7 @@ if ($method === 'POST') {
             echo json_encode(["success" => false, "error" => "ID requerido"]);
             exit();
         }
-        $stmt = $pdo->prepare("UPDATE jugadores SET es_titular = IF(es_titular = 1, 0, 1) WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE jugadores_segunda SET es_titular = IF(es_titular = 1, 0, 1) WHERE id = ?");
         $stmt->execute([$id]);
         echo json_encode(["success" => true]);
         exit();
@@ -280,14 +280,14 @@ if ($method === 'POST') {
             exit();
         }
 
-        $stmt = $pdo->prepare("UPDATE equipos SET formacion = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE equipos_segunda SET formacion = ? WHERE id = ?");
         $stmt->execute([$formacion, $equipo_id]);
 
-        $stmt = $pdo->prepare("UPDATE jugadores SET es_titular = 0, posicion_x = NULL, posicion_y = NULL WHERE equipo_id = ?");
+        $stmt = $pdo->prepare("UPDATE jugadores_segunda SET es_titular = 0, posicion_x = NULL, posicion_y = NULL WHERE equipo_id = ?");
         $stmt->execute([$equipo_id]);
 
         if (is_array($titulares) && count($titulares) > 0) {
-            $stmt = $pdo->prepare("UPDATE jugadores SET es_titular = 1, posicion_x = ?, posicion_y = ? WHERE id = ? AND equipo_id = ?");
+            $stmt = $pdo->prepare("UPDATE jugadores_segunda SET es_titular = 1, posicion_x = ?, posicion_y = ? WHERE id = ? AND equipo_id = ?");
             foreach ($titulares as $t) {
                 $jid = (int)$t['id'];
                 $jx  = floatval($t['x']);
@@ -315,7 +315,7 @@ if ($method === 'DELETE') {
         exit();
     }
 
-    $stmt = $pdo->prepare("DELETE FROM jugadores WHERE id = ?");
+    $stmt = $pdo->prepare("DELETE FROM jugadores_segunda WHERE id = ?");
     $stmt->execute([$jugador_id]);
 
     echo json_encode(["success" => true, "message" => "Jugador eliminado"]);

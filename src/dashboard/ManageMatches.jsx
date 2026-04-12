@@ -4,9 +4,10 @@ import "../admin.css";
 import Swal from "sweetalert2";
 import "animate.css";
 import {
-  LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
-  CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
-  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft
+    LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
+    CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
+    Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft,
+    Minus, ChevronUp, CheckCircle2, RotateCcw, StarOff, Filter
 } from "lucide-react";
 const API = "http://localhost/Numeros-y-Futbol/backend/";
 
@@ -83,7 +84,12 @@ const ManageMatches = () => {
     const getEscudo = (idOrName) => { const t = teamMap[idOrName]; return t?.logo ? `${API}${t.logo}` : null; };
     const fallbackImg = "https://ui-avatars.com/api/?name=EQ&background=0f172a&color=334155&size=40&bold=true";
     const fallbackSelect = "https://ui-avatars.com/api/?name=EQ&background=1e293b&color=475569&size=36&bold=true";
-    const safeJson = async (res) => { const text = await res.text(); if (text.trim().startsWith("<")) throw new Error("Error del servidor (PHP)."); return JSON.parse(text); };
+    const safeJson = async (res) => {
+        const text = await res.text();
+        console.log("LO QUE DEVOLVIÓ EL SERVIDOR:", text);
+        if (text.trim().startsWith("<")) throw new Error("Error del servidor (PHP): " + text.substring(0, 200));
+        return JSON.parse(text);
+    };
 
     const handleLogout = () => {
         Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir", confirmButtonColor: "#d33" })
@@ -244,21 +250,23 @@ const ManageMatches = () => {
     const currentDiv = DIVISIONES.find(d => d.value === division);
 
     const navItems = [
-  { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
-  { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
-  { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
-  { type: "dropdown", icon: <Shield size={20} />, label: "Equipos", children: [
-    { path: "/teams/primera", label: "Primera División" },
-    { path: "/teams/segunda", label: "Segunda División" },
-    { path: "/teams/tercera", label: "Tercera División" },
-  ]},
-  { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
-  { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
-  { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
-  { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
-  { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
-  
-];
+        { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+        { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
+        { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
+        {
+            type: "dropdown", icon: <Shield size={20} />, label: "Equipos", children: [
+                { path: "/teams/primera", label: "Primera División" },
+                { path: "/teams/segunda", label: "Segunda División" },
+                { path: "/teams/tercera", label: "Tercera División" },
+            ]
+        },
+        { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
+        { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
+        { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
+        { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
+        { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+
+    ];
 
     const GrupoBadge = ({ grupo, size = "sm" }) => {
         if (!grupo) return null;
@@ -397,7 +405,7 @@ const ManageMatches = () => {
                                 <span style={{ fontSize: "0.85rem" }}>Cargando partidos de {currentDiv?.label}...</span>
                             </div>
                         ) : (
-                           
+
                             <table className="data-table">
                                 <thead>
                                     <tr>
