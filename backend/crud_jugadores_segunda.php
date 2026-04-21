@@ -1,325 +1,266 @@
 <?php
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: *");
 header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
-header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Content-Type: application/json; charset=utf-8");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit(); }
+require_once __DIR__ . '/db.php';
 
- $host = 'localhost';
- $db   = 'numeros-y-futbol';
- $user = 'root';
- $pass = 'Info2026/*-';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo json_encode(["success" => false, "error" => "Error de conexión: " . $e->getMessage()]);
-    exit();
-}
-
- $method = $_SERVER['REQUEST_METHOD'];
-
-// ✅ Leer datos POST ya sea JSON o form-urlencoded
-if ($method === 'POST') {
-    $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-    if (strpos($contentType, 'application/json') !== false) {
-        $data = json_decode(file_get_contents("php://input"), true);
-    } else {
-        $data = $_POST;
-    }
-} else {
-    $data = null;
-}
-
-// ✅ Posiciones válidas actualizadas
- $posiciones_validas = [
-    'portero', 'lateral_izquierdo', 'lateral_derecho', 'central',
-    'medio_defensivo', 'medio_central', 'medio_ofensivo',
-    'extremo_izquierdo', 'extremo_derecho',
-    'centrodelantero', 'segundo_delantero'
+const POSICIONES_VALIDAS = [
+    'portero','lateral_izquierdo','lateral_derecho','central',
+    'medio_defensivo','medio_central','medio_ofensivo',
+    'extremo_izquierdo','extremo_derecho',
+    'centrodelantero','segundo_delantero'
+];
+const POSICION_MAPEO = [
+    'portero'=>'portero','defensa'=>'central','medio'=>'medio_central',
+    'mediocampista'=>'medio_central','centrocampista'=>'medio_central',
+    'lateral'=>'lateral_derecho','extremo'=>'extremo_derecho','delantero'=>'centrodelantero',
 ];
 
-// ============================================================
-// GET — Obtener plantilla de un equipo
-// ============================================================
-if ($method === 'GET') {
-    $equipo_id = isset($_GET['equipo_id']) ? (int)$_GET['equipo_id'] : 0;
+function normPos($p) {
+    if (!$p) return 'centrodelantero';
+    $p = strtolower(trim($p));
+    if (in_array($p, POSICIONES_VALIDAS)) return $p;
+    return POSICION_MAPEO[$p] ?? 'centrodelantero';
+}
 
-    if ($equipo_id <= 0) {
-        echo json_encode(["success" => false, "error" => "equipo_id requerido"]);
-        exit();
-    }
+function countTitulares(PDO $db, int $equipo_id, ?int $excludeId=null): int {
+    $sql = "SELECT COUNT(*) FROM jugadores WHERE equipo_id=? AND es_titular=1";
+    $params = [$equipo_id];
+    if ($excludeId) { $sql .= " AND id!=?"; $params[] = $excludeId; }
+    return (int)$db->prepare($sql)->execute($params) ? (int)$db->query(
+        "SELECT COUNT(*) FROM jugadores WHERE equipo_id=$equipo_id AND es_titular=1" .
+        ($excludeId ? " AND id!=$excludeId" : "")
+    )->fetchColumn() : 0;
+}
 
-    $stmt = $pdo->prepare("SELECT * FROM equipos_segunda WHERE id = ?");
-    $stmt->execute([$equipo_id]);
-    $equipo = $stmt->fetch(PDO::FETCH_ASSOC);
+// ─── GET ────────────────────────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $equipo_id = intval($_GET['equipo_id'] ?? 0);
+    if (!$equipo_id) { echo json_encode(['success'=>false,'error'=>'Falta equipo_id']); exit(); }
 
-    if (!$equipo) {
-        echo json_encode(["success" => false, "error" => "Equipo no encontrado"]);
-        exit();
-    }
+    $eq = $conn->prepare("SELECT * FROM equipos WHERE id=?");
+    $eq->execute([$equipo_id]);
+    $equipo = $eq->fetch(PDO::FETCH_ASSOC);
+    if (!$equipo) { echo json_encode(['success'=>false,'error'=>'Equipo no encontrado']); exit(); }
 
-    $sql = "
-        SELECT 
-            j.*,
-            est.id AS stats_id,
-            est.partidos_jugados AS pj,
-            est.goles,
-            est.asistencias,
-            est.goles_cabeza,
-            est.goles_tiro_libre,
-            est.goles_penal,
-            est.tarjetas_amarillas,
-            est.tarjetas_rojas,
-            est.minutos_jugados,
-            est.goles_recibidos,
-            est.vaya_invicta,
-            est.temporada
-        FROM jugadores_segunda j
-        LEFT JOIN estadisticas_jugadores_segunda est 
-            ON est.jugador_id = j.id AND est.temporada = '2025-2026'
-        WHERE j.equipo_id = ?
-        ORDER BY 
-            CASE j.posicion
-                WHEN 'portero' THEN 1
-                WHEN 'lateral_izquierdo' THEN 2
-                WHEN 'lateral_derecho' THEN 3
-                WHEN 'central' THEN 4
-                WHEN 'medio_defensivo' THEN 5
-                WHEN 'medio_central' THEN 6
-                WHEN 'medio_ofensivo' THEN 7
-                WHEN 'extremo_izquierdo' THEN 8
-                WHEN 'extremo_derecho' THEN 9
-                WHEN 'centrodelantero' THEN 10
-                WHEN 'segundo_delantero' THEN 11
-                ELSE 12
-            END,
-            j.numero_camiseta ASC
-    ";
+    $st = $conn->prepare("
+        SELECT j.*,
+               COALESCE(e.partidos_jugados,0) AS pj,
+               COALESCE(e.goles,0)            AS goles,
+               COALESCE(e.asistencias,0)      AS asistencias,
+               COALESCE(e.goles_penal,0)      AS goles_penal,
+               COALESCE(e.goles_cabeza,0)     AS goles_cabeza,
+               COALESCE(e.goles_tiro_libre,0) AS goles_tiro_libre,
+               COALESCE(e.tarjetas_amarillas,0) AS tarjetas_amarillas,
+               COALESCE(e.tarjetas_rojas,0)   AS tarjetas_rojas,
+               COALESCE(e.minutos_jugados,0)  AS minutos_jugados,
+               COALESCE(e.goles_recibidos,0)  AS goles_recibidos,
+               COALESCE(e.vaya_invicta,0)     AS vaya_invicta,
+               e.temporada
+        FROM jugadores j
+        LEFT JOIN estadisticas_jugadores e ON e.jugador_id=j.id AND e.temporada='2025-2026'
+        WHERE j.equipo_id=?
+        ORDER BY j.es_titular DESC, j.numero_camiseta ASC
+    ");
+    $st->execute([$equipo_id]);
+    $jugadores = $st->fetchAll(PDO::FETCH_ASSOC);
 
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$equipo_id]);
-    $jugadores = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    echo json_encode([
-        "success" => true,
-        "equipo" => $equipo,
-        "jugadores" => $jugadores
-    ]);
+    echo json_encode(['success'=>true,'equipo'=>$equipo,'jugadores'=>$jugadores]);
     exit();
 }
 
-// ============================================================
-// POST — Crear / Editar jugador y estadísticas
-// ============================================================
-if ($method === 'POST') {
+// ─── DELETE ─────────────────────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    $id = intval($_GET['id'] ?? 0);
+    if (!$id) { echo json_encode(['success'=>false,'error'=>'Falta id']); exit(); }
+    $conn->prepare("DELETE FROM jugadores WHERE id=?")->execute([$id]);
+    echo json_encode(['success'=>true]);
+    exit();
+}
 
-    if (!$data || !isset($data['action'])) {
-        echo json_encode(["success" => false, "error" => "Acción no especificada"]);
-        exit();
-    }
+// ─── POST ────────────────────────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $raw    = file_get_contents('php://input');
+    $data   = json_decode($raw, true) ?: $_POST;
+    $action = $data['action'] ?? '';
 
-    // ---------- CREAR JUGADOR ----------
-    if ($data['action'] === 'create') {
-        $required = ['equipo_id', 'nombre', 'posicion'];
-        foreach ($required as $field) {
-            if (empty($data[$field])) {
-                echo json_encode(["success" => false, "error" => "Falta el campo: $field"]);
+    // ── CREATE ───────────────────────────────────────────────────────────────
+    if ($action === 'create') {
+        $equipo_id  = intval($data['equipo_id'] ?? 0);
+        $nombre     = trim($data['nombre'] ?? '');
+        $posicion   = normPos($data['posicion'] ?? '');
+        $num        = ($data['numero_camiseta']!==''&&$data['numero_camiseta']!==null) ? intval($data['numero_camiseta']) : null;
+        $edad       = ($data['edad']!==''&&$data['edad']!==null) ? intval($data['edad']) : null;
+        $nac        = trim($data['nacionalidad'] ?? '') ?: null;
+        $foto       = trim($data['foto'] ?? '') ?: null;
+        $es_titular = intval($data['es_titular'] ?? 0);
+
+        if (!$equipo_id||!$nombre) { echo json_encode(['success'=>false,'error'=>'Datos incompletos']); exit(); }
+
+        // Verificar dorsal duplicado
+        if ($num !== null) {
+            $chk = $conn->prepare("SELECT COUNT(*) FROM jugadores WHERE equipo_id=? AND numero_camiseta=?");
+            $chk->execute([$equipo_id, $num]);
+            if ($chk->fetchColumn() > 0) {
+                echo json_encode(['success'=>false,'error'=>"El dorsal #{$num} ya existe en este equipo"]);
                 exit();
             }
         }
 
-        if (!in_array($data['posicion'], $posiciones_validas)) {
-            echo json_encode(["success" => false, "error" => "Posición inválida: " . $data['posicion']]);
-            exit();
-        }
-
-        $es_titular = isset($data['es_titular']) ? (int)$data['es_titular'] : 0;
-
-        $stmt = $pdo->prepare("
-            INSERT INTO jugadores_segunda (equipo_id, nombre, posicion, numero_camiseta, foto, edad, nacionalidad, es_titular)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        $stmt->execute([
-            $data['equipo_id'],
-            $data['nombre'],
-            $data['posicion'],
-            !empty($data['numero_camiseta']) ? (int)$data['numero_camiseta'] : null,
-            !empty($data['foto']) ? $data['foto'] : null,
-            !empty($data['edad']) ? (int)$data['edad'] : null,
-            !empty($data['nacionalidad']) ? $data['nacionalidad'] : null,
-            $es_titular,
-        ]);
-
-        $jugador_id = $pdo->lastInsertId();
-
-        $stmt = $pdo->prepare("
-            INSERT INTO estadisticas_jugadores_segunda (jugador_id, temporada) VALUES (?, '2025-2026')
-        ");
-        $stmt->execute([$jugador_id]);
-
-        echo json_encode(["success" => true, "id" => $jugador_id, "message" => "Jugador creado"]);
-        exit();
-    }
-
-    // ---------- EDITAR DATOS DEL JUGADOR ----------
-    if ($data['action'] === 'update') {
-        if (empty($data['id'])) {
-            echo json_encode(["success" => false, "error" => "ID requerido"]);
-            exit();
-        }
-
-        if (!in_array($data['posicion'], $posiciones_validas)) {
-            echo json_encode(["success" => false, "error" => "Posición inválida: " . $data['posicion']]);
-            exit();
-        }
-
-        $es_titular = isset($data['es_titular']) ? (int)$data['es_titular'] : 0;
-
-        $stmt = $pdo->prepare("
-            UPDATE jugadores_segunda 
-            SET nombre = ?, posicion = ?, numero_camiseta = ?, foto = ?, edad = ?, nacionalidad = ?, es_titular = ?
-            WHERE id = ?
-        ");
-        $stmt->execute([
-            $data['nombre'],
-            $data['posicion'],
-            !empty($data['numero_camiseta']) ? (int)$data['numero_camiseta'] : null,
-            !empty($data['foto']) ? $data['foto'] : null,
-            !empty($data['edad']) ? (int)$data['edad'] : null,
-            !empty($data['nacionalidad']) ? $data['nacionalidad'] : null,
-            $es_titular,
-            (int)$data['id'],
-        ]);
-
-        echo json_encode(["success" => true, "message" => "Jugador actualizado"]);
-        exit();
-    }
-
-    // ---------- EDITAR ESTADÍSTICAS ----------
-    if ($data['action'] === 'update_stats') {
-        if (empty($data['jugador_id'])) {
-            echo json_encode(["success" => false, "error" => "jugador_id requerido"]);
-            exit();
-        }
-
-        $jid = (int)$data['jugador_id'];
-        $temporada = !empty($data['temporada']) ? $data['temporada'] : '2025-2026';
-
-        $stmt = $pdo->prepare("
-            SELECT id FROM estadisticas_jugadores_segunda 
-            WHERE jugador_id = ? AND temporada = ?
-        ");
-        $stmt->execute([$jid, $temporada]);
-        $exists = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $campos = [
-            'partidos_jugados' => 'pj',
-            'goles' => 'goles',
-            'asistencias' => 'asistencias',
-            'goles_cabeza' => 'goles_cabeza',
-            'goles_tiro_libre' => 'goles_tiro_libre',
-            'goles_penal' => 'goles_penal',
-            'tarjetas_amarillas' => 'tarjetas_amarillas',
-            'tarjetas_rojas' => 'tarjetas_rojas',
-            'minutos_jugados' => 'minutos_jugados',
-            'goles_recibidos' => 'goles_recibidos',
-            'vaya_invicta' => 'vaya_invicta',
-        ];
-
-        $valores = [];
-        $placeholders = [];
-        foreach ($campos as $db_col => $post_key) {
-            $valores[] = isset($data[$post_key]) ? (int)$data[$post_key] : 0;
-            $placeholders[] = "$db_col = ?";
-        }
-
-        if ($exists) {
-            $sql = "UPDATE estadisticas_jugadores_segunda SET " . implode(", ", $placeholders) . " WHERE jugador_id = ? AND temporada = ?";
-            $valores[] = $jid;
-            $valores[] = $temporada;
-        } else {
-            $sql = "INSERT INTO estadisticas_jugadores_segunda (jugador_id, temporada, " . implode(", ", array_keys($campos)) . ") VALUES (?, ?, " . implode(", ", array_fill(0, count($campos), "?")) . ")";
-            array_unshift($valores, $jid);
-            array_unshift($valores, $temporada);
-        }
-
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($valores);
-
-        echo json_encode(["success" => true, "message" => "Estadísticas actualizadas"]);
-        exit();
-    }
-
-    // ---------- TOGGLE TITULAR / SUPLENTE ----------
-    if ($data['action'] === 'toggle_titular') {
-        $id = (int)$data['id'];
-        if ($id <= 0) {
-            echo json_encode(["success" => false, "error" => "ID requerido"]);
-            exit();
-        }
-        $stmt = $pdo->prepare("UPDATE jugadores_segunda SET es_titular = IF(es_titular = 1, 0, 1) WHERE id = ?");
-        $stmt->execute([$id]);
-        echo json_encode(["success" => true]);
-        exit();
-    }
-
-    // ---------- GUARDAR FORMACIÓN COMPLETA ----------
-    if ($data['action'] === 'save_formation') {
-        $equipo_id = (int)$data['equipo_id'];
-        $formacion = preg_replace('/[^0-9\-]/', '', $data['formacion']);
-        $titulares = json_decode($data['titulares'], true);
-
-        if (!$equipo_id || !$formacion) {
-            echo json_encode(["success" => false, "error" => "Datos incompletos"]);
-            exit();
-        }
-
-        $stmt = $pdo->prepare("UPDATE equipos_segunda SET formacion = ? WHERE id = ?");
-        $stmt->execute([$formacion, $equipo_id]);
-
-        $stmt = $pdo->prepare("UPDATE jugadores_segunda SET es_titular = 0, posicion_x = NULL, posicion_y = NULL WHERE equipo_id = ?");
-        $stmt->execute([$equipo_id]);
-
-        if (is_array($titulares) && count($titulares) > 0) {
-            $stmt = $pdo->prepare("UPDATE jugadores_segunda SET es_titular = 1, posicion_x = ?, posicion_y = ? WHERE id = ? AND equipo_id = ?");
-            foreach ($titulares as $t) {
-                $jid = (int)$t['id'];
-                $jx  = floatval($t['x']);
-                $jy  = floatval($t['y']);
-                $stmt->execute([$jx, $jy, $jid, $equipo_id]);
+        // Verificar límite 11 titulares
+        if ($es_titular) {
+            $cnt = $conn->prepare("SELECT COUNT(*) FROM jugadores WHERE equipo_id=? AND es_titular=1");
+            $cnt->execute([$equipo_id]);
+            if ($cnt->fetchColumn() >= 11) {
+                echo json_encode(['success'=>false,'error'=>'Ya hay 11 titulares. Baja uno primero.']);
+                exit();
             }
         }
 
-        echo json_encode(["success" => true, "message" => "Formación guardada"]);
+        $conn->prepare("INSERT INTO jugadores (equipo_id,nombre,posicion,numero_camiseta,edad,nacionalidad,foto,es_titular) VALUES (?,?,?,?,?,?,?,?)")
+            ->execute([$equipo_id,$nombre,$posicion,$num,$edad,$nac,$foto,$es_titular]);
+        $jugador_id = $conn->lastInsertId();
+
+        $conn->prepare("INSERT IGNORE INTO estadisticas_jugadores (jugador_id,temporada) VALUES (?,'2025-2026')")
+            ->execute([$jugador_id]);
+
+        echo json_encode(['success'=>true,'id'=>$jugador_id]);
         exit();
     }
 
-    echo json_encode(["success" => false, "error" => "Acción no reconocida"]);
-    exit();
-}
+    // ── UPDATE ───────────────────────────────────────────────────────────────
+    if ($action === 'update') {
+        $id         = intval($data['id'] ?? 0);
+        $equipo_id  = intval($data['equipo_id'] ?? 0);
+        $nombre     = trim($data['nombre'] ?? '');
+        $posicion   = normPos($data['posicion'] ?? '');
+        $num        = ($data['numero_camiseta']!==''&&$data['numero_camiseta']!==null) ? intval($data['numero_camiseta']) : null;
+        $edad       = ($data['edad']!==''&&$data['edad']!==null) ? intval($data['edad']) : null;
+        $nac        = trim($data['nacionalidad'] ?? '') ?: null;
+        $foto       = trim($data['foto'] ?? '') ?: null;
+        $es_titular = intval($data['es_titular'] ?? 0);
 
-// ============================================================
-// DELETE — Eliminar jugador
-// ============================================================
-if ($method === 'DELETE') {
-    $jugador_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if (!$id||!$nombre) { echo json_encode(['success'=>false,'error'=>'Datos incompletos']); exit(); }
 
-    if ($jugador_id <= 0) {
-        echo json_encode(["success" => false, "error" => "ID requerido"]);
+        // Verificar dorsal duplicado (excluyendo al jugador actual)
+        if ($num !== null) {
+            $chk = $conn->prepare("SELECT COUNT(*) FROM jugadores WHERE equipo_id=? AND numero_camiseta=? AND id!=?");
+            $chk->execute([$equipo_id, $num, $id]);
+            if ($chk->fetchColumn() > 0) {
+                echo json_encode(['success'=>false,'error'=>"El dorsal #{$num} ya existe en este equipo"]);
+                exit();
+            }
+        }
+
+        // Verificar límite 11 (excluyendo al jugador actual)
+        if ($es_titular) {
+            $cnt = $conn->prepare("SELECT COUNT(*) FROM jugadores WHERE equipo_id=? AND es_titular=1 AND id!=?");
+            $cnt->execute([$equipo_id, $id]);
+            if ($cnt->fetchColumn() >= 11) {
+                echo json_encode(['success'=>false,'error'=>'Ya hay 11 titulares. Baja uno primero.']);
+                exit();
+            }
+        }
+
+        $conn->prepare("UPDATE jugadores SET nombre=?,posicion=?,numero_camiseta=?,edad=?,nacionalidad=?,foto=?,es_titular=? WHERE id=?")
+            ->execute([$nombre,$posicion,$num,$edad,$nac,$foto,$es_titular,$id]);
+
+        echo json_encode(['success'=>true]);
         exit();
     }
 
-    $stmt = $pdo->prepare("DELETE FROM jugadores_segunda WHERE id = ?");
-    $stmt->execute([$jugador_id]);
+    // ── TOGGLE_BULK (swap suplente↔titular) ──────────────────────────────────
+    if ($action === 'toggle_bulk') {
+        $equipo_id = intval($data['equipo_id'] ?? 0);
+        $changes   = $data['changes'] ?? [];
 
-    echo json_encode(["success" => true, "message" => "Jugador eliminado"]);
+        if (!$equipo_id || empty($changes)) {
+            echo json_encode(['success'=>false,'error'=>'Datos incompletos']);
+            exit();
+        }
+
+        // Simular resultado en memoria
+        $cur = $conn->prepare("SELECT id, es_titular FROM jugadores WHERE equipo_id=?");
+        $cur->execute([$equipo_id]);
+        $estado = [];
+        foreach ($cur->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $estado[(int)$row['id']] = (bool)$row['es_titular'];
+        }
+        foreach ($changes as $ch) {
+            $estado[(int)$ch['id']] = (bool)$ch['es_titular'];
+        }
+
+        $totalTit = count(array_filter($estado));
+        if ($totalTit > 11) {
+            echo json_encode(['success'=>false,'error'=>'No se puede superar 11 titulares.']);
+            exit();
+        }
+
+        $conn->beginTransaction();
+        $stmt = $conn->prepare("UPDATE jugadores SET es_titular=? WHERE id=? AND equipo_id=?");
+        foreach ($changes as $ch) {
+            $stmt->execute([(int)(bool)$ch['es_titular'], (int)$ch['id'], $equipo_id]);
+        }
+        $conn->commit();
+        echo json_encode(['success'=>true]);
+        exit();
+    }
+
+    // ── UPDATE_STATS ─────────────────────────────────────────────────────────
+    if ($action === 'update_stats') {
+        $jugador_id = intval($data['jugador_id'] ?? 0);
+        if (!$jugador_id) { echo json_encode(['success'=>false,'error'=>'Falta jugador_id']); exit(); }
+
+        $conn->prepare("
+            INSERT INTO estadisticas_jugadores
+                (jugador_id,temporada,partidos_jugados,goles,asistencias,goles_cabeza,
+                 goles_tiro_libre,goles_penal,tarjetas_amarillas,tarjetas_rojas,
+                 minutos_jugados,goles_recibidos,vaya_invicta)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ON DUPLICATE KEY UPDATE
+                partidos_jugados=VALUES(partidos_jugados),goles=VALUES(goles),
+                asistencias=VALUES(asistencias),goles_cabeza=VALUES(goles_cabeza),
+                goles_tiro_libre=VALUES(goles_tiro_libre),goles_penal=VALUES(goles_penal),
+                tarjetas_amarillas=VALUES(tarjetas_amarillas),tarjetas_rojas=VALUES(tarjetas_rojas),
+                minutos_jugados=VALUES(minutos_jugados),goles_recibidos=VALUES(goles_recibidos),
+                vaya_invicta=VALUES(vaya_invicta)
+        ")->execute([
+            $jugador_id, $data['temporada']??'2025-2026',
+            intval($data['pj']??0), intval($data['goles']??0), intval($data['asistencias']??0),
+            intval($data['goles_cabeza']??0), intval($data['goles_tiro_libre']??0),
+            intval($data['goles_penal']??0), intval($data['tarjetas_amarillas']??0),
+            intval($data['tarjetas_rojas']??0), intval($data['minutos_jugados']??0),
+            intval($data['goles_recibidos']??0), intval($data['vaya_invicta']??0),
+        ]);
+
+        echo json_encode(['success'=>true]);
+        exit();
+    }
+
+    // ── SAVE_FORMATION ────────────────────────────────────────────────────────
+    if ($action === 'save_formation') {
+        $equipo_id = intval($data['equipo_id'] ?? 0);
+        $formacion = $data['formacion'] ?? '4-4-2';
+        $titulares = json_decode($data['titulares'] ?? '[]', true);
+
+        $conn->prepare("UPDATE equipos SET formacion=? WHERE id=?")->execute([$formacion, $equipo_id]);
+        $conn->prepare("UPDATE jugadores SET es_titular=0, posicion_x=NULL, posicion_y=NULL WHERE equipo_id=?")->execute([$equipo_id]);
+
+        if (!empty($titulares)) {
+            $st = $conn->prepare("UPDATE jugadores SET es_titular=1, posicion_x=?, posicion_y=? WHERE id=? AND equipo_id=?");
+            foreach (array_slice($titulares, 0, 11) as $t) {
+                $st->execute([$t['x']??null, $t['y']??null, intval($t['id']), $equipo_id]);
+            }
+        }
+        echo json_encode(['success'=>true]);
+        exit();
+    }
+
+    echo json_encode(['success'=>false,'error'=>'Accion desconocida: '.$action]);
     exit();
 }
 
-echo json_encode(["success" => false, "error" => "Método no permitido"]);
+echo json_encode(['success'=>false,'error'=>'Método no permitido']);
