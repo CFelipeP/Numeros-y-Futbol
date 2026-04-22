@@ -2,32 +2,41 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { ArrowLeft, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Mail, Lock, Eye, EyeOff, AtSign } from "lucide-react";
 
 export default function Login() {
     const navigate = useNavigate();
-    const [email, setEmail] = useState("");
+    const [usuario, setUsuario] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    const isEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
 
     const login = async (e) => {
         e.preventDefault();
         setLoading(true);
 
+        const datos = { password };
+
+        if (isEmail(usuario)) {
+            datos.email = usuario;
+        } else {
+            datos.apodo = usuario;
+        }
+
         try {
             const res = await axios.post(
-                "http://localhost/numeros-y-futbol/backend/login.php",
-                { email, password }
+                "http://localhost/Numeros-y-Futbol/backend/login.php",
+                datos
             );
 
             localStorage.setItem("user", JSON.stringify(res.data));
 
-            // Popup de éxito
             Swal.fire({
                 icon: "success",
                 title: "¡Bienvenido!",
-                text: "Inicio de sesión exitoso.",
+                text: `Hola, ${res.data.apodo || res.data.nombre}`,
                 timer: 2000,
                 showConfirmButton: false,
             }).then(() => {
@@ -40,11 +49,11 @@ export default function Login() {
 
         } catch (error) {
             setLoading(false);
-            // Popup de error
+            const mensaje = error.response?.data?.error || "Credenciales incorrectas.";
             Swal.fire({
                 icon: "error",
                 title: "Error",
-                text: "Credenciales incorrectas. Inténtalo de nuevo.",
+                text: mensaje,
                 confirmButtonText: "Entendido"
             });
         }
@@ -62,7 +71,6 @@ export default function Login() {
 
             <div className="login-card">
                 <div className="login-logo">
-                    {/* LOGO ACTUALIZADO */}
                     <img 
                         src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" 
                         alt="Logo Números y Fútbol" 
@@ -72,16 +80,16 @@ export default function Login() {
                 </div>
 
                 <h1 className="login-title">¡Bienvenido de vuelta!</h1>
-                <p className="login-subtitle">Inicia sesión para continuar</p>
+                <p className="login-subtitle">Inicia sesión con tu correo o apodo</p>
 
                 <form onSubmit={login}>
                     <div className="input-group">
-                        <Mail className="input-icon" />
+                        {isEmail(usuario) ? <Mail className="input-icon" /> : <AtSign className="input-icon" />}
                         <input
-                            type="email"
-                            placeholder="Correo electrónico"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            type="text"
+                            placeholder="Correo electrónico o apodo"
+                            value={usuario}
+                            onChange={(e) => setUsuario(e.target.value.trim())}
                             required
                         />
                     </div>
@@ -102,6 +110,19 @@ export default function Login() {
                         >
                             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                         </button>
+                    </div>
+
+                    <div style={{ textAlign: 'right', marginBottom: '16px' }}>
+                        <a
+                            href="/forgot-password"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                navigate("/forgot-password");
+                            }}
+                            style={{ color: '#4ade80', fontSize: '0.85rem', textDecoration: 'none' }}
+                        >
+                            ¿Olvidaste tu contraseña?
+                        </a>
                     </div>
 
                     <button

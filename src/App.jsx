@@ -20,6 +20,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import ManagePublicNews from "./dashboard/ManagePublicNews";
 import AdminPosiciones from "./dashboard/AdminPosiciones";
 import PlantillaEquipos from "./dashboard/PlantillaEquipos";
+import ForgotPassword from "./pages/ForgotPassword";
 
 // Dentro de <Routes>:
 
@@ -46,6 +47,7 @@ function App() {
         <Route path="/teams/tercera" element={<ManageTeamsTercera />} />
         <Route path="/segunda" element={<Segunda />} />
         <Route path="/admin/plantilla" element={<PlantillaEquipos />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
 
         {/* RUTAS PROTEGIDAS (ADMIN) */}

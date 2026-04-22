@@ -12,30 +12,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require "db.php";
 
-$data = json_decode(file_get_contents("php://input"));
+ $data = json_decode(file_get_contents("php://input"));
 
-$email = $data->email;
-$password = $data->password;
+ $password = $data->password;
+ $email = isset($data->email) ? trim(strtolower($data->email)) : null;
+ $apodo = isset($data->apodo) ? trim(strtolower($data->apodo)) : null;
 
-$sql = $conn->prepare("SELECT * FROM usuarios WHERE email=?");
-$sql->execute([$email]);
+// Si no llega ni email ni apodo
+if (!$email && !$apodo) {
+    http_response_code(400);
+    echo json_encode([
+        "error" => "Ingresa tu correo electrónico o apodo"
+    ]);
+    exit;
+}
 
-$user = $sql->fetch(PDO::FETCH_ASSOC);
+if (!$password) {
+    http_response_code(400);
+    echo json_encode([
+        "error" => "La contraseña es obligatoria"
+    ]);
+    exit;
+}
 
-if($user && password_verify($password,$user['password'])){
+// Determinar si buscar por email o por apodo
+if ($email) {
+    $sql = $conn->prepare("SELECT * FROM usuarios WHERE email=?");
+    $sql->execute([$email]);
+} else {
+    $sql = $conn->prepare("SELECT * FROM usuarios WHERE apodo=?");
+    $sql->execute([$apodo]);
+}
 
-echo json_encode([
-"id"=>$user['id'],
-"nombre"=>$user['nombre'],
-"rol"=>$user['rol']
-]);
+ $user = $sql->fetch(PDO::FETCH_ASSOC);
 
-}else{
+if ($user && password_verify($password, $user['password'])) {
 
-http_response_code(401);
+    echo json_encode([
+        "id" => $user['id'],
+        "nombre" => $user['nombre'],
+        "apodo" => $user['apodo'],
+        "email" => $user['email'],
+        "rol" => $user['rol']
+    ]);
 
-echo json_encode([
-"error"=>"Credenciales incorrectas"
-]);
+} else {
+
+    http_response_code(401);
+    echo json_encode([
+        "error" => "Credenciales incorrectas"
+    ]);
 
 }
