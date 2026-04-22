@@ -185,6 +185,7 @@ const posCompat = {
   extremo_derecho: ["extremo_derecho", "extremo_izquierdo"], centrodelantero: ["centrodelantero", "segundo_delantero"], segundo_delantero: ["segundo_delantero", "centrodelantero"],
 };
 function getPosInfo(v) {
+  if (v === "centrocampista") v = "medio_central";
   const p = posiciones.find(x => x.value === v);
   if (p) return p;
   const fb = { portero: "portero", defensa: "defensa", medio: "medio", delantero: "delantero" }; const c = fb[v];
@@ -264,12 +265,41 @@ const PublicTeamView = ({ teamData, viewTab, setViewTab }) => {
   // Formación viene del admin, NO se puede cambiar
   const formacion = teamData?.equipo?.formacion || "4-4-2";
   const jugadores = teamData?.jugadores || [];
-  const { starters, subs } = useMemo(() => autoAssign(jugadores, formacion), [jugadores, formacion]);
+  const { starters, subs } = useMemo(() => {
+  const hayPosiciones = jugadores.some(j => j.pos_x !== null && j.pos_y !== null);
+
+  if (hayPosiciones) {
+    const startersDB = jugadores
+      .filter(j => j.pos_x !== null && j.pos_y !== null)
+      .map(j => ({
+        ...j,
+        px: j.pos_x,
+        py: j.pos_y
+      }));
+
+    const usados = new Set(startersDB.map(j => j.id));
+    const suplentes = jugadores.filter(j => !usados.has(j.id));
+
+    return { starters: startersDB, subs: suplentes };
+  }
+
+  return autoAssign(jugadores, formacion);
+}, [jugadores, formacion]);
+
   const groups = useMemo(() => {
-    const all = { portero: [], defensa: [], medio: [], delantero: [] };
-    jugadores.forEach(j => { const c = getPosInfo(j.posicion).cat; if (all[c]) all[c].push(j); });
-    return all;
-  }, [jugadores]);
+  const all = { portero: [], defensa: [], medio: [], delantero: [] };
+
+  jugadores.forEach(j => {
+    let pos = (j.posicion || "").toLowerCase();
+
+    if (pos.includes("port")) all.portero.push(j);
+    else if (pos.includes("def")) all.defensa.push(j);
+    else if (pos.includes("medio") || pos.includes("centro")) all.medio.push(j);
+    else if (pos.includes("del")) all.delantero.push(j);
+  });
+
+  return all;
+}, [jugadores]);
   const totalGoles = useMemo(() => jugadores.reduce((s, j) => s + (j.goles || 0), 0), [jugadores]);
   const totalAsistencias = useMemo(() => jugadores.reduce((s, j) => s + (j.asistencias || 0), 0), [jugadores]);
   const avgAge = useMemo(() => { const a = jugadores.filter(j => j.edad).map(j => j.edad); return a.length ? (a.reduce((x, y) => x + y, 0) / a.length).toFixed(1) : "–"; }, [jugadores]);
