@@ -8,7 +8,7 @@ import 'animate.css';
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
-  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft
+  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, UploadCloud, CheckCircle2, Image as ImageIcon
 } from "lucide-react";
 
 const API = "http://localhost/Numeros-y-Futbol/backend/";
@@ -466,7 +466,7 @@ const ManageTeams = () => {
                                             <img src={logoPreview} alt="Preview" className="tm-logo-preview-img" />
                                         ) : (
                                             <div className="tm-logo-preview-empty">
-                                                <Image size={32} style={{ color: '#1e293b' }} />
+                                                <ImageIcon size={32} style={{ color: "#1e293b" }} />
                                                 <span style={{ fontSize: '11px', color: '#334155', marginTop: '4px' }}>Sin escudo</span>
                                             </div>
                                         )}
@@ -474,7 +474,7 @@ const ManageTeams = () => {
                                     <div className="tm-upload-area">
                                         <input type="file" id="tm-logo-input" accept="image/jpeg,image/png,image/jpg,image/webp,image/svg+xml" onChange={handleFileChange} />
                                         <label htmlFor="tm-logo-input" className="tm-upload-label tm-upload-red">
-                                            <Upload size={18} />
+                                            <UploadCloud size={18} />
                                             <span>{formLogo ? formLogo.name : "Seleccionar escudo"}</span>
                                         </label>
                                         <span className="tm-upload-hint">JPG, PNG, WEBP o SVG</span>
@@ -546,7 +546,7 @@ const ManageTeams = () => {
                                             />
                                         ) : (
                                             <div className="tm-logo-preview-empty">
-                                                <Image size={32} style={{ color: '#1e293b' }} />
+                                                <ImageIcon size={32} style={{ color: "#1e293b" }} />
                                                 <span style={{ fontSize: '11px', color: '#334155', marginTop: '4px' }}>Sin escudo</span>
                                             </div>
                                         )}
@@ -554,7 +554,7 @@ const ManageTeams = () => {
                                     <div className="tm-upload-area">
                                         <input type="file" id="tm-edit-logo-input" accept="image/jpeg,image/png,image/jpg,image/webp,image/svg+xml" onChange={handleEditFileChange} />
                                         <label htmlFor="tm-edit-logo-input" className="tm-upload-label tm-upload-blue">
-                                            <Upload size={18} />
+                                            <UploadCloud size={18} />
                                             <span>{editLogo ? editLogo.name : "Cambiar escudo"}</span>
                                         </label>
                                         <span className="tm-upload-hint">JPG, PNG, WEBP o SVG</span>

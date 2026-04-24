@@ -27,6 +27,7 @@ const getEndpoints = (div) => {
   };
 };
 
+
 // ─── Posiciones ───────────────────────────────────────────────────────────────
 const posiciones = [
   { value: "portero", label: "Portero", cat: "portero", color: "#f59e0b", abbr: "POR" },
@@ -338,6 +339,7 @@ const PosSection = memo(function PosSection({ cat, jugadores, slotIds, ...h }) {
 // ─── Componente principal ─────────────────────────────────────────────────────
 export default function PlantillaAdmin() {
   const location = useLocation();
+  const [initFromDB, setInitFromDB] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [ddOpen, setDdOpen] = useState(false);
   const [tab, setTab] = useState("plantilla");
@@ -348,6 +350,7 @@ export default function PlantillaAdmin() {
   const [equipoId, setEquipoId] = useState("");
   const [plantilla, setPlantilla] = useState(null);
   const [formacion, setFormacion] = useState("4-4-2");
+  const prevFormacion = useRef(formacion);
   const [modal, setModal] = useState(null);
   const [editPlayer, setEditPlayer] = useState(null);
   const [editStats, setEditStats] = useState(null);
@@ -388,26 +391,15 @@ export default function PlantillaAdmin() {
   useEffect(() => {
   if (!plantilla?.jugadores) return;
 
-  // 🔍 verificar si hay posiciones guardadas
+  const cambioFormacion = prevFormacion.current !== formacion;
+  prevFormacion.current = formacion;
+
   const hayGuardados = plantilla.jugadores.some(
     j => j.pos_x != null && j.pos_y != null
   );
 
-  if (hayGuardados) {
-    // ✅ usar posiciones del backend
-    const titulares = plantilla.jugadores
-      .filter(j => j.pos_x != null && j.pos_y != null)
-      .map((j, i) => ({
-        id: i,
-        x: parseFloat(j.pos_x),
-        y: parseFloat(j.pos_y),
-        jugador: j
-      }));
-
-    setSlots(titulares);
-
-  } else {
-    // ⚡ fallback: auto asignación
+  // ✅ SI CAMBIA FORMACIÓN → recalcular SIEMPRE
+  if (cambioFormacion) {
     const { starters } = autoAssign(plantilla.jugadores, formacion);
 
     const newSlots = starters.map((j, i) => ({
@@ -418,12 +410,41 @@ export default function PlantillaAdmin() {
     }));
 
     setSlots(newSlots);
+    return;
   }
+
+  // ✅ SI HAY GUARDADOS → usar DB
+  if (hayGuardados) {
+    const titulares = plantilla.jugadores
+      .filter(j => j.pos_x != null && j.pos_y != null)
+      .map((j, i) => ({
+        id: i,
+        x: parseFloat(j.pos_x),
+        y: parseFloat(j.pos_y),
+        jugador: j
+      }));
+
+    setSlots(titulares);
+    return;
+  }
+
+  // ✅ fallback inicial
+  const { starters } = autoAssign(plantilla.jugadores, formacion);
+
+  const newSlots = starters.map((j, i) => ({
+    id: i,
+    x: j.px,
+    y: j.py,
+    jugador: j
+  }));
+
+  setSlots(newSlots);
 
 }, [plantilla, formacion]);
 
   // ─── Cargar equipos ──────────────────────────────────────────────────────
   useEffect(() => {
+
     const ep = getEndpoints(division);
     const savedId = parseInt(localStorage.getItem("admin_plantilla_team_" + division));
     setLoading(true);
@@ -451,66 +472,57 @@ export default function PlantillaAdmin() {
   const clearSearch = useCallback(() => { setSearchInput(""); setSearch(""); }, []);
 
   const loadPlantilla = useCallback(async (id) => {
-  if (!id) {
-    setPlantilla(null);
-    setSlots([]);
-    return;
-  }
+    if (!id) {
+      setPlantilla(null);
+      setSlots([]);
+      return;
+    }
 
-  setLoading(true);
-  const ep = getEndpoints(division);
+    setLoading(true);
+    const ep = getEndpoints(division);
 
-  try {
-    const r = await axios.get(ep.crud + "?equipo_id=" + id);
+    try {
+      const r = await axios.get(ep.crud + "?equipo_id=" + id);
 
-    if (r.data.success) {
-      const jugadores = r.data.jugadores || [];
+      if (r.data.success) {
+        const jugadores = r.data.jugadores || [];
 
-      // ✅ construir slots desde DB
-      const titulares = jugadores
-        .filter(j => j.pos_x != null && j.pos_y != null)
-        .map(j => ({
-          jugador: j,
-          x: parseFloat(j.pos_x),
-          y: parseFloat(j.pos_y)
-        }));
+        setPlantilla({
+          ...r.data,
+          jugadores
+        });
 
-      setSlots(titulares);
+        if (r.data.equipo?.formacion) {
+          setFormacion(r.data.equipo.formacion);
+        }
 
-      setPlantilla({
-        ...r.data,
-        jugadores
-      });
-
-      if (r.data.equipo?.formacion) {
-        setFormacion(r.data.equipo.formacion);
+      } else {
+        Swal.fire({
+          background: "#1e293b",
+          color: "#fff",
+          icon: "warning",
+          title: r.data.error || "No se pudo cargar"
+        });
       }
 
-    } else {
+    } catch (err) {
       Swal.fire({
         background: "#1e293b",
         color: "#fff",
-        icon: "warning",
-        title: r.data.error || "No se pudo cargar"
+        icon: "error",
+        title: err.response?.status === 404
+          ? "Archivo no encontrado"
+          : "Error de conexion"
       });
+    } finally {
+      setLoading(false);
     }
-
-  } catch (err) {
-    Swal.fire({
-      background: "#1e293b",
-      color: "#fff",
-      icon: "error",
-      title: err.response?.status === 404
-        ? "Archivo no encontrado"
-        : "Error de conexion"
-    });
-  } finally {
-    setLoading(false);
-  }
-}, [division]);
+  }, [division]);
 
   const handleEquipoChange = useCallback((id) => {
     setEquipoId(parseInt(id));
+    setSlots([]);
+    setInitFromDB(false); // 🔥 ESTO FALTABA
     localStorage.setItem("admin_plantilla_team_" + division, id);
     setSearchInput(""); setSearch(""); setTab("plantilla");
     loadPlantilla(id);
@@ -636,7 +648,7 @@ export default function PlantillaAdmin() {
     if (!ok.isConfirmed) return;
     const ep = getEndpoints(division);
     try {
-      const r = await axios.delete(ep.crud + "?id=" + j.id);
+      const r = await axios.post(ep.crud, { action: "delete", id: j.id });
       if (r.data.success) {
         Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Eliminado", showConfirmButton: false, timer: 1500, background: "#1e293b", color: "#fff" });
         loadPlantilla(equipoId);
@@ -751,6 +763,9 @@ export default function PlantillaAdmin() {
       });
 
       if (r.data.success) {
+        setInitFromDB(false); // 🔥 CLAVE
+        await loadPlantilla(equipoId); // 🔥 recargar desde DB
+
         Swal.fire({
           toast: true,
           position: "top-end",
@@ -761,588 +776,589 @@ export default function PlantillaAdmin() {
           background: "#1e293b",
           color: "#fff"
         });
-      } else {
-        throw new Error(r.data.error || "Error desconocido");
-      }
+      
+        } else {
+          throw new Error(r.data.error || "Error desconocido");
+        }
 
-    } catch (e) {
-      Swal.fire({
-        background: "#1e293b",
-        color: "#fff",
-        icon: "error",
-        title: "Error al guardar",
-        text: e.message
-      });
-    } finally {
-      setSaving(false);
-    }
-  }, [slots, equipoId, formacion, division]);
-
-  // ─── Agrupación para tab plantilla ───────────────────────────────────────
-  const groups = useMemo(() => {
-    if (!plantilla?.jugadores) return { portero: [], defensa: [], medio: [], delantero: [] };
-    const all = { portero: [], defensa: [], medio: [], delantero: [] };
-    plantilla.jugadores.forEach(j => {
-      const c = getPosInfo(j.posicion).cat;
-      if (all[c]) all[c].push(j);
+  } catch (e) {
+    Swal.fire({
+      background: "#1e293b",
+      color: "#fff",
+      icon: "error",
+      title: "Error al guardar",
+      text: e.message
     });
-    if (!search.trim()) return all;
-    const s = search.toLowerCase();
-    const out = { portero: [], defensa: [], medio: [], delantero: [] };
-    for (const c of Object.keys(all)) out[c] = all[c].filter(j => j.nombre.toLowerCase().includes(s));
-    return out;
-  }, [plantilla, search]);
+  } finally {
+    setSaving(false);
+  }
+}, [slots, equipoId, formacion, division]);
 
-  const total = plantilla?.jugadores?.length || 0;
-  const filteredCount = useMemo(() => Object.values(groups).reduce((a, b) => a + b.length, 0), [groups]);
-  const curDiv = DIVISIONES.find(d => d.key === division);
+// ─── Agrupación para tab plantilla ───────────────────────────────────────
+const groups = useMemo(() => {
+  if (!plantilla?.jugadores) return { portero: [], defensa: [], medio: [], delantero: [] };
+  const all = { portero: [], defensa: [], medio: [], delantero: [] };
+  plantilla.jugadores.forEach(j => {
+    const c = getPosInfo(j.posicion).cat;
+    if (all[c]) all[c].push(j);
+  });
+  if (!search.trim()) return all;
+  const s = search.toLowerCase();
+  const out = { portero: [], defensa: [], medio: [], delantero: [] };
+  for (const c of Object.keys(all)) out[c] = all[c].filter(j => j.nombre.toLowerCase().includes(s));
+  return out;
+}, [plantilla, search]);
 
-  // ─── Import CSV ──────────────────────────────────────────────────────────
-  const openImport = useCallback(() => { setCsvFile(null); setCsvText(""); setCsvPreview([]); setImportModal(true); }, []);
-  const closeImport = useCallback(() => { setImportModal(false); setCsvFile(null); setCsvText(""); setCsvPreview([]); }, []);
+const total = plantilla?.jugadores?.length || 0;
+const filteredCount = useMemo(() => Object.values(groups).reduce((a, b) => a + b.length, 0), [groups]);
+const curDiv = DIVISIONES.find(d => d.key === division);
 
-  const parseCSVPreview = useCallback((text) => {
-    const lines = text.trim().split("\n").filter(l => l.trim());
-    if (!lines.length) { setCsvPreview([]); return; }
-    const h = lines[0].split(",").map(h => h.trim().toLowerCase());
-    const rows = [];
-    for (let i = 1; i < lines.length; i++) {
-      const v = lines[i].split(",").map(x => x.trim().toLowerCase());
-      if (v.length < 2 || !v[0]) continue;
-      const row = {};
-      h.forEach((key, idx) => { row[key] = v[idx] ?? ""; });
-      if (row.posicion) {
-        row.posicion_original = row.posicion;
-        row.posicion = normalizarPosicion(row.posicion);
-      }
-      if (row.nombre) rows.push(row);
+// ─── Import CSV ──────────────────────────────────────────────────────────
+const openImport = useCallback(() => { setCsvFile(null); setCsvText(""); setCsvPreview([]); setImportModal(true); }, []);
+const closeImport = useCallback(() => { setImportModal(false); setCsvFile(null); setCsvText(""); setCsvPreview([]); }, []);
+
+const parseCSVPreview = useCallback((text) => {
+  const lines = text.trim().split("\n").filter(l => l.trim());
+  if (!lines.length) { setCsvPreview([]); return; }
+  const h = lines[0].split(",").map(h => h.trim().toLowerCase());
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const v = lines[i].split(",").map(x => x.trim().toLowerCase());
+    if (v.length < 2 || !v[0]) continue;
+    const row = {};
+    h.forEach((key, idx) => { row[key] = v[idx] ?? ""; });
+    if (row.posicion) {
+      row.posicion_original = row.posicion;
+      row.posicion = normalizarPosicion(row.posicion);
     }
-    setCsvPreview(rows);
-  }, []);
+    if (row.nombre) rows.push(row);
+  }
+  setCsvPreview(rows);
+}, []);
 
-  const downloadTemplate = useCallback(() => {
-    const t = `nombre,posicion,numero_camiseta,edad,nacionalidad,pj,goles,asistencias,goles_penal,goles_cabeza,goles_tiro_libre,tarjetas_amarillas,tarjetas_rojas,minutos_jugados,goles_recibidos,vaya_invicta\nJuan Perez,centrodelantero,9,24,Salvadoreno,1,13,9,2,0,0,3,0,0,980,0,0\nCarlos Lopez,medio_central,10,22,Salvadoreno,0,15,5,8,0,0,2,4,1,1300,0,0`;
-    const blob = new Blob([t], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = `plantilla_${division}.csv`;
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a); URL.revokeObjectURL(url);
-  }, [division]);
+const downloadTemplate = useCallback(() => {
+  const t = `nombre,posicion,numero_camiseta,edad,nacionalidad,pj,goles,asistencias,goles_penal,goles_cabeza,goles_tiro_libre,tarjetas_amarillas,tarjetas_rojas,minutos_jugados,goles_recibidos,vaya_invicta\nJuan Perez,centrodelantero,9,24,Salvadoreno,1,13,9,2,0,0,3,0,0,980,0,0\nCarlos Lopez,medio_central,10,22,Salvadoreno,0,15,5,8,0,0,2,4,1,1300,0,0`;
+  const blob = new Blob([t], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `plantilla_${division}.csv`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}, [division]);
 
-  const importPlayers = useCallback(async () => {
-    setImporting(true);
-    try {
-      const fd = new FormData();
-      fd.append("equipo_id", equipoId);
-      fd.append("division", division);
-      const headers = Object.keys(csvPreview[0] || {}).filter(k => k !== "posicion_original");
-      const lines = [headers.join(",")];
-      csvPreview.forEach(row => {
-        lines.push(headers.map(h => row[h] ?? "").join(","));
-      });
-      fd.append("csv_text", lines.join("\n"));
-      const r = await axios.post(API + "importar_jugadores.php", fd);
-      if (r.data.success) {
-        closeImport();
-        Swal.fire({ toast: true, position: "top-end", icon: "success", title: r.data.importados + " jugadores importados", showConfirmButton: false, timer: 2000, background: "#1e293b", color: "#fff" });
-        loadPlantilla(equipoId);
-      } else {
-        const errorMsg = r.data.error || (r.data.errores || []).join("\n") || JSON.stringify(r.data);
-        Swal.fire({ background: "#1e293b", color: "#fff", icon: "error", title: "Error en importacion", text: errorMsg });
-      }
-    } catch (err) {
-      const msg = err.response?.data ? JSON.stringify(err.response.data) : err.message;
-      Swal.fire({ background: "#1e293b", color: "#fff", icon: "error", title: "Error de conexion", text: msg });
-    } finally { setImporting(false); }
-  }, [equipoId, loadPlantilla, division, csvPreview, closeImport]);
+const importPlayers = useCallback(async () => {
+  setImporting(true);
+  try {
+    const fd = new FormData();
+    fd.append("equipo_id", equipoId);
+    fd.append("division", division);
+    const headers = Object.keys(csvPreview[0] || {}).filter(k => k !== "posicion_original");
+    const lines = [headers.join(",")];
+    csvPreview.forEach(row => {
+      lines.push(headers.map(h => row[h] ?? "").join(","));
+    });
+    fd.append("csv_text", lines.join("\n"));
+    const r = await axios.post(API + "importar_jugadores.php", fd);
+    if (r.data.success) {
+      closeImport();
+      Swal.fire({ toast: true, position: "top-end", icon: "success", title: r.data.importados + " jugadores importados", showConfirmButton: false, timer: 2000, background: "#1e293b", color: "#fff" });
+      loadPlantilla(equipoId);
+    } else {
+      const errorMsg = r.data.error || (r.data.errores || []).join("\n") || JSON.stringify(r.data);
+      Swal.fire({ background: "#1e293b", color: "#fff", icon: "error", title: "Error en importacion", text: errorMsg });
+    }
+  } catch (err) {
+    const msg = err.response?.data ? JSON.stringify(err.response.data) : err.message;
+    Swal.fire({ background: "#1e293b", color: "#fff", icon: "error", title: "Error de conexion", text: msg });
+  } finally { setImporting(false); }
+}, [equipoId, loadPlantilla, division, csvPreview, closeImport]);
 
-  const handleLogout = () => {
-    Swal.fire({ background: "#1e293b", color: "#fff", title: "Cerrar sesion?", icon: "warning", showCancelButton: true, confirmButtonText: "Si", cancelButtonText: "No" })
-      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); window.location.href = "/login"; } });
-  };
+const handleLogout = () => {
+  Swal.fire({ background: "#1e293b", color: "#fff", title: "Cerrar sesion?", icon: "warning", showCancelButton: true, confirmButtonText: "Si", cancelButtonText: "No" })
+    .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); window.location.href = "/login"; } });
+};
 
-  const navClick = useCallback(() => { if (window.innerWidth <= 768) setSidebarOpen(false); setDdOpen(false); }, []);
-  const handlers = useMemo(() => ({ onStats: openStats, onEdit: openEdit, onDelete: deletePlayer, onSwap: openSwap }), [openStats, openEdit, deletePlayer, openSwap]);
+const navClick = useCallback(() => { if (window.innerWidth <= 768) setSidebarOpen(false); setDdOpen(false); }, []);
+const handlers = useMemo(() => ({ onStats: openStats, onEdit: openEdit, onDelete: deletePlayer, onSwap: openSwap }), [openStats, openEdit, deletePlayer, openSwap]);
 
-  // ─── RENDER ────────────────────────────────────────────────────────────────
-  return (
-    <div className={"admin-layout" + (sidebarOpen ? " sidebar-open" : "")}>
-      {/* SIDEBAR */}
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <div className="logo-icon">
-            <img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="" />
-          </div>
-          <h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2>
+// ─── RENDER ────────────────────────────────────────────────────────────────
+return (
+  <div className={"admin-layout" + (sidebarOpen ? " sidebar-open" : "")}>
+    {/* SIDEBAR */}
+    <aside className="sidebar">
+      <div className="sidebar-header">
+        <div className="logo-icon">
+          <img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="" />
         </div>
-        <nav className="sidebar-nav">
-          <ul>
-            {navItems.map((item, i) => {
-              if (item.type === "dropdown") {
-                const a = item.children.some(c => location.pathname === c.path);
-                return (
-                  <li key={i}>
-                    <button className={"nav-item" + (a ? " active" : "")} onClick={() => setDdOpen(!ddOpen)} style={{ width: "100%", justifyContent: "space-between" }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 14 }}>{item.icon} {item.label}</span>
-                      <ChevronDown size={16} style={{ transform: ddOpen ? "rotate(180deg)" : "", transition: "transform .2s" }} />
-                    </button>
-                    <ul className={"teams-dropdown" + (ddOpen ? " dropdown-visible" : "")}>
-                      {item.children.map(c => (
-                        <li key={c.path}>
-                          <Link to={c.path} className={"nav-item nav-subitem" + (location.pathname === c.path ? " active" : "")} onClick={navClick}>{c.label}</Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                );
-              }
+        <h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2>
+      </div>
+      <nav className="sidebar-nav">
+        <ul>
+          {navItems.map((item, i) => {
+            if (item.type === "dropdown") {
+              const a = item.children.some(c => location.pathname === c.path);
               return (
-                <li key={item.path}>
-                  <Link to={item.path} className={"nav-item" + (location.pathname === item.path ? " active" : "")} onClick={navClick}>{item.icon} {item.label}</Link>
+                <li key={i}>
+                  <button className={"nav-item" + (a ? " active" : "")} onClick={() => setDdOpen(!ddOpen)} style={{ width: "100%", justifyContent: "space-between" }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 14 }}>{item.icon} {item.label}</span>
+                    <ChevronDown size={16} style={{ transform: ddOpen ? "rotate(180deg)" : "", transition: "transform .2s" }} />
+                  </button>
+                  <ul className={"teams-dropdown" + (ddOpen ? " dropdown-visible" : "")}>
+                    {item.children.map(c => (
+                      <li key={c.path}>
+                        <Link to={c.path} className={"nav-item nav-subitem" + (location.pathname === c.path ? " active" : "")} onClick={navClick}>{c.label}</Link>
+                      </li>
+                    ))}
+                  </ul>
                 </li>
               );
-            })}
-          </ul>
-        </nav>
-        <div className="sidebar-footer">
-          <button className="nav-item btn-logout-sidebar" onClick={handleLogout}><LogOut size={20} className="nav-icon" /> Cerrar sesion</button>
-        </div>
-      </aside>
+            }
+            return (
+              <li key={item.path}>
+                <Link to={item.path} className={"nav-item" + (location.pathname === item.path ? " active" : "")} onClick={navClick}>{item.icon} {item.label}</Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+      <div className="sidebar-footer">
+        <button className="nav-item btn-logout-sidebar" onClick={handleLogout}><LogOut size={20} className="nav-icon" /> Cerrar sesion</button>
+      </div>
+    </aside>
 
-      {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
+    {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
 
-      {/* MAIN */}
-      <main className="main-content">
-        <header className="top-bar">
-          <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={24} /></button>
-          <span className="top-bar-title">Gestion de Plantillas</span>
-        </header>
+    {/* MAIN */}
+    <main className="main-content">
+      <header className="top-bar">
+        <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={24} /></button>
+        <span className="top-bar-title">Gestion de Plantillas</span>
+      </header>
 
-        <div className="pl-page">
-          {/* Header */}
-          <div className="pl-header">
-            <h1>Plantillas</h1>
-            <div ref={divRef} className="pl-div-dd">
-              <button className="pl-div-btn" onClick={() => setDivDD(!divDD)}>
-                <Trophy size={14} />{curDiv.icon} {curDiv.label} Division
-                <ChevronDown size={15} className={"pl-div-arrow" + (divDD ? " open" : "")} />
-              </button>
-              <div className={"pl-div-drop" + (divDD ? " show" : "")}>
-                {DIVISIONES.map(d => (
-                  <button key={d.key} className={"pl-div-opt" + (division === d.key ? " active" : "")}
-                    onClick={() => { setDivision(d.key); setDivDD(false); }}>
-                    <span>{d.icon}</span> {d.label} Division
-                    {division === d.key && <span className="pl-div-dot" />}
-                  </button>
-                ))}
-              </div>
+      <div className="pl-page">
+        {/* Header */}
+        <div className="pl-header">
+          <h1>Plantillas</h1>
+          <div ref={divRef} className="pl-div-dd">
+            <button className="pl-div-btn" onClick={() => setDivDD(!divDD)}>
+              <Trophy size={14} />{curDiv.icon} {curDiv.label} Division
+              <ChevronDown size={15} className={"pl-div-arrow" + (divDD ? " open" : "")} />
+            </button>
+            <div className={"pl-div-drop" + (divDD ? " show" : "")}>
+              {DIVISIONES.map(d => (
+                <button key={d.key} className={"pl-div-opt" + (division === d.key ? " active" : "")}
+                  onClick={() => { setDivision(d.key); setDivDD(false); }}>
+                  <span>{d.icon}</span> {d.label} Division
+                  {division === d.key && <span className="pl-div-dot" />}
+                </button>
+              ))}
             </div>
           </div>
+        </div>
 
-          {/* Toolbar */}
-          <div className="pl-toolbar">
-            <TeamSelect equipos={equipos} value={equipoId} onChange={handleEquipoChange} />
-            {plantilla && (
-              <div className="pl-search">
-                <Search size={15} className="pl-search-ic" />
-                <input value={searchInput} onChange={onSearchChange} placeholder="Buscar jugador..." />
-                {searchInput && <button className="pl-search-x" onClick={clearSearch}><X size={11} /></button>}
+        {/* Toolbar */}
+        <div className="pl-toolbar">
+          <TeamSelect equipos={equipos} value={equipoId} onChange={handleEquipoChange} />
+          {plantilla && (
+            <div className="pl-search">
+              <Search size={15} className="pl-search-ic" />
+              <input value={searchInput} onChange={onSearchChange} placeholder="Buscar jugador..." />
+              {searchInput && <button className="pl-search-x" onClick={clearSearch}><X size={11} /></button>}
+            </div>
+          )}
+          {plantilla && <button className="pl-add-btn" onClick={openCreate}><Plus size={15} /> Agregar</button>}
+          {plantilla && <button className="pl-import-btn" onClick={openImport}><Upload size={15} /> Importar CSV</button>}
+        </div>
+
+        {/* Contador: jugadores en cancha (basado en slots, NO en es_titular) */}
+        {plantilla && (
+          <div className="pl-tit-counter">
+            <div className="pl-tit-dots">
+              {Array.from({ length: 11 }).map((_, i) => (
+                <div key={i} className={"pl-tit-dot" + (i < enCanchaCount ? " filled" : "")} />
+              ))}
+            </div>
+            <span className="pl-tit-label">{enCanchaCount}/11 en cancha</span>
+            <span className="pl-tit-hint">Usa el botón <ArrowLeftRight size={11} style={{ display: "inline", verticalAlign: "middle" }} /> para gestionar cambios</span>
+          </div>
+        )}
+
+        {!loading && equipos.length === 0 && (
+          <div className="pl-empty"><Shield size={40} /><p>No hay equipos en {curDiv?.label} Division</p><p>Crea equipos desde la seccion de Equipos primero</p></div>
+        )}
+
+        {plantilla?.equipo && (
+          <div className="pl-team-card">
+            <div className="pl-tc-logo">
+              {plantilla?.equipo.logo ? (
+                <img src={API + plantilla?.equipo.logo} alt="" />
+              ) : (
+                <div style={{ width: "100%", height: "100%" }} />
+              )}
+            </div>
+            <div className="pl-tc-info">
+              <h3>{plantilla?.equipo.nombre || "Sin nombre"}</h3>
+              <p>{[plantilla?.equipo.ciudad, plantilla?.equipo.estadio].filter(Boolean).join(" - ")}</p>
+            </div>
+            <div className="pl-tc-stats">
+              <div className="pl-tc-stat"><b>{total}</b><span>Jugadores</span></div>
+              <div className="pl-tc-div" />
+              <div className="pl-tc-stat"><b className="text-amber">{enCanchaCount}</b><span>En cancha</span></div>
+              <div className="pl-tc-div" />
+              <div className="pl-tc-stat"><b className="text-slate">{total - enCanchaCount}</b><span>Banca</span></div>
+            </div>
+          </div>
+        )}
+
+        {plantilla && total > 0 && (
+          <div className="pl-tabs">
+            <button className={"pl-tab" + (tab === "plantilla" ? " active" : "")} onClick={() => setTab("plantilla")}><Users size={14} /> Plantilla</button>
+            <button className={"pl-tab" + (tab === "formacion" ? " active" : "")} onClick={() => setTab("formacion")}><Target size={14} /> Formacion</button>
+          </div>
+        )}
+
+        {loading && <div className="pl-empty"><div className="pl-spinner" /><p>Cargando {curDiv?.label}...</p></div>}
+
+        {!loading && !plantilla && equipos.length > 0 && (
+          <div className="pl-empty"><Users size={40} /><p>Selecciona un equipo</p><p>Elige del menu desplegable para ver su plantilla</p></div>
+        )}
+
+        {/* TAB: PLANTILLA */}
+        {!loading && plantilla && tab === "plantilla" && (
+          total === 0 ? (
+            <div className="pl-empty"><p>Sin jugadores registrados</p><button className="pl-add-btn" onClick={openCreate}><Plus size={15} /> Agregar primero</button></div>
+          ) : (
+            <div>
+              {searchInput.trim() && (
+                <div className="pl-filter-msg">{filteredCount > 0 ? filteredCount + " resultado" + (filteredCount !== 1 ? "s" : "") + " para " + searchInput : "Sin resultados para " + searchInput}</div>
+              )}
+              {Object.keys(catCfg).map(cat => (
+                <PosSection key={cat} cat={cat} jugadores={groups[cat]} slotIds={slotIds} {...handlers} />
+              ))}
+            </div>
+          )
+        )}
+
+        {/* TAB: FORMACIÓN */}
+        {!loading && plantilla && tab === "formacion" && (
+          <div>
+            <div className="pl-fm-bar">
+              <div className="pl-fm-btns">
+                {Object.keys(formations).map(f => (
+                  <button key={f} className={"pl-fm-btn" + (formacion === f ? " active" : "")} onClick={() => setFormacion(f)}>{f}</button>
+                ))}
+              </div>
+              <button className="pl-save-btn" onClick={saveFormation} disabled={saving}><Save size={14} />{saving ? "..." : "Guardar"}</button>
+            </div>
+            <div className="pl-pitch">
+              <svg className="pl-pitch-svg" viewBox="0 0 680 1050" preserveAspectRatio="none">
+                <line x1="0" y1="525" x2="680" y2="525" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                <circle cx="340" cy="525" r="91" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                <rect x="136" y="1" width="408" height="165" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                <rect x="224" y="1" width="232" height="55" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                <path d="M 248 165 A 91 91 0 0 0 432 165" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                <rect x="136" y="884" width="408" height="165" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                <rect x="224" y="994" width="232" height="55" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+                <path d="M 248 885 A 91 91 0 0 1 432 885" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
+              </svg>
+              {slots.map((slot) => {
+                const s = slot.jugador;
+                const pi = getPosInfo(s.posicion);
+                return (
+                  <div
+                    key={slot.id}
+                    className="pl-pitch-player"
+                    style={{ left: slot.x + "%", top: slot.y + "%" }}
+                    onClick={() => openSwap(s)}
+                  >
+                    <div className="pl-pitch-dot" data-color={pi.color}>
+                      {s.foto ? <img src={API + s.foto} /> : <span>{s.numero_camiseta}</span>}
+                    </div>
+                    <div className="pl-pitch-name">{s.nombre}</div>
+                  </div>
+                );
+              })}
+              {enCanchaCount < 11 && (
+                <div className="pl-pitch-msg">{enCanchaCount}/11 — agrega más jugadores</div>
+              )}
+            </div>
+
+            {/* Suplentes clickeables */}
+            {suplentes.length > 0 && (
+              <div className="pl-subs-card">
+                <h4 className="pl-subs-title">Banca ({suplentes.length}) — clic para gestionar cambio</h4>
+                <div className="pl-subs-grid">
+                  {suplentes.map(s => {
+                    const pi = getPosInfo(s.posicion);
+                    return (
+                      <button key={s.id} className="pl-sub-item" data-color={pi.color} onClick={() => openSwap(s)}>
+                        <div className="pl-sub-photo">{s.foto ? <img src={API + s.foto} alt="" /> : <User size={14} />}</div>
+                        <div className="pl-sub-info">
+                          <span className="pl-sub-name">{s.nombre}</span>
+                          <span className="pl-sub-meta">#{s.numero_camiseta || "-"} · {pi.label}</span>
+                        </div>
+                        <ArrowLeftRight size={14} className="pl-sub-swap-ic" />
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
-            {plantilla && <button className="pl-add-btn" onClick={openCreate}><Plus size={15} /> Agregar</button>}
-            {plantilla && <button className="pl-import-btn" onClick={openImport}><Upload size={15} /> Importar CSV</button>}
           </div>
+        )}
+      </div>
+    </main>
 
-          {/* Contador: jugadores en cancha (basado en slots, NO en es_titular) */}
-          {plantilla && (
-            <div className="pl-tit-counter">
-              <div className="pl-tit-dots">
-                {Array.from({ length: 11 }).map((_, i) => (
-                  <div key={i} className={"pl-tit-dot" + (i < enCanchaCount ? " filled" : "")} />
-                ))}
-              </div>
-              <span className="pl-tit-label">{enCanchaCount}/11 en cancha</span>
-              <span className="pl-tit-hint">Usa el botón <ArrowLeftRight size={11} style={{ display: "inline", verticalAlign: "middle" }} /> para gestionar cambios</span>
-            </div>
-          )}
-
-          {!loading && equipos.length === 0 && (
-            <div className="pl-empty"><Shield size={40} /><p>No hay equipos en {curDiv?.label} Division</p><p>Crea equipos desde la seccion de Equipos primero</p></div>
-          )}
-
-          {plantilla?.equipo && (
-            <div className="pl-team-card">
-              <div className="pl-tc-logo">
-                {plantilla?.equipo.logo ? (
-                  <img src={API + plantilla?.equipo.logo} alt="" />
-                ) : (
-                  <div style={{ width: "100%", height: "100%" }} />
-                )}
-              </div>
-              <div className="pl-tc-info">
-                <h3>{plantilla?.equipo.nombre || "Sin nombre"}</h3>
-                <p>{[plantilla?.equipo.ciudad, plantilla?.equipo.estadio].filter(Boolean).join(" - ")}</p>
-              </div>
-              <div className="pl-tc-stats">
-                <div className="pl-tc-stat"><b>{total}</b><span>Jugadores</span></div>
-                <div className="pl-tc-div" />
-                <div className="pl-tc-stat"><b className="text-amber">{enCanchaCount}</b><span>En cancha</span></div>
-                <div className="pl-tc-div" />
-                <div className="pl-tc-stat"><b className="text-slate">{total - enCanchaCount}</b><span>Banca</span></div>
-              </div>
-            </div>
-          )}
-
-          {plantilla && total > 0 && (
-            <div className="pl-tabs">
-              <button className={"pl-tab" + (tab === "plantilla" ? " active" : "")} onClick={() => setTab("plantilla")}><Users size={14} /> Plantilla</button>
-              <button className={"pl-tab" + (tab === "formacion" ? " active" : "")} onClick={() => setTab("formacion")}><Target size={14} /> Formacion</button>
-            </div>
-          )}
-
-          {loading && <div className="pl-empty"><div className="pl-spinner" /><p>Cargando {curDiv?.label}...</p></div>}
-
-          {!loading && !plantilla && equipos.length > 0 && (
-            <div className="pl-empty"><Users size={40} /><p>Selecciona un equipo</p><p>Elige del menu desplegable para ver su plantilla</p></div>
-          )}
-
-          {/* TAB: PLANTILLA */}
-          {!loading && plantilla && tab === "plantilla" && (
-            total === 0 ? (
-              <div className="pl-empty"><p>Sin jugadores registrados</p><button className="pl-add-btn" onClick={openCreate}><Plus size={15} /> Agregar primero</button></div>
-            ) : (
-              <div>
-                {searchInput.trim() && (
-                  <div className="pl-filter-msg">{filteredCount > 0 ? filteredCount + " resultado" + (filteredCount !== 1 ? "s" : "") + " para " + searchInput : "Sin resultados para " + searchInput}</div>
-                )}
-                {Object.keys(catCfg).map(cat => (
-                  <PosSection key={cat} cat={cat} jugadores={groups[cat]} slotIds={slotIds} {...handlers} />
-                ))}
-              </div>
-            )
-          )}
-
-          {/* TAB: FORMACIÓN */}
-          {!loading && plantilla && tab === "formacion" && (
-            <div>
-              <div className="pl-fm-bar">
-                <div className="pl-fm-btns">
-                  {Object.keys(formations).map(f => (
-                    <button key={f} className={"pl-fm-btn" + (formacion === f ? " active" : "")} onClick={() => setFormacion(f)}>{f}</button>
-                  ))}
-                </div>
-                <button className="pl-save-btn" onClick={saveFormation} disabled={saving}><Save size={14} />{saving ? "..." : "Guardar"}</button>
-              </div>
-              <div className="pl-pitch">
-                <svg className="pl-pitch-svg" viewBox="0 0 680 1050" preserveAspectRatio="none">
-                  <line x1="0" y1="525" x2="680" y2="525" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
-                  <circle cx="340" cy="525" r="91" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
-                  <rect x="136" y="1" width="408" height="165" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
-                  <rect x="224" y="1" width="232" height="55" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
-                  <path d="M 248 165 A 91 91 0 0 0 432 165" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
-                  <rect x="136" y="884" width="408" height="165" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
-                  <rect x="224" y="994" width="232" height="55" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
-                  <path d="M 248 885 A 91 91 0 0 1 432 885" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
-                </svg>
-                {slots.map((slot) => {
-                  const s = slot.jugador;
-                  const pi = getPosInfo(s.posicion);
-                  return (
-                    <div
-                      key={slot.id}
-                      className="pl-pitch-player"
-                      style={{ left: slot.x + "%", top: slot.y + "%" }}
-                      onClick={() => openSwap(s)}
-                    >
-                      <div className="pl-pitch-dot" data-color={pi.color}>
-                        {s.foto ? <img src={API + s.foto} /> : <span>{s.numero_camiseta}</span>}
-                      </div>
-                      <div className="pl-pitch-name">{s.nombre}</div>
-                    </div>
-                  );
-                })}
-                {enCanchaCount < 11 && (
-                  <div className="pl-pitch-msg">{enCanchaCount}/11 — agrega más jugadores</div>
-                )}
-              </div>
-
-              {/* Suplentes clickeables */}
-              {suplentes.length > 0 && (
-                <div className="pl-subs-card">
-                  <h4 className="pl-subs-title">Banca ({suplentes.length}) — clic para gestionar cambio</h4>
-                  <div className="pl-subs-grid">
-                    {suplentes.map(s => {
-                      const pi = getPosInfo(s.posicion);
-                      return (
-                        <button key={s.id} className="pl-sub-item" data-color={pi.color} onClick={() => openSwap(s)}>
-                          <div className="pl-sub-photo">{s.foto ? <img src={API + s.foto} alt="" /> : <User size={14} />}</div>
-                          <div className="pl-sub-info">
-                            <span className="pl-sub-name">{s.nombre}</span>
-                            <span className="pl-sub-meta">#{s.numero_camiseta || "-"} · {pi.label}</span>
-                          </div>
-                          <ArrowLeftRight size={14} className="pl-sub-swap-ic" />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* ─────────────────────────────────────────────────────────────────────
+    {/* ─────────────────────────────────────────────────────────────────────
           MODAL DE CAMBIO (sin es_titular, usa slotIds)
       ──────────────────────────────────────────────────────────────────────── */}
-      {swapModal && swapPlayer && plantilla && (
-        <div className="pl-modal-bg" onClick={closeSwap}>
-          <div className="pl-modal pl-swap-modal" onClick={e => e.stopPropagation()}>
-            <div className="pl-modal-top">
-              <div>
-                <h3>Gestionar Cambio</h3>
-                <p className="pl-modal-sub">
-                  {swapMode === "salir"
-                    ? <><span style={{ color: "#f87171" }}>Sale:</span> <b>{swapPlayer.nombre}</b> — ¿quién entra?</>
-                    : <><span style={{ color: "#22d3ee" }}>Entra:</span> <b>{swapPlayer.nombre}</b> — ¿quién sale?</>
-                  }
-                </p>
+    {swapModal && swapPlayer && plantilla && (
+      <div className="pl-modal-bg" onClick={closeSwap}>
+        <div className="pl-modal pl-swap-modal" onClick={e => e.stopPropagation()}>
+          <div className="pl-modal-top">
+            <div>
+              <h3>Gestionar Cambio</h3>
+              <p className="pl-modal-sub">
+                {swapMode === "salir"
+                  ? <><span style={{ color: "#f87171" }}>Sale:</span> <b>{swapPlayer.nombre}</b> — ¿quién entra?</>
+                  : <><span style={{ color: "#22d3ee" }}>Entra:</span> <b>{swapPlayer.nombre}</b> — ¿quién sale?</>
+                }
+              </p>
+            </div>
+            <button className="pl-modal-x" onClick={closeSwap}><X size={18} /></button>
+          </div>
+
+          <div className="pl-modal-body">
+            {/* Jugador en foco */}
+            <div className={"pl-swap-focus " + (swapMode === "salir" ? "sale" : "entra")}>
+              <div className="pl-swap-focus-label">{swapMode === "salir" ? "SALE DEL CAMPO" : "ENTRA AL CAMPO"}</div>
+              <div className="pl-swap-focus-row">
+                <div className="pl-swap-photo lg">
+                  {swapPlayer.foto ? <img src={API + swapPlayer.foto} alt="" /> : <User size={22} />}
+                </div>
+                <div>
+                  <div className="pl-swap-name">{swapPlayer.nombre}</div>
+                  <div className="pl-swap-pos">{getPosInfo(swapPlayer.posicion).label} · #{swapPlayer.numero_camiseta || "-"}</div>
+                </div>
+                <ArrowLeftRight size={20} className="pl-swap-arrow-ic" />
               </div>
-              <button className="pl-modal-x" onClick={closeSwap}><X size={18} /></button>
             </div>
 
-            <div className="pl-modal-body">
-              {/* Jugador en foco */}
-              <div className={"pl-swap-focus " + (swapMode === "salir" ? "sale" : "entra")}>
-                <div className="pl-swap-focus-label">{swapMode === "salir" ? "SALE DEL CAMPO" : "ENTRA AL CAMPO"}</div>
-                <div className="pl-swap-focus-row">
-                  <div className="pl-swap-photo lg">
-                    {swapPlayer.foto ? <img src={API + swapPlayer.foto} alt="" /> : <User size={22} />}
-                  </div>
-                  <div>
-                    <div className="pl-swap-name">{swapPlayer.nombre}</div>
-                    <div className="pl-swap-pos">{getPosInfo(swapPlayer.posicion).label} · #{swapPlayer.numero_camiseta || "-"}</div>
-                  </div>
-                  <ArrowLeftRight size={20} className="pl-swap-arrow-ic" />
-                </div>
-              </div>
+            <div className="pl-swap-list-label">
+              {swapMode === "salir" ? "Elige quién entra ↓" : "Elige quién sale ↓"}
+            </div>
 
-              <div className="pl-swap-list-label">
-                {swapMode === "salir" ? "Elige quién entra ↓" : "Elige quién sale ↓"}
-              </div>
-
-              {/* Lista: usa slotIds en vez de es_titular */}
-              <div className="pl-swap-list">
-                {(swapMode === "salir"
-                  ? plantilla.jugadores.filter(j => !slotIds.has(j.id) && j.id !== swapPlayer.id)
-                  : plantilla.jugadores.filter(j => slotIds.has(j.id) && j.id !== swapPlayer.id)
-                ).map(j => {
-                  const pi = getPosInfo(j.posicion);
-                  return (
-                    <button key={j.id} className="pl-swap-row" onClick={() => executeSwap(j)}>
-                      <div className="pl-swap-photo sm">
-                        {j.foto ? <img src={API + j.foto} alt="" /> : <User size={14} />}
-                      </div>
-                      <div className="pl-swap-row-info">
-                        <span className="pl-swap-name">{j.nombre}</span>
-                        <span className="pl-swap-pos">{pi.label}</span>
-                      </div>
-                      <span className="pl-swap-dorsal" style={{ color: pi.color }}>#{j.numero_camiseta || "-"}</span>
-                      <span className="pl-swap-abbr" style={{ color: pi.color, borderColor: pi.color + "30", background: pi.color + "10" }}>{pi.abbr}</span>
-                    </button>
-                  );
-                })}
-                {(swapMode === "salir"
-                  ? plantilla.jugadores.filter(j => !slotIds.has(j.id) && j.id !== swapPlayer.id)
-                  : plantilla.jugadores.filter(j => slotIds.has(j.id) && j.id !== swapPlayer.id)
-                ).length === 0 && (
-                    <div className="pl-swap-empty">
-                      {swapMode === "salir" ? "No hay jugadores en banca" : "No hay otros jugadores en cancha"}
+            {/* Lista: usa slotIds en vez de es_titular */}
+            <div className="pl-swap-list">
+              {(swapMode === "salir"
+                ? plantilla.jugadores.filter(j => !slotIds.has(j.id) && j.id !== swapPlayer.id)
+                : plantilla.jugadores.filter(j => slotIds.has(j.id) && j.id !== swapPlayer.id)
+              ).map(j => {
+                const pi = getPosInfo(j.posicion);
+                return (
+                  <button key={j.id} className="pl-swap-row" onClick={() => executeSwap(j)}>
+                    <div className="pl-swap-photo sm">
+                      {j.foto ? <img src={API + j.foto} alt="" /> : <User size={14} />}
                     </div>
-                  )}
-              </div>
-            </div>
-
-            <div className="pl-modal-bottom" style={{ justifyContent: "flex-start" }}>
-              <button className="pl-cancel-btn" onClick={closeSwap}>Cancelar</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ─── MODAL IMPORT CSV ─────────────────────────────────────────────── */}
-      {importModal && (
-        <div className="pl-modal-bg" onClick={closeImport}>
-          <div className="pl-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 740 }}>
-            <div className="pl-modal-top">
-              <div><h3>Importar Jugadores</h3><p className="pl-modal-sub">Sube un archivo CSV o pega el texto</p></div>
-              <button className="pl-modal-x" onClick={closeImport}><X size={18} /></button>
-            </div>
-            <div className="pl-modal-body">
-              <div style={{ marginBottom: 16 }}>
-                <button className="pl-dl-btn" onClick={downloadTemplate}><Download size={13} /> Descargar plantilla CSV</button>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <label className="pl-upload-btn" style={{ justifyContent: "center", padding: "18px 24px", borderRadius: 14, borderStyle: "dashed" }}>
-                  <Upload size={16} /> Seleccionar archivo CSV
-                  <input type="file" accept=".csv,text/csv" onChange={e => {
-                    const f = e.target.files[0]; if (!f) return; setCsvFile(f);
-                    const reader = new FileReader();
-                    reader.onload = ev => { setCsvText(ev.target.result); parseCSVPreview(ev.target.result); };
-                    reader.readAsText(f);
-                  }} hidden />
-                </label>
-                <div style={{ textAlign: "center", fontSize: 11, color: "#334155" }}>o</div>
-                <textarea
-                  value={csvText}
-                  onChange={e => { setCsvText(e.target.value); if (e.target.value.trim()) parseCSVPreview(e.target.value); else setCsvPreview([]); }}
-                  placeholder="Pega aqui el contenido del CSV..."
-                  style={{ width: "100%", minHeight: 100, padding: 14, borderRadius: 12, border: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.015)", color: "#e2e8f0", fontSize: 11, fontFamily: "monospace", resize: "vertical", outline: "none", boxSizing: "border-box" }}
-                />
-              </div>
-              {csvFile && (
-                <div style={{ marginTop: 12, padding: "12px 16px", borderRadius: 12, background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.12)", display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#34d399", fontWeight: 600 }}>
-                  <Upload size={15} /> {csvFile.name}
-                  <button onClick={() => { setCsvFile(null); setCsvText(""); setCsvPreview([]); }} style={{ marginLeft: "auto", background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 12 }}>Quitar</button>
-                </div>
-              )}
-              {csvPreview.length > 0 && (
-                <div style={{ marginTop: 16 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, padding: "0 4px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                    <span style={{ fontSize: 11, color: "#475569", fontWeight: 700 }}>{csvPreview.length} fila{csvPreview.length !== 1 ? "s" : ""} por importar</span>
-                    <button onClick={() => { setCsvPreview([]); setCsvText(""); setCsvFile(null); }} style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: 11, textDecoration: "underline" }}>Limpiar</button>
-                  </div>
-                  <div style={{ maxHeight: 220, overflow: "auto", borderRadius: 10, border: "1px solid rgba(255,255,255,0.04)" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, fontFamily: "monospace" }}>
-                      <thead><tr style={{ background: "rgba(255,255,255,0.04)", position: "sticky", top: 0 }}>
-                        {["#", "Nombre", "Pos", "Original", "#", "Edad", "Nac", "PJ", "Gol", "Asis"].map((h, i) => (
-                          <th key={i} style={{ padding: "6px 8px", textAlign: "left", color: "#475569", fontWeight: 700 }}>{h}</th>
-                        ))}
-                      </tr></thead>
-                      <tbody>
-                        {csvPreview.map((r, i) => {
-                          const pi = getPosInfo(r.posicion);
-                          const wasChanged = r.posicion_original && r.posicion_original !== r.posicion;
-                          return (
-                            <tr key={i} style={{ background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)" }}>
-                              <td style={{ padding: "4px 8px", color: "#334155" }}>{i + 1}</td>
-                              <td style={{ padding: "4px 8px", color: "#e2e8f0", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.nombre}</td>
-                              <td style={{ padding: "4px 8px" }}>
-                                <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, fontWeight: 700, color: pi.color, background: pi.color + "15", border: "1px solid " + pi.color + "25" }}>{pi.abbr}</span>
-                              </td>
-                              <td style={{ padding: "4px 6px", color: wasChanged ? "#fbbf24" : "#334155", fontSize: 10 }}>
-                                {wasChanged ? <span title={"Normalizado de: " + r.posicion_original}>✎ {r.posicion_original}</span> : "—"}
-                              </td>
-                              <td style={{ padding: "4px 6px", textAlign: "center", color: "#64748b" }}>{r.numero_camiseta || "—"}</td>
-                              <td style={{ padding: "4px 6px", textAlign: "center", color: "#64748b" }}>{r.edad || "—"}</td>
-                              <td style={{ padding: "4px 6px", textAlign: "center", color: "#64748b", fontSize: 10 }}>{r.nacionalidad || "—"}</td>
-                              <td style={{ padding: "4px 6px", textAlign: "center", color: "#64748b" }}>{r.pj || "—"}</td>
-                              <td style={{ padding: "4px 6px", textAlign: "center", color: "#f87171", fontWeight: 700 }}>{r.goles || "—"}</td>
-                              <td style={{ padding: "4px 6px", textAlign: "center", color: "#60a5fa", fontWeight: 700 }}>{r.asistencias || "—"}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                <span style={{ fontSize: 11, color: "#334155" }}>Plantilla actual: {plantilla?.jugadores?.length || 0} jugadores</span>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button className="pl-cancel-btn" onClick={closeImport}>Cancelar</button>
-                  <button className="pl-save-btn" onClick={importPlayers} disabled={importing || csvPreview.length === 0}>
-                    <Upload size={14} />{importing ? "Importando..." : "Importar " + csvPreview.length}
+                    <div className="pl-swap-row-info">
+                      <span className="pl-swap-name">{j.nombre}</span>
+                      <span className="pl-swap-pos">{pi.label}</span>
+                    </div>
+                    <span className="pl-swap-dorsal" style={{ color: pi.color }}>#{j.numero_camiseta || "-"}</span>
+                    <span className="pl-swap-abbr" style={{ color: pi.color, borderColor: pi.color + "30", background: pi.color + "10" }}>{pi.abbr}</span>
                   </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ─── MODAL JUGADOR (SIN toggle titular/suplente) ──────────────────── */}
-      {modal === "player" && (
-        <div className="pl-modal-bg" onClick={() => setModal(null)}>
-          <div className="pl-modal" onClick={e => e.stopPropagation()}>
-            <div className="pl-modal-top">
-              <h3>{editPlayer ? "Editar Jugador" : "Nuevo Jugador"}</h3>
-              <button className="pl-modal-x" onClick={() => setModal(null)}><X size={18} /></button>
-            </div>
-            <div className="pl-modal-body">
-              <div className="pl-foto-area">
-                <div className="pl-foto-circle">{form.foto ? <img src={API + form.foto} alt="" /> : <User size={28} />}</div>
-                <label className="pl-upload-btn"><Plus size={12} /> Subir foto<input type="file" accept="image/*" onChange={handleFoto} hidden /></label>
-              </div>
-              <div className="pl-field">
-                <label>Nombre completo <span className="req">*</span></label>
-                <input className="pl-input" value={form.nombre} onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))} placeholder="Juan Perez" />
-              </div>
-              <div className="pl-field">
-                <label>Posicion</label>
-                <div className="pl-select-w">
-                  <select className="pl-input pl-select" value={form.posicion} onChange={e => setForm(f => ({ ...f, posicion: e.target.value }))}>
-                    {posGroups.map(g => (
-                      <optgroup key={g.label} label={g.label}>
-                        {g.items.map(p => <option key={p.value} value={p.value}>{p.label} ({p.abbr})</option>)}
-                      </optgroup>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="pl-row2">
-                <div className="pl-field">
-                  <label>Dorsal <span className="text-slate">(1-99)</span></label>
-                  <input className="pl-input" type="number" value={form.numero_camiseta} onChange={e => setForm(f => ({ ...f, numero_camiseta: e.target.value }))} placeholder="10" min="1" max="99" />
-                </div>
-                <div className="pl-field">
-                  <label>Edad <span className="text-slate">(16-50)</span></label>
-                  <input className="pl-input" type="number" value={form.edad} onChange={e => setForm(f => ({ ...f, edad: e.target.value }))} placeholder="20" min="16" max="50" />
-                </div>
-              </div>
-              <div className="pl-field">
-                <label>Nacionalidad</label>
-                <input className="pl-input" value={form.nacionalidad} onChange={e => setForm(f => ({ ...f, nacionalidad: e.target.value }))} placeholder="Salvadoreno" />
-              </div>
-              {/* SIN sección de titular/suplente */}
-            </div>
-            <div className="pl-modal-bottom">
-              <button className="pl-cancel-btn" onClick={() => setModal(null)}>Cancelar</button>
-              <button className="pl-save-btn" onClick={savePlayer} disabled={saving}><Save size={14} />{saving ? "..." : "Guardar"}</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ─── MODAL STATS ─────────────────────────────────────────────────── */}
-      {modal === "stats" && editStats && (
-        <div className="pl-modal-bg" onClick={() => setModal(null)}>
-          <div className="pl-modal pl-modal-stats" onClick={e => e.stopPropagation()}>
-            <div className="pl-modal-top">
-              <div><h3>Estadisticas</h3><p className="pl-modal-sub">{editStats.nombre} - {getPosInfo(editStats.posicion).label}</p></div>
-              <button className="pl-modal-x" onClick={() => setModal(null)}><X size={18} /></button>
-            </div>
-            <div className="pl-modal-body">
-              <div className="pl-stats-grid">
-                {(getPosInfo(editStats.posicion).cat === "portero" ? gkStatFields : statFields).map(f => (
-                  <div key={f.key} className="pl-stat-field">
-                    <label>{f.label}</label>
-                    <input className="pl-stat-input" type="number" min="0" value={statsForm[f.key] || 0}
-                      onChange={e => setStatsForm(s => ({ ...s, [f.key]: parseInt(e.target.value) || 0 }))} />
+                );
+              })}
+              {(swapMode === "salir"
+                ? plantilla.jugadores.filter(j => !slotIds.has(j.id) && j.id !== swapPlayer.id)
+                : plantilla.jugadores.filter(j => slotIds.has(j.id) && j.id !== swapPlayer.id)
+              ).length === 0 && (
+                  <div className="pl-swap-empty">
+                    {swapMode === "salir" ? "No hay jugadores en banca" : "No hay otros jugadores en cancha"}
                   </div>
-                ))}
-              </div>
+                )}
             </div>
-            <div className="pl-modal-bottom">
-              <button className="pl-cancel-btn" onClick={() => setModal(null)}>Cancelar</button>
-              <button className="pl-save-btn green" onClick={saveStats} disabled={saving}><Save size={14} />{saving ? "..." : "Guardar"}</button>
+          </div>
+
+          <div className="pl-modal-bottom" style={{ justifyContent: "flex-start" }}>
+            <button className="pl-cancel-btn" onClick={closeSwap}>Cancelar</button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* ─── MODAL IMPORT CSV ─────────────────────────────────────────────── */}
+    {importModal && (
+      <div className="pl-modal-bg" onClick={closeImport}>
+        <div className="pl-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 740 }}>
+          <div className="pl-modal-top">
+            <div><h3>Importar Jugadores</h3><p className="pl-modal-sub">Sube un archivo CSV o pega el texto</p></div>
+            <button className="pl-modal-x" onClick={closeImport}><X size={18} /></button>
+          </div>
+          <div className="pl-modal-body">
+            <div style={{ marginBottom: 16 }}>
+              <button className="pl-dl-btn" onClick={downloadTemplate}><Download size={13} /> Descargar plantilla CSV</button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <label className="pl-upload-btn" style={{ justifyContent: "center", padding: "18px 24px", borderRadius: 14, borderStyle: "dashed" }}>
+                <Upload size={16} /> Seleccionar archivo CSV
+                <input type="file" accept=".csv,text/csv" onChange={e => {
+                  const f = e.target.files[0]; if (!f) return; setCsvFile(f);
+                  const reader = new FileReader();
+                  reader.onload = ev => { setCsvText(ev.target.result); parseCSVPreview(ev.target.result); };
+                  reader.readAsText(f);
+                }} hidden />
+              </label>
+              <div style={{ textAlign: "center", fontSize: 11, color: "#334155" }}>o</div>
+              <textarea
+                value={csvText}
+                onChange={e => { setCsvText(e.target.value); if (e.target.value.trim()) parseCSVPreview(e.target.value); else setCsvPreview([]); }}
+                placeholder="Pega aqui el contenido del CSV..."
+                style={{ width: "100%", minHeight: 100, padding: 14, borderRadius: 12, border: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.015)", color: "#e2e8f0", fontSize: 11, fontFamily: "monospace", resize: "vertical", outline: "none", boxSizing: "border-box" }}
+              />
+            </div>
+            {csvFile && (
+              <div style={{ marginTop: 12, padding: "12px 16px", borderRadius: 12, background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.12)", display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#34d399", fontWeight: 600 }}>
+                <Upload size={15} /> {csvFile.name}
+                <button onClick={() => { setCsvFile(null); setCsvText(""); setCsvPreview([]); }} style={{ marginLeft: "auto", background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 12 }}>Quitar</button>
+              </div>
+            )}
+            {csvPreview.length > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, padding: "0 4px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <span style={{ fontSize: 11, color: "#475569", fontWeight: 700 }}>{csvPreview.length} fila{csvPreview.length !== 1 ? "s" : ""} por importar</span>
+                  <button onClick={() => { setCsvPreview([]); setCsvText(""); setCsvFile(null); }} style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: 11, textDecoration: "underline" }}>Limpiar</button>
+                </div>
+                <div style={{ maxHeight: 220, overflow: "auto", borderRadius: 10, border: "1px solid rgba(255,255,255,0.04)" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, fontFamily: "monospace" }}>
+                    <thead><tr style={{ background: "rgba(255,255,255,0.04)", position: "sticky", top: 0 }}>
+                      {["#", "Nombre", "Pos", "Original", "#", "Edad", "Nac", "PJ", "Gol", "Asis"].map((h, i) => (
+                        <th key={i} style={{ padding: "6px 8px", textAlign: "left", color: "#475569", fontWeight: 700 }}>{h}</th>
+                      ))}
+                    </tr></thead>
+                    <tbody>
+                      {csvPreview.map((r, i) => {
+                        const pi = getPosInfo(r.posicion);
+                        const wasChanged = r.posicion_original && r.posicion_original !== r.posicion;
+                        return (
+                          <tr key={i} style={{ background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)" }}>
+                            <td style={{ padding: "4px 8px", color: "#334155" }}>{i + 1}</td>
+                            <td style={{ padding: "4px 8px", color: "#e2e8f0", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.nombre}</td>
+                            <td style={{ padding: "4px 8px" }}>
+                              <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, fontWeight: 700, color: pi.color, background: pi.color + "15", border: "1px solid " + pi.color + "25" }}>{pi.abbr}</span>
+                            </td>
+                            <td style={{ padding: "4px 6px", color: wasChanged ? "#fbbf24" : "#334155", fontSize: 10 }}>
+                              {wasChanged ? <span title={"Normalizado de: " + r.posicion_original}>✎ {r.posicion_original}</span> : "—"}
+                            </td>
+                            <td style={{ padding: "4px 6px", textAlign: "center", color: "#64748b" }}>{r.numero_camiseta || "—"}</td>
+                            <td style={{ padding: "4px 6px", textAlign: "center", color: "#64748b" }}>{r.edad || "—"}</td>
+                            <td style={{ padding: "4px 6px", textAlign: "center", color: "#64748b", fontSize: 10 }}>{r.nacionalidad || "—"}</td>
+                            <td style={{ padding: "4px 6px", textAlign: "center", color: "#64748b" }}>{r.pj || "—"}</td>
+                            <td style={{ padding: "4px 6px", textAlign: "center", color: "#f87171", fontWeight: 700 }}>{r.goles || "—"}</td>
+                            <td style={{ padding: "4px 6px", textAlign: "center", color: "#60a5fa", fontWeight: 700 }}>{r.asistencias || "—"}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+              <span style={{ fontSize: 11, color: "#334155" }}>Plantilla actual: {plantilla?.jugadores?.length || 0} jugadores</span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="pl-cancel-btn" onClick={closeImport}>Cancelar</button>
+                <button className="pl-save-btn" onClick={importPlayers} disabled={importing || csvPreview.length === 0}>
+                  <Upload size={14} />{importing ? "Importando..." : "Importar " + csvPreview.length}
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
-      <style>{`
+    {/* ─── MODAL JUGADOR (SIN toggle titular/suplente) ──────────────────── */}
+    {modal === "player" && (
+      <div className="pl-modal-bg" onClick={() => setModal(null)}>
+        <div className="pl-modal" onClick={e => e.stopPropagation()}>
+          <div className="pl-modal-top">
+            <h3>{editPlayer ? "Editar Jugador" : "Nuevo Jugador"}</h3>
+            <button className="pl-modal-x" onClick={() => setModal(null)}><X size={18} /></button>
+          </div>
+          <div className="pl-modal-body">
+            <div className="pl-foto-area">
+              <div className="pl-foto-circle">{form.foto ? <img src={API + form.foto} alt="" /> : <User size={28} />}</div>
+              <label className="pl-upload-btn"><Plus size={12} /> Subir foto<input type="file" accept="image/*" onChange={handleFoto} hidden /></label>
+            </div>
+            <div className="pl-field">
+              <label>Nombre completo <span className="req">*</span></label>
+              <input className="pl-input" value={form.nombre} onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))} placeholder="Juan Perez" />
+            </div>
+            <div className="pl-field">
+              <label>Posicion</label>
+              <div className="pl-select-w">
+                <select className="pl-input pl-select" value={form.posicion} onChange={e => setForm(f => ({ ...f, posicion: e.target.value }))}>
+                  {posGroups.map(g => (
+                    <optgroup key={g.label} label={g.label}>
+                      {g.items.map(p => <option key={p.value} value={p.value}>{p.label} ({p.abbr})</option>)}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="pl-row2">
+              <div className="pl-field">
+                <label>Dorsal <span className="text-slate">(1-99)</span></label>
+                <input className="pl-input" type="number" value={form.numero_camiseta} onChange={e => setForm(f => ({ ...f, numero_camiseta: e.target.value }))} placeholder="10" min="1" max="99" />
+              </div>
+              <div className="pl-field">
+                <label>Edad <span className="text-slate">(16-50)</span></label>
+                <input className="pl-input" type="number" value={form.edad} onChange={e => setForm(f => ({ ...f, edad: e.target.value }))} placeholder="20" min="16" max="50" />
+              </div>
+            </div>
+            <div className="pl-field">
+              <label>Nacionalidad</label>
+              <input className="pl-input" value={form.nacionalidad} onChange={e => setForm(f => ({ ...f, nacionalidad: e.target.value }))} placeholder="Salvadoreno" />
+            </div>
+            {/* SIN sección de titular/suplente */}
+          </div>
+          <div className="pl-modal-bottom">
+            <button className="pl-cancel-btn" onClick={() => setModal(null)}>Cancelar</button>
+            <button className="pl-save-btn" onClick={savePlayer} disabled={saving}><Save size={14} />{saving ? "..." : "Guardar"}</button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* ─── MODAL STATS ─────────────────────────────────────────────────── */}
+    {modal === "stats" && editStats && (
+      <div className="pl-modal-bg" onClick={() => setModal(null)}>
+        <div className="pl-modal pl-modal-stats" onClick={e => e.stopPropagation()}>
+          <div className="pl-modal-top">
+            <div><h3>Estadisticas</h3><p className="pl-modal-sub">{editStats.nombre} - {getPosInfo(editStats.posicion).label}</p></div>
+            <button className="pl-modal-x" onClick={() => setModal(null)}><X size={18} /></button>
+          </div>
+          <div className="pl-modal-body">
+            <div className="pl-stats-grid">
+              {(getPosInfo(editStats.posicion).cat === "portero" ? gkStatFields : statFields).map(f => (
+                <div key={f.key} className="pl-stat-field">
+                  <label>{f.label}</label>
+                  <input className="pl-stat-input" type="number" min="0" value={statsForm[f.key] || 0}
+                    onChange={e => setStatsForm(s => ({ ...s, [f.key]: parseInt(e.target.value) || 0 }))} />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="pl-modal-bottom">
+            <button className="pl-cancel-btn" onClick={() => setModal(null)}>Cancelar</button>
+            <button className="pl-save-btn green" onClick={saveStats} disabled={saving}><Save size={14} />{saving ? "..." : "Guardar"}</button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    <style>{`
 .swal2-container{z-index:99999!important}
 .swal2-popup{z-index:99999!important}
 @keyframes plspin{to{transform:rotate(360deg)}}
@@ -1610,6 +1626,6 @@ button.nav-item{background:none;border:none;color:#94a3b8;font-family:inherit;wi
   .pl-tit-hint{display:none}
 }
       `}</style>
-    </div>
-  );
+  </div>
+);
 }
