@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff, AtSign } from "lucide-react";
+import { motion } from "framer-motion"; // <-- AÑADIDO
 
 export default function Login() {
     const navigate = useNavigate();
@@ -59,31 +60,61 @@ export default function Login() {
         }
     };
 
+    // --- CONFIGURACIÓN DE ANIMACIONES ---
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.08,
+                delayChildren: 0.2
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { 
+            opacity: 1, 
+            y: 0, 
+            transition: { duration: 0.5, ease: "easeOut" }
+        }
+    };
+
     return (
         <div className="login-page">
-            <button
+            
+            <motion.button
                 onClick={() => navigate("/")}
                 className="back-home"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
             >
                 <ArrowLeft size={20} />
                 Volver al inicio
-            </button>
+            </motion.button>
 
-            <div className="login-card">
-                <div className="login-logo">
+            <motion.div 
+                className="login-card"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+            >
+                <motion.div className="login-logo" variants={itemVariants}>
                     <img 
                         src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" 
                         alt="Logo Números y Fútbol" 
                         className="login-logo-img"
                     />
                     <span>Números y Fútbol</span>
-                </div>
+                </motion.div>
 
-                <h1 className="login-title">¡Bienvenido de vuelta!</h1>
-                <p className="login-subtitle">Inicia sesión con tu correo o apodo</p>
+                <motion.h1 className="login-title" variants={itemVariants}>¡Bienvenido de vuelta!</motion.h1>
+                <motion.p className="login-subtitle" variants={itemVariants}>Inicia sesión con tu correo o apodo</motion.p>
 
                 <form onSubmit={login}>
-                    <div className="input-group">
+                    <motion.div className="input-group" variants={itemVariants}>
                         {isEmail(usuario) ? <Mail className="input-icon" /> : <AtSign className="input-icon" />}
                         <input
                             type="text"
@@ -92,9 +123,9 @@ export default function Login() {
                             onChange={(e) => setUsuario(e.target.value.trim())}
                             required
                         />
-                    </div>
+                    </motion.div>
 
-                    <div className="input-group">
+                    <motion.div className="input-group" variants={itemVariants}>
                         <Lock className="input-icon" />
                         <input
                             type={showPassword ? "text" : "password"}
@@ -110,9 +141,12 @@ export default function Login() {
                         >
                             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                         </button>
-                    </div>
+                    </motion.div>
 
-                    <div style={{ textAlign: 'right', marginBottom: '16px' }}>
+                    <motion.div 
+                        style={{ textAlign: 'right', marginBottom: '16px' }} 
+                        variants={itemVariants}
+                    >
                         <a
                             href="/forgot-password"
                             onClick={(e) => {
@@ -123,18 +157,21 @@ export default function Login() {
                         >
                             ¿Olvidaste tu contraseña?
                         </a>
-                    </div>
+                    </motion.div>
 
-                    <button
+                    <motion.button
                         type="submit"
                         className="login-btn"
                         disabled={loading}
+                        variants={itemVariants}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                     >
                         {loading ? "Verificando..." : "Iniciar Sesión"}
-                    </button>
+                    </motion.button>
                 </form>
 
-                <p className="register-link">
+                <motion.p className="register-link" variants={itemVariants}>
                     ¿No tienes cuenta?{" "}
                     <a
                         href="/register"
@@ -145,8 +182,8 @@ export default function Login() {
                     >
                         Regístrate aquí
                     </a>
-                </p>
-            </div>
+                </motion.p>
+            </motion.div>
         </div>
     );
 }

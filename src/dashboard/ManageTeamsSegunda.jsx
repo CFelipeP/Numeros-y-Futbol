@@ -7,7 +7,7 @@ import 'animate.css';
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
-  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft
+  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, UploadCloud, CheckCircle2, Image as ImageIcon, Upload
 } from "lucide-react";
 
 const API = "http://localhost/Numeros-y-Futbol/backend/";
@@ -523,12 +523,12 @@ const ManageTeamsSegunda = () => {
                                 <div className="tm-logo-section">
                                     <div className="tm-logo-preview-wrap tm-logo-preview-green">
                                         {logoPreview ? <img src={logoPreview} alt="Preview" className="tm-logo-preview-img" /> : (
-                                            <div className="tm-logo-preview-empty"><Image size={32} style={{ color: '#1e293b' }} /><span style={{ fontSize: '11px', color: '#334155', marginTop: '4px' }}>Sin escudo</span></div>
+                                            <div className="tm-logo-preview-empty"><ImageIcon size={32} style={{ color: '#1e293b' }} /><span style={{ fontSize: '11px', color: '#334155', marginTop: '4px' }}>Sin escudo</span></div>
                                         )}
                                     </div>
                                     <div className="tm-upload-area">
                                         <input type="file" id="tm-logo-input-seg" accept="image/jpeg,image/png,image/jpg,image/webp,image/svg+xml" onChange={handleFileChange} />
-                                        <label htmlFor="tm-logo-input-seg" className="tm-upload-label tm-upload-green"><Upload size={18} /><span>{formLogo ? formLogo.name : "Seleccionar escudo"}</span></label>
+                                        <label htmlFor="tm-logo-input-seg" className="tm-upload-label tm-upload-green"><UploadCloud size={18} /><span>{formLogo ? formLogo.name : "Seleccionar escudo"}</span></label>
                                         <span className="tm-upload-hint">JPG, PNG, WEBP o SVG</span>
                                     </div>
                                     {formLogo && <button className="tm-remove-logo tm-remove-green" onClick={() => { setFormLogo(null); setLogoPreview(null); document.getElementById('tm-logo-input-seg').value = ''; }}>Quitar escudo</button>}
@@ -604,12 +604,12 @@ const ManageTeamsSegunda = () => {
                                 <div className="tm-logo-section">
                                     <div className="tm-logo-preview-wrap tm-logo-preview-green">
                                         {editLogoPreview ? <img src={editLogoPreview} alt="Preview" className="tm-logo-preview-img" onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=EQ&background=1e293b&color=475569&size=80&bold=true"; }} /> : (
-                                            <div className="tm-logo-preview-empty"><Image size={32} style={{ color: '#1e293b' }} /><span style={{ fontSize: '11px', color: '#334155', marginTop: '4px' }}>Sin escudo</span></div>
+                                            <div className="tm-logo-preview-empty"><ImageIcon size={32} style={{ color: '#1e293b' }} /><span style={{ fontSize: '11px', color: '#334155', marginTop: '4px' }}>Sin escudo</span></div>
                                         )}
                                     </div>
                                     <div className="tm-upload-area">
                                         <input type="file" id="tm-edit-logo-input-seg" accept="image/jpeg,image/png,image/jpg,image/webp,image/svg+xml" onChange={handleEditFileChange} />
-                                        <label htmlFor="tm-edit-logo-input-seg" className="tm-upload-label tm-upload-green"><Upload size={18} /><span>{editLogo ? editLogo.name : "Cambiar escudo"}</span></label>
+                                        <label htmlFor="tm-edit-logo-input-seg" className="tm-upload-label tm-upload-green"><UploadCloud size={18} /><span>{editLogo ? editLogo.name : "Cambiar escudo"}</span></label>
                                         <span className="tm-upload-hint">JPG, PNG, WEBP o SVG</span>
                                     </div>
                                     {editLogo && <button className="tm-remove-logo tm-remove-green" onClick={() => { setEditLogo(null); setEditLogoPreview(editingTeam.logo ? `${API}${editingTeam.logo}` : null); document.getElementById('tm-edit-logo-input-seg').value = ''; }}>Restaurar original</button>}

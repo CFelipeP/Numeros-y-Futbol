@@ -138,7 +138,7 @@ const Carousel = () => {
 
   const copies = Math.max(Math.ceil(16 / matches.length), 2) + 1;
   const display = Array.from({ length: copies }, () => matches).flat();
-  const duration = matches.length * 7;
+  const duration = matches.length * 3;
 
   return (
     <>
@@ -196,7 +196,7 @@ const Carousel = () => {
             animation: `carousel-scroll ${duration}s linear infinite`,
             willChange: "transform",
             display: "flex",
-            gap: 16,
+            gap: 18,
           }}>
             {display.map((match, idx) => {
               const isPending = match.estado === "Pendiente";
@@ -207,7 +207,7 @@ const Carousel = () => {
                 <div className="carousel-card" key={`m-${idx}`} style={{
                   background: "linear-gradient(160deg, #0d1117 0%, #111827 50%, #0f1319 100%)",
                   border: "1px solid #1a2233",
-                  borderRadius: 18,
+                  borderRadius: 20,
                   padding: "16px 18px 14px 18px",
                   minWidth: 260,
                   flexShrink: 0,
@@ -280,7 +280,7 @@ const Carousel = () => {
                         borderRadius: "50%",
                         border: "1px solid #1a2233",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        transition: "all 0.3s"
+                        transition: "all 0.9s"
                       }}>
                         {getLogoUrl(match.logo1) ? (
                           <img
@@ -357,7 +357,7 @@ const Carousel = () => {
                         borderRadius: "50%",
                         border: "1px solid #1a2233",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        transition: "all 0.3s"
+                        transition: "all 0.9s"
                       }}>
                         {getLogoUrl(match.logo2) ? (
                           <img

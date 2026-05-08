@@ -7,7 +7,9 @@ import 'animate.css';
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
-  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft
+  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft,
+  UploadCloud,
+  ImageIcon, CheckCircle2
 } from "lucide-react";
 
 const API = "http://localhost/Numeros-y-Futbol/backend/";
@@ -384,12 +386,12 @@ const ManageTeamsTercera = () => {
                                 <div className="tm-logo-section">
                                     <div className="tm-logo-preview-wrap tm-logo-preview-amber">
                                         {logoPreview ? <img src={logoPreview} alt="Preview" className="tm-logo-preview-img" /> : (
-                                            <div className="tm-logo-preview-empty"><Image size={32} style={{ color: '#1e293b' }} /><span style={{ fontSize: '11px', color: '#334155', marginTop: '4px' }}>Sin escudo</span></div>
+                                            <div className="tm-logo-preview-empty"><ImageIcon size={32} style={{ color: '#1e293b' }} /><span style={{ fontSize: '11px', color: '#334155', marginTop: '4px' }}>Sin escudo</span></div>
                                         )}
                                     </div>
                                     <div className="tm-upload-area">
                                         <input type="file" id="tm-logo-input-ter" accept="image/jpeg,image/png,image/jpg,image/webp,image/svg+xml" onChange={handleFileChange} />
-                                        <label htmlFor="tm-logo-input-ter" className="tm-upload-label tm-upload-amber"><Upload size={18} /><span>{formLogo ? formLogo.name : "Seleccionar escudo"}</span></label>
+                                        <label htmlFor="tm-logo-input-ter" className="tm-upload-label tm-upload-amber"><UploadCloud size={18} /><span>{formLogo ? formLogo.name : "Seleccionar escudo"}</span></label>
                                         <span className="tm-upload-hint">JPG, PNG, WEBP o SVG</span>
                                     </div>
                                     {formLogo && <button className="tm-remove-logo tm-remove-amber" onClick={() => { setFormLogo(null); setLogoPreview(null); document.getElementById('tm-logo-input-ter').value = ''; }}>Quitar escudo</button>}
@@ -440,7 +442,7 @@ const ManageTeamsTercera = () => {
                                     </div>
                                     <div className="tm-upload-area">
                                         <input type="file" id="tm-edit-logo-input-ter" accept="image/jpeg,image/png,image/jpg,image/webp,image/svg+xml" onChange={handleEditFileChange} />
-                                        <label htmlFor="tm-edit-logo-input-ter" className="tm-upload-label tm-upload-amber"><Upload size={18} /><span>{editLogo ? editLogo.name : "Cambiar escudo"}</span></label>
+                                        <label htmlFor="tm-edit-logo-input-ter" className="tm-upload-label tm-upload-amber"><UploadCloud size={18} /><span>{editLogo ? editLogo.name : "Cambiar escudo"}</span></label>
                                         <span className="tm-upload-hint">JPG, PNG, WEBP o SVG</span>
                                     </div>
                                     {editLogo && <button className="tm-remove-logo tm-remove-amber" onClick={() => { setEditLogo(null); setEditLogoPreview(editingTeam.logo ? `${API}${editingTeam.logo}` : null); document.getElementById('tm-edit-logo-input-ter').value = ''; }}>Restaurar original</button>}

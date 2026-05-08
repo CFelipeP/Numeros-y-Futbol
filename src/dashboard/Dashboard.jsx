@@ -159,6 +159,7 @@ const AdminDashboard = () => {
       },
       { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
       { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
+      { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
       { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
       { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
       { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },

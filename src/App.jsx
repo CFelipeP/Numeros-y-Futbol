@@ -14,12 +14,14 @@ import Settings from "./dashboard/Settings"; // <--- NUEVO IMPORT
 import Primera from "./Divisiones/Primera";
 import Tercera from "./Divisiones/Tercera";
 import Segunda from "./Divisiones/Segunda";
+import CopaPresidente from "./Divisiones/CopaPresidente";
 import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
 import ScrollToTop from "./components/ScrollToTop";
 import ManagePublicNews from "./dashboard/ManagePublicNews";
 import AdminPosiciones from "./dashboard/AdminPosiciones";
 import PlantillaEquipos from "./dashboard/PlantillaEquipos";
+import Admincopa from "./dashboard/Admincoppresidente";
 import ForgotPassword from "./pages/ForgotPassword";
 
 // Dentro de <Routes>:
@@ -42,7 +44,9 @@ function App() {
         <Route path="/noticia/:id" element={<NewsDetail />} />
         <Route path="/mynews" element={<ManagePublicNews />} />
         <Route path="/posiciones" element={<AdminPosiciones />} />
+        <Route path="/copa-presidente" element={<CopaPresidente />} />
         <Route path="/teams/primera" element={<ManageTeams />} />
+        <Route path="/admin/copa" element={<Admincopa />} />
         <Route path="/teams/segunda" element={<ManageTeamsSegunda />} />
         <Route path="/teams/tercera" element={<ManageTeamsTercera />} />
         <Route path="/segunda" element={<Segunda />} />
