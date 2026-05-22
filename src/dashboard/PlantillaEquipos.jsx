@@ -219,22 +219,24 @@ function autoAssign(jugadores, fKey) {
 
 // ─── Nav ──────────────────────────────────────────────────────────────────────
 const navItems = [
-  { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
-  { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
-  { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
-  {
-    type: "dropdown", icon: <Shield size={20} />, label: "Equipos", children: [
-      { path: "/teams/primera", label: "Primera Division" },
-      { path: "/teams/segunda", label: "Segunda Division" },
-      { path: "/teams/tercera", label: "Tercera Division" },
-    ]
-  },
-  { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
-  { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
-  { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Publicas" },
-  { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
-  { path: "/settings", icon: <Settings size={20} />, label: "Configuracion" },
-];
+      { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+      { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
+      { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
+      {
+        type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
+        children: [
+          { path: "/teams/primera", label: "Primera División" },
+          { path: "/teams/segunda", label: "Segunda División" },
+          { path: "/teams/tercera", label: "Tercera División" },
+        ]
+      },
+      { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
+      { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
+      { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
+      { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
+      { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
+      { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+    ];
 
 // ─── TeamSelect ───────────────────────────────────────────────────────────────
 const TeamSelect = memo(function TeamSelect({ equipos, value, onChange }) {

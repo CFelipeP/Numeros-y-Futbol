@@ -164,7 +164,7 @@ const FeaturedMatchCard = ({ match }) => {
   );
 };
 
-// ================= CONSTANTES (iguales al admin) =================
+// ================= CONSTANTES =================
 const posiciones = [
   { value: "portero", label: "Portero", cat: "portero", color: "#f59e0b", abbr: "POR" }, { value: "lateral_izquierdo", label: "Lateral Izquierdo", cat: "defensa", color: "#60a5fa", abbr: "LI" },
   { value: "lateral_derecho", label: "Lateral Derecho", cat: "defensa", color: "#60a5fa", abbr: "LD" }, { value: "central", label: "Central", cat: "defensa", color: "#3b82f6", abbr: "DFC" },
@@ -193,7 +193,6 @@ function getPosInfo(v) {
   return { label: v || "?", cat: "delantero", color: "#64748b", abbr: "??" };
 }
 
-// Formaciones completas
 const formations = {
   "4-4-2": [{ sp: "portero", sc: "portero", x: 50, y: 90 }, { sp: "lateral_izquierdo", sc: "defensa", x: 12, y: 70 }, { sp: "central", sc: "defensa", x: 36, y: 74 }, { sp: "central", sc: "defensa", x: 64, y: 74 }, { sp: "lateral_derecho", sc: "defensa", x: 88, y: 70 }, { sp: "extremo_izquierdo", sc: "medio", x: 18, y: 48 }, { sp: "medio_central", sc: "medio", x: 40, y: 46 }, { sp: "medio_central", sc: "medio", x: 60, y: 46 }, { sp: "extremo_derecho", sc: "medio", x: 82, y: 48 }, { sp: "centrodelantero", sc: "delantero", x: 36, y: 22 }, { sp: "centrodelantero", sc: "delantero", x: 64, y: 22 }],
   "4-3-3": [{ sp: "portero", sc: "portero", x: 50, y: 90 }, { sp: "lateral_izquierdo", sc: "defensa", x: 12, y: 70 }, { sp: "central", sc: "defensa", x: 36, y: 74 }, { sp: "central", sc: "defensa", x: 64, y: 74 }, { sp: "lateral_derecho", sc: "defensa", x: 88, y: 70 }, { sp: "medio_defensivo", sc: "medio", x: 28, y: 48 }, { sp: "medio_central", sc: "medio", x: 50, y: 44 }, { sp: "medio_defensivo", sc: "medio", x: 72, y: 48 }, { sp: "extremo_izquierdo", sc: "medio", x: 18, y: 22 }, { sp: "centrodelantero", sc: "delantero", x: 50, y: 18 }, { sp: "extremo_derecho", sc: "medio", x: 82, y: 22 }],
@@ -203,7 +202,6 @@ const formations = {
   "3-4-3": [{ sp: "portero", sc: "portero", x: 50, y: 90 }, { sp: "central", sc: "defensa", x: 25, y: 74 }, { sp: "central", sc: "defensa", x: 50, y: 76 }, { sp: "central", sc: "defensa", x: 75, y: 74 }, { sp: "extremo_izquierdo", sc: "medio", x: 12, y: 50 }, { sp: "medio_central", sc: "medio", x: 38, y: 48 }, { sp: "medio_central", sc: "medio", x: 62, y: 48 }, { sp: "extremo_derecho", sc: "medio", x: 88, y: 50 }, { sp: "extremo_izquierdo", sc: "medio", x: 18, y: 22 }, { sp: "centrodelantero", sc: "delantero", x: 50, y: 18 }, { sp: "extremo_derecho", sc: "medio", x: 82, y: 22 }],
 };
 
-// ✅ ACTUALIZADO: Prioriza jugadores marcados como titulares (es_titular) desde el admin
 function autoAssign(jugadores, fKey) {
   const tpl = formations[fKey];
   if (!tpl || !jugadores?.length) return { starters: [], subs: [...jugadores] };
@@ -211,24 +209,9 @@ function autoAssign(jugadores, fKey) {
   const sorted = [...jugadores].sort((a, b) => (isTit(b) ? 1 : 0) - (isTit(a) ? 1 : 0));
   const used = new Set(), starters = [], filled = new Set();
   const pick = (fn) => sorted.find(j => fn(j) && !used.has(j.id));
-  // Paso 1: Posición compatible exacta
-  for (let i = 0; i < tpl.length; i++) {
-    const s = tpl[i], compat = posCompat[s.sp] || [s.sp];
-    const p = pick(j => compat.includes(j.posicion));
-    if (p) { starters.push({ ...p, px: s.x, py: s.y }); used.add(p.id); filled.add(i); }
-  }
-  // Paso 2: Misma categoría (portero/defensa/medio/delantero)
-  for (let i = 0; i < tpl.length; i++) {
-    if (filled.has(i)) continue;
-    const s = tpl[i], p = pick(j => getPosInfo(j.posicion).cat === s.sc);
-    if (p) { starters.push({ ...p, px: s.x, py: s.y }); used.add(p.id); filled.add(i); }
-  }
-  // Paso 3: Cualquiera
-  for (let i = 0; i < tpl.length; i++) {
-    if (filled.has(i)) continue;
-    const slot = tpl[i], p = pick(() => true);
-    if (p) { starters.push({ ...p, px: slot.x, py: slot.y }); used.add(p.id); filled.add(i); }
-  }
+  for (let i = 0; i < tpl.length; i++) { const s = tpl[i], compat = posCompat[s.sp] || [s.sp]; const p = pick(j => compat.includes(j.posicion)); if (p) { starters.push({ ...p, px: s.x, py: s.y }); used.add(p.id); filled.add(i); } }
+  for (let i = 0; i < tpl.length; i++) { if (filled.has(i)) continue; const s = tpl[i], p = pick(j => getPosInfo(j.posicion).cat === s.sc); if (p) { starters.push({ ...p, px: s.x, py: s.y }); used.add(p.id); filled.add(i); } }
+  for (let i = 0; i < tpl.length; i++) { if (filled.has(i)) continue; const slot = tpl[i], p = pick(() => true); if (p) { starters.push({ ...p, px: slot.x, py: slot.y }); used.add(p.id); filled.add(i); } }
   return { starters, subs: jugadores.filter(j => !used.has(j.id)) };
 }
 
@@ -240,9 +223,9 @@ const PublicPlayerRow = ({ j }) => {
       <div className="pv-row-num" style={{ background: `${pi.color}15`, color: pi.color }}>{j.numero_camiseta || "–"}</div>
       <div className="pv-row-photo">{j.foto ? <img src={logoUrl(j.foto)} alt="" /> : <div className="pv-photo-placeholder"><IconShield /></div>}</div>
       <div className="pv-row-info"><span className="pv-row-name">{j.nombre}</span><span className="pv-row-meta">{[j.edad && `${j.edad} años`, j.nacionalidad].filter(Boolean).join(" · ")}</span></div>
-      <span className="pv-row-pos" style={{ color: pi.color, borderColor: `${pi.color}30`, background: `${pi.color}0a` }} title={pi.label}>{pi.abbr}</span>
-      <div className="pv-row-stats">{isGK ? (<><b style={{ color: "#f59e0b" }}>{j.goles_recibidos || 0}</b><small>GR</small><b style={{ color: "#10b981" }}>{j.vaya_invicta || 0}</b><small>VI</small></>) : (<><b style={{ color: "#ef4444" }}>{j.goles || 0}</b><small>G</small><b style={{ color: "#3b82f6" }}>{j.asistencias || 0}</b><small>A</small></>)}</div>
-      <span className="pv-row-pj">{j.pj || 0} <small>PJ</small></span>
+      <span className="pv-row-pos pv-m-hide" style={{ color: pi.color, borderColor: `${pi.color}30`, background: `${pi.color}0a` }} title={pi.label}>{pi.abbr}</span>
+      <div className="pv-row-stats pv-m-hide">{isGK ? (<><b style={{ color: "#f59e0b" }}>{j.goles_recibidos || 0}</b><small>GR</small><b style={{ color: "#10b981" }}>{j.vaya_invicta || 0}</b><small>VI</small></>) : (<><b style={{ color: "#ef4444" }}>{j.goles || 0}</b><small>G</small><b style={{ color: "#3b82f6" }}>{j.asistencias || 0}</b><small>A</small></>)}</div>
+      <span className="pv-row-pj pv-m-hide">{j.pj || 0} <small>PJ</small></span>
     </div>
   );
 };
@@ -262,44 +245,29 @@ const PublicPosGroup = ({ cat, jugadores }) => {
 };
 
 const PublicTeamView = ({ teamData, viewTab, setViewTab }) => {
-  // Formación viene del admin, NO se puede cambiar
   const formacion = teamData?.equipo?.formacion || "4-4-2";
   const jugadores = teamData?.jugadores || [];
   const { starters, subs } = useMemo(() => {
-  const hayPosiciones = jugadores.some(j => j.pos_x !== null && j.pos_y !== null);
-
-  if (hayPosiciones) {
-    const startersDB = jugadores
-      .filter(j => j.pos_x !== null && j.pos_y !== null)
-      .map(j => ({
-        ...j,
-        px: j.pos_x,
-        py: j.pos_y
-      }));
-
-    const usados = new Set(startersDB.map(j => j.id));
-    const suplentes = jugadores.filter(j => !usados.has(j.id));
-
-    return { starters: startersDB, subs: suplentes };
-  }
-
-  return autoAssign(jugadores, formacion);
-}, [jugadores, formacion]);
+    const hayPosiciones = jugadores.some(j => j.pos_x !== null && j.pos_y !== null);
+    if (hayPosiciones) {
+      const startersDB = jugadores.filter(j => j.pos_x !== null && j.pos_y !== null).map(j => ({ ...j, px: j.pos_x, py: j.pos_y }));
+      const usados = new Set(startersDB.map(j => j.id));
+      return { starters: startersDB, subs: jugadores.filter(j => !usados.has(j.id)) };
+    }
+    return autoAssign(jugadores, formacion);
+  }, [jugadores, formacion]);
 
   const groups = useMemo(() => {
-  const all = { portero: [], defensa: [], medio: [], delantero: [] };
-
-  jugadores.forEach(j => {
-    let pos = (j.posicion || "").toLowerCase();
-
-    if (pos.includes("port")) all.portero.push(j);
-    else if (pos.includes("def")) all.defensa.push(j);
-    else if (pos.includes("medio") || pos.includes("centro")) all.medio.push(j);
-    else if (pos.includes("del")) all.delantero.push(j);
-  });
-
-  return all;
-}, [jugadores]);
+    const all = { portero: [], defensa: [], medio: [], delantero: [] };
+    jugadores.forEach(j => {
+      let pos = (j.posicion || "").toLowerCase();
+      if (pos.includes("port")) all.portero.push(j);
+      else if (pos.includes("def")) all.defensa.push(j);
+      else if (pos.includes("medio") || pos.includes("centro")) all.medio.push(j);
+      else if (pos.includes("del")) all.delantero.push(j);
+    });
+    return all;
+  }, [jugadores]);
   const totalGoles = useMemo(() => jugadores.reduce((s, j) => s + (j.goles || 0), 0), [jugadores]);
   const totalAsistencias = useMemo(() => jugadores.reduce((s, j) => s + (j.asistencias || 0), 0), [jugadores]);
   const avgAge = useMemo(() => { const a = jugadores.filter(j => j.edad).map(j => j.edad); return a.length ? (a.reduce((x, y) => x + y, 0) / a.length).toFixed(1) : "–"; }, [jugadores]);
@@ -307,7 +275,6 @@ const PublicTeamView = ({ teamData, viewTab, setViewTab }) => {
   return (
     <div className="pv-team-page">
       <button className="pv-back-btn" onClick={() => window.location.hash = "equipos"}><IconChevronLeft /> Volver a Equipos</button>
-
       <div className="pv-hero-card">
         <div className="pv-hero-bg-pattern" />
         <div className="pv-hero-content">
@@ -329,23 +296,19 @@ const PublicTeamView = ({ teamData, viewTab, setViewTab }) => {
           </div>
         </div>
       </div>
-
       <div className="pv-tabs-bar">
         <button className={`pv-tab-btn${viewTab === "plantilla" ? " active" : ""}`} onClick={() => setViewTab("plantilla")}><IconUsers /> Plantilla</button>
         <button className={`pv-tab-btn${viewTab === "formacion" ? " active" : ""}`} onClick={() => setViewTab("formacion")}><IconTarget /> Formación</button>
       </div>
-
       {viewTab === "plantilla" && (
         <div className="pv-roster-wrap">{Object.keys(catCfg).map(cat => <PublicPosGroup key={cat} cat={cat} jugadores={groups[cat]} />)}</div>
       )}
-
       {viewTab === "formacion" && (
         <div className="pv-fm-section">
           <div className="pv-fm-locked">
             <span className="pv-fm-badge">{formacion}</span>
-            <span className="pv-fm-locked-label">Formación predetereminada</span>
+            <span className="pv-fm-locked-label">Formación predeterminada</span>
           </div>
-
           <div className="pv-pitch-wrap">
             <div className="pv-pitch">
               <svg className="pv-pitch-svg" viewBox="0 0 680 1050" preserveAspectRatio="none">
@@ -382,7 +345,6 @@ const PublicTeamView = ({ teamData, viewTab, setViewTab }) => {
               {starters.length < 11 && <div className="pv-pitch-empty"><p>Faltan jugadores</p><span>{starters.length}/11 titulares</span></div>}
             </div>
           </div>
-
           {subs.length > 0 && (
             <div className="pv-subs-card">
               <h4 className="pv-subs-title"><span className="pv-subs-bench-icon">🪑</span> Suplentes <span>{subs.length}</span></h4>
@@ -393,7 +355,7 @@ const PublicTeamView = ({ teamData, viewTab, setViewTab }) => {
                     <div key={s.id} className="pv-sub-card" style={{ borderLeftColor: pi.color }}>
                       <div className="pv-sub-avatar">{s.foto ? <img src={logoUrl(s.foto)} alt="" /> : <div className="pv-sub-avatar-empty"><IconShield /></div>}</div>
                       <div className="pv-sub-details"><span className="pv-sub-name">{s.nombre}</span><span className="pv-sub-meta-row"><span className="pv-sub-number" style={{ color: pi.color }}>#{s.numero_camiseta || "–"}</span><span className="pv-sub-pos-label" style={{ color: pi.color, background: `${pi.color}10`, borderColor: `${pi.color}20` }}>{pi.abbr}</span>{s.edad && <span className="pv-sub-age">{s.edad}a</span>}</span></div>
-                      <div className="pv-sub-mini-stats">{pi.cat === "portero" ? (<><span style={{ color: "#f59e0b" }}>{s.goles_recibidos || 0}<small>GR</small></span><span style={{ color: "#10b981" }}>{s.vaya_invicta || 0}<small>VI</small></span></>) : (<><span style={{ color: "#ef4444" }}>{s.goles || 0}<small>G</small></span><span style={{ color: "#3b82f6" }}>{s.asistencias || 0}<small>A</small></span></>)}</div>
+                      <div className="pv-sub-mini-stats pv-m-hide">{pi.cat === "portero" ? (<><span style={{ color: "#f59e0b" }}>{s.goles_recibidos || 0}<small>GR</small></span><span style={{ color: "#10b981" }}>{s.vaya_invicta || 0}<small>VI</small></span></>) : (<><span style={{ color: "#ef4444" }}>{s.goles || 0}<small>G</small></span><span style={{ color: "#3b82f6" }}>{s.asistencias || 0}<small>A</small></span></>)}</div>
                     </div>
                   );
                 })}
@@ -469,13 +431,13 @@ export default function PrimeraDivision() {
   return (
     <>
       <Header />
-      <section className="table-section" style={{ paddingBottom: 0 }}>
+      <section className="table-section pd-section-m" style={{ paddingBottom: 0 }}>
         <div className="container" style={{ marginBottom: "1.5rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}><IconTrophy /><h2 style={{ fontFamily: "var(--font-heading)", fontSize: "2rem", fontWeight: 800, textTransform: "uppercase", margin: 0, background: "linear-gradient(90deg, #fff, var(--color-accent))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Primera División</h2></div>
-          <p style={{ color: "var(--color-text-muted)", fontSize: "1rem", margin: 0, paddingLeft: "1.8rem" }}>Clasificación general, equipos y partido destacado de la Liga Mayor</p>
+          <div className="pd-page-title-row" style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}><IconTrophy /><h2 style={{ fontFamily: "var(--font-heading)", fontSize: "2rem", fontWeight: 800, textTransform: "uppercase", margin: 0, background: "linear-gradient(90deg, #fff, var(--color-accent))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Primera División</h2></div>
+          <p className="pd-page-subtitle" style={{ color: "var(--color-text-muted)", fontSize: "1rem", margin: 0, paddingLeft: "1.8rem" }}>Clasificación general, equipos y partido destacado de la Liga Mayor</p>
         </div>
         <div className="container" style={{ marginBottom: "2rem" }}>
-          <div style={{ display: "flex", gap: "0.5rem", background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 4, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <div className="pd-main-tabs" style={{ display: "flex", gap: "0.5rem", background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 4, border: "1px solid rgba(255,255,255,0.05)" }}>
             {[{ key: "clasificacion", label: "Clasificación", icon: "📊" }, { key: "equipos", label: "Equipos", icon: "🛡️" }].map(tab => (
               <button key={tab.key} onClick={() => changeTab(tab.key)} style={{ flex: 1, padding: "0.75rem 1rem", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.85rem", letterSpacing: "0.5px", textTransform: "uppercase", background: activeTab === tab.key ? "linear-gradient(135deg, rgba(255,0,77,0.2), rgba(255,0,77,0.08))" : "transparent", color: activeTab === tab.key ? "var(--color-accent)" : "var(--color-text-muted)", boxShadow: activeTab === tab.key ? "0 0 15px rgba(255,0,77,0.15)" : "none", transition: "all 0.3s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}><span>{tab.icon}</span>{tab.label}</button>
             ))}
@@ -483,26 +445,26 @@ export default function PrimeraDivision() {
         </div>
 
         {activeTab === "clasificacion" && !expandedTeam && (
-          <div className="dashboard-grid">
-            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-              <div>{match && match.home_name ? <FeaturedMatchCard match={match} /> : <div className="glass-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}><div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}><span style={{ fontSize: "1.5rem", opacity: 0.3 }}>⚽</span></div><p style={{ fontSize: "0.9rem", margin: "0 0 0.3rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Sin partido destacado</p><p style={{ fontSize: "0.75rem", margin: 0, color: "rgba(255,255,255,0.25)" }}>Se mostrará cuando se configure desde el panel</p></div>}</div>
-              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", boxShadow: "0 0 8px #f59e0b", display: "inline-block" }} />Próximo Partido</div>{sidebar.next ? (<div style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(30,41,59,0.4) 100%)", border: "1px solid rgba(245,158,11,0.12)", borderRadius: 16, padding: "1.5rem 1.2rem" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}><span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#f59e0b", background: "rgba(245,158,11,0.12)", padding: "0.2rem 0.6rem", borderRadius: 6 }}>{getMatchStatus(sidebar.next.estado || sidebar.next.status).text}</span></div><div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0 }}><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}><img src={logoUrl(sidebar.next.home_logo || sidebar.next.local_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sidebar.next.home_name || sidebar.next.local_nombre}</span></div><div style={{ flexShrink: 0 }}><span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--color-text-muted)", background: "rgba(255,255,255,0.04)", padding: "0.35rem 0.7rem", borderRadius: 8, letterSpacing: "1px" }}>VS</span></div><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0, justifyContent: "flex-end" }}><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{sidebar.next.away_name || sidebar.next.visitante_nombre}</span><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}><img src={logoUrl(sidebar.next.away_logo || sidebar.next.visitante_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div></div></div>{sidebar.next.fecha && <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.8rem", marginTop: "1rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><IconCalendar /> {sidebar.next.fecha}</div>}</div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📅</div><p style={{ fontSize: "0.85rem", margin: 0, fontWeight: 600 }}>No hay partidos pendientes</p></div>)}</div>
+          <div className="dashboard-grid pd-dashboard-m">
+            <div className="pd-sidebar-col-m" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+              <div className="pd-featured-wrap">{match && match.home_name ? <FeaturedMatchCard match={match} /> : <div className="glass-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}><div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}><span style={{ fontSize: "1.5rem", opacity: 0.3 }}>⚽</span></div><p style={{ fontSize: "0.9rem", margin: "0 0 0.3rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Sin partido destacado</p><p style={{ fontSize: "0.75rem", margin: 0, color: "rgba(255,255,255,0.25)" }}>Se mostrará cuando se configure desde el panel</p></div>}</div>
+              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", boxShadow: "0 0 8px #f59e0b", display: "inline-block" }} />Próximo Partido</div>{sidebar.next ? (<div style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(30,41,59,0.4) 100%)", border: "1px solid rgba(245,158,11,0.12)", borderRadius: 16, padding: "1.5rem 1.2rem" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}><span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#f59e0b", background: "rgba(245,158,11,0.12)", padding: "0.2rem 0.6rem", borderRadius: 6 }}>{getMatchStatus(sidebar.next.estado || sidebar.next.status).text}</span></div><div className="pd-next-teams-m" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0 }}><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}><img src={logoUrl(sidebar.next.home_logo || sidebar.next.local_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sidebar.next.home_name || sidebar.next.local_nombre}</span></div><div style={{ flexShrink: 0 }}><span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--color-text-muted)", background: "rgba(255,255,255,0.04)", padding: "0.35rem 0.7rem", borderRadius: 8, letterSpacing: "1px" }}>VS</span></div><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0, justifyContent: "flex-end" }}><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{sidebar.next.away_name || sidebar.next.visitante_nombre}</span><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}><img src={logoUrl(sidebar.next.away_logo || sidebar.next.visitante_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div></div></div>{sidebar.next.fecha && <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.8rem", marginTop: "1rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><IconCalendar /> {sidebar.next.fecha}</div>}</div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📅</div><p style={{ fontSize: "0.85rem", margin: 0, fontWeight: 600 }}>No hay partidos pendientes</p></div>)}</div>
               <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981", display: "inline-block" }} />Últimos Resultados de la jornada</div>{sidebar.recent && sidebar.recent.length > 0 ? (<div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>{sidebar.recent.map(m => (<div key={m.id}><ResultRow m={m} />{m.fecha && <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", paddingLeft: "0.8rem", paddingTop: "0.15rem", paddingBottom: "0.3rem", fontSize: "0.65rem", color: "rgba(255,255,255,0.25)" }}><IconClock /> {m.fecha}</div>}</div>))}</div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📋</div><p style={{ fontSize: "0.85rem", margin: 0 }}>No hay resultados aún</p></div>)}</div>
               <div className="glass-card" style={{ padding: "1.5rem" }}><div className="section-subtitle" style={{ marginTop: 0, fontSize: "0.85rem" }}>Leyenda</div><div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>{[{ color: "#10b981", label: "Clasificación a Liga Concacaf" }, { color: "#f59e0b", label: "Playoffs / Repechaje" }, { color: "#ef4444", label: "Descenso directo" }].map((item, i) => (<div key={i} style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}><span style={{ width: 10, height: 10, borderRadius: 2, background: item.color, flexShrink: 0, boxShadow: `0 0 6px ${item.color}40` }} /><span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>{item.label}</span></div>))}<div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}><span style={{ fontSize: "0.7rem", fontWeight: 800, color: "var(--color-text-muted)", width: 18, textAlign: "center", flexShrink: 0 }}>DG</span><span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>Diferencia de goles</span></div></div></div>
             </div>
-            <div className="glass-card" style={{ padding: "1.8rem" }}>
+            <div className="pd-standings-col-m glass-card" style={{ padding: "1.8rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}><h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.3rem", fontWeight: 800, margin: 0, color: "var(--color-white)" }}>Clasificación General</h3><span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", background: "rgba(255,255,255,0.05)", padding: "0.3rem 0.8rem", borderRadius: 20, fontWeight: 600 }}>{tabla.length} equipos</span></div>
-              <div className="table-container"><table className="standings-table"><thead><tr><th style={{ width: 40, textAlign: "center" }}>#</th><th style={{ textAlign: "left", paddingLeft: 16 }}>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th style={{ minWidth: 50 }}>PTS</th></tr></thead><tbody>{tabla.length === 0 && <tr><td colSpan={10} style={{ textAlign: "center", padding: "3rem 1rem", color: "var(--color-text-muted)" }}>No hay datos disponibles</td></tr>}{tabla.map((team, index) => { const badge = getPosBadge(index); const dg = getDG(team.goles_favor, team.goles_contra); const isBottom = index >= tabla.length - 1 && tabla.length > 4; return (<tr key={team.id} style={{ borderLeft: badge ? `3px solid ${badge.color}` : isBottom ? "3px solid rgba(239,68,68,0.4)" : "3px solid transparent", transition: "all 0.2s ease" }}><td style={{ textAlign: "center" }}>{badge ? <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: 6, background: badge.bg, color: badge.color, fontSize: "0.7rem", fontWeight: 800, fontFamily: "var(--font-heading)" }}>{index + 1}</span> : <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isBottom ? "#ef4444" : "var(--color-text-muted)" }}>{index + 1}</span>}</td><td className="team-cell" style={{ paddingLeft: 16 }}><img src={logoUrl(team.logo)} alt="" style={{ width: 28, height: 28, objectFit: "contain", background: "rgba(255,255,255,0.06)", borderRadius: "50%", padding: 3 }} /><span style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--color-text-main)", whiteSpace: "nowrap" }}>{team.nombre}</span></td><td>{team.partidos_jugados}</td><td style={{ color: "#10b981", fontWeight: 600 }}>{team.ganados}</td><td style={{ color: "#f59e0b", fontWeight: 600 }}>{team.empatados}</td><td style={{ color: "#ef4444", fontWeight: 600 }}>{team.perdidos}</td><td>{team.goles_favor}</td><td>{team.goles_contra}</td><td style={{ fontWeight: 700, color: team.goles_favor - team.goles_contra > 0 ? "#10b981" : team.goles_favor - team.goles_contra < 0 ? "#ef4444" : "var(--color-text-muted)", fontSize: "0.85rem" }}>{dg}</td><td style={{ fontWeight: 800, fontSize: "1rem", color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 8px rgba(255,0,77,0.3)" }}>{team.puntos}</td></tr>); })}</tbody></table></div>
-              {tabla.length > 0 && <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span><span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><IconStadium /> Liga Mayor · El Salvador</span></div>}
+              <div className="table-container pd-table-scroll-m"><table className="standings-table pd-table-m"><thead><tr><th className="pd-th-pos-m" style={{ width: 40, textAlign: "center" }}>#</th><th style={{ textAlign: "left", paddingLeft: 16 }}>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th className="pd-m-hide">GF</th><th className="pd-m-hide">GC</th><th>DG</th><th style={{ minWidth: 50 }}>PTS</th></tr></thead><tbody>{tabla.length === 0 && <tr><td colSpan={10} style={{ textAlign: "center", padding: "3rem 1rem", color: "var(--color-text-muted)" }}>No hay datos disponibles</td></tr>}{tabla.map((team, index) => { const badge = getPosBadge(index); const dg = getDG(team.goles_favor, team.goles_contra); const isBottom = index >= tabla.length - 1 && tabla.length > 4; return (<tr key={team.id} style={{ borderLeft: badge ? `3px solid ${badge.color}` : isBottom ? "3px solid rgba(239,68,68,0.4)" : "3px solid transparent", transition: "all 0.2s ease" }}><td style={{ textAlign: "center" }}>{badge ? <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: 6, background: badge.bg, color: badge.color, fontSize: "0.7rem", fontWeight: 800, fontFamily: "var(--font-heading)" }}>{index + 1}</span> : <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isBottom ? "#ef4444" : "var(--color-text-muted)" }}>{index + 1}</span>}</td><td className="team-cell" style={{ paddingLeft: 16 }}><img src={logoUrl(team.logo)} alt="" style={{ width: 28, height: 28, objectFit: "contain", background: "rgba(255,255,255,0.06)", borderRadius: "50%", padding: 3 }} /><span className="pd-team-name-m" style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--color-text-main)", whiteSpace: "nowrap" }}>{team.nombre}</span></td><td>{team.partidos_jugados}</td><td style={{ color: "#10b981", fontWeight: 600 }}>{team.ganados}</td><td style={{ color: "#f59e0b", fontWeight: 600 }}>{team.empatados}</td><td style={{ color: "#ef4444", fontWeight: 600 }}>{team.perdidos}</td><td className="pd-m-hide">{team.goles_favor}</td><td className="pd-m-hide">{team.goles_contra}</td><td style={{ fontWeight: 700, color: team.goles_favor - team.goles_contra > 0 ? "#10b981" : team.goles_favor - team.goles_contra < 0 ? "#ef4444" : "var(--color-text-muted)", fontSize: "0.85rem" }}>{dg}</td><td style={{ fontWeight: 800, fontSize: "1rem", color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 8px rgba(255,0,77,0.3)" }}>{team.puntos}</td></tr>); })}</tbody></table></div>
+              {tabla.length > 0 && <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)", flexWrap: "wrap", gap: "0.5rem" }}><span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span><span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><IconStadium /> Liga Mayor · El Salvador</span></div>}
             </div>
           </div>
         )}
 
         {activeTab === "equipos" && !expandedTeam && (
           <div className="container" style={{ paddingBottom: "var(--spacing-lg)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}><div><h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.4rem", fontWeight: 800, margin: "0 0 0.3rem 0", color: "var(--color-white)", display: "flex", alignItems: "center", gap: "0.6rem" }}><IconShield /> Clubes de la Temporada</h3><p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem", margin: 0 }}>Selecciona un equipo para ver su plantilla y formación</p></div><span style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", background: "rgba(255,255,255,0.05)", padding: "0.4rem 1rem", borderRadius: 20, fontWeight: 600 }}>{equipos.length} clubes</span></div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}><div><h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.4rem", fontWeight: 800, margin: "0 0 0.3rem 0", color: "var(--color-white)", display: "flex", alignItems: "center", gap: "0.6rem" }}><IconShield /> Clubes de la Temporada</h3><p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem", margin: 0 }}>Selecciona un equipo para ver su plantilla y formación</p></div><span style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", background: "rgba(255,255,255,0.05)", padding: "0.4rem 1rem", borderRadius: 20, fontWeight: 600 }}>{equipos.length} clubes</span></div>
             {equipos.length === 0 ? <div style={{ textAlign: "center", padding: "4rem 1rem", color: "var(--color-text-muted)" }}><p style={{ fontSize: "1.1rem" }}>No hay equipos registrados</p></div> : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
+              <div className="pd-teams-grid-m" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
                 {equipos.map(eq => { const stats = getTeamStats(eq.id); const pos = stats ? tabla.indexOf(stats) : -1; const badge = pos >= 0 ? getPosBadge(pos) : null; return (
                   <div key={eq.id} className="glass-card" style={{ padding: 0, overflow: "hidden", transition: "all 0.3s ease", borderLeft: badge ? `3px solid ${badge.color}` : "3px solid transparent" }}
                     onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 15px 40px rgba(0,0,0,0.4), 0 0 20px rgba(255,0,77,0.1)"; e.currentTarget.style.borderColor = "rgba(255,0,77,0.3)"; if (badge) e.currentTarget.style.borderLeftColor = badge.color; }}
@@ -582,13 +544,11 @@ export default function PrimeraDivision() {
 .pv-group-list{display:flex;flex-direction:column;gap:.3rem}
 .pv-roster-wrap{max-width:760px;margin:0 auto}
 
-/* === FORMACIÓN — solo lectura === */
 .pv-fm-section{display:flex;flex-direction:column;gap:1.2rem}
 .pv-fm-locked{display:flex;align-items:center;justify-content:center;gap:.7rem;padding:.65rem 1rem;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)}
 .pv-fm-badge{font-size:.85rem;font-weight:900;color:#c4b5fd;background:rgba(124,58,237,.12);padding:.3rem .9rem;border-radius:8px;border:1px solid rgba(124,58,237,.2);font-family:monospace;letter-spacing:1px}
 .pv-fm-locked-label{font-size:.72rem;color:#475569;font-weight:600}
 
-/* === CANCHA === */
 .pv-pitch-wrap{width:100%;max-width:420px;margin:0 auto}
 .pv-pitch{position:relative;width:100%;aspect-ratio:68/105;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(0deg,#091f12 0px,#091f12 52px,#0c2815 52px,#0c2815 105px);box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 0 80px rgba(0,0,0,.2)}
 .pv-pitch-svg{position:absolute;inset:0;width:100%;height:100%}
@@ -623,26 +583,85 @@ export default function PrimeraDivision() {
 .pv-sub-mini-stats span{display:flex;align-items:baseline;gap:1px}
 .pv-sub-mini-stats small{font-size:.48rem;font-weight:600;color:#334155}
 
+/* ============================================
+   RESPONSIVE: SOLO MÓVIL (≤ 768px)
+   ============================================ */
 @media(max-width:768px){
-  .pv-team-page{padding-left:.5rem;padding-right:.5rem}
-  .pv-hero-content{padding:1.3rem 1.2rem}
-  .pv-hero-left{flex-direction:column;text-align:center;gap:.8rem}
-  .pv-hero-logo-ring{width:56px;height:56px}
-  .pv-hero-text h2{font-size:1.1rem}
-  .pv-hero-meta{justify-content:center}
-  .pv-hero-stat-divider{display:none}
-  .pv-hero-stat{min-width:55px}
-  .pv-hero-stat strong{font-size:1.1rem}
-  .pv-player-row{grid-template-columns:30px 30px 1fr auto;gap:.3rem;padding:.45rem .55rem}
-  .pv-row-pos,.pv-row-stats,.pv-row-pj{display:none!important}
-  .pv-pitch-wrap{max-width:300px}
-  .pv-pp-dot{width:28px;height:28px;font-size:.52rem}
-  .pv-pp-name{font-size:.44rem}
-  .pv-subs-grid{grid-template-columns:1fr}
+  /* --- Clasificación tab --- */
+  .pd-dashboard-m{display:flex!important;flex-direction:column-reverse!important;gap:1.5rem!important}
+  .pd-sidebar-col-m{order:2!important}
+  .pd-standings-col-m{order:1!important}
+
+  /* Page title */
+  .pd-page-title-row h2{font-size:1.5rem!important}
+  .pd-page-subtitle{font-size:.88rem!important;padding-left:0!important}
+
+  /* Tabs */
+  .pd-main-tabs{border-radius:10px!important}
+  .pd-main-tabs button{padding:.6rem .8rem!important;font-size:.78rem!important;gap:.3rem!important}
+
+  /* Table: hide GF/GC, enable horizontal scroll */
+  .pd-m-hide{display:none!important}
+  .pd-table-scroll-m{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;margin:0 -1.8rem!important;padding:0 1.8rem!important;width:calc(100% + 3.6rem)!important}
+  .pd-table-m{min-width:380px!important}
+  .pd-table-m th,.pd-table-m td{padding:8px 6px!important;font-size:.78rem!important}
+  .pd-team-name-m{font-size:.8rem!important;max-width:100px!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .pd-th-pos-m{width:32px!important}
+
+  /* Next match: stack vertically */
+  .pd-next-teams-m{flex-direction:column!important;gap:.8rem!important}
+  .pd-next-teams-m>div{width:100%!important;justify-content:center!important}
+  .pd-next-teams-m>div:empty{display:none!important}
+
+  /* Featured match: scale down */
+  .pd-featured-wrap>div>div>div:nth-child(3)>div>div>div{gap:.3rem!important}
+  .pd-featured-wrap [style*="width: 62"]{width:48px!important;height:48px!important;padding:6px!important}
+  .pd-featured-wrap [style*="font-size: 1.8rem"]{font-size:1.4rem!important;width:36px!important}
+  .pd-featured-wrap [style*="font-size: .72rem"]{font-size:.65rem!important;max-width:80px!important}
+
+  /* Team cards grid */
+  .pd-teams-grid-m{grid-template-columns:1fr!important;gap:1rem!important}
+
+  /* Glass cards */
+  .glass-card{padding:1.2rem!important}
+
+  /* Team detail */
+  .pv-team-page{padding:0 .5rem!important}
+  .pv-hero-content{padding:1.2rem!important}
+  .pv-hero-left{flex-direction:column!important;text-align:center!important;gap:.8rem!important}
+  .pv-hero-logo-ring{width:56px!important;height:56px!important}
+  .pv-hero-text h2{font-size:1.1rem!important}
+  .pv-hero-meta{justify-content:center!important}
+  .pv-hero-stat-divider{display:none!important}
+  .pv-hero-stat{min-width:55px!important}
+  .pv-hero-stat strong{font-size:1.1rem!important}
+  .pv-player-row{grid-template-columns:30px 30px 1fr!important;gap:.3rem!important;padding:.45rem .55rem!important}
+  .pv-m-hide{display:none!important}
+  .pv-pitch-wrap{max-width:280px!important}
+  .pv-pp-dot{width:26px!important;height:26px!important;font-size:.48rem!important;border-width:1.5px!important}
+  .pv-pp-name{font-size:.4rem!important;max-width:48px!important}
+  .pv-pp-role{display:none!important}
+  .pv-subs-grid{grid-template-columns:1fr!important}
   .pv-sub-mini-stats{display:none!important}
+  .pv-tabs-bar{max-width:100%!important}
 }
+
 @media(max-width:480px){
-  .pv-tabs-bar{max-width:100%}
+  .pd-page-title-row h2{font-size:1.3rem!important}
+  .pd-main-tabs button{font-size:.72rem!important;padding:.55rem .5rem!important}
+  .pd-table-m{min-width:320px!important}
+  .pd-team-name-m{font-size:.75rem!important;max-width:80px!important}
+  .pv-pitch-wrap{max-width:240px!important}
+  .pv-pp-dot{width:22px!important;height:22px!important;font-size:.42rem!important}
+  .pv-pp-name{font-size:.36rem!important;max-width:40px!important}
+  .pv-hero-stat strong{font-size:.95rem!important}
+  .pv-hero-stat span{font-size:.5rem!important;letter-spacing:.8px!important}
+}
+
+@media(max-width:768px) and (orientation:landscape){
+  .pv-pitch-wrap{max-width:220px!important}
+  .pv-hero-content{padding:1rem 1.2rem!important}
+  .pv-hero-left{flex-direction:row!important;text-align:left!important}
 }
       `}</style>
     </>

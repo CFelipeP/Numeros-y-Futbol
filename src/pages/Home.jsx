@@ -58,7 +58,7 @@ const Hero = () => (
     <div className="hero-overlay" />
     <div className="container hero-content">
       <motion.h1 id="driver-hero" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
-        EL FÚTBOL <span>DE EL SALVADOR</span>
+        Noticias y numeros que <span>genera el fútbol</span>
       </motion.h1>
       <motion.p className="hero-description" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }}>
         Cobertura completa de todas las divisiones. Noticias, resultados y análisis del mejor fútbol salvadoreño en vivo.
@@ -104,11 +104,11 @@ const Carousel = () => {
         <div className="carousel-wrapper">
           <div style={{ display: "flex", gap: 16, padding: "20px 0" }}>
             {[1,2,3,4,5].map(i => (
-              <div key={i} style={{
+              <div key={i} className="skeleton-card-mobile" style={{
                 minWidth: 260, height: 110, borderRadius: 16, flexShrink: 0,
                 background: "#0d1117",
                 border: "1px solid #1e293b",
-                animation: "skeleton-pulse 1.8s ease-in-out infinite",
+                animation: `skeleton-pulse 1.8s ease-in-out infinite`,
                 animationDelay: `${i * 0.15}s`
               }} />
             ))}
@@ -179,13 +179,13 @@ const Carousel = () => {
       <div className="results-carousel-section" id="driver-carousel" style={{ overflow: "hidden", position: "relative" }}>
 
         {/* Fade izquierdo */}
-        <div style={{
+        <div className="carousel-fade-left" style={{
           position: "absolute", left: 0, top: 0, bottom: 0, width: 100, zIndex: 3,
           background: "linear-gradient(90deg, var(--bg-dark, #0a0c14) 20%, transparent)",
           pointerEvents: "none"
         }} />
         {/* Fade derecho */}
-        <div style={{
+        <div className="carousel-fade-right" style={{
           position: "absolute", right: 0, top: 0, bottom: 0, width: 100, zIndex: 3,
           background: "linear-gradient(270deg, var(--bg-dark, #0a0c14) 20%, transparent)",
           pointerEvents: "none"
@@ -293,7 +293,7 @@ const Carousel = () => {
                           <span style={{ fontSize: 16, opacity: 0.2 }}>⚽</span>
                         )}
                       </div>
-                      <span style={{
+                      <span className="team-name-carousel" style={{
                         fontSize: 10, fontWeight: 600, color: "#94a3b8",
                         textAlign: "center", lineHeight: 1.2,
                         maxWidth: 72, overflow: "hidden",
@@ -370,7 +370,7 @@ const Carousel = () => {
                           <span style={{ fontSize: 16, opacity: 0.2 }}>⚽</span>
                         )}
                       </div>
-                      <span style={{
+                      <span className="team-name-carousel" style={{
                         fontSize: 10, fontWeight: 600, color: "#94a3b8",
                         textAlign: "center", lineHeight: 1.2,
                         maxWidth: 72, overflow: "hidden",
@@ -511,6 +511,96 @@ function Home() {
 
   return (
     <>
+      {/* ESTILOS RESPONSIVOS - Solo afectan a móviles, NO modifican escritorio */}
+      <style>{`
+        @media (max-width: 768px) {
+          /* General */
+          .container {
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+          }
+
+          /* Hero */
+          .hero-content h1 {
+            font-size: 2rem !important;
+            line-height: 1.2 !important;
+          }
+          .hero-content .hero-description {
+            font-size: 0.9rem !important;
+            margin-bottom: 1.5rem !important;
+          }
+          .hero-buttons {
+            flex-direction: column !important;
+            gap: 12px !important;
+            align-items: stretch !important;
+          }
+          .hero-buttons .btn {
+            width: 100% !important;
+            text-align: center !important;
+          }
+
+          /* Carousel */
+          .skeleton-card-mobile {
+            min-width: 85vw !important;
+          }
+          .carousel-card {
+            min-width: 85vw !important;
+            padding: 12px 14px 10px 14px !important;
+          }
+          .carousel-fade-left,
+          .carousel-fade-right {
+            width: 30px !important;
+          }
+          .team-logo-wrap {
+            width: 38px !important;
+            height: 38px !important;
+          }
+          .team-logo-wrap img {
+            width: 24px !important;
+            height: 24px !important;
+          }
+          .card-score {
+            font-size: 22px !important;
+            min-width: 50px !important;
+          }
+          .team-name-carousel {
+            font-size: 9px !important;
+          }
+
+          /* Divisions */
+          .divisions-grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+
+          /* News */
+          .news-grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+          .news-card-body h3 {
+            font-size: 1.1rem !important;
+          }
+          .news-card-body p {
+            font-size: 0.85rem !important;
+          }
+
+          /* Driver.js mobile fixes (El tour) */
+          .driver-popover {
+            max-width: 90vw !important;
+          }
+        }
+        
+        @media (max-width: 380px) {
+          .hero-content h1 {
+            font-size: 1.75rem !important;
+          }
+          .carousel-card {
+            min-width: 90vw !important;
+          }
+        }
+      `}</style>
+
       <Header />
       <main>
         <Hero />

@@ -13,11 +13,46 @@ try {
 
     $team1   = (int)($body['team1_id'] ?? 0);
     $team2   = (int)($body['team2_id'] ?? 0);
-    $fecha   = $body['fecha']   ?: null;
-    $hora    = $body['hora']    ?: null;
+
+    $check = $pdo->prepare("
+    SELECT COUNT(*)
+    FROM equipos_copa
+    WHERE id IN (?, ?)
+    ");
+
+    $check->execute([$team1, $team2]);
+
+    if ($check->fetchColumn() != 2) {
+
+        throw new Exception(
+            "Uno o ambos equipos no existen en equipos_copa"
+        );
+    }
+
+    if (!$team1 || !$team2) {
+    throw new Exception("Equipos inválidos");
+        }
+
+        $check = $pdo->prepare("
+            SELECT COUNT(*) 
+            FROM equipos_copa 
+            WHERE id IN (?, ?)
+        ");
+
+        $check->execute([$team1, $team2]);
+
+        if ($check->fetchColumn() != 2) {
+            throw new Exception("Uno o ambos equipos no existen en equipos_copa");
+        }
+
+    $fecha = !empty($body['fecha']) ? $body['fecha'] : null;
+    $hora  = !empty($body['hora'])  ? $body['hora']  : null;
     $estado  = $body['estado']  ?? 'Pendiente';
-    $fase    = $body['fase']    ?? 'grupos';
+    $fase = $body['fase'] ?? 'grupos';
     $grupo   = ($fase === 'grupos') ? ($body['grupo'] ?? null) : null;
+    $llave = isset($body['llave']) && $body['llave'] !== ''
+    ? (int)$body['llave']
+    : null;
     $gLocal  = isset($body['goles_local'])     && $body['goles_local']     !== '' ? (int)$body['goles_local']     : null;
     $gVisit  = isset($body['goles_visitante']) && $body['goles_visitante'] !== '' ? (int)$body['goles_visitante'] : null;
 
@@ -32,10 +67,31 @@ try {
 
     $stmt = $pdo->prepare("
         INSERT INTO partidos_copa
-            (equipo_local_id, equipo_visitante_id, goles_local, goles_visitante, fecha, hora, estado, fase, grupo_copa)
-        VALUES (?,?,?,?,?,?,?,?,?)
+(
+ equipo_local_id,
+ equipo_visitante_id,
+ goles_local,
+ goles_visitante,
+ fecha,
+ hora,
+ estado,
+ fase,
+ llave,
+ grupo_copa
+) VALUES (?,?,?,?,?,?,?,?,?,?)
     ");
-    $stmt->execute([$team1, $team2, $gLocal, $gVisit, $fecha, $hora, $estado, $fase, $grupo]);
+    $stmt->execute([
+    $team1,
+    $team2,
+    $gLocal,
+    $gVisit,
+    $fecha,
+    $hora,
+    $estado,
+    $fase,
+    $llave,
+    $grupo
+]);
 
     echo json_encode(["success" => true, "id" => $pdo->lastInsertId()]);
 } catch (Exception $e) {

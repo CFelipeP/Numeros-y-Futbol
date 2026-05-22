@@ -131,14 +131,14 @@ const ZonaHeader = ({ zona, color }) => (
 );
 
 const TablaClasificacion = ({ datos, playoffTeamIds, showGrupo }) => (
-  <div className="table-container">
-    <table className="standings-table"><thead><tr><th style={{ width: 40, textAlign: "center" }}>#</th><th style={{ textAlign: "left", paddingLeft: 16 }}>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th style={{ minWidth: 50 }}>PTS</th></tr></thead><tbody>
+  <div className="table-container sd-table-scroll-m">
+    <table className="standings-table sd-table-m"><thead><tr><th className="sd-th-pos-m" style={{ width: 40, textAlign: "center" }}>#</th><th style={{ textAlign: "left", paddingLeft: 16 }}>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th className="sd-m-hide">GF</th><th className="sd-m-hide">GC</th><th>DG</th><th style={{ minWidth: 50 }}>PTS</th></tr></thead><tbody>
       {datos.length === 0 && <tr><td colSpan={10} style={{ textAlign: "center", padding: "2rem 1rem", color: "var(--color-text-muted)" }}>Sin equipos en esta zona</td></tr>}
       {datos.map((team, index) => { const isPO = playoffTeamIds?.has(team.equipo_id); const dg = getDG(team.gf, team.gc); return (
         <tr key={team.id} style={{ borderLeft: isPO ? "3px solid #10b981" : "3px solid transparent", transition: "all 0.2s ease", background: isPO ? "rgba(16,185,129,0.04)" : "transparent" }}>
           <td style={{ textAlign: "center" }}><span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-muted)" }}>{index + 1}</span></td>
-          <td className="team-cell" style={{ paddingLeft: 16 }}>{team.logo && <img src={logoUrl(team.logo)} alt="" style={{ width: 28, height: 28, objectFit: "contain", background: "rgba(255,255,255,0.06)", borderRadius: "50%", padding: 3 }} />}<span style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--color-text-main)", whiteSpace: "nowrap" }}>{team.nombre}</span>{showGrupo && team.grupo && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: team.grupo === "East" ? "#3b82f6" : "#f59e0b", background: team.grupo === "East" ? "rgba(59,130,246,0.1)" : "rgba(245,158,11,0.1)", padding: "0.1rem 0.4rem", borderRadius: "3px", marginLeft: "6px" }}>{team.grupo === "East" ? "A" : "B"}</span>}</td>
-          <td>{team.pj}</td><td style={{ color: "#10b981", fontWeight: 600 }}>{team.pg}</td><td style={{ color: "#f59e0b", fontWeight: 600 }}>{team.pe}</td><td style={{ color: "#ef4444", fontWeight: 600 }}>{team.pp}</td><td>{team.gf}</td><td>{team.gc}</td><td style={{ fontWeight: 700, color: team.gf - team.gc > 0 ? "#10b981" : team.gf - team.gc < 0 ? "#ef4444" : "var(--color-text-muted)", fontSize: "0.85rem" }}>{dg}</td><td style={{ fontWeight: 800, fontSize: "1rem", color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 8px rgba(34,197,94,0.3)" }}>{team.pts}</td>
+          <td className="team-cell" style={{ paddingLeft: 16 }}>{team.logo && <img src={logoUrl(team.logo)} alt="" style={{ width: 28, height: 28, objectFit: "contain", background: "rgba(255,255,255,0.06)", borderRadius: "50%", padding: 3 }} />}<span className="sd-team-name-m" style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--color-text-main)", whiteSpace: "nowrap" }}>{team.nombre}</span>{showGrupo && team.grupo && <span className="sd-m-hide" style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: team.grupo === "East" ? "#3b82f6" : "#f59e0b", background: team.grupo === "East" ? "rgba(59,130,246,0.1)" : "rgba(245,158,11,0.1)", padding: "0.1rem 0.4rem", borderRadius: "3px", marginLeft: "6px" }}>{team.grupo === "East" ? "A" : "B"}</span>}</td>
+          <td>{team.pj}</td><td style={{ color: "#10b981", fontWeight: 600 }}>{team.pg}</td><td style={{ color: "#f59e0b", fontWeight: 600 }}>{team.pe}</td><td style={{ color: "#ef4444", fontWeight: 600 }}>{team.pp}</td><td className="sd-m-hide">{team.gf}</td><td className="sd-m-hide">{team.gc}</td><td style={{ fontWeight: 700, color: team.gf - team.gc > 0 ? "#10b981" : team.gf - team.gc < 0 ? "#ef4444" : "var(--color-text-muted)", fontSize: "0.85rem" }}>{dg}</td><td style={{ fontWeight: 800, fontSize: "1rem", color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 8px rgba(34,197,94,0.3)" }}>{team.pts}</td>
         </tr>);
       })}
     </tbody></table>
@@ -151,15 +151,15 @@ const FeaturedMatchCard = ({ match }) => {
   const aw = match.goles_local != null && match.goles_visitante != null && match.goles_visitante > match.goles_local;
   const sc = isL ? "#ef4444" : isF ? "#10b981" : "#f59e0b", sb = isL ? "rgba(239,68,68,0.15)" : isF ? "rgba(16,185,129,0.12)" : "rgba(245,158,11,0.12)";
   return (
-    <div style={{ position: "relative", borderRadius: 20, overflow: "hidden", background: "linear-gradient(160deg,#1a1f35 0%,#0d1117 40%,#111827 100%)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+    <div className="sd-featured-card" style={{ position: "relative", borderRadius: 20, overflow: "hidden", background: "linear-gradient(160deg,#1a1f35 0%,#0d1117 40%,#111827 100%)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
       <div style={{ height: 3, background: `linear-gradient(90deg,transparent 0%,${sc}66 30%,${sc} 50%,${sc}66 70%,transparent 100%)` }} />
       <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 280, height: 180, borderRadius: "50%", background: `radial-gradient(ellipse,${sc}12 0%,transparent 70%)`, pointerEvents: "none" }} />
       <div style={{ position: "relative", padding: "1.6rem 1.4rem 1.4rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.8rem" }}><div style={{ display: "flex", alignItems: "center", gap: 6 }}><IconStar /><span style={{ fontSize: "0.65rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: 2, color: "rgba(255,255,255,0.4)" }}>Destacado</span></div><span style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", color: sc, background: sb, padding: "4px 12px", borderRadius: 20, border: `1px solid ${sc}25`, animation: isL ? "fp2 2s ease-in-out infinite" : "none" }}>{st.text}</span></div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem" }}>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}><div style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}><img src={logoUrl(match.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} /></div><span style={{ fontSize: "0.72rem", fontWeight: hw ? 800 : 600, color: hw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.home_name}</span>{hw && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}</div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "0 0.8rem", flexShrink: 0 }}><div style={{ display: "flex", alignItems: "center", background: "rgba(0,0,0,0.35)", borderRadius: 14, padding: "6px 4px", border: "1px solid rgba(255,255,255,0.04)", boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)" }}><span style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: hw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_local ?? "-"}</span><span style={{ fontSize: "1rem", color: "rgba(255,255,255,0.2)", margin: "0 2px" }}>:</span><span style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: aw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_visitante ?? "-"}</span></div><span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, color: "rgba(255,255,255,0.25)" }}>{isS ? "VS" : "FT"}</span></div>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}><div style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}><img src={logoUrl(match.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} /></div><span style={{ fontSize: "0.72rem", fontWeight: aw ? 800 : 600, color: aw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.away_name}</span>{aw && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}</div>
+        <div className="sd-featured-teams" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem" }}>
+          <div className="sd-featured-team" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}><div className="sd-featured-logo" style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}><img src={logoUrl(match.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} /></div><span className="sd-featured-name" style={{ fontSize: "0.72rem", fontWeight: hw ? 800 : 600, color: hw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.home_name}</span>{hw && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}</div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "0 0.8rem", flexShrink: 0 }}><div style={{ display: "flex", alignItems: "center", background: "rgba(0,0,0,0.35)", borderRadius: 14, padding: "6px 4px", border: "1px solid rgba(255,255,255,0.04)", boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)" }}><span className="sd-featured-score" style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: hw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_local ?? "-"}</span><span style={{ fontSize: "1rem", color: "rgba(255,255,255,0.2)", margin: "0 2px" }}>:</span><span className="sd-featured-score" style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: aw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_visitante ?? "-"}</span></div><span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, color: "rgba(255,255,255,0.25)" }}>{isS ? "VS" : "FT"}</span></div>
+          <div className="sd-featured-team" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}><div className="sd-featured-logo" style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}><img src={logoUrl(match.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} /></div><span className="sd-featured-name" style={{ fontSize: "0.72rem", fontWeight: aw ? 800 : 600, color: aw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.away_name}</span>{aw && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}</div>
         </div>
         <div style={{ height: 1, margin: "1.4rem 0 1rem", background: "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.06) 30%,rgba(255,255,255,0.06) 70%,transparent 100%)" }} />
         {match.fecha && <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, fontSize: "0.7rem", color: "rgba(255,255,255,0.3)" }}><IconCalendar /><span>{match.fecha}</span></div>}
@@ -226,9 +226,9 @@ const PublicPlayerRow = ({ j }) => {
       <div className="pv-row-num" style={{ background: `${pi.color}15`, color: pi.color }}>{j.numero_camiseta || "–"}</div>
       <div className="pv-row-photo">{j.foto ? <img src={j.foto.startsWith("http") ? j.foto : `${API_BASE}${j.foto}`} alt="" /> : <div className="pv-photo-placeholder"><IconShield /></div>}</div>
       <div className="pv-row-info"><span className="pv-row-name">{j.nombre}</span><span className="pv-row-meta">{[j.edad && `${j.edad} años`, j.nacionalidad].filter(Boolean).join(" · ")}</span></div>
-      <span className="pv-row-pos" style={{ color: pi.color, borderColor: `${pi.color}30`, background: `${pi.color}0a` }} title={pi.label}>{pi.abbr}</span>
-      <div className="pv-row-stats">{isGK ? (<><b style={{ color: "#f59e0b" }}>{j.goles_recibidos || 0}</b><small>GR</small><b style={{ color: "#10b981" }}>{j.vaya_invicta || 0}</b><small>VI</small></>) : (<><b style={{ color: "#ef4444" }}>{j.goles || 0}</b><small>G</small><b style={{ color: "#3b82f6" }}>{j.asistencias || 0}</b><small>A</small></>)}</div>
-      <span className="pv-row-pj">{j.pj || 0} <small>PJ</small></span>
+      <span className="pv-row-pos sd-m-hide" style={{ color: pi.color, borderColor: `${pi.color}30`, background: `${pi.color}0a` }} title={pi.label}>{pi.abbr}</span>
+      <div className="pv-row-stats sd-m-hide">{isGK ? (<><b style={{ color: "#f59e0b" }}>{j.goles_recibidos || 0}</b><small>GR</small><b style={{ color: "#10b981" }}>{j.vaya_invicta || 0}</b><small>VI</small></>) : (<><b style={{ color: "#ef4444" }}>{j.goles || 0}</b><small>G</small><b style={{ color: "#3b82f6" }}>{j.asistencias || 0}</b><small>A</small></>)}</div>
+      <span className="pv-row-pj sd-m-hide">{j.pj || 0} <small>PJ</small></span>
     </div>
   );
 };
@@ -278,7 +278,7 @@ const PublicTeamView = ({ teamData, viewTab, setViewTab }) => {
                 <div key={s.id} className="pv-sub-card" style={{ borderLeftColor: pi.color }}>
                   <div className="pv-sub-avatar">{s.foto ? <img src={s.foto.startsWith("http") ? s.foto : `${API_BASE}${s.foto}`} alt="" /> : <div className="pv-sub-avatar-empty"><IconShield /></div>}</div>
                   <div className="pv-sub-details"><span className="pv-sub-name">{s.nombre}</span><span className="pv-sub-meta-row"><span className="pv-sub-number" style={{ color: pi.color }}>#{s.numero_camiseta || "–"}</span><span className="pv-sub-pos-label" style={{ color: pi.color, background: `${pi.color}10`, borderColor: `${pi.color}20` }}>{pi.abbr}</span>{s.edad && <span className="pv-sub-age">{s.edad}a</span>}</span></div>
-                  <div className="pv-sub-mini-stats">{pi.cat === "portero" ? (<><span style={{ color: "#f59e0b" }}>{s.goles_recibidos || 0}<small>GR</small></span><span style={{ color: "#10b981" }}>{s.vaya_invicta || 0}<small>VI</small></span></>) : (<><span style={{ color: "#ef4444" }}>{s.goles || 0}<small>G</small></span><span style={{ color: "#3b82f6" }}>{s.asistencias || 0}<small>A</small></span></>)}</div>
+                  <div className="pv-sub-mini-stats sd-m-hide">{pi.cat === "portero" ? (<><span style={{ color: "#f59e0b" }}>{s.goles_recibidos || 0}<small>GR</small></span><span style={{ color: "#10b981" }}>{s.vaya_invicta || 0}<small>VI</small></span></>) : (<><span style={{ color: "#ef4444" }}>{s.goles || 0}<small>G</small></span><span style={{ color: "#3b82f6" }}>{s.asistencias || 0}<small>A</small></span></>)}</div>
                 </div>);
               })}
             </div></div>
@@ -346,35 +346,35 @@ export default function SegundaDivision() {
   return (
     <>
       <Header />
-      <section className="table-section" style={{ paddingBottom: 0 }}>
-        <div className="container" style={{ marginBottom: "1.5rem" }}><div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}><IconTrophy /><h2 style={{ fontFamily: "var(--font-heading)", fontSize: "2rem", fontWeight: 800, textTransform: "uppercase", margin: 0, background: "linear-gradient(90deg, #fff, #22c55e)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Segunda División</h2></div><p style={{ color: "var(--color-text-muted)", fontSize: "1rem", margin: 0, paddingLeft: "1.8rem" }}>Clasificación por zonas, equipos y partido destacado</p></div>
-        <div className="container" style={{ marginBottom: "2rem" }}><div style={{ display: "flex", gap: "0.5rem", background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 4, border: "1px solid rgba(255,255,255,0.05)" }}>{[{ key: "clasificacion", label: "Clasificación", icon: "📊" }, { key: "equipos", label: "Equipos", icon: "🛡️" }].map(tab => (<button key={tab.key} onClick={() => { setActiveTab(tab.key); setExpandedTeam(null); window.location.hash = tab.key; }} style={{ flex: 1, padding: "0.75rem 1rem", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.85rem", letterSpacing: "0.5px", textTransform: "uppercase", background: activeTab === tab.key ? "linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.08))" : "transparent", color: activeTab === tab.key ? "#22c55e" : "var(--color-text-muted)", boxShadow: activeTab === tab.key ? "0 0 15px rgba(34,197,94,0.15)" : "none", transition: "all 0.3s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}><span>{tab.icon}</span>{tab.label}</button>))}</div></div>
+      <section className="table-section sd-section-m" style={{ paddingBottom: 0 }}>
+        <div className="container" style={{ marginBottom: "1.5rem" }}><div className="sd-page-title-row" style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}><IconTrophy /><h2 style={{ fontFamily: "var(--font-heading)", fontSize: "2rem", fontWeight: 800, textTransform: "uppercase", margin: 0, background: "linear-gradient(90deg, #fff, #22c55e)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Segunda División</h2></div><p className="sd-page-subtitle" style={{ color: "var(--color-text-muted)", fontSize: "1rem", margin: 0, paddingLeft: "1.8rem" }}>Clasificación por zonas, equipos y partido destacado</p></div>
+        <div className="container" style={{ marginBottom: "2rem" }}><div className="sd-main-tabs" style={{ display: "flex", gap: "0.5rem", background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 4, border: "1px solid rgba(255,255,255,0.05)" }}>{[{ key: "clasificacion", label: "Clasificación", icon: "📊" }, { key: "equipos", label: "Equipos", icon: "🛡️" }].map(tab => (<button key={tab.key} onClick={() => { setActiveTab(tab.key); setExpandedTeam(null); window.location.hash = tab.key; }} style={{ flex: 1, padding: "0.75rem 1rem", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.85rem", letterSpacing: "0.5px", textTransform: "uppercase", background: activeTab === tab.key ? "linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.08))" : "transparent", color: activeTab === tab.key ? "#22c55e" : "var(--color-text-muted)", boxShadow: activeTab === tab.key ? "0 0 15px rgba(34,197,94,0.15)" : "none", transition: "all 0.3s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}><span>{tab.icon}</span>{tab.label}</button>))}</div></div>
 
         {activeTab === "clasificacion" && !expandedTeam && (
-          <div className="dashboard-grid">
-            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-              <div>{match && match.home_name ? <FeaturedMatchCard match={match} /> : <div className="glass-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}><div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}><span style={{ fontSize: "1.5rem", opacity: 0.3 }}>⚽</span></div><p style={{ fontSize: "0.9rem", margin: "0 0 0.3rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Sin partido destacado</p><p style={{ fontSize: "0.75rem", margin: 0, color: "rgba(255,255,255,0.25)" }}>Se mostrará cuando se configure desde el panel</p></div>}</div>
-              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", boxShadow: "0 0 8px #f59e0b", display: "inline-block" }} />Próximo Partido</div>{sidebar.next ? (<div style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(30,41,59,0.4) 100%)", border: "1px solid rgba(245,158,11,0.12)", borderRadius: 16, padding: "1.5rem 1.2rem" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}><span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#f59e0b", background: "rgba(245,158,11,0.12)", padding: "0.2rem 0.6rem", borderRadius: 6 }}>{getMatchStatus(sidebar.next.status || sidebar.next.estado).text}</span></div><div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0 }}><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}>{sidebar.next.home_logo && <img src={logoUrl(sidebar.next.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sidebar.next.home_name}</span></div><div style={{ flexShrink: 0 }}><span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--color-text-muted)", background: "rgba(255,255,255,0.04)", padding: "0.35rem 0.7rem", borderRadius: 8, letterSpacing: "1px" }}>VS</span></div><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0, justifyContent: "flex-end" }}><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{sidebar.next.away_name}</span><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}>{sidebar.next.away_logo && <img src={logoUrl(sidebar.next.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div></div></div>{sidebar.next.fecha && <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.8rem", marginTop: "1rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><IconCalendar /> {sidebar.next.fecha}</div>}</div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📅</div><p style={{ fontSize: "0.85rem", margin: 0, fontWeight: 600 }}>No hay partidos pendientes</p></div>)}</div>
+          <div className="dashboard-grid sd-dashboard-m">
+            <div className="sd-sidebar-col-m" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+              <div className="sd-featured-wrap">{match && match.home_name ? <FeaturedMatchCard match={match} /> : <div className="glass-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}><div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}><span style={{ fontSize: "1.5rem", opacity: 0.3 }}>⚽</span></div><p style={{ fontSize: "0.9rem", margin: "0 0 0.3rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Sin partido destacado</p><p style={{ fontSize: "0.75rem", margin: 0, color: "rgba(255,255,255,0.25)" }}>Se mostrará cuando se configure desde el panel</p></div>}</div>
+              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", boxShadow: "0 0 8px #f59e0b", display: "inline-block" }} />Próximo Partido</div>{sidebar.next ? (<div style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(30,41,59,0.4) 100%)", border: "1px solid rgba(245,158,11,0.12)", borderRadius: 16, padding: "1.5rem 1.2rem" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}><span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#f59e0b", background: "rgba(245,158,11,0.12)", padding: "0.2rem 0.6rem", borderRadius: 6 }}>{getMatchStatus(sidebar.next.status || sidebar.next.estado).text}</span></div><div className="sd-next-teams-m" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0 }}><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}>{sidebar.next.home_logo && <img src={logoUrl(sidebar.next.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sidebar.next.home_name}</span></div><div style={{ flexShrink: 0 }}><span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--color-text-muted)", background: "rgba(255,255,255,0.04)", padding: "0.35rem 0.7rem", borderRadius: 8, letterSpacing: "1px" }}>VS</span></div><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0, justifyContent: "flex-end" }}><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{sidebar.next.away_name}</span><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}>{sidebar.next.away_logo && <img src={logoUrl(sidebar.next.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div></div></div>{sidebar.next.fecha && <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.8rem", marginTop: "1rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><IconCalendar /> {sidebar.next.fecha}</div>}</div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📅</div><p style={{ fontSize: "0.85rem", margin: 0, fontWeight: 600 }}>No hay partidos pendientes</p></div>)}</div>
               <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981", display: "inline-block" }} />Últimos Resultados</div>{sidebar.recent?.length > 0 ? (<div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>{sidebar.recent.map(m => (<div key={m.id}><ResultRow m={m} />{m.fecha && <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", paddingLeft: "0.8rem", paddingTop: "0.15rem", paddingBottom: "0.3rem", fontSize: "0.65rem", color: "rgba(255,255,255,0.25)" }}><IconClock /> {m.fecha}</div>}</div>))}</div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📋</div><p style={{ fontSize: "0.85rem", margin: 0 }}>No hay resultados aún</p></div>)}</div>
-              <div className="glass-card" style={{ padding: "1.5rem" }}><div className="section-subtitle" style={{ marginTop: 0, fontSize: "0.85rem" }}>Leyenda</div><div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>{[{ color: "#10b981", label: "PlayOff — Top 4 de cada zona (8 equipos)" }, { color: "#3b82f6", label: "Grupo A (Este)" }, { color: "#f59e0b", label: "Grupo B (Oeste)" }].map((item, i) => (<div key={i} style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}><span style={{ width: 10, height: 10, borderRadius: 2, background: item.color, flexShrink: 0, boxShadow: `0 0 6px ${item.color}40` }} /><span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>{item.label}</span></div>))}<div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}><span style={{ fontSize: "0.7rem", fontWeight: 800, color: "var(--color-text-muted)", width: 18, textAlign: "center", flexShrink: 0 }}>DG</span><span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>Diferencia de goles</span></div></div></div>
+              <div className="glass-card sd-m-hide" style={{ padding: "1.5rem" }}><div className="section-subtitle" style={{ marginTop: 0, fontSize: "0.85rem" }}>Leyenda</div><div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>{[{ color: "#10b981", label: "PlayOff — Top 4 de cada zona (8 equipos)" }, { color: "#3b82f6", label: "Grupo A (Este)" }, { color: "#f59e0b", label: "Grupo B (Oeste)" }].map((item, i) => (<div key={i} style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}><span style={{ width: 10, height: 10, borderRadius: 2, background: item.color, flexShrink: 0, boxShadow: `0 0 6px ${item.color}40` }} /><span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>{item.label}</span></div>))}<div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}><span style={{ fontSize: "0.7rem", fontWeight: 800, color: "var(--color-text-muted)", width: 18, textAlign: "center", flexShrink: 0 }}>DG</span><span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>Diferencia de goles</span></div></div></div>
             </div>
-            <div className="glass-card" style={{ padding: "1.8rem" }}>
+            <div className="sd-standings-col-m glass-card" style={{ padding: "1.8rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}><h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.3rem", fontWeight: 800, margin: 0, color: "var(--color-white)" }}>Clasificación</h3><span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", background: "rgba(255,255,255,0.05)", padding: "0.3rem 0.8rem", borderRadius: 20, fontWeight: 600 }}>{vistaZona === "general" ? tabla.length : vistaZona === "East" ? tablaEast.length : tablaWest.length} equipos</span></div>
-              <div style={{ display: "flex", gap: "0.4rem", marginBottom: "1.5rem", background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 3, border: "1px solid rgba(255,255,255,0.05)" }}>{zonaButtons.map(z => { const a = vistaZona === z.key; const c = zonaColor(z); return (<button key={z.key} onClick={() => setVistaZona(z.key)} style={{ flex: 1, padding: "0.55rem 0.6rem", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "0.5px", textTransform: "uppercase", background: a ? `linear-gradient(135deg, ${c}25, ${c}10)` : "transparent", color: a ? c : "var(--color-text-muted)", boxShadow: a ? `0 0 12px ${c}20` : "none", transition: "all 0.3s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", borderBottom: a ? `2px solid ${c}` : "2px solid transparent" }}><span>{z.icon}</span>{z.label}</button>); })}</div>
-              {vistaZona === "general" && <><TablaClasificacion datos={[...tabla].sort((a, b) => (b.pts - a.pts) || ((b.gf - b.gc) - (a.gf - a.gc)))} playoffTeamIds={playoffTeamIds} showGrupo={true} />{tabla.length > 0 && <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span><span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><IconStadium /> Segunda División · El Salvador</span></div>}</>}
-              {vistaZona === "East" && <><ZonaHeader zona="Este" color="#3b82f6" /><TablaClasificacion datos={[...tablaEast].sort((a, b) => (b.pts - a.pts) || ((b.gf - b.gc) - (a.gf - a.gc)))} playoffTeamIds={playoffTeamIds} showGrupo={false} />{tablaEast.length > 0 && <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span><span style={{ color: "#3b82f6", fontWeight: 600 }}>ZONA ESTE · {tablaEast.length} equipos</span></div>}</>}
-              {vistaZona === "West" && <><ZonaHeader zona="Oeste" color="#f59e0b" /><TablaClasificacion datos={[...tablaWest].sort((a, b) => (b.pts - a.pts) || ((b.gf - b.gc) - (a.gf - a.gc)))} playoffTeamIds={playoffTeamIds} showGrupo={false} />{tablaWest.length > 0 && <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span><span style={{ color: "#f59e0b", fontWeight: 600 }}>ZONA OESTE · {tablaWest.length} equipos</span></div>}</>}
+              <div className="sd-zona-tabs-m" style={{ display: "flex", gap: "0.4rem", marginBottom: "1.5rem", background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 3, border: "1px solid rgba(255,255,255,0.05)" }}>{zonaButtons.map(z => { const a = vistaZona === z.key; const c = zonaColor(z); return (<button key={z.key} onClick={() => setVistaZona(z.key)} style={{ flex: 1, padding: "0.55rem 0.6rem", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "0.5px", textTransform: "uppercase", background: a ? `linear-gradient(135deg, ${c}25, ${c}10)` : "transparent", color: a ? c : "var(--color-text-muted)", boxShadow: a ? `0 0 12px ${c}20` : "none", transition: "all 0.3s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", borderBottom: a ? `2px solid ${c}` : "2px solid transparent" }}><span>{z.icon}</span><span className="sd-zona-label-m">{z.label}</span></button>); })}</div>
+              {vistaZona === "general" && <><TablaClasificacion datos={[...tabla].sort((a, b) => (b.pts - a.pts) || ((b.gf - b.gc) - (a.gf - a.gc)))} playoffTeamIds={playoffTeamIds} showGrupo={true} />{tabla.length > 0 && <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)", flexWrap: "wrap", gap: "0.5rem" }}><span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span><span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><IconStadium /> Segunda División · El Salvador</span></div>}</>}
+              {vistaZona === "East" && <><ZonaHeader zona="Este" color="#3b82f6" /><TablaClasificacion datos={[...tablaEast].sort((a, b) => (b.pts - a.pts) || ((b.gf - b.gc) - (a.gf - a.gc)))} playoffTeamIds={playoffTeamIds} showGrupo={false} />{tablaEast.length > 0 && <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)", flexWrap: "wrap", gap: "0.5rem" }}><span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span><span style={{ color: "#3b82f6", fontWeight: 600 }}>ZONA ESTE · {tablaEast.length} equipos</span></div>}</>}
+              {vistaZona === "West" && <><ZonaHeader zona="Oeste" color="#f59e0b" /><TablaClasificacion datos={[...tablaWest].sort((a, b) => (b.pts - a.pts) || ((b.gf - b.gc) - (a.gf - a.gc)))} playoffTeamIds={playoffTeamIds} showGrupo={false} />{tablaWest.length > 0 && <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)", flexWrap: "wrap", gap: "0.5rem" }}><span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span><span style={{ color: "#f59e0b", fontWeight: 600 }}>ZONA OESTE · {tablaWest.length} equipos</span></div>}</>}
             </div>
           </div>
         )}
 
         {activeTab === "equipos" && !expandedTeam && (
           <div className="container" style={{ paddingBottom: "var(--spacing-lg)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}><div><h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.4rem", fontWeight: 800, margin: "0 0 0.3rem 0", color: "var(--color-white)", display: "flex", alignItems: "center", gap: "0.6rem" }}><IconShield /> Clubes de la Temporada</h3><p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem", margin: 0 }}>Selecciona un equipo para ver su plantilla y formación</p></div><span style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", background: "rgba(255,255,255,0.05)", padding: "0.4rem 1rem", borderRadius: 20, fontWeight: 600 }}>{filteredEquipos.length} clubes</span></div>
-            <div style={{ display: "flex", gap: "0.4rem", marginBottom: "2rem", background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 3, border: "1px solid rgba(255,255,255,0.05)", maxWidth: 400 }}>{zonaButtons.map(z => { const a = vistaZona === z.key; const c = zonaColor(z); return (<button key={z.key} onClick={() => setVistaZona(z.key)} style={{ flex: 1, padding: "0.55rem 0.6rem", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "0.5px", textTransform: "uppercase", background: a ? `linear-gradient(135deg, ${c}25, ${c}10)` : "transparent", color: a ? c : "var(--color-text-muted)", boxShadow: a ? `0 0 12px ${c}20` : "none", transition: "all 0.3s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", borderBottom: a ? `2px solid ${c}` : "2px solid transparent" }}><span>{z.icon}</span>{z.label}</button>); })}</div>
+            <div className="sd-teams-header-m" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", flexWrap: "wrap", gap: "1rem" }}><div><h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.4rem", fontWeight: 800, margin: "0 0 0.3rem 0", color: "var(--color-white)", display: "flex", alignItems: "center", gap: "0.6rem" }}><IconShield /> Clubes de la Temporada</h3><p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem", margin: 0 }}>Selecciona un equipo para ver su plantilla y formación</p></div><span style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", background: "rgba(255,255,255,0.05)", padding: "0.4rem 1rem", borderRadius: 20, fontWeight: 600 }}>{filteredEquipos.length} clubes</span></div>
+            <div className="sd-zona-tabs-m" style={{ display: "flex", gap: "0.4rem", marginBottom: "2rem", background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 3, border: "1px solid rgba(255,255,255,0.05)", maxWidth: 400 }}>{zonaButtons.map(z => { const a = vistaZona === z.key; const c = zonaColor(z); return (<button key={z.key} onClick={() => setVistaZona(z.key)} style={{ flex: 1, padding: "0.55rem 0.6rem", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "0.5px", textTransform: "uppercase", background: a ? `linear-gradient(135deg, ${c}25, ${c}10)` : "transparent", color: a ? c : "var(--color-text-muted)", boxShadow: a ? `0 0 12px ${c}20` : "none", transition: "all 0.3s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", borderBottom: a ? `2px solid ${c}` : "2px solid transparent" }}><span>{z.icon}</span><span className="sd-zona-label-m">{z.label}</span></button>); })}</div>
             {vistaZona === "East" && <ZonaHeader zona="Este" color="#3b82f6" />}{vistaZona === "West" && <ZonaHeader zona="Oeste" color="#f59e0b" />}
             {filteredEquipos.length === 0 ? (<div style={{ textAlign: "center", padding: "4rem 1rem", color: "var(--color-text-muted)" }}><p style={{ fontSize: "1.1rem" }}>No hay equipos en esta zona</p></div>) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
+              <div className="sd-teams-grid-m" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
                 {filteredEquipos.map(eq => { const stats = getTeamStats(eq.id); const isPO = playoffTeamIds.has(eq.id); const badge = isPO ? PLAYOFF_BADGE : null; const zonaTabla = vistaZona === "general" ? tabla : vistaZona === "East" ? tablaEast : tablaWest; return (
                   <div key={eq.id} className="glass-card" style={{ padding: 0, overflow: "hidden", transition: "all 0.3s ease", borderLeft: badge ? `3px solid ${badge.color}` : "3px solid transparent" }}
                     onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 15px 40px rgba(0,0,0,0.4), 0 0 20px rgba(34,197,94,0.1)"; e.currentTarget.style.borderColor = "rgba(34,197,94,0.3)"; if (badge) e.currentTarget.style.borderLeftColor = badge.color; }}
@@ -402,9 +402,11 @@ export default function SegundaDivision() {
 
       <style>{`
 @keyframes pv-playerEntry{from{opacity:0;transform:translate(-50%,-50%) scale(.5)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+
 .pv-team-page{max-width:880px;margin:0 auto;padding-bottom:3rem}
 .pv-back-btn{display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.6);padding:.55rem 1.1rem;border-radius:10px;cursor:pointer;font-weight:600;font-size:.82rem;margin-bottom:1.5rem;transition:all .2s;font-family:inherit}
 .pv-back-btn:hover{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.12)}
+
 .pv-hero-card{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(160deg,rgba(15,23,42,.95) 0%,rgba(15,23,42,.8) 50%,rgba(30,41,59,.9) 100%);border:1px solid rgba(255,255,255,.06);margin-bottom:1.5rem;box-shadow:0 12px 40px rgba(0,0,0,.4)}
 .pv-hero-bg-pattern{position:absolute;inset:0;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
 .pv-hero-content{position:relative;padding:1.8rem 2rem;z-index:1}
@@ -420,11 +422,13 @@ export default function SegundaDivision() {
 .pv-hero-stat strong{display:block;font-size:1.35rem;font-weight:900;font-family:var(--font-heading);color:#f1f5f9;line-height:1}
 .pv-hero-stat span{font-size:.6rem;color:#475569;text-transform:uppercase;letter-spacing:1.2px;margin-top:.25rem;display:block}
 .pv-hero-stat-divider{width:1px;height:32px;background:rgba(255,255,255,.05);flex-shrink:0}
+
 .pv-tabs-bar{display:flex;gap:0;margin-bottom:1.8rem;background:rgba(255,255,255,.025);border-radius:14px;padding:4px;border:1px solid rgba(255,255,255,.04);max-width:340px;margin-left:auto;margin-right:auto}
 .pv-tab-btn{flex:1;padding:.65rem .8rem;border:none;background:none;color:#475569;font-weight:700;font-size:.82rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.45rem;border-radius:11px;transition:all .2s}
 .pv-tab-btn:hover{color:#94a3b8;background:rgba(255,255,255,.03)}
 .pv-tab-btn.active{color:#86efac;background:rgba(34,197,94,.12);box-shadow:0 2px 12px rgba(34,197,94,.15)}
 .pv-tab-btn svg{opacity:.7}.pv-tab-btn.active svg{opacity:1}
+
 .pv-player-row{display:grid;grid-template-columns:34px 34px 1fr 48px 90px 54px;gap:.5rem;align-items:center;padding:.55rem .7rem;border-radius:12px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.025);transition:all .15s}
 .pv-player-row:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.06);transform:translateX(2px)}
 .pv-row-num{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;font-family:monospace}
@@ -440,6 +444,7 @@ export default function SegundaDivision() {
 .pv-row-stats small{color:#334155;font-size:.55rem;font-weight:600;margin-left:1px}
 .pv-row-pj{font-size:.74rem;color:#475569;font-weight:600;text-align:center;font-family:monospace}
 .pv-row-pj small{font-weight:400;font-size:.55rem}
+
 .pv-pos-group{margin-bottom:1.5rem}
 .pv-group-head{display:flex;align-items:center;gap:.55rem;margin-bottom:.6rem;padding:.5rem .8rem;border-bottom:2px solid transparent;border-radius:10px 10px 0 0}
 .pv-group-icon{font-size:.85rem}
@@ -447,22 +452,26 @@ export default function SegundaDivision() {
 .pv-group-count{font-size:.58rem;font-weight:700;padding:2px 9px;border-radius:5px;margin-left:auto}
 .pv-group-list{display:flex;flex-direction:column;gap:.3rem}
 .pv-roster-wrap{max-width:760px;margin:0 auto}
+
 .pv-fm-section{display:flex;flex-direction:column;gap:1.2rem}
-.pv-fm-locked{display:flex;align-items:center;justify-content:center;gap:.7rem;padding:.65rem 1rem;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)}
+.pv-fm-locked{display:flex;align-items:center;justify-content:center;gap:.7rem;padding:.65rem 1rem;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);flex-wrap:wrap}
 .pv-fm-badge{font-size:.85rem;font-weight:900;color:#86efac;background:rgba(34,197,94,.12);padding:.3rem .9rem;border-radius:8px;border:1px solid rgba(34,197,94,.2);font-family:monospace;letter-spacing:1px}
 .pv-fm-locked-label{font-size:.72rem;color:#475569;font-weight:600}
+
 .pv-pitch-wrap{width:100%;max-width:420px;margin:0 auto}
 .pv-pitch{position:relative;width:100%;aspect-ratio:68/105;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(0deg,#091f12 0px,#091f12 52px,#0c2815 52px,#0c2815 105px);box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 0 80px rgba(0,0,0,.2)}
 .pv-pitch-svg{position:absolute;inset:0;width:100%;height:100%}
 .pv-pitch-empty{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;opacity:.25}
 .pv-pitch-empty p{color:#fff;font-weight:700;font-size:.85rem;margin:0}
 .pv-pitch-empty span{color:#94a3b8;font-size:.72rem}
+
 .pv-pp{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:2;transition:left .45s cubic-bezier(.4,0,.2,1),top .45s cubic-bezier(.4,0,.2,1);animation:pv-playerEntry .5s cubic-bezier(.34,1.56,.64,1) both;cursor:default}
 .pv-pp-dot{width:34px;height:34px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.2);transition:all .2s;font-size:.6rem;font-weight:800;color:#fff}
 .pv-pp:hover .pv-pp-dot{transform:scale(1.18)}
 .pv-pp-dot img{width:100%;height:100%;object-fit:cover}
 .pv-pp-name{font-size:.52rem;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9);white-space:nowrap;max-width:65px;overflow:hidden;text-overflow:ellipsis;text-align:center}
 .pv-pp-role{font-size:.44rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.5px;font-family:monospace}
+
 .pv-subs-card{background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);border-radius:14px;padding:1rem 1.1rem}
 .pv-subs-title{margin:0 0 .65rem;font-size:.78rem;font-weight:700;color:#94a3b8;display:flex;align-items:center;gap:.4rem}
 .pv-subs-bench-icon{font-size:.85rem}
@@ -482,13 +491,109 @@ export default function SegundaDivision() {
 .pv-sub-mini-stats{display:flex;gap:.35rem;flex-shrink:0;font-size:.7rem;font-family:monospace;align-items:center}
 .pv-sub-mini-stats span{display:flex;align-items:baseline;gap:1px}
 .pv-sub-mini-stats small{font-size:.48rem;font-weight:600;color:#334155}
+
+/* ============================================
+   RESPONSIVE: MÓVIL (≤ 768px) — SEGUNDA DIVISIÓN
+   ============================================ */
 @media(max-width:768px){
-  .pv-team-page{padding-left:.5rem;padding-right:.5rem}
-  .pv-hero-content{padding:1.3rem 1.2rem}.pv-hero-left{flex-direction:column;text-align:center;gap:.8rem}.pv-hero-logo-ring{width:56px;height:56px}.pv-hero-text h2{font-size:1.1rem}.pv-hero-meta{justify-content:center}.pv-hero-stat-divider{display:none}.pv-hero-stat{min-width:55px}.pv-hero-stat strong{font-size:1.1rem}
-  .pv-player-row{grid-template-columns:30px 30px 1fr auto;gap:.3rem;padding:.45rem .55rem}.pv-row-pos,.pv-row-stats,.pv-row-pj{display:none!important}
-  .pv-pitch-wrap{max-width:300px}.pv-pp-dot{width:28px;height:28px;font-size:.52rem}.pv-pp-name{font-size:.44rem}.pv-subs-grid{grid-template-columns:1fr}.pv-sub-mini-stats{display:none!important}
+  /* Dashboard: sidebar abajo, tabla arriba */
+  .sd-dashboard-m{display:flex!important;flex-direction:column-reverse!important;gap:1.5rem!important}
+  .sd-sidebar-col-m{order:2!important}
+  .sd-standings-col-m{order:1!important}
+
+  /* Page title */
+  .sd-page-title-row h2{font-size:1.5rem!important}
+  .sd-page-subtitle{font-size:.88rem!important;padding-left:0!important}
+
+  /* Main tabs */
+  .sd-main-tabs{border-radius:10px!important}
+  .sd-main-tabs button{padding:.6rem .8rem!important;font-size:.78rem!important;gap:.3rem!important}
+
+  /* Table: hide GF/GC, enable scroll */
+  .sd-m-hide{display:none!important}
+  .sd-table-scroll-m{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;margin:0 -1.8rem!important;padding:0 1.8rem!important;width:calc(100% + 3.6rem)!important}
+  .sd-table-m{min-width:380px!important}
+  .sd-table-m th,.sd-table-m td{padding:8px 6px!important;font-size:.78rem!important}
+  .sd-team-name-m{font-size:.8rem!important;max-width:110px!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .sd-th-pos-m{width:32px!important}
+
+  /* Zona tabs compact */
+  .sd-zona-tabs-m{max-width:100%!important}
+  .sd-zona-tabs-m button{padding:.5rem .4rem!important;font-size:.68rem!important;gap:.2rem!important}
+
+  /* Next match: stack vertically */
+  .sd-next-teams-m{flex-direction:column!important;gap:.8rem!important}
+  .sd-next-teams-m>div{width:100%!important;justify-content:center!important}
+
+  /* Featured match: scale down */
+  .sd-featured-logo{width:48px!important;height:48px!important;padding:6px!important}
+  .sd-featured-score{font-size:1.4rem!important;width:36px!important}
+  .sd-featured-name{font-size:.65rem!important;max-width:80px!important}
+
+  /* Team cards grid */
+  .sd-teams-grid-m{grid-template-columns:1fr!important;gap:1rem!important}
+  .sd-teams-header-m h3{font-size:1.15rem!important}
+
+  /* Glass cards */
+  .glass-card{padding:1.2rem!important}
+
+  /* Team detail */
+  .pv-team-page{padding:0 .5rem!important}
+  .pv-hero-content{padding:1.2rem!important}
+  .pv-hero-left{flex-direction:column!important;text-align:center!important;gap:.8rem!important}
+  .pv-hero-logo-ring{width:56px!important;height:56px!important}
+  .pv-hero-text h2{font-size:1.1rem!important}
+  .pv-hero-meta{justify-content:center!important}
+  .pv-hero-stat-divider{display:none!important}
+  .pv-hero-stat{min-width:55px!important}
+  .pv-hero-stat strong{font-size:1.1rem!important}
+
+  /* Player rows: compact */
+  .pv-player-row{grid-template-columns:30px 30px 1fr!important;gap:.3rem!important;padding:.45rem .55rem!important}
+
+  /* Pitch */
+  .pv-pitch-wrap{max-width:280px!important}
+  .pv-pp-dot{width:26px!important;height:26px!important;font-size:.48rem!important;border-width:1.5px!important}
+  .pv-pp-name{font-size:.4rem!important;max-width:48px!important}
+  .pv-pp-role{display:none!important}
+
+  /* Subs */
+  .pv-subs-grid{grid-template-columns:1fr!important}
+  .pv-sub-mini-stats{display:none!important}
+
+  /* Tabs bar full width */
+  .pv-tabs-bar{max-width:100%!important}
 }
-@media(max-width:480px){.pv-tabs-bar{max-width:100%}}
+
+@media(max-width:480px){
+  .sd-page-title-row h2{font-size:1.3rem!important}
+  .sd-main-tabs button{font-size:.72rem!important;padding:.55rem .5rem!important}
+  .sd-table-m{min-width:320px!important}
+  .sd-team-name-m{font-size:.75rem!important;max-width:85px!important}
+
+  /* Zona tabs even more compact */
+  .sd-zona-label-m{display:none!important}
+
+  /* Pitch smaller */
+  .pv-pitch-wrap{max-width:240px!important}
+  .pv-pp-dot{width:22px!important;height:22px!important;font-size:.42rem!important}
+  .pv-pp-name{font-size:.36rem!important;max-width:40px!important}
+
+  /* Hero stats compact */
+  .pv-hero-stat strong{font-size:.95rem!important}
+  .pv-hero-stat span{font-size:.5rem!important;letter-spacing:.8px!important}
+
+  /* Featured card more compact */
+  .sd-featured-logo{width:40px!important;height:40px!important;padding:5px!important}
+  .sd-featured-score{font-size:1.2rem!important;width:30px!important}
+  .sd-featured-name{font-size:.6rem!important;max-width:65px!important}
+}
+
+@media(max-width:768px) and (orientation:landscape){
+  .pv-pitch-wrap{max-width:220px!important}
+  .pv-hero-content{padding:1rem 1.2rem!important}
+  .pv-hero-left{flex-direction:row!important;text-align:left!important}
+}
       `}</style>
     </>
   );

@@ -46,6 +46,12 @@ const IconAlert = () => (
   </svg>
 );
 
+const IconStar = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+  </svg>
+);
+
 const logoUrl = (path) => {
   if (!path) return null;
   if (path.startsWith("http")) return path;
@@ -139,11 +145,59 @@ const ResultRow = ({ m }) => {
   );
 };
 
+const FeaturedMatchCard = ({ match }) => {
+  const st = getMatchStatus(match.estado);
+  const isF = st.variant === "finished", isL = st.variant === "live", isS = st.variant === "scheduled";
+  const hw = match.goles_local != null && match.goles_visitante != null && match.goles_local > match.goles_visitante;
+  const aw = match.goles_local != null && match.goles_visitante != null && match.goles_visitante > match.goles_local;
+  const sc = isL ? "#ef4444" : isF ? "#10b981" : "#f59e0b", sb = isL ? "rgba(239,68,68,0.15)" : isF ? "rgba(16,185,129,0.12)" : "rgba(245,158,11,0.12)";
+  return (
+    <div style={{ position: "relative", borderRadius: 20, overflow: "hidden", background: "linear-gradient(160deg,#1a1f35 0%,#0d1117 40%,#111827 100%)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+      <div style={{ height: 3, background: `linear-gradient(90deg,transparent 0%,${sc}66 30%,${sc} 50%,${sc}66 70%,transparent 100%)` }} />
+      <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 280, height: 180, borderRadius: "50%", background: `radial-gradient(ellipse,${sc}12 0%,transparent 70%)`, pointerEvents: "none" }} />
+      <div style={{ position: "relative", padding: "1.6rem 1.4rem 1.4rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.8rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}><IconStar /><span style={{ fontSize: "0.65rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: 2, color: "rgba(255,255,255,0.4)" }}>Destacado</span></div>
+          <span style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", color: sc, background: sb, padding: "4px 12px", borderRadius: 20, border: `1px solid ${sc}25`, animation: isL ? "fp3 2s ease-in-out infinite" : "none" }}>{st.text}</span>
+        </div>
+        <div className="td-featured-teams" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem" }}>
+          <div className="td-featured-team" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}>
+            <div className="td-featured-logo" style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
+              <img src={logoUrl(match.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} />
+            </div>
+            <span className="td-featured-name" style={{ fontSize: "0.72rem", fontWeight: hw ? 800 : 600, color: hw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.home_name}</span>
+            {hw && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "0 0.8rem", flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", background: "rgba(0,0,0,0.35)", borderRadius: 14, padding: "6px 4px", border: "1px solid rgba(255,255,255,0.04)", boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)" }}>
+              <span className="td-featured-score" style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: hw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_local ?? "-"}</span>
+              <span style={{ fontSize: "1rem", color: "rgba(255,255,255,0.2)", margin: "0 2px" }}>:</span>
+              <span className="td-featured-score" style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: aw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_visitante ?? "-"}</span>
+            </div>
+            <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, color: "rgba(255,255,255,0.25)" }}>{isS ? "VS" : "FT"}</span>
+          </div>
+          <div className="td-featured-team" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}>
+            <div className="td-featured-logo" style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
+              <img src={logoUrl(match.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} />
+            </div>
+            <span className="td-featured-name" style={{ fontSize: "0.72rem", fontWeight: aw ? 800 : 600, color: aw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.away_name}</span>
+            {aw && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}
+          </div>
+        </div>
+        <div style={{ height: 1, margin: "1.4rem 0 1rem", background: "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.06) 30%,rgba(255,255,255,0.06) 70%,transparent 100%)" }} />
+        {match.fecha && <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, fontSize: "0.7rem", color: "rgba(255,255,255,0.3)" }}><IconCalendar /><span>{match.fecha}</span></div>}
+      </div>
+      <style>{`@keyframes fp3{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.3)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}`}</style>
+    </div>
+  );
+};
+
 /* ============================================================
    COMPONENTE PRINCIPAL
    ============================================================ */
 export default function TerceraDivision() {
   const [tabla, setTabla] = useState([]);
+  const [match, setMatch] = useState(null);
   const [equipos, setEquipos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -156,18 +210,37 @@ export default function TerceraDivision() {
 
     Promise.allSettled([
       safeFetch(`${API_BASE}get_tabla_tercera.php`),
+      safeFetch(`${API_BASE}get_featured_match_tercera.php?t=${Date.now()}`),
       safeFetch(`${API_BASE}get_teams_tercera.php`),
       safeFetch(`${API_BASE}get_sidebar_matches_tercera.php`),
     ]).then((results) => {
       const tablaData = results[0].status === "fulfilled" ? results[0].value : [];
-      const equiposData = results[1].status === "fulfilled" ? results[1].value : [];
-      const sidebarData = results[2].status === "fulfilled" ? results[2].value : null;
+      const matchData = results[1].status === "fulfilled" ? results[1].value : null;
+      const equiposData = results[2].status === "fulfilled" ? results[2].value : [];
+      const sidebarData = results[3].status === "fulfilled" ? results[3].value : null;
 
       const tablaArr = Array.isArray(tablaData) ? tablaData : [];
       const equiposArr = Array.isArray(equiposData) ? equiposData : [];
       setTabla(tablaArr);
       setEquipos(equiposArr);
       setSidebar(sidebarData && typeof sidebarData === "object" ? sidebarData : { next: null, recent: [] });
+
+      const teamMap = {};
+      equiposArr.forEach(t => { teamMap[String(t.id)] = t; if (t.nombre) teamMap[t.nombre] = t; });
+
+      let feat = null;
+      if (matchData && !Array.isArray(matchData) && Object.keys(matchData).length > 0 && (matchData.home_name || matchData.local_nombre)) {
+        const n = normalizeMatch(matchData, teamMap);
+        if (n && n.home_name && n.away_name) feat = n;
+      }
+      if (!feat && sidebarData?.recent?.length) {
+        const found = sidebarData.recent.find(m => m.featured == 1 || m.destacado == 1);
+        if (found) feat = normalizeMatch(found, teamMap);
+      }
+      if (!feat && sidebarData?.next && (sidebarData.next.featured == 1 || sidebarData.next.destacado == 1)) {
+        feat = normalizeMatch(sidebarData.next, teamMap);
+      }
+      setMatch(feat);
     }).catch((err) => {
       console.error("Error cargando datos:", err);
       setError(err.message);
@@ -210,18 +283,18 @@ export default function TerceraDivision() {
   return (
     <>
       <Header />
-      <section className="table-section" style={{ paddingBottom: 0 }}>
+      <section className="table-section td-section-m" style={{ paddingBottom: 0 }}>
 
         <div className="container" style={{ marginBottom: "1.5rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}>
+          <div className="td-page-title-row" style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}>
             <IconTrophy />
             <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "2rem", fontWeight: 800, textTransform: "uppercase", margin: 0, background: "linear-gradient(90deg, #fff, #a855f7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Tercera División</h2>
           </div>
-          <p style={{ color: "var(--color-text-muted)", fontSize: "1rem", margin: 0, paddingLeft: "1.8rem" }}>Clasificación general, equipos y resultados</p>
+          <p className="td-page-subtitle" style={{ color: "var(--color-text-muted)", fontSize: "1rem", margin: 0, paddingLeft: "1.8rem" }}>Clasificación general, equipos y resultados</p>
         </div>
 
         <div className="container" style={{ marginBottom: "2rem" }}>
-          <div style={{ display: "flex", gap: "0.5rem", background: "rgba(255,255,255,0.03)", borderRadius: "12px", padding: "4px", border: "1px solid rgba(255,255,255,0.05)" }}>
+          <div className="td-main-tabs" style={{ display: "flex", gap: "0.5rem", background: "rgba(255,255,255,0.03)", borderRadius: "12px", padding: "4px", border: "1px solid rgba(255,255,255,0.05)" }}>
             {[
               { key: "clasificacion", label: "Clasificación", icon: "📊" },
               { key: "equipos", label: "Equipos", icon: "🛡️" },
@@ -234,18 +307,24 @@ export default function TerceraDivision() {
         </div>
 
         {activeTab === "clasificacion" && (
-          <div className="dashboard-grid">
+          <div className="dashboard-grid td-dashboard-m">
 
             {/* ====== COLUMNA IZQUIERDA ====== */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            <div className="td-sidebar-col-m" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
 
-              {/* SIN PARTIDO DESTACADO */}
-              <div className="glass-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}>
-                <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
-                  <span style={{ fontSize: "1.5rem", opacity: 0.3 }}>⚽</span>
-                </div>
-                <p style={{ fontSize: "0.9rem", margin: "0 0 0.3rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Sin partido destacado</p>
-                <p style={{ fontSize: "0.75rem", margin: 0, color: "rgba(255,255,255,0.25)" }}>Se mostrará cuando se configure desde el panel</p>
+              {/* PARTIDO DESTACADO */}
+              <div className="td-featured-wrap">
+                {match && match.home_name ? (
+                  <FeaturedMatchCard match={match} />
+                ) : (
+                  <div className="glass-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}>
+                    <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
+                      <span style={{ fontSize: "1.5rem", opacity: 0.3 }}>⚽</span>
+                    </div>
+                    <p style={{ fontSize: "0.9rem", margin: "0 0 0.3rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Sin partido destacado</p>
+                    <p style={{ fontSize: "0.75rem", margin: 0, color: "rgba(255,255,255,0.25)" }}>Se mostrará cuando se configure desde el panel</p>
+                  </div>
+                )}
               </div>
 
               {/* PRÓXIMO PARTIDO */}
@@ -261,7 +340,7 @@ export default function TerceraDivision() {
                         {getMatchStatus(sidebar.next.status || sidebar.next.estado).text}
                       </span>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
+                    <div className="td-next-teams-m" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0 }}>
                         <div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           {sidebar.next.home_logo && <img src={logoUrl(sidebar.next.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}
@@ -320,7 +399,7 @@ export default function TerceraDivision() {
               </div>
 
               {/* LEYENDA */}
-              <div className="glass-card" style={{ padding: "1.5rem" }}>
+              <div className="glass-card td-m-hide" style={{ padding: "1.5rem" }}>
                 <div className="section-subtitle" style={{ marginTop: 0, fontSize: "0.85rem" }}>Leyenda</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
@@ -332,19 +411,19 @@ export default function TerceraDivision() {
             </div>
 
             {/* ====== TABLA CLASIFICACIÓN ====== */}
-            <div className="glass-card" style={{ padding: "1.8rem" }}>
+            <div className="td-standings-col-m glass-card" style={{ padding: "1.8rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
                 <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.3rem", fontWeight: 800, margin: 0, color: "var(--color-white)" }}>Clasificación General</h3>
                 <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", background: "rgba(255,255,255,0.05)", padding: "0.3rem 0.8rem", borderRadius: "20px", fontWeight: 600 }}>{tabla.length} equipos</span>
               </div>
 
-              <div className="table-container">
-                <table className="standings-table">
+              <div className="table-container td-table-scroll-m">
+                <table className="standings-table td-table-m">
                   <thead>
                     <tr>
-                      <th style={{ width: 40, textAlign: "center" }}>#</th>
+                      <th className="td-th-pos-m" style={{ width: 40, textAlign: "center" }}>#</th>
                       <th style={{ textAlign: "left", paddingLeft: "16px" }}>Equipo</th>
-                      <th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th>
+                      <th>PJ</th><th>G</th><th>E</th><th>P</th><th className="td-m-hide">GF</th><th className="td-m-hide">GC</th><th>DG</th>
                       <th style={{ minWidth: 50 }}>PTS</th>
                     </tr>
                   </thead>
@@ -361,14 +440,14 @@ export default function TerceraDivision() {
                           </td>
                           <td className="team-cell" style={{ paddingLeft: "16px" }}>
                             {team.logo && <img src={logoUrl(team.logo)} alt={team.nombre} style={{ width: 28, height: 28, objectFit: "contain", background: "rgba(255,255,255,0.06)", borderRadius: "50%", padding: "3px" }} />}
-                            <span style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--color-text-main)", whiteSpace: "nowrap" }}>{team.nombre}</span>
+                            <span className="td-team-name-m" style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--color-text-main)", whiteSpace: "nowrap" }}>{team.nombre}</span>
                           </td>
                           <td>{team.pj}</td>
                           <td style={{ color: "#10b981", fontWeight: 600 }}>{team.pg}</td>
                           <td style={{ color: "#f59e0b", fontWeight: 600 }}>{team.pe}</td>
                           <td style={{ color: "#ef4444", fontWeight: 600 }}>{team.pp}</td>
-                          <td>{team.gf}</td>
-                          <td>{team.gc}</td>
+                          <td className="td-m-hide">{team.gf}</td>
+                          <td className="td-m-hide">{team.gc}</td>
                           <td style={{ fontWeight: 700, color: team.gf - team.gc > 0 ? "#10b981" : team.gf - team.gc < 0 ? "#ef4444" : "var(--color-text-muted)", fontSize: "0.85rem" }}>{dg}</td>
                           <td style={{ fontWeight: 800, fontSize: "1rem", color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 8px rgba(168,85,247,0.3)" }}>{team.pts}</td>
                         </tr>
@@ -379,7 +458,7 @@ export default function TerceraDivision() {
               </div>
 
               {tabla.length > 0 && (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)", flexWrap: "wrap", gap: "0.5rem" }}>
                   <span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span>
                   <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><IconStadium /> Tercera División · El Salvador</span>
                 </div>
@@ -391,7 +470,7 @@ export default function TerceraDivision() {
         {/* ====== TAB EQUIPOS ====== */}
         {activeTab === "equipos" && (
           <div className="container" style={{ paddingBottom: "var(--spacing-lg)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+            <div className="td-teams-header-m" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}>
               <div>
                 <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.4rem", fontWeight: 800, margin: "0 0 0.3rem 0", color: "var(--color-white)", display: "flex", alignItems: "center", gap: "0.6rem" }}>
                   <IconShield /> Clubes de la Temporada
@@ -406,7 +485,7 @@ export default function TerceraDivision() {
                 <p style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>No hay equipos registrados</p>
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
+              <div className="td-teams-grid-m" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
                 {equipos.map((equipo) => {
                   const stats = getTeamStats(equipo.id);
                   return (
@@ -437,30 +516,30 @@ export default function TerceraDivision() {
                           )}
                         </div>
                         {stats && (
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "1rem" }}>
-                            {[
-                              { label: "PJ", value: stats.pj, color: "var(--color-text-main)" },
-                              { label: "G", value: stats.pg, color: "#10b981" },
-                              { label: "E", value: stats.pe, color: "#f59e0b" },
-                              { label: "P", value: stats.pp, color: "#ef4444" },
-                            ].map((stat, i) => (
-                              <div key={i} style={{ textAlign: "center" }}>
-                                <div style={{ fontSize: "1.1rem", fontWeight: 800, color: stat.color, fontFamily: "var(--font-heading)", lineHeight: 1 }}>{stat.value}</div>
-                                <div style={{ fontSize: "0.65rem", color: "var(--color-text-muted)", marginTop: "0.2rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>{stat.label}</div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {stats && (
-                          <div style={{ marginTop: "1rem", paddingTop: "0.8rem", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: "0.78rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Puntos</span>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                              <div style={{ width: 80, height: 4, borderRadius: "2px", background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                                <div style={{ height: "100%", borderRadius: "2px", background: "linear-gradient(90deg, #a855f7, #7c3aed)", width: `${Math.min((stats.pts / (tabla[0]?.pts || 1)) * 100, 100)}%`, transition: "width 0.5s ease" }} />
-                              </div>
-                              <span style={{ fontSize: "1.2rem", fontWeight: 900, color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 10px rgba(168,85,247,0.4)" }}>{stats.pts}</span>
+                          <>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "1rem" }}>
+                              {[
+                                { label: "PJ", value: stats.pj, color: "var(--color-text-main)" },
+                                { label: "G", value: stats.pg, color: "#10b981" },
+                                { label: "E", value: stats.pe, color: "#f59e0b" },
+                                { label: "P", value: stats.pp, color: "#ef4444" },
+                              ].map((stat, i) => (
+                                <div key={i} style={{ textAlign: "center" }}>
+                                  <div style={{ fontSize: "1.1rem", fontWeight: 800, color: stat.color, fontFamily: "var(--font-heading)", lineHeight: 1 }}>{stat.value}</div>
+                                  <div style={{ fontSize: "0.65rem", color: "var(--color-text-muted)", marginTop: "0.2rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>{stat.label}</div>
+                                </div>
+                              ))}
                             </div>
-                          </div>
+                            <div style={{ marginTop: "1rem", paddingTop: "0.8rem", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: "0.78rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Puntos</span>
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                <div style={{ width: 80, height: 4, borderRadius: "2px", background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                                  <div style={{ height: "100%", borderRadius: "2px", background: "linear-gradient(90deg, #a855f7, #7c3aed)", width: `${Math.min((stats.pts / (tabla[0]?.pts || 1)) * 100, 100)}%`, transition: "width 0.5s ease" }} />
+                                </div>
+                                <span style={{ fontSize: "1.2rem", fontWeight: 900, color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 10px rgba(168,85,247,0.4)" }}>{stats.pts}</span>
+                              </div>
+                            </div>
+                          </>
                         )}
                       </div>
                     </div>
@@ -487,6 +566,73 @@ export default function TerceraDivision() {
           </div>
         </div>
       </footer>
+
+      <style>{`
+/* ============================================
+   RESPONSIVE: MÓVIL (≤ 768px) — TERCERA DIVISIÓN
+   ============================================ */
+@media(max-width:768px){
+  /* Dashboard: tabla arriba, sidebar abajo */
+  .td-dashboard-m{display:flex!important;flex-direction:column-reverse!important;gap:1.5rem!important}
+  .td-sidebar-col-m{order:2!important}
+  .td-standings-col-m{order:1!important}
+
+  /* Page title */
+  .td-page-title-row h2{font-size:1.5rem!important}
+  .td-page-subtitle{font-size:.88rem!important;padding-left:0!important}
+
+  /* Main tabs */
+  .td-main-tabs{border-radius:10px!important}
+  .td-main-tabs button{padding:.6rem .8rem!important;font-size:.78rem!important;gap:.3rem!important}
+
+  /* Hide elements on mobile */
+  .td-m-hide{display:none!important}
+
+  /* Table: enable horizontal scroll */
+  .td-table-scroll-m{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;margin:0 -1.8rem!important;padding:0 1.8rem!important;width:calc(100% + 3.6rem)!important}
+  .td-table-m{min-width:380px!important}
+  .td-table-m th,.td-table-m td{padding:8px 6px!important;font-size:.78rem!important}
+  .td-team-name-m{font-size:.8rem!important;max-width:110px!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .td-th-pos-m{width:32px!important}
+
+  /* Next match: stack vertically */
+  .td-next-teams-m{flex-direction:column!important;gap:.8rem!important}
+  .td-next-teams-m>div{width:100%!important;justify-content:center!important}
+
+  /* Featured match: scale down */
+  .td-featured-logo{width:48px!important;height:48px!important;padding:6px!important}
+  .td-featured-score{font-size:1.4rem!important;width:36px!important}
+  .td-featured-name{font-size:.65rem!important;max-width:80px!important}
+
+  /* Team cards grid: single column */
+  .td-teams-grid-m{grid-template-columns:1fr!important;gap:1rem!important}
+  .td-teams-header-m h3{font-size:1.15rem!important}
+
+  /* Glass cards */
+  .glass-card{padding:1.2rem!important}
+}
+
+@media(max-width:480px){
+  .td-page-title-row h2{font-size:1.3rem!important}
+  .td-main-tabs button{font-size:.72rem!important;padding:.55rem .5rem!important}
+
+  /* Table even more compact */
+  .td-table-m{min-width:320px!important}
+  .td-team-name-m{font-size:.75rem!important;max-width:85px!important}
+
+  /* Featured card more compact */
+  .td-featured-logo{width:40px!important;height:40px!important;padding:5px!important}
+  .td-featured-score{font-size:1.2rem!important;width:30px!important}
+  .td-featured-name{font-size:.6rem!important;max-width:65px!important}
+
+  /* Team cards stats compact */
+  .td-teams-grid-m .glass-card div[style*="gridTemplateColumns"]{gap:.35rem!important}
+}
+
+@media(max-width:768px) and (orientation:landscape){
+  .td-featured-teams{gap:.3rem!important}
+}
+      `}</style>
     </>
   );
 }
