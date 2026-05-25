@@ -8,7 +8,7 @@ import 'animate.css';
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
-    Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, Upload, Image, FileText 
+    Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, Upload, Image, FileText, CheckCircle2, RotateCcw, StarOff, Filter, Zap, MessageCircle
 } from "lucide-react";
 
 export default function ManagePublicNews() {
@@ -277,6 +277,7 @@ export default function ManagePublicNews() {
       { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
       { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
       { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
+      { path: "/manage-comments", icon: <MessageCircle size={20} />, label: "Gestionar Comentarios" },
       { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
       { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
     ];

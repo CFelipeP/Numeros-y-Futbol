@@ -6,7 +6,7 @@ import "animate.css";
 
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
-  CircleDot, Target, FileText, Trophy, Zap, TrendingUp, RotateCcw, ChevronDown,
+  CircleDot, Target, FileText, Trophy, Zap, TrendingUp, RotateCcw, ChevronDown, MessageCircle
 } from "lucide-react";
 
 import GoalsChart from "../components/GoalsChart";
@@ -161,6 +161,7 @@ const AdminDashboard = () => {
       { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
       { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
       { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
+      { path: "/manage-comments", icon: <MessageCircle size={20} />, label: "Gestionar Comentarios" },
       { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
       { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
     ];

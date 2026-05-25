@@ -23,6 +23,8 @@ import AdminPosiciones from "./dashboard/AdminPosiciones";
 import PlantillaEquipos from "./dashboard/PlantillaEquipos";
 import Admincopa from "./dashboard/Admincoppresidente";
 import ForgotPassword from "./pages/ForgotPassword";
+import MatchDetail from "./Divisiones/MatchDetail";
+import Managecomments from "./dashboard/Managematchcomments";
 
 // Dentro de <Routes>:
 
@@ -52,6 +54,12 @@ function App() {
         <Route path="/segunda" element={<Segunda />} />
         <Route path="/admin/plantilla" element={<PlantillaEquipos />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/partido/:id/:division" element={<MatchDetail />} />
+        <Route path="/manage-comments" element={
+          <ProtectedRoute>
+            <Managecomments />
+          </ProtectedRoute>
+        } />
 
 
         {/* RUTAS PROTEGIDAS (ADMIN) */}

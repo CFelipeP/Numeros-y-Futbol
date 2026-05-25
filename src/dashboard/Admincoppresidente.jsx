@@ -6,7 +6,7 @@ import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings,
   LogOut, Menu, Trophy, Target, Plus, Edit2, Trash2, Save, X,
   RefreshCw, ChevronDown, RotateCcw, Users2, Upload, AlertTriangle,
-  CheckCircle2, Clock, Swords, ArrowRight, Lock, ArrowLeftRight, Zap,
+  CheckCircle2, Clock, Swords, ArrowRight, Lock, ArrowLeftRight, Zap, MessageCircle
 } from "lucide-react";
 
 const API_BASE = "http://numeros-y-futbol.test/backend/";
@@ -1058,8 +1058,26 @@ const KnockoutPair = ({ pair, onEdit, onQuickFinish, onDelete, onCreateVuelta, p
 /* ─── Sidebar ────────────────────────────────────────────────────────────── */
 const Sidebar = () => {
   const location = useLocation(); const [teamsOpen, setTeamsOpen] = useState(false);
-  const navItems = [{ path: "/dashboard", icon: <LayoutDashboard size={18} />, label: "Dashboard" }, { path: "/matches", icon: <CalendarDays size={18} />, label: "Partidos" }, { path: "/mynews", icon: <Newspaper size={18} />, label: "Crear Noticias" }, { type: "dropdown", icon: <Shield size={18} />, label: "Equipos", children: [{ path: "/teams/primera", label: "Primera" }, { path: "/teams/segunda", label: "Segunda" }, { path: "/teams/tercera", label: "Tercera" }] }, { path: "/admin/plantilla", icon: <Target size={18} />, label: "Plantillas" }, { path: "/posiciones", icon: <Trophy size={18} />, label: "Posiciones" }, { path: "/admin/copa", icon: <Trophy size={18} />, label: "Copa Presidente" }, { path: "/manage-news", icon: <Newspaper size={18} />, label: "Noticias" }, { path: "/users", icon: <Users size={18} />, label: "Usuarios" }, { path: "/settings", icon: <Settings size={18} />, label: "Configuración" }];
-  const handleLogout = () => { Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "Cancelar", background: "#1e293b", color: "#fff" }).then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); window.location.href = "/login"; } }); };
+const navItems = [
+      { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+      { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
+      { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
+      {
+        type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
+        children: [
+          { path: "/teams/primera", label: "Primera División" },
+          { path: "/teams/segunda", label: "Segunda División" },
+          { path: "/teams/tercera", label: "Tercera División" },
+        ]
+      },
+      { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
+      { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
+      { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
+      { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
+      { path: "/manage-comments", icon: <MessageCircle size={20} />, label: "Gestionar Comentarios" },
+      { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
+      { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+    ];  const handleLogout = () => { Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "Cancelar", background: "#1e293b", color: "#fff" }).then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); window.location.href = "/login"; } }); };
   return (<aside className="sidebar"><div className="sidebar-header"><div className="logo-icon"><img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="Logo" /></div><h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2></div><nav className="sidebar-nav"><ul>{navItems.map((item, idx) => { if (item.type === "dropdown") return (<li key={idx}><button className="nav-item" onClick={() => setTeamsOpen(!teamsOpen)} style={{ width: "100%", justifyContent: "space-between", border: "none", fontFamily: "inherit" }}><span style={{ display: "flex", alignItems: "center", gap: 14 }}>{item.icon} {item.label}</span><ChevronDown size={15} style={{ opacity: 0.4, transition: "transform 0.25s", transform: teamsOpen ? "rotate(180deg)" : "none" }} /></button><ul style={{ maxHeight: teamsOpen ? "180px" : "0", overflow: "hidden", transition: "max-height 0.3s", listStyle: "none", padding: 0, margin: 0 }}>{item.children.map(c => (<li key={c.path}><Link to={c.path} className={`nav-item${location.pathname === c.path ? " active" : ""}`} style={{ paddingLeft: 46, fontSize: 13 }}>{c.label}</Link></li>))}</ul></li>); return (<li key={item.path}><Link to={item.path} className={`nav-item${location.pathname === item.path ? " active" : ""}`}>{item.icon} {item.label}</Link></li>); })}</ul></nav><div className="sidebar-footer"><button className="nav-item btn-logout-sidebar" onClick={handleLogout} style={{ width: "100%", border: "none", fontFamily: "inherit" }}><LogOut size={18} /> Cerrar sesión</button></div></aside>);
 };
 

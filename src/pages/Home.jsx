@@ -3,7 +3,7 @@ import Particles from '@tsparticles/react';
 import { loadFull } from 'tsparticles';
 import { motion } from 'framer-motion';
 import { driver } from 'driver.js';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import 'driver.js/dist/driver.css';
 
 import Header from '../components/Header';
@@ -75,6 +75,7 @@ const Hero = () => (
 const Carousel = () => {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`${BASE_URL}get_carousel.php`)
@@ -204,7 +205,9 @@ const Carousel = () => {
               const isFinished = match.estado === "Finalizado";
 
               return (
-                <div className="carousel-card" key={`m-${idx}`} style={{
+                <div className="carousel-card" key={`m-${idx}`}
+                  onClick={() => { if ((isPending || isLive) && match.id) navigate(`/partido/${match.id}/primera`); }}
+                  style={{
                   background: "linear-gradient(160deg, #0d1117 0%, #111827 50%, #0f1319 100%)",
                   border: "1px solid #1a2233",
                   borderRadius: 20,
@@ -213,7 +216,7 @@ const Carousel = () => {
                   flexShrink: 0,
                   position: "relative",
                   overflow: "hidden",
-                  cursor: "default",
+                  cursor: (isPending || isLive) && match.id ? "pointer" : "default",
                 }}>
 
                   {/* Línea superior de estado */}

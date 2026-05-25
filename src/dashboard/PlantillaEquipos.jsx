@@ -7,7 +7,7 @@ import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   ChevronDown, Plus, Pencil, Trash2, Save, X,
   Search, User, Target, Trophy, Star, Eye as EyeIcon,
-  Upload, Download, ArrowLeftRight,
+  Upload, Download, ArrowLeftRight, CheckCircle2, Image as ImageIcon, RotateCcw, StarOff, Filter, Zap, MessageCircle
 } from "lucide-react";
 
 const API = "http://numeros-y-futbol.test/backend/";
@@ -234,6 +234,7 @@ const navItems = [
       { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
       { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
       { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
+      { path: "/manage-comments", icon: <MessageCircle size={20} />, label: "Gestionar Comentarios" },
       { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
       { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
     ];
