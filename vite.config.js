@@ -8,10 +8,14 @@ export default defineConfig({
     port: 5173,
     allowedHosts: true,
     proxy: {
+<<<<<<< HEAD
       "/api": {
         target: "http://localhost:8000",
+=======
+      "/backend": {
+        target: "http://Numeros-y-Futbol.test",
+>>>>>>> 69a266dcc41c27273305edd5b4db6564ded373c1
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
   },
