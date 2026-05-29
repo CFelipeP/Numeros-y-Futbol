@@ -1,54 +1,52 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import "./styles2.css";
-
-const API_BASE = "http://numeros-y-futbol.test/backend/";
+import { API_BASE } from "../config";
 
 const IconCalendar = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
   </svg>
 );
-
 const IconStadium = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M2 22h20" /><path d="M6 22V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" /><path d="M10 6h4" /><path d="M10 10h4" /><path d="M10 14h4" />
   </svg>
 );
-
 const IconTrophy = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
   </svg>
 );
-
 const IconMapPin = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" />
   </svg>
 );
-
 const IconShield = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
   </svg>
 );
-
 const IconClock = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
   </svg>
 );
-
 const IconAlert = () => (
   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line x1="12" x2="12.01" y1="16" y2="16" />
   </svg>
 );
-
 const IconStar = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+  </svg>
+);
+const IconArrowRight = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
   </svg>
 );
 
@@ -63,7 +61,7 @@ const safeFetch = async (url) => {
   const res = await fetch(url);
   const text = await res.text();
   if (text.trim().startsWith("<")) {
-    throw new Error(`El servidor devolvió HTML en vez de JSON`);
+    throw new Error("El servidor devolvió HTML en vez de JSON");
   }
   return JSON.parse(text);
 };
@@ -108,6 +106,7 @@ const normalizeMatch = (m, teamMap) => {
   if (!homeLogo && homeName) { const found = Object.values(teamMap).find(t => t.nombre === homeName); if (found?.logo) homeLogo = found.logo; }
   if (!awayLogo && awayName) { const found = Object.values(teamMap).find(t => t.nombre === awayName); if (found?.logo) awayLogo = found.logo; }
   return {
+    id: m.id || m.partido_id || null,
     home_name: homeName, away_name: awayName, home_logo: homeLogo, away_logo: awayLogo,
     goles_local: gl !== null && gl !== undefined ? gl : null,
     goles_visitante: gv !== null && gv !== undefined ? gv : null,
@@ -115,37 +114,51 @@ const normalizeMatch = (m, teamMap) => {
   };
 };
 
-const ResultRow = ({ m }) => {
+const ResultRow = ({ m, onVerMas }) => {
   const hasResult = m.goles_local !== null && m.goles_visitante !== null;
   const isHomeWin = hasResult && m.goles_local > m.goles_visitante;
   const isAwayWin = hasResult && m.goles_visitante > m.goles_local;
   return (
-    <div style={{
-      display: "flex", alignItems: "center", gap: "0.6rem",
-      padding: "0.7rem 0.8rem", borderRadius: "10px",
-      background: "rgba(255,255,255,0.02)",
-      border: "1px solid rgba(255,255,255,0.04)",
-      transition: "all 0.2s ease", cursor: "default"
-    }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)"; }}
-    >
-      <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: "3px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {m.home_logo && <img src={logoUrl(m.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: "0.6rem",
+        padding: "0.7rem 0.8rem", borderRadius: "10px",
+        background: "rgba(255,255,255,0.02)",
+        border: "1px solid rgba(255,255,255,0.04)",
+        transition: "all 0.2s ease", cursor: "default"
+      }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)"; }}
+      >
+        <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: "3px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {m.home_logo && <img src={logoUrl(m.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}
+        </div>
+        <span style={{ fontSize: "0.75rem", fontWeight: isHomeWin ? 800 : 600, color: isHomeWin ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.home_name}</span>
+        <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "var(--color-white)", fontFamily: "var(--font-heading)", letterSpacing: "1px", flexShrink: 0, textShadow: hasResult ? "0 0 10px rgba(168,85,247,0.3)" : "none" }}>
+          {m.goles_local ?? "-"} - {m.goles_visitante ?? "-"}
+        </span>
+        <span style={{ fontSize: "0.75rem", fontWeight: isAwayWin ? 800 : 600, color: isAwayWin ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{m.away_name}</span>
+        <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: "3px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {m.away_logo && <img src={logoUrl(m.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}
+        </div>
       </div>
-      <span style={{ fontSize: "0.75rem", fontWeight: isHomeWin ? 800 : 600, color: isHomeWin ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.home_name}</span>
-      <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "var(--color-white)", fontFamily: "var(--font-heading)", letterSpacing: "1px", flexShrink: 0, textShadow: hasResult ? "0 0 10px rgba(168,85,247,0.3)" : "none" }}>
-        {m.goles_local ?? "-"} - {m.goles_visitante ?? "-"}
-      </span>
-      <span style={{ fontSize: "0.75rem", fontWeight: isAwayWin ? 800 : 600, color: isAwayWin ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{m.away_name}</span>
-      <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: "3px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {m.away_logo && <img src={logoUrl(m.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}
-      </div>
+      {m.id && onVerMas && (
+        <button onClick={() => onVerMas(m.id)} style={{
+          alignSelf: "flex-end", display: "flex", alignItems: "center", gap: "0.35rem",
+          background: "none", border: "none", color: "#a855f7",
+          fontSize: "0.68rem", fontWeight: 700, cursor: "pointer", padding: "0.25rem 0.6rem",
+          borderRadius: 6, letterSpacing: "0.5px", textTransform: "uppercase",
+          transition: "all 0.2s ease", marginTop: "0.15rem", marginRight: "0.2rem"
+        }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(168,85,247,0.1)"; e.currentTarget.style.gap = "0.5rem"; }}
+           onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.gap = "0.35rem"; }}>
+          Ver más información <IconArrowRight />
+        </button>
+      )}
     </div>
   );
 };
 
-const FeaturedMatchCard = ({ match }) => {
+const FeaturedMatchCard = ({ match, onVerMas }) => {
   const st = getMatchStatus(match.estado);
   const isF = st.variant === "finished", isL = st.variant === "live", isS = st.variant === "scheduled";
   const hw = match.goles_local != null && match.goles_visitante != null && match.goles_local > match.goles_visitante;
@@ -185,7 +198,21 @@ const FeaturedMatchCard = ({ match }) => {
           </div>
         </div>
         <div style={{ height: 1, margin: "1.4rem 0 1rem", background: "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.06) 30%,rgba(255,255,255,0.06) 70%,transparent 100%)" }} />
-        {match.fecha && <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, fontSize: "0.7rem", color: "rgba(255,255,255,0.3)" }}><IconCalendar /><span>{match.fecha}</span></div>}
+        {match.fecha && <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", marginBottom: "0.8rem" }}><IconCalendar /><span>{match.fecha}</span></div>}
+        {match.id && onVerMas && (
+          <button onClick={() => onVerMas(match.id)} style={{
+            width: "100%", padding: "0.6rem 1rem",
+            background: "linear-gradient(135deg, rgba(168,85,247,0.12), rgba(168,85,247,0.04))",
+            border: "1px solid rgba(168,85,247,0.18)", borderRadius: 10,
+            color: "#a855f7", fontWeight: 700, fontSize: "0.75rem",
+            textTransform: "uppercase", letterSpacing: "1.2px", cursor: "pointer",
+            transition: "all 0.25s ease", display: "flex", alignItems: "center",
+            justifyContent: "center", gap: "0.5rem"
+          }} onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(168,85,247,0.25), rgba(168,85,247,0.08))"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(168,85,247,0.2)"; }}
+             onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(168,85,247,0.12), rgba(168,85,247,0.04))"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
+            Ver más información <IconArrowRight />
+          </button>
+        )}
       </div>
       <style>{`@keyframes fp3{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.3)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}`}</style>
     </div>
@@ -196,6 +223,7 @@ const FeaturedMatchCard = ({ match }) => {
    COMPONENTE PRINCIPAL
    ============================================================ */
 export default function TerceraDivision() {
+  const navigate = useNavigate();
   const [tabla, setTabla] = useState([]);
   const [match, setMatch] = useState(null);
   const [equipos, setEquipos] = useState([]);
@@ -203,6 +231,10 @@ export default function TerceraDivision() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("clasificacion");
   const [sidebar, setSidebar] = useState({ next: null, recent: [] });
+
+  const openMatchDetail = useCallback((id) => {
+    if (id) navigate(`/partido/${id}/tercera`);
+  }, [navigate]);
 
   useEffect(() => {
     setLoading(true);
@@ -273,7 +305,7 @@ export default function TerceraDivision() {
             <div style={{ color: "#ef4444", marginBottom: "1rem" }}><IconAlert /></div>
             <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.3rem", fontWeight: 800, color: "#ef4444", marginBottom: "0.8rem" }}>Error al cargar los datos</h3>
             <p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem", lineHeight: 1.6, marginBottom: "1.5rem" }}>{error}</p>
-            <button onClick={() => window.location.reload()} style={{ background: "linear-gradient(90deg, #a855f7, #7c3aed)", color: "white", border: "none", padding: "0.8rem 2rem", borderRadius: "10px", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px" }}>Reintentar</button>
+            <button onClick={() => window.location.reload()} style={{ background: "linear-gradient(90deg, #a855f7, #7c3aed)", color: "white", border: "none", padding: "0.8rem 2rem", borderRadius: 10, cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px" }}>Reintentar</button>
           </div>
         </section>
       </>
@@ -315,7 +347,7 @@ export default function TerceraDivision() {
               {/* PARTIDO DESTACADO */}
               <div className="td-featured-wrap">
                 {match && match.home_name ? (
-                  <FeaturedMatchCard match={match} />
+                  <FeaturedMatchCard match={match} onVerMas={openMatchDetail} />
                 ) : (
                   <div className="glass-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}>
                     <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
@@ -362,6 +394,21 @@ export default function TerceraDivision() {
                         <IconCalendar /> {sidebar.next.fecha}
                       </div>
                     )}
+                    {/* BOTÓN VER MÁS EN PRÓXIMO PARTIDO */}
+                    {(sidebar.next.id || sidebar.next.partido_id) && (
+                      <button onClick={() => openMatchDetail(sidebar.next.id || sidebar.next.partido_id)} style={{
+                        width: "100%", marginTop: "1rem", padding: "0.55rem 1rem",
+                        background: "linear-gradient(135deg, rgba(168,85,247,0.12), rgba(168,85,247,0.04))",
+                        border: "1px solid rgba(168,85,247,0.18)", borderRadius: 10,
+                        color: "#a855f7", fontWeight: 700, fontSize: "0.72rem",
+                        textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer",
+                        transition: "all 0.25s ease", display: "flex", alignItems: "center",
+                        justifyContent: "center", gap: "0.45rem"
+                      }} onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(168,85,247,0.25), rgba(168,85,247,0.08))"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+                         onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(168,85,247,0.12), rgba(168,85,247,0.04))"; e.currentTarget.style.transform = "translateY(0)"; }}>
+                        Ver más información <IconArrowRight />
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}>
@@ -381,7 +428,7 @@ export default function TerceraDivision() {
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                     {sidebar.recent.map((m) => (
                       <div key={m.id}>
-                        <ResultRow m={m} />
+                        <ResultRow m={m} onVerMas={openMatchDetail} />
                         {m.fecha && (
                           <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", paddingLeft: "0.8rem", paddingTop: "0.15rem", paddingBottom: "0.3rem", fontSize: "0.65rem", color: "rgba(255,255,255,0.25)" }}>
                             <IconClock /> {m.fecha}
@@ -555,7 +602,7 @@ export default function TerceraDivision() {
       <footer className="footer" id="driver-footer">
         <div className="container footer-inner">
           <div className="footer-grid">
-            <div className="footer-brand"><h3>NÚMEROS Y FÚTBOL</h3><p>Portal oficial de cobertura del fútbol salvadoreño.</p></div>
+            <div className="footer-brand"><h3>NÚMEROS Y FÚTBOL</h3><p>Portal oficial hecha por Ariel SOTOMAYOR y Felipe ESCOBAR.</p></div>
             <div className="footer-section"><h4>Divisiones</h4><ul><li><a href="/primera">Primera División</a></li><li><a href="/segunda">Segunda División</a></li><li><a href="/tercera">Tercera División</a></li></ul></div>
             <div className="footer-section"><h4>Contenido</h4><ul><li><a href="/news">Noticias</a></li><li><a href="#">Resultados</a></li><li><a href="/primera">Clasificaciones</a></li></ul></div>
             <div className="footer-section"><h4>Síguenos</h4><ul><li><a href="#">Facebook</a></li><li><a href="#">Twitter / X</a></li><li><a href="#">Instagram</a></li></ul></div>

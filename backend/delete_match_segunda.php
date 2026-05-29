@@ -1,11 +1,17 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
+error_reporting(0); ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth_check.php';
+requireAdmin();
 
- $conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
+$id = (int)($_POST['id'] ?? 0);
+if (!$id) {
+    echo json_encode(["success" => false, "error" => "ID requerido"]);
+    exit;
+}
 
- $id = $_POST['id'];
-
- $conn->query("DELETE FROM partidos_segunda WHERE id = $id");
+$stmt = $conn->prepare("DELETE FROM partidos_segunda WHERE id = ?");
+$stmt->execute([$id]);
 
 echo json_encode(["success" => true]);

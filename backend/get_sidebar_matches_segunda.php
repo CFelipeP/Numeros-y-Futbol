@@ -1,11 +1,12 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
+error_reporting(0);
+ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
- $conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
+$conn = $mysqli;
 
-// Próximo: goles_local IS NULL
- $next = $conn->query("
+$next = $conn->query("
     SELECT p.*, 
            t1.nombre as home_name, t1.logo as home_logo,
            t2.nombre as away_name, t2.logo as away_logo,
@@ -18,9 +19,8 @@ header("Content-Type: application/json");
     LIMIT 1
 ")->fetch_assoc();
 
-// Últimos resultados: goles_local IS NOT NULL
- $recent = [];
- $res = $conn->query("
+$recent = [];
+$res = $conn->query("
     SELECT p.*, 
            t1.nombre as home_name, t1.logo as home_logo,
            t2.nombre as away_name, t2.logo as away_logo,
@@ -37,4 +37,4 @@ while ($row = $res->fetch_assoc()) {
 }
 
 echo json_encode(["next" => $next, "recent" => $recent]);
- $conn->close();
+$conn->close();

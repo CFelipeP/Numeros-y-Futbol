@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
 import "animate.css";
+import { apiPost } from "../apiHelper";
 
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
@@ -10,8 +11,7 @@ import {
 } from "lucide-react";
 
 import GoalsChart from "../components/GoalsChart";
-
-const API_BASE = "http://numeros-y-futbol.test/backend/";
+import { API_BASE } from "../config";
 
 const logoUrl = (path) => {
   if (!path) return "";
@@ -116,7 +116,8 @@ const AdminDashboard = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         setResetting(true);
-        safeFetch(`${API_BASE}reset_stats.php`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ division }) })
+        apiPost(`${API_BASE}reset_stats.php`, { division })
+          .then(r => r.json())
           .then((res) => { if (res.success) { Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Temporada reiniciada", showConfirmButton: false, timer: 2000 }); fetchData(); } else throw new Error(); })
           .catch(() => { Swal.fire({ toast: true, position: "top-end", icon: "error", title: "Error al reiniciar", showConfirmButton: false, timer: 2500 }); })
           .finally(() => setResetting(false));
@@ -131,7 +132,7 @@ const AdminDashboard = () => {
 
   const handleLogout = () => {
     Swal.fire({ title: "¿Cerrar sesión?", text: "¿Estás seguro de que deseas salir?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir", cancelButtonText: "Cancelar", background: "#1e293b", color: "#fff" })
-      .then((result) => { if (result.isConfirmed) { localStorage.removeItem("user"); window.location.href = "/login"; } });
+      .then((result) => { if (result.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); window.location.href = "/login"; } });
   };
 
   const currentDiv = DIVISIONES.find((d) => d.value === division);

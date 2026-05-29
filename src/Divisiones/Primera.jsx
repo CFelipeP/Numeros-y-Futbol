@@ -2,8 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import "./styles2.css";
-
-const API_BASE = "http://numeros-y-futbol.test/backend/";
+import { API_BASE } from "../config";
 
 const IconCalendar = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

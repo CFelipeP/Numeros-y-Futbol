@@ -1,13 +1,12 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
+error_reporting(0);
+ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth_check.php';
+requireAdmin();
 
-$conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
-
-if ($conn->connect_error) {
-    echo json_encode(["error" => $conn->connect_error]);
-    exit;
-}
+$conn = $mysqli;
 
 $local = $_POST['local'] ?? null;
 $visitante = $_POST['visitante'] ?? null;
@@ -20,11 +19,11 @@ if (!$local || !$visitante || $local == $visitante) {
 $local = (int)$local;
 $visitante = (int)$visitante;
 
-$sql = "INSERT INTO partidos (equipo_local, equipo_visitante, fecha, goles_local, goles_visitante, estado)
-VALUES ($local, $visitante, NOW(), 0, 0, 'Pendiente')";
+$stmt = $conn->prepare("INSERT INTO partidos (equipo_local, equipo_visitante, fecha, goles_local, goles_visitante, estado) VALUES (?, ?, NOW(), 0, 0, 'Pendiente')");
+$stmt->bind_param("ii", $local, $visitante);
 
-if (!$conn->query($sql)) {
-    echo json_encode(["error" => $conn->error]);
+if (!$stmt->execute()) {
+    echo json_encode(["error" => "Error interno del servidor"]);
     exit;
 }
 

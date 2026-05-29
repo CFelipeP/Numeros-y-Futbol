@@ -1,23 +1,16 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Content-Type: application/json");
+error_reporting(0);
+ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth_check.php';
+requireAdmin();
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
-}
+$conn = $mysqli;
 
- $conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
-
-if ($conn->connect_error) {
-    echo json_encode(["error" => $conn->connect_error]);
-    exit;
-}
-
- $id = $_POST['match_id'] ?? null;
- $g1 = $_POST['goles_local'] ?? null;
- $g2 = $_POST['goles_visitante'] ?? null;
+$id = $_POST['match_id'] ?? null;
+$g1 = $_POST['goles_local'] ?? null;
+$g2 = $_POST['goles_visitante'] ?? null;
 
 if (!$id) {
     echo json_encode(["error" => "ID requerido"]);
@@ -27,8 +20,12 @@ if (!$id) {
 // MODO RESET
 if ((string)$g1 === '-1') {
     $id = (int)$id;
-    $res = $conn->query("SELECT local_id, visitante_id, goles_local, goles_visitante, status FROM partidos_tercera WHERE id=$id");
+    $stmt = $conn->prepare("SELECT local_id, visitante_id, goles_local, goles_visitante, status FROM partidos_tercera WHERE id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $res = $stmt->get_result();
     $m = $res->fetch_assoc();
+    $stmt->close();
 
     if (!$m) {
         echo json_encode(["error" => "Partido no encontrado"]);
@@ -41,24 +38,36 @@ if ((string)$g1 === '-1') {
         $gl = (int)$m['goles_local'];
         $gv = (int)$m['goles_visitante'];
 
-        $conn->query("UPDATE tabla_posiciones_tercera SET pj = GREATEST(pj - 1, 0) WHERE equipo_id IN ($l,$v)");
-        $conn->query("UPDATE tabla_posiciones_tercera SET gf = GREATEST(gf - $gl, 0), gc = GREATEST(gc - $gv, 0) WHERE equipo_id = $l");
-        $conn->query("UPDATE tabla_posiciones_tercera SET gf = GREATEST(gf - $gv, 0), gc = GREATEST(gc - $gl, 0) WHERE equipo_id = $v");
+        $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pj = GREATEST(pj - 1, 0) WHERE equipo_id IN (?, ?)");
+        $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
+
+        $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET gf = GREATEST(gf - ?, 0), gc = GREATEST(gc - ?, 0) WHERE equipo_id = ?");
+        $stmt->bind_param("iii", $gl, $gv, $l); $stmt->execute(); $stmt->close();
+
+        $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET gf = GREATEST(gf - ?, 0), gc = GREATEST(gc - ?, 0) WHERE equipo_id = ?");
+        $stmt->bind_param("iii", $gv, $gl, $v); $stmt->execute(); $stmt->close();
 
         if ($gl > $gv) {
-            $conn->query("UPDATE tabla_posiciones_tercera SET pg = GREATEST(pg - 1, 0), pts = GREATEST(pts - 3, 0) WHERE equipo_id = $l");
-            $conn->query("UPDATE tabla_posiciones_tercera SET pp = GREATEST(pp - 1, 0) WHERE equipo_id = $v");
+            $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pg = GREATEST(pg - 1, 0), pts = GREATEST(pts - 3, 0) WHERE equipo_id = ?");
+            $stmt->bind_param("i", $l); $stmt->execute(); $stmt->close();
+            $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pp = GREATEST(pp - 1, 0) WHERE equipo_id = ?");
+            $stmt->bind_param("i", $v); $stmt->execute(); $stmt->close();
         } elseif ($gl < $gv) {
-            $conn->query("UPDATE tabla_posiciones_tercera SET pg = GREATEST(pg - 1, 0), pts = GREATEST(pts - 3, 0) WHERE equipo_id = $v");
-            $conn->query("UPDATE tabla_posiciones_tercera SET pp = GREATEST(pp - 1, 0) WHERE equipo_id = $l");
+            $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pg = GREATEST(pg - 1, 0), pts = GREATEST(pts - 3, 0) WHERE equipo_id = ?");
+            $stmt->bind_param("i", $v); $stmt->execute(); $stmt->close();
+            $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pp = GREATEST(pp - 1, 0) WHERE equipo_id = ?");
+            $stmt->bind_param("i", $l); $stmt->execute(); $stmt->close();
         } else {
-            $conn->query("UPDATE tabla_posiciones_tercera SET pe = GREATEST(pe - 1, 0), pts = GREATEST(pts - 1, 0) WHERE equipo_id IN ($l,$v)");
+            $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pe = GREATEST(pe - 1, 0), pts = GREATEST(pts - 1, 0) WHERE equipo_id IN (?, ?)");
+            $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
         }
 
-        $conn->query("UPDATE tabla_posiciones_tercera SET dg = gf - gc WHERE equipo_id IN ($l,$v)");
+        $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET dg = gf - gc WHERE equipo_id IN (?, ?)");
+        $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
     }
 
-    $conn->query("UPDATE partidos_tercera SET goles_local = NULL, goles_visitante = NULL, status = 'Pendiente' WHERE id = $id");
+    $stmt = $conn->prepare("UPDATE partidos_tercera SET goles_local = NULL, goles_visitante = NULL, status = 'Pendiente' WHERE id = ?");
+    $stmt->bind_param("i", $id); $stmt->execute(); $stmt->close();
 
     echo json_encode(["success" => true, "reset" => true]);
     $conn->close();
@@ -66,37 +75,91 @@ if ((string)$g1 === '-1') {
 }
 
 // MODO NORMAL
-if ($g1 === "" || $g2 === "") {
+if ($g1 === "" || $g2 === "" || $g1 === null || $g2 === null) {
     echo json_encode(["error" => "Datos inválidos"]);
     exit;
 }
 
- $id = (int)$id;
- $g1 = (int)$g1;
- $g2 = (int)$g2;
+$id = (int)$id;
+$g1 = (int)$g1;
+$g2 = (int)$g2;
 
- $conn->query("UPDATE partidos_tercera SET goles_local=$g1, goles_visitante=$g2, status='Finalizado' WHERE id=$id");
+$stmt = $conn->prepare("SELECT local_id, visitante_id, goles_local, goles_visitante, status FROM partidos_tercera WHERE id=?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$res = $stmt->get_result();
+$m = $res->fetch_assoc();
+$stmt->close();
 
- $res = $conn->query("SELECT local_id, visitante_id FROM partidos_tercera WHERE id=$id");
- $m = $res->fetch_assoc();
- $l = $m['local_id'];
- $v = $m['visitante_id'];
-
- $conn->query("UPDATE tabla_posiciones_tercera SET pj = pj + 1 WHERE equipo_id IN ($l,$v)");
- $conn->query("UPDATE tabla_posiciones_tercera SET gf = gf + $g1, gc = gc + $g2 WHERE equipo_id = $l");
- $conn->query("UPDATE tabla_posiciones_tercera SET gf = gf + $g2, gc = gc + $g1 WHERE equipo_id = $v");
-
-if ($g1 > $g2) {
-    $conn->query("UPDATE tabla_posiciones_tercera SET pg = pg + 1, pts = pts + 3 WHERE equipo_id = $l");
-    $conn->query("UPDATE tabla_posiciones_tercera SET pp = pp + 1 WHERE equipo_id = $v");
-} elseif ($g1 < $g2) {
-    $conn->query("UPDATE tabla_posiciones_tercera SET pg = pg + 1, pts = pts + 3 WHERE equipo_id = $v");
-    $conn->query("UPDATE tabla_posiciones_tercera SET pp = pp + 1 WHERE equipo_id = $l");
-} else {
-    $conn->query("UPDATE tabla_posiciones_tercera SET pe = pe + 1, pts = pts + 1 WHERE equipo_id IN ($l,$v)");
+if (!$m) {
+    echo json_encode(["error" => "Partido no encontrado"]);
+    exit;
 }
 
- $conn->query("UPDATE tabla_posiciones_tercera SET dg = gf - gc WHERE equipo_id IN ($l,$v)");
+$l = (int)$m['local_id'];
+$v = (int)$m['visitante_id'];
+$old_gl = $m['goles_local'] !== null ? (int)$m['goles_local'] : null;
+$old_gv = $m['goles_visitante'] !== null ? (int)$m['goles_visitante'] : 0;
+$wasFinal = strtolower(trim($m['status'] ?? '')) === 'finalizado';
+
+if ($wasFinal && $old_gl !== null) {
+    $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pj = GREATEST(pj - 1, 0) WHERE equipo_id IN (?, ?)");
+    $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
+
+    $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET gf = GREATEST(gf - ?, 0), gc = GREATEST(gc - ?, 0) WHERE equipo_id = ?");
+    $stmt->bind_param("iii", $old_gl, $old_gv, $l); $stmt->execute(); $stmt->close();
+
+    $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET gf = GREATEST(gf - ?, 0), gc = GREATEST(gc - ?, 0) WHERE equipo_id = ?");
+    $stmt->bind_param("iii", $old_gv, $old_gl, $v); $stmt->execute(); $stmt->close();
+
+    if ($old_gl > $old_gv) {
+        $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pg = GREATEST(pg - 1, 0), pts = GREATEST(pts - 3, 0) WHERE equipo_id = ?");
+        $stmt->bind_param("i", $l); $stmt->execute(); $stmt->close();
+        $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pp = GREATEST(pp - 1, 0) WHERE equipo_id = ?");
+        $stmt->bind_param("i", $v); $stmt->execute(); $stmt->close();
+    } elseif ($old_gl < $old_gv) {
+        $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pg = GREATEST(pg - 1, 0), pts = GREATEST(pts - 3, 0) WHERE equipo_id = ?");
+        $stmt->bind_param("i", $v); $stmt->execute(); $stmt->close();
+        $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pp = GREATEST(pp - 1, 0) WHERE equipo_id = ?");
+        $stmt->bind_param("i", $l); $stmt->execute(); $stmt->close();
+    } else {
+        $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pe = GREATEST(pe - 1, 0), pts = GREATEST(pts - 1, 0) WHERE equipo_id IN (?, ?)");
+        $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
+    }
+
+    $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET dg = gf - gc WHERE equipo_id IN (?, ?)");
+    $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
+}
+
+$stmt = $conn->prepare("UPDATE partidos_tercera SET goles_local=?, goles_visitante=?, status='Finalizado' WHERE id=?");
+$stmt->bind_param("iii", $g1, $g2, $id); $stmt->execute(); $stmt->close();
+
+$stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pj = pj + 1 WHERE equipo_id IN (?, ?)");
+$stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
+
+$stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET gf = gf + ?, gc = gc + ? WHERE equipo_id = ?");
+$stmt->bind_param("iii", $g1, $g2, $l); $stmt->execute(); $stmt->close();
+
+$stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET gf = gf + ?, gc = gc + ? WHERE equipo_id = ?");
+$stmt->bind_param("iii", $g2, $g1, $v); $stmt->execute(); $stmt->close();
+
+if ($g1 > $g2) {
+    $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pg = pg + 1, pts = pts + 3 WHERE equipo_id = ?");
+    $stmt->bind_param("i", $l); $stmt->execute(); $stmt->close();
+    $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pp = pp + 1 WHERE equipo_id = ?");
+    $stmt->bind_param("i", $v); $stmt->execute(); $stmt->close();
+} elseif ($g1 < $g2) {
+    $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pg = pg + 1, pts = pts + 3 WHERE equipo_id = ?");
+    $stmt->bind_param("i", $v); $stmt->execute(); $stmt->close();
+    $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pp = pp + 1 WHERE equipo_id = ?");
+    $stmt->bind_param("i", $l); $stmt->execute(); $stmt->close();
+} else {
+    $stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET pe = pe + 1, pts = pts + 1 WHERE equipo_id IN (?, ?)");
+    $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
+}
+
+$stmt = $conn->prepare("UPDATE tabla_posiciones_tercera SET dg = gf - gc WHERE equipo_id IN (?, ?)");
+$stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
 
 echo json_encode(["success" => true]);
- $conn->close();
+$conn->close();

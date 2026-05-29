@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
 import "animate.css";
+import { apiPostForm } from "../apiHelper";
 import {
     LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
     CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
     Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft,
     Minus, ChevronUp, CheckCircle2, RotateCcw, StarOff, Filter, Zap, MessageCircle
 } from "lucide-react";
-const API = "http://localhost/Numeros-y-Futbol/backend/";
+import { API_BASE } from "../config";
+const API = API_BASE;
 
 const DIVISIONES = [
     { value: "primera", label: "Primera" },
@@ -18,6 +20,7 @@ const DIVISIONES = [
 ];
 
 const ManageMatches = () => {
+    const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [teamsOpen, setTeamsOpen] = useState(false);
     const location = useLocation();
@@ -84,6 +87,13 @@ const ManageMatches = () => {
     const getEscudo = (idOrName) => { const t = teamMap[idOrName]; return t?.logo ? `${API}${t.logo}` : null; };
     const fallbackImg = "https://ui-avatars.com/api/?name=EQ&background=0f172a&color=334155&size=40&bold=true";
     const fallbackSelect = "https://ui-avatars.com/api/?name=EQ&background=1e293b&color=475569&size=36&bold=true";
+    const hasScore = (match) => match.goles_local !== null && match.goles_local !== undefined && match.goles_visitante !== null && match.goles_visitante !== undefined;
+    const getScore = (match) => {
+        if (match.score && match.score !== "-") return match.score;
+        if (hasScore(match)) return `${match.goles_local} - ${match.goles_visitante}`;
+        return "-";
+    };
+    const getStatus = (match) => match.status || match.estado || "Pendiente";
     const safeJson = async (res) => {
         const text = await res.text();
         console.log("LO QUE DEVOLVIÓ EL SERVIDOR:", text);
@@ -93,7 +103,7 @@ const ManageMatches = () => {
 
     const handleLogout = () => {
         Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir", confirmButtonColor: "#d33" })
-            .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); window.location.href = "/login"; } });
+            .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); window.location.href = "/login"; } });
     };
 
     const getActiveGrupo = () => {
@@ -126,7 +136,7 @@ const ManageMatches = () => {
         if (newLocal === newVisitante) { Swal.fire({ icon: "info", title: "No pueden ser el mismo equipo", toast: true, position: "top-end", timer: 2000, showConfirmButton: false }); return; }
         setSubmitting(true);
         const form = new FormData(); form.append("local", newLocal); form.append("visitante", newVisitante);
-        fetch(getEndpoints().create, { method: "POST", body: form }).then(safeJson).then(data => {
+        apiPostForm(getEndpoints().create, form).then(safeJson).then(data => {
             setSubmitting(false);
             if (data.error) { Swal.fire("Error", data.error, "error"); return; }
             setShowNewMatch(false);
@@ -136,7 +146,8 @@ const ManageMatches = () => {
 
     const openResult = (match) => {
         setSelectedMatch(match);
-        if (match.score && match.score !== "-") { const p = String(match.score).split(" - "); setGolesLocal(parseInt(p[0]) || 0); setGolesVisitante(parseInt(p[1]) || 0); }
+        const score = getScore(match);
+        if (score !== "-") { const p = String(score).split(" - "); setGolesLocal(parseInt(p[0]) || 0); setGolesVisitante(parseInt(p[1]) || 0); }
         else { setGolesLocal(0); setGolesVisitante(0); }
         setShowResult(true);
     };
@@ -144,7 +155,7 @@ const ManageMatches = () => {
     const saveResult = () => {
         setSubmitting(true);
         const form = new FormData(); form.append("match_id", selectedMatch.id); form.append("goles_local", golesLocal); form.append("goles_visitante", golesVisitante);
-        fetch(getEndpoints().update, { method: "POST", body: form }).then(safeJson).then(data => {
+        apiPostForm(getEndpoints().update, form).then(safeJson).then(data => {
             setSubmitting(false);
             if (data.error) { Swal.fire("Error", data.error, "error"); return; }
             setShowResult(false);
@@ -157,7 +168,7 @@ const ManageMatches = () => {
             .then(result => {
                 if (result.isConfirmed) {
                     const form = new FormData(); form.append("id", id);
-                    fetch(getEndpoints().delete, { method: "POST", body: form }).then(safeJson).then(data => {
+                    apiPostForm(getEndpoints().delete, form).then(safeJson).then(data => {
                         if (data.error) { Swal.fire("Error", data.error, "error"); return; }
                         Swal.fire({ icon: "success", title: "Eliminado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(() => loadMatches());
                     }).catch(() => Swal.fire("Error", "No se pudo eliminar.", "error"));
@@ -184,7 +195,7 @@ const ManageMatches = () => {
             }));
             setSubmitting(false);
             const form = new FormData(); form.append("match_id", match.id); form.append("featured", isFeatured ? "0" : "1");
-            fetch(getEndpoints().toggleFeatured, { method: "POST", body: form })
+            apiPostForm(getEndpoints().toggleFeatured, form)
                 .then(async res => { const text = await res.text(); if (text.trim().startsWith("<")) throw new Error("PHP_MISSING"); return JSON.parse(text); })
                 .then(data => {
                     if (data.error) { setMatches(prev => prev.map(m => String(m.id) === matchId ? { ...m, featured: isFeatured ? 1 : 0, destacado: isFeatured ? 1 : 0 } : m)); Swal.fire("Error", data.error, "error"); }
@@ -201,7 +212,7 @@ const ManageMatches = () => {
             .then(result => {
                 if (result.isConfirmed) {
                     const form = new FormData(); form.append("match_id", match.id); form.append("goles_local", "-1"); form.append("goles_visitante", "-1");
-                    fetch(getEndpoints().update, { method: "POST", body: form }).then(safeJson).then(data => {
+                    apiPostForm(getEndpoints().update, form).then(safeJson).then(data => {
                         if (data.error) { Swal.fire("Error", data.error, "error"); return; }
                         Swal.fire({ icon: "success", title: "Reseteado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(() => loadMatches());
                     }).catch(err => Swal.fire("Error", err.message || "No se pudo resetear.", "error"));
@@ -218,7 +229,7 @@ const ManageMatches = () => {
                     let done = 0; const ep = getEndpoints();
                     jugados.forEach(m => {
                         const form = new FormData(); form.append("match_id", m.id); form.append("goles_local", "-1"); form.append("goles_visitante", "-1");
-                        fetch(ep.update, { method: "POST", body: form }).then(safeJson).then(() => { done++; if (done === jugados.length) Swal.fire({ icon: "success", title: "Todo reseteado", timer: 2000, showConfirmButton: false }).then(() => loadMatches()); }).catch(() => { done++; if (done === jugados.length) loadMatches(); });
+                        apiPostForm(ep.update, form).then(safeJson).then(() => { done++; if (done === jugados.length) Swal.fire({ icon: "success", title: "Todo reseteado", timer: 2000, showConfirmButton: false }).then(() => loadMatches()); }).catch(() => { done++; if (done === jugados.length) loadMatches(); });
                     });
                 }
             });
@@ -423,15 +434,21 @@ const ManageMatches = () => {
                                     {filteredMatches.map(match => {
                                         const escLocal = getEscudo(match.local_id) || getEscudo(match.local_nombre);
                                         const escVisit = getEscudo(match.visitante_id) || getEscudo(match.visitante_nombre);
-                                        const isFin = match.status === "Finalizado";
+                                        const status = getStatus(match);
+                                        const score = getScore(match);
+                                        const isFin = status === "Finalizado";
+                                        const isLive = status === "En Curso";
                                         const isFeat = match.featured == 1 || match.destacado == 1;
                                         return (
                                             <tr key={match.id}>
                                                 <td className="hide-on-mobile" style={{ whiteSpace: "nowrap", color: "#94a3b8", fontSize: "13px" }}>{match.date || "—"}</td>
                                                 <td><div className="td-team"><img src={escLocal || fallbackImg} alt="" onError={e => { e.target.src = fallbackImg; }} className="td-team-img" /><span className="td-team-name">{match.local_nombre || "—"}</span></div></td>
-                                                <td style={{ textAlign: "center" }}><span style={{ fontWeight: "800", fontSize: "15px", color: isFin ? "#e2b340" : "#64748b", letterSpacing: "2px" }}>{match.score || "-"}</span></td>
+                                                <td style={{ textAlign: "center" }}>
+                                                    <span style={{ fontWeight: "800", fontSize: "15px", color: isFin ? "#e2b340" : isLive ? "#22c55e" : "#64748b", letterSpacing: "2px" }}>{score}</span>
+                                                    {isLive && <div style={{fontSize:9,fontWeight:800,color:"#22c55e",letterSpacing:1,marginTop:2}}>🔴 EN VIVO</div>}
+                                                </td>
                                                 <td><div className="td-team td-team-right"><span className="td-team-name">{match.visitante_nombre || "—"}</span><img src={escVisit || fallbackImg} alt="" onError={e => { e.target.src = fallbackImg; }} className="td-team-img" /></div></td>
-                                                <td className="hide-on-mobile"><span className={`status ${isFin ? "done" : "pending"}`}>{match.status || "Pendiente"}</span></td>
+                                                <td className="hide-on-mobile"><span className={`status ${isFin ? "done" : isLive ? "live" : "pending"}`}>{status}</span></td>
                                                 <td>
                                                     <div className="td-actions">
                                                         <button className={`mm-star-btn ${isFeat ? "mm-star-active" : ""}`} onClick={() => toggleFeatured(match)} disabled={submitting} title={isFeat ? "Quitar de destacado" : "Marcar como destacado"} style={{ opacity: submitting ? 0.5 : 1, cursor: submitting ? "wait" : "pointer" }}>
@@ -440,6 +457,9 @@ const ManageMatches = () => {
                                                         </button>
                                                         <button className={`result-action-btn ${isFin ? "result-edit" : "result-new"}`} onClick={() => openResult(match)} title={isFin ? "Editar resultado" : "Ingresar resultado"}>
                                                             <Trophy size={14} /><span>{isFin ? "Editar" : "Resultado"}</span>
+                                                        </button>
+                                                        <button className="mm-narrar-btn" onClick={() => navigate(`/manage-comments?partido=${match.id}&division=${division}`)} title="Narrar partido">
+                                                            <MessageCircle size={13} /><span>Narrar</span>
                                                         </button>
                                                         {isFin && <button className="mm-reset-single-btn" onClick={() => resetSingleMatch(match)} title="Resetear resultado"><RotateCcw size={13} /><span>Reset</span></button>}
                                                         <button className="btn-delete" onClick={() => deleteMatch(match.id)} title="Eliminar"><Trash2 size={16} /></button>
@@ -586,6 +606,9 @@ const ManageMatches = () => {
     .mm-reset-all-btn:hover { background: rgba(239,68,68,0.18); border-color: rgba(239,68,68,0.35); }
     .mm-reset-single-btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(245,158,11,0.2); background: rgba(245,158,11,0.08); color: #fbbf24; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
     .mm-reset-single-btn:hover { background: rgba(245,158,11,0.18); border-color: rgba(245,158,11,0.35); }
+    .mm-narrar-btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(99,102,241,0.25); background: rgba(99,102,241,0.08); color: #818cf8; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .mm-narrar-btn:hover { background: rgba(99,102,241,0.18); border-color: rgba(99,102,241,0.4); }
+    .status.live { background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.25); }
     .mm-star-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.03); color: #475569; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
     .mm-star-btn:hover { background: rgba(226,179,64,0.08); border-color: rgba(226,179,64,0.2); color: #e2b340; }
     .mm-star-active { background: rgba(226,179,64,0.12) !important; border-color: rgba(226,179,64,0.3) !important; color: #e2b340 !important; box-shadow: 0 0 12px rgba(226,179,64,0.15); }
@@ -777,7 +800,3 @@ const ManageMatches = () => {
 };
 
 export default ManageMatches;
-
-
-
-

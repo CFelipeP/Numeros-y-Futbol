@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, User, ArrowLeft, Tag, FileText, Clock } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { API_BASE, fixUrl } from "../config";
 
 export default function NewsDetail() {
     const { id } = useParams();
@@ -12,7 +13,7 @@ export default function NewsDetail() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch(`http://numeros-y-futbol.test/backend/get_news.php?id=${id}`)
+        fetch(`${API_BASE}get_news.php?id=${id}`)
             .then(res => res.json())
             .then(data => {
                 setNewsItem(data);
@@ -68,11 +69,11 @@ export default function NewsDetail() {
         );
     }
 
-    const isVideo = newsItem.imagen?.includes(".mp4");
+    const isVideo = fixUrl(newsItem.imagen)?.includes(".mp4");
 
     const isYoutube =
-        newsItem.imagen?.includes("youtube.com") ||
-        newsItem.imagen?.includes("youtu.be");
+        fixUrl(newsItem.imagen)?.includes("youtube.com") ||
+        fixUrl(newsItem.imagen)?.includes("youtu.be");
 
     const getYoutubeEmbed = (url) => {
         if (!url) return "";
@@ -117,7 +118,7 @@ export default function NewsDetail() {
                             <div className="nd-media">
                                 {isYoutube ? (
                                     <iframe
-                                        src={getYoutubeEmbed(newsItem.imagen)}
+                                        src={getYoutubeEmbed(fixUrl(newsItem.imagen))}
                                         style={{ width: "100%", height: "100%" }}
                                         frameBorder="0"
                                         allow="autoplay; encrypted-media"
@@ -126,11 +127,11 @@ export default function NewsDetail() {
                                     />
                                 ) : isVideo ? (
                                     <video muted controls autoPlay loop playsInline>
-                                        <source src={newsItem.imagen} type="video/mp4" />
+                                        <source src={fixUrl(newsItem.imagen)} type="video/mp4" />
                                     </video>
                                 ) : (
                                     <img
-                                        src={newsItem.imagen || "https://via.placeholder.com/800x500"}
+                                        src={fixUrl(newsItem.imagen) || "https://via.placeholder.com/800x500"}
                                         alt={newsItem.titulo}
                                     />
                                 )}

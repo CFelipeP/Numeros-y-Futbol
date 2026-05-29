@@ -8,8 +8,8 @@ import {
   RefreshCw, ChevronDown, RotateCcw, Users2, Upload, AlertTriangle,
   CheckCircle2, Clock, Swords, ArrowRight, Lock, ArrowLeftRight, Zap, MessageCircle
 } from "lucide-react";
-
-const API_BASE = "http://numeros-y-futbol.test/backend/";
+import { apiPost } from "../apiHelper";
+import { API_BASE } from "../config";
 
 const safeFetch = async (url, options = {}) => {
   const res = await fetch(url, options);
@@ -89,7 +89,7 @@ const getAggregate = (ida, vuelta) => {
   const t1 = iGL + vGV, t2 = iGV + vGL, away1 = vGV, away2 = iGV;
   let winner = null, method = "";
   if (t1 > t2) { winner = 1; method = "Global"; } else if (t2 > t1) { winner = 2; method = "Global"; }
-  else if (away1 > away2) { winner = 1; method: "Gol visitante"; } else if (away2 > away1) { winner = 2; method: "Gol visitante"; }
+  else if (away1 > away2) { winner = 1; method = "Gol visitante"; } else if (away2 > away1) { winner = 2; method = "Gol visitante"; }
   else { const pL = parseInt(vuelta.penales_local) || 0, pV = parseInt(vuelta.penales_visitante) || 0; if (pV > pL) { winner = 1; method = "Penales"; } else if (pL > pV) { winner = 2; method = "Penales"; } else method = "Sin definir"; }
   return { t1, t2, away1, away2, winner, method, pL: parseInt(vuelta.penales_local) || 0, pV: parseInt(vuelta.penales_visitante) || 0 };
 };
@@ -183,6 +183,34 @@ const countNewGroupMatches = (assignments, existingMatches) => {
   return count;
 };
 
+const getPhaseReview = (phase, matches, teams) => {
+  const phaseMatches = matches.filter(m => m.fase === phase);
+  const pending = phaseMatches.filter(m => m.estado === "Pendiente").length;
+  const live = phaseMatches.filter(m => m.estado === "En Curso").length;
+  const finished = phaseMatches.filter(m => m.estado === "Finalizado").length;
+  const unscheduled = phaseMatches.filter(m => !m.fecha || !m.hora).length;
+  const missingScore = phaseMatches.filter(m => m.estado === "Finalizado" && (m.goles_local === null || m.goles_visitante === null)).length;
+  const duplicateTeamsAtSameTime = phaseMatches.filter((m, idx) => {
+    if (!m.fecha || !m.hora) return false;
+    return phaseMatches.some((x, xidx) => xidx !== idx && x.fecha === m.fecha && x.hora === m.hora && [String(x.team1_id), String(x.team2_id)].some(id => [String(m.team1_id), String(m.team2_id)].includes(id)));
+  }).length;
+  const groups = GROUPS.filter(g => teams.some(t => t.grupo === g));
+  const incompleteGroups = phase === "grupos"
+    ? groups.filter(g => {
+        const count = teams.filter(t => t.grupo === g).length;
+        return count < 3 || count > 4;
+      }).length
+    : 0;
+  const warnings = [
+    unscheduled ? `${unscheduled} sin fecha/hora` : null,
+    missingScore ? `${missingScore} finalizado sin marcador` : null,
+    duplicateTeamsAtSameTime ? `${duplicateTeamsAtSameTime} choque de horario` : null,
+    incompleteGroups ? `${incompleteGroups} grupos fuera de 3-4 equipos` : null,
+  ].filter(Boolean);
+  const completion = phaseMatches.length ? Math.round((finished / phaseMatches.length) * 100) : 0;
+  return { total: phaseMatches.length, pending, live, finished, unscheduled, missingScore, duplicateTeamsAtSameTime, incompleteGroups, warnings, completion };
+};
+
 /* ─── Componentes de UI ──────────────────────────────────────────────────── */
 const TeamBadge = ({ logo, name, size = 28 }) => (
   <div style={{ width: size, height: size, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "1px solid #1e293b", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
@@ -217,6 +245,37 @@ const TeamPreview = ({ team, side }) => {
 const DivisionPill = ({ division }) => {
   const c = DIVISION_COLORS[division] || { bg: "rgba(255,255,255,0.05)", color: "#64748b", label: "?" };
   return <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, fontWeight: 800, background: c.bg, color: c.color, letterSpacing: "0.3px", whiteSpace: "nowrap" }}>{c.label}</span>;
+};
+
+const PhaseReviewPanel = ({ phase, review }) => {
+  const phaseInfo = PHASES.find(p => p.key === phase);
+  const ok = review.warnings.length === 0;
+  const items = [
+    { label: "Total", value: review.total, color: "#94a3b8" },
+    { label: "Finalizados", value: review.finished, color: "#10b981" },
+    { label: "Pendientes", value: review.pending, color: "#f59e0b" },
+    { label: "En curso", value: review.live, color: "#ef4444" },
+  ];
+  return (
+    <div style={{ marginBottom: 16, border: `1px solid ${ok ? "rgba(16,185,129,0.18)" : "rgba(245,158,11,0.22)"}`, background: ok ? "linear-gradient(135deg,rgba(16,185,129,0.07),rgba(255,255,255,0.01))" : "linear-gradient(135deg,rgba(245,158,11,0.08),rgba(255,255,255,0.01))", borderRadius: 14, padding: 14, display: "grid", gridTemplateColumns: "minmax(220px,1.2fr) minmax(260px,2fr)", gap: 14 }}>
+      <div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+          <span style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: ok ? "rgba(16,185,129,0.1)" : "rgba(245,158,11,0.1)", color: ok ? "#10b981" : "#f59e0b" }}>{ok ? <CheckCircle2 size={15} /> : <AlertTriangle size={15} />}</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 900, color: "#e2e8f0" }}>{phaseInfo?.label || phase}</div>
+            <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700 }}>{ok ? "Sin alertas de coherencia" : "Revisa antes de publicar"}</div>
+          </div>
+        </div>
+        <div style={{ height: 7, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+          <div style={{ width: `${review.completion}%`, height: "100%", borderRadius: 99, background: ok ? "#10b981" : "#f59e0b" }} />
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8, alignItems: "stretch", flexWrap: "wrap" }}>
+        {items.map(i => <div key={i.label} style={{ minWidth: 88, flex: "1 1 88px", border: "1px solid rgba(255,255,255,0.06)", background: "rgba(15,23,42,0.5)", borderRadius: 10, padding: "9px 10px" }}><div style={{ fontSize: 18, fontWeight: 900, color: i.color, fontFamily: "monospace" }}>{i.value}</div><div style={{ fontSize: 9, color: "#64748b", fontWeight: 800, textTransform: "uppercase" }}>{i.label}</div></div>)}
+        {review.warnings.length > 0 && <div style={{ flex: "2 1 220px", border: "1px solid rgba(245,158,11,0.18)", background: "rgba(245,158,11,0.06)", borderRadius: 10, padding: "9px 10px", display: "flex", flexDirection: "column", gap: 4 }}>{review.warnings.map(w => <span key={w} style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700 }}>{w}</span>)}</div>}
+      </div>
+    </div>
+  );
 };
 
 const FieldError = ({ msg }) => msg ? (
@@ -354,13 +413,7 @@ const MatchModal = ({ match, teams, phase, allMatches, onSave, onClose }) => {
     console.log("FORM", form);
     console.log("PAYLOAD", payload);
 
-    const res = await safeFetch(`${API_BASE}${endpoint}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
+    const res = await apiPost(`${API_BASE}${endpoint}`, payload).then(r => r.json());
 
     if (res.success) {
       Swal.fire({
@@ -517,7 +570,7 @@ const GroupModal = ({ teams, existingMatches, onSave, onClose }) => {
     if (total < teams.length) { const r = await Swal.fire({ title: "Equipos sin grupo", text: `${teams.length - total} sin asignar. ¿Continuar?`, icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "Cancelar", background: "#1e293b", color: "#fff" }); if (!r.isConfirmed) return; }
     setSaving(true);
 
-    try { const res = await safeFetch(`${API_BASE}copa_save_groups.php`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ assignments }) }); if (res.success) { Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Grupos guardados", showConfirmButton: false, timer: 1800 }); onSave(); } else throw new Error(res.message || "Error"); }
+    try { const res = await apiPost(`${API_BASE}copa_save_groups.php`, { assignments }).then(r => r.json()); if (res.success) { Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Grupos guardados", showConfirmButton: false, timer: 1800 }); onSave(); } else throw new Error(res.message || "Error"); }
     catch (err) { Swal.fire({ toast: true, position: "top-end", icon: "error", title: err.message, showConfirmButton: false, timer: 2500 }); }
     finally { setSaving(false); }
   };
@@ -592,11 +645,7 @@ const GroupModal = ({ teams, existingMatches, onSave, onClose }) => {
 
     /* ── Paso 1: Guardar grupos ── */
     try {
-      const res = await safeFetch(`${API_BASE}copa_save_groups.php`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignments })
-      });
+      const res = await apiPost(`${API_BASE}copa_save_groups.php`, { assignments }).then(r => r.json());
       if (!res.success) throw new Error(res.message || "Error guardando grupos");
     } catch (err) {
       Swal.fire({ toast: true, position: "top-end", icon: "error", title: err.message, showConfirmButton: false, timer: 2500 });
@@ -641,11 +690,7 @@ const GroupModal = ({ teams, existingMatches, onSave, onClose }) => {
 
     for (const match of toCreate) {
       try {
-        const res = await safeFetch(`${API_BASE}copa_create_match.php`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(match)
-        });
+        const res = await apiPost(`${API_BASE}copa_create_match.php`, match).then(r => r.json());
         if (res.success) {
           created++;
         } else {
@@ -769,8 +814,6 @@ const GroupModal = ({ teams, existingMatches, onSave, onClose }) => {
       const notFound = [];
 
       let asignados = 0;
-      let noEncontrados = 0;
-
       const mapExact = {};
       const mapNorm = {};
       const mapExactDiv = {};
@@ -850,7 +893,6 @@ const GroupModal = ({ teams, existingMatches, onSave, onClose }) => {
         }
 
         if (!tid) {
-          noEncontrados++;
           notFound.push({ nombre: n, division: d });
           log.push(`⚠️ "${n}"${d ? ` (${d})` : ""} no encontrado en BD`);
           continue;
@@ -983,7 +1025,7 @@ const GroupModal = ({ teams, existingMatches, onSave, onClose }) => {
 /* ─── Modal Reset ────────────────────────────────────────────────────────── */
 const ResetModal = ({ onClose, onDone }) => {
   const [resetting, setResetting] = useState(null);
-  const reset = async (mode, label) => { const r = await Swal.fire({ title: `¿${label}?`, text: "No se puede deshacer.", icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "Cancelar", confirmButtonColor: "#ef4444", background: "#1e293b", color: "#fff" }); if (!r.isConfirmed) return; setResetting(mode); try { const res = await safeFetch(`${API_BASE}copa_reset.php`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode }) }); if (res.success) { Swal.fire({ toast: true, position: "top-end", icon: "success", title: res.message, showConfirmButton: false, timer: 2000 }); onDone(); } else throw new Error(res.message || "Error"); } catch (err) { Swal.fire({ toast: true, position: "top-end", icon: "error", title: err.message, showConfirmButton: false, timer: 2500 }); } finally { setResetting(null); } };
+  const reset = async (mode, label) => { const r = await Swal.fire({ title: `¿${label}?`, text: "No se puede deshacer.", icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "Cancelar", confirmButtonColor: "#ef4444", background: "#1e293b", color: "#fff" }); if (!r.isConfirmed) return; setResetting(mode); try { const res = await apiPost(`${API_BASE}copa_reset.php`, { mode }).then(r => r.json()); if (res.success) { Swal.fire({ toast: true, position: "top-end", icon: "success", title: res.message, showConfirmButton: false, timer: 2000 }); onDone(); } else throw new Error(res.message || "Error"); } catch (err) { Swal.fire({ toast: true, position: "top-end", icon: "error", title: err.message, showConfirmButton: false, timer: 2500 }); } finally { setResetting(null); } };
   const opts = [{ mode: "scores", label: "Reiniciar resultados", desc: "Partidos a Pendiente. Grupos y fixture se mantienen.", color: "#f59e0b", icon: "⏱️" }, { mode: "groups", label: "Limpiar grupos", desc: "Quita grupos. Partidos se mantienen.", color: "#3b82f6", icon: "🗂️" }, { mode: "all", label: "Reinicio total", desc: "Elimina todo. Desde cero.", color: "#ef4444", icon: "💥" }];
   return (<div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.82)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(4px)", animation: "modalFadeIn 0.2s ease" }} onClick={onClose}><div style={{ background: "#0d1117", border: "1px solid #1e293b", borderRadius: 16, width: "100%", maxWidth: 440, boxShadow: "0 25px 60px rgba(0,0,0,0.9)", animation: "modalSlideUp 0.28s cubic-bezier(0.16,1,0.3,1)" }} onClick={e => e.stopPropagation()}><div style={{ padding: "18px 20px", borderBottom: "1px solid #1e293b", display: "flex", alignItems: "center", justifyContent: "space-between" }}><div><h3 style={{ margin: 0, color: "#ef4444", fontWeight: 800, fontSize: 16 }}>Reiniciar Copa</h3></div><button onClick={onClose} style={{ background: "none", border: "none", color: "#475569", cursor: "pointer" }}><X size={20} /></button></div><div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 10 }}>{opts.map(o => (<button key={o.mode} onClick={() => reset(o.mode, o.label)} disabled={!!resetting} style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 16px", borderRadius: 10, cursor: resetting ? "not-allowed" : "pointer", background: `${o.color}08`, border: `1px solid ${o.color}25`, textAlign: "left", opacity: resetting && resetting !== o.mode ? 0.4 : 1, transition: "all 0.2s" }}><span style={{ fontSize: 22, lineHeight: 1 }}>{o.icon}</span><div><div style={{ fontSize: 13, fontWeight: 700, color: o.color, marginBottom: 3 }}>{resetting === o.mode ? "Reiniciando..." : o.label}</div><div style={{ fontSize: 11, color: "#475569", lineHeight: 1.4 }}>{o.desc}</div></div></button>))}</div><div style={{ padding: "12px 20px", borderTop: "1px solid #1e293b", display: "flex", justifyContent: "flex-end" }}><button onClick={onClose} style={{ padding: "9px 18px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid #1e293b", color: "#64748b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cerrar</button></div></div></div>);
 };
@@ -1077,7 +1119,7 @@ const navItems = [
       { path: "/manage-comments", icon: <MessageCircle size={20} />, label: "Gestionar Comentarios" },
       { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
       { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
-    ];  const handleLogout = () => { Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "Cancelar", background: "#1e293b", color: "#fff" }).then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); window.location.href = "/login"; } }); };
+    ];  const handleLogout = () => { Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "Cancelar", background: "#1e293b", color: "#fff" }).then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); window.location.href = "/login"; } }); };
   return (<aside className="sidebar"><div className="sidebar-header"><div className="logo-icon"><img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="Logo" /></div><h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2></div><nav className="sidebar-nav"><ul>{navItems.map((item, idx) => { if (item.type === "dropdown") return (<li key={idx}><button className="nav-item" onClick={() => setTeamsOpen(!teamsOpen)} style={{ width: "100%", justifyContent: "space-between", border: "none", fontFamily: "inherit" }}><span style={{ display: "flex", alignItems: "center", gap: 14 }}>{item.icon} {item.label}</span><ChevronDown size={15} style={{ opacity: 0.4, transition: "transform 0.25s", transform: teamsOpen ? "rotate(180deg)" : "none" }} /></button><ul style={{ maxHeight: teamsOpen ? "180px" : "0", overflow: "hidden", transition: "max-height 0.3s", listStyle: "none", padding: 0, margin: 0 }}>{item.children.map(c => (<li key={c.path}><Link to={c.path} className={`nav-item${location.pathname === c.path ? " active" : ""}`} style={{ paddingLeft: 46, fontSize: 13 }}>{c.label}</Link></li>))}</ul></li>); return (<li key={item.path}><Link to={item.path} className={`nav-item${location.pathname === item.path ? " active" : ""}`}>{item.icon} {item.label}</Link></li>); })}</ul></nav><div className="sidebar-footer"><button className="nav-item btn-logout-sidebar" onClick={handleLogout} style={{ width: "100%", border: "none", fontFamily: "inherit" }}><LogOut size={18} /> Cerrar sesión</button></div></aside>);
 };
 
@@ -1097,9 +1139,10 @@ const AdminCopPresidente = () => {
   const [showResetModal, setShowResetModal] = useState(false);
   const [editingMatch, setEditingMatch] = useState(null);
   const [btnAnim, setBtnAnim] = useState(null);
+  const [autoGenerating, setAutoGenerating] = useState(false);
 
   const fetchData = useCallback(() => { setLoading(true); Promise.allSettled([safeFetch(`${API_BASE}copa_get_all_matches.php`), safeFetch(`${API_BASE}copa_get_teams.php`), safeFetch(`${API_BASE}copa_get_stats.php`)]).then(([rM, rT, rS]) => { if (rM.status === "fulfilled") setMatches(rM.value?.data || []); if (rT.status === "fulfilled") setTeams(rT.value?.data || []); if (rS.status === "fulfilled") setStats(rS.value?.data || {}); }).finally(() => setLoading(false)); }, []);
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { void Promise.resolve().then(fetchData); }, [fetchData]);
 
   const openNewMatch = () => { setBtnAnim("new"); setTimeout(() => setBtnAnim(null), 300); setEditingMatch(null); setTimeout(() => setShowMatchModal(true), 150); };
   const handleCreateVuelta = (idaMatch) => {
@@ -1128,13 +1171,62 @@ const AdminCopPresidente = () => {
 
     setShowMatchModal(true);
   };
-  const handleDelete = (id) => { Swal.fire({ title: "¿Eliminar partido?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "Cancelar", confirmButtonColor: "#ef4444", background: "#1e293b", color: "#fff" }).then(async r => { if (!r.isConfirmed) return; try { const res = await safeFetch(`${API_BASE}copa_delete_match.php`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) }); if (res.success) { Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Eliminado", showConfirmButton: false, timer: 1800 }); fetchData(); } } catch { Swal.fire({ toast: true, position: "top-end", icon: "error", title: "Error", showConfirmButton: false, timer: 2000 }); } }); };
-  const handleQuickFinish = async (match) => { const { value: score } = await Swal.fire({ title: "Resultado rápido", html: `<div style="display:flex;align-items:center;gap:16px;justify-content:center;margin:16px 0"><div style="text-align:center"><div style="font-size:11px;color:#94a3b8;margin-bottom:8px;font-weight:600">${match.team1}</div><input id="gl" type="number" min="0" value="0" style="width:68px;text-align:center;font-size:28px;font-weight:900;background:#0f172a;border:1px solid #1e293b;color:#e2e8f0;border-radius:10px;padding:10px"/></div><span style="font-size:20px;color:#334155;font-weight:900">–</span><div style="text-align:center"><div style="font-size:11px;color:#94a3b8;margin-bottom:8px;font-weight:600">${match.team2}</div><input id="gv" type="number" min="0" value="0" style="width:68px;text-align:center;font-size:28px;font-weight:900;background:#0f172a;border:1px solid #1e293b;color:#e2e8f0;borderRadius:10px;padding:10px"/></div></div>`, background: "#1e293b", color: "#fff", showCancelButton: true, confirmButtonText: "Guardar", cancelButtonText: "Cancelar", confirmButtonColor: "#10b981", preConfirm: () => ({ gl: parseInt(document.getElementById("gl").value) || 0, gv: parseInt(document.getElementById("gv").value) || 0 }) }); if (!score) return; try { await safeFetch(`${API_BASE}copa_update_match.php`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: match.id, goles_local: score.gl, goles_visitante: score.gv, estado: "Finalizado" }) }); Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Resultado guardado", showConfirmButton: false, timer: 1600 }); fetchData(); } catch { } };
+  const handleDelete = (id) => { Swal.fire({ title: "¿Eliminar partido?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "Cancelar", confirmButtonColor: "#ef4444", background: "#1e293b", color: "#fff" }).then(async r => { if (!r.isConfirmed) return; try { const res = await apiPost(`${API_BASE}copa_delete_match.php`, { id }).then(r => r.json()); if (res.success) { Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Eliminado", showConfirmButton: false, timer: 1800 }); fetchData(); } } catch { Swal.fire({ toast: true, position: "top-end", icon: "error", title: "Error", showConfirmButton: false, timer: 2000 }); } }); };
+  const handleQuickFinish = async (match) => { const { value: score } = await Swal.fire({ title: "Resultado rápido", html: `<div style="display:flex;align-items:center;gap:16px;justify-content:center;margin:16px 0"><div style="text-align:center"><div style="font-size:11px;color:#94a3b8;margin-bottom:8px;font-weight:600">${match.team1}</div><input id="gl" type="number" min="0" value="0" style="width:68px;text-align:center;font-size:28px;font-weight:900;background:#0f172a;border:1px solid #1e293b;color:#e2e8f0;border-radius:10px;padding:10px"/></div><span style="font-size:20px;color:#334155;font-weight:900">–</span><div style="text-align:center"><div style="font-size:11px;color:#94a3b8;margin-bottom:8px;font-weight:600">${match.team2}</div><input id="gv" type="number" min="0" value="0" style="width:68px;text-align:center;font-size:28px;font-weight:900;background:#0f172a;border:1px solid #1e293b;color:#e2e8f0;borderRadius:10px;padding:10px"/></div></div>`, background: "#1e293b", color: "#fff", showCancelButton: true, confirmButtonText: "Guardar", cancelButtonText: "Cancelar", confirmButtonColor: "#10b981", preConfirm: () => ({ gl: parseInt(document.getElementById("gl").value) || 0, gv: parseInt(document.getElementById("gv").value) || 0 }) }); if (!score) return; try { await apiPost(`${API_BASE}copa_update_match.php`, { id: match.id, goles_local: score.gl, goles_visitante: score.gv, estado: "Finalizado" }).then(r => r.json()); Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Resultado guardado", showConfirmButton: false, timer: 1600 }); fetchData(); } catch (err) { Swal.fire({ toast: true, position: "top-end", icon: "error", title: err.message || "No se pudo guardar", showConfirmButton: false, timer: 2200 }); } };
+
+  const handleAutoGenerate = async (fase) => {
+    const phaseLabel = PHASES.find(p => p.key === fase)?.label || fase;
+    const count = matches.filter(m => m.fase === fase).length;
+    let useForce = false;
+    if (count > 0) {
+      const r = await Swal.fire({
+        title: `¿Regenerar ${phaseLabel}?`,
+        text: `Ya existen ${count} partido(s). Se eliminarán y regenerarán.`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, regenerar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#ef4444",
+        background: "#1e293b",
+        color: "#fff"
+      });
+      if (!r.isConfirmed) return;
+      useForce = true;
+    } else {
+      const confirm = await Swal.fire({
+        title: `Auto-generar ${phaseLabel}`,
+        html: `<div style="text-align:center;font-size:13px;color:#94a3b8">Se generarán las llaves de <strong>${phaseLabel}</strong> basado en los resultados de la fase anterior.</div>`,
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonText: "⚡ Generar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#a855f7",
+        background: "#1e293b",
+        color: "#fff",
+      });
+      if (!confirm.isConfirmed) return;
+    }
+    setAutoGenerating(true);
+    try {
+      const res = await apiPost(`${API_BASE}copa_auto_generate_knockout.php`, { fase, force: useForce }).then(r => r.json());
+      if (res.success) {
+        Swal.fire({ toast: true, position: "top-end", icon: "success", title: res.message || "Partidos generados", showConfirmButton: false, timer: 2500 });
+        fetchData();
+      } else {
+        throw new Error(res.message || "Error");
+      }
+    } catch (err) {
+      Swal.fire({ toast: true, position: "top-end", icon: "error", title: err.message, showConfirmButton: false, timer: 3000 });
+    } finally {
+      setAutoGenerating(false);
+    }
+  };
 
   const phaseMatches = matches.filter(m => m.fase === activePhase);
   const filteredMatches = phaseMatches.filter(m => search === "" || (m.team1 || "").toLowerCase().includes(search.toLowerCase()) || (m.team2 || "").toLowerCase().includes(search.toLowerCase()));
   const groupsWithTeams = GROUPS.filter(g => teams.some(t => t.grupo === g));
   const knockoutPairs = isIdaVueltaPhase(activePhase) ? pairKnockoutMatches(filteredMatches) : [];
+  const phaseReview = getPhaseReview(activePhase, matches, teams);
 
   return (
     <div className={`admin-layout ${sidebarOpen ? "sidebar-closed" : ""}`}>
@@ -1169,6 +1261,8 @@ const AdminCopPresidente = () => {
             {PHASES.map(p => { const count = matches.filter(m => m.fase === p.key).length; const active = activePhase === p.key; return (<button key={p.key} onClick={() => { setActivePhase(p.key); if (p.key !== "grupos") setViewMode("matches"); }} style={{ padding: "9px 16px", borderRadius: 10, cursor: "pointer", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", transition: "all 0.2s", background: active ? "rgba(239,68,68,0.12)" : "rgba(255,255,255,0.03)", border: active ? "1px solid rgba(239,68,68,0.3)" : "1px solid #1e293b", color: active ? "#ef4444" : "#64748b", transform: active ? "scale(1.02)" : "scale(1)" }}>{p.icon} {p.label}{p.idaVuelta && <span style={{ fontSize: 8, marginLeft: 4, opacity: 0.5 }}>IDA/V</span>}<span style={{ marginLeft: 5, fontSize: 9, padding: "1px 6px", borderRadius: 8, background: active ? "rgba(239,68,68,0.2)" : "rgba(255,255,255,0.05)", color: active ? "#ef4444" : "#334155" }}>{count}</span></button>); })}
           </div>
 
+          <PhaseReviewPanel phase={activePhase} review={phaseReview} />
+
           {/* View toggle grupos */}
           {activePhase === "grupos" && (<div style={{ display: "flex", gap: 8, marginBottom: "1rem", alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ display: "flex", background: "rgba(255,255,255,0.03)", border: "1px solid #1e293b", borderRadius: 8, padding: 3, gap: 3 }}>
@@ -1199,10 +1293,21 @@ const AdminCopPresidente = () => {
           </div>)}
 
           {/* Final */}
-          {!isIdaVueltaPhase(activePhase) && activePhase !== "grupos" && (<div style={{ background: "rgba(255,255,255,0.01)", border: "1px solid #1e293b", borderRadius: 14, overflow: "hidden" }}><div style={{ padding: "12px 18px", borderBottom: "1px solid #1e293b" }}><h3 style={{ margin: 0, color: "#94a3b8", fontSize: 13, fontWeight: 700 }}>{PHASES.find(p => p.key === activePhase)?.icon} {PHASES.find(p => p.key === activePhase)?.label}<span style={{ marginLeft: 8, fontSize: 10, color: "#334155" }}>({filteredMatches.length})</span></h3></div>{loading ? <LoadingSpinner /> : filteredMatches.length === 0 ? <EmptyState /> : (<div style={{ padding: 8 }}>{filteredMatches.map((m, i) => { const st = statusStyle(m.estado); const fin = m.estado === "Finalizado"; return (<div key={m.id || i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 14px", borderRadius: 10, transition: "background 0.12s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.02)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"} onClick={() => { setEditingMatch(m); setShowMatchModal(true); }}><TeamBadge logo={m.logo1} name={m.team1} size={34} /><div style={{ flex: 1, textAlign: "right" }}><div style={{ fontSize: 13, fontWeight: 700, color: "#cbd5e1" }}>{m.team1 || "TBD"}</div>{m.division1 && <DivisionPill division={m.division1} />}</div><div style={{ textAlign: "center", minWidth: 90 }}><div style={{ fontFamily: "monospace", fontSize: 22, fontWeight: 900, color: fin ? "#e2b340" : "#1e293b" }}>{fin ? `${m.goles_local ?? 0} – ${m.goles_visitante ?? 0}` : "– –"}</div><div style={{ fontSize: 9, color: "#334155", marginTop: 2 }}>{m.fecha ? m.fecha.substring(5, 10) : ""} {m.hora ? m.hora.substring(0, 5) : ""}</div></div><div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 700, color: "#cbd5e1" }}>{m.team2 || "TBD"}</div>{m.division2 && <DivisionPill division={m.division2} />}</div><TeamBadge logo={m.logo2} name={m.team2} size={34} /><div style={{ display: "flex", flexDirection: "column", gap: 4, marginLeft: 8 }}><span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 6, background: st.bg, color: st.color, fontSize: 9, fontWeight: 800, textAlign: "center", minWidth: 72 }}>{m.estado}</span>{!fin && <button onClick={e => { e.stopPropagation(); handleQuickFinish(m); }} style={miniBtn("#10b981")}>✓</button>}<button onClick={e => { e.stopPropagation(); handleDelete(m.id); }} style={miniBtn("#ef4444")}><Trash2 size={10} /></button></div></div>); })}</div>)}</div>)}
+          {!isIdaVueltaPhase(activePhase) && activePhase !== "grupos" && (<div style={{ background: "rgba(255,255,255,0.01)", border: "1px solid #1e293b", borderRadius: 14, overflow: "hidden" }}><div style={{ padding: "12px 18px", borderBottom: "1px solid #1e293b", display: "flex", alignItems: "center", justifyContent: "space-between" }}><h3 style={{ margin: 0, color: "#94a3b8", fontSize: 13, fontWeight: 700 }}>{PHASES.find(p => p.key === activePhase)?.icon} {PHASES.find(p => p.key === activePhase)?.label}<span style={{ marginLeft: 8, fontSize: 10, color: "#334155" }}>({filteredMatches.length})</span></h3>
+              <button onClick={() => handleAutoGenerate(activePhase)} disabled={autoGenerating} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: autoGenerating ? "rgba(168,85,247,0.08)" : "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", color: "#fff", fontSize: 11, fontWeight: 700, cursor: autoGenerating ? "not-allowed" : "pointer", opacity: autoGenerating ? 0.5 : 1, transition: "all 0.2s" }}><Zap size={13} /> {autoGenerating ? "Generando..." : "Auto-generar"}</button>
+            </div>{loading ? <LoadingSpinner /> : filteredMatches.length === 0 ? <EmptyState /> : (<div style={{ padding: 8 }}>{filteredMatches.map((m, i) => { const st = statusStyle(m.estado); const fin = m.estado === "Finalizado"; return (<div key={m.id || i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 14px", borderRadius: 10, transition: "background 0.12s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.02)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"} onClick={() => { setEditingMatch(m); setShowMatchModal(true); }}><TeamBadge logo={m.logo1} name={m.team1} size={34} /><div style={{ flex: 1, textAlign: "right" }}><div style={{ fontSize: 13, fontWeight: 700, color: "#cbd5e1" }}>{m.team1 || "TBD"}</div>{m.division1 && <DivisionPill division={m.division1} />}</div><div style={{ textAlign: "center", minWidth: 90 }}><div style={{ fontFamily: "monospace", fontSize: 22, fontWeight: 900, color: fin ? "#e2b340" : "#1e293b" }}>{fin ? `${m.goles_local ?? 0} – ${m.goles_visitante ?? 0}` : "– –"}</div><div style={{ fontSize: 9, color: "#334155", marginTop: 2 }}>{m.fecha ? m.fecha.substring(5, 10) : ""} {m.hora ? m.hora.substring(0, 5) : ""}</div></div><div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 700, color: "#cbd5e1" }}>{m.team2 || "TBD"}</div>{m.division2 && <DivisionPill division={m.division2} />}</div><TeamBadge logo={m.logo2} name={m.team2} size={34} /><div style={{ display: "flex", flexDirection: "column", gap: 4, marginLeft: 8 }}><span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 6, background: st.bg, color: st.color, fontSize: 9, fontWeight: 800, textAlign: "center", minWidth: 72 }}>{m.estado}</span>{!fin && <button onClick={e => { e.stopPropagation(); handleQuickFinish(m); }} style={miniBtn("#10b981")}>✓</button>}<button onClick={e => { e.stopPropagation(); handleDelete(m.id); }} style={miniBtn("#ef4444")}><Trash2 size={10} /></button></div></div>); })}</div>)}</div>)}
 
           {/* Ida/Vuelta */}
-          {isIdaVueltaPhase(activePhase) && (<div><div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "0 2px" }}><h3 style={{ margin: 0, color: "#94a3b8", fontSize: 13, fontWeight: 700 }}>{PHASES.find(p => p.key === activePhase)?.icon} {PHASES.find(p => p.key === activePhase)?.label}<span style={{ marginLeft: 6, padding: "2px 8px", borderRadius: 5, background: "rgba(168,85,247,0.1)", color: "#a855f7", fontSize: 9, fontWeight: 800 }}>IDA Y VUELTA</span></h3><span style={{ fontSize: 10, color: "#334155" }}>{knockoutPairs.length} llaves</span></div>{loading ? <LoadingSpinner /> : knockoutPairs.length === 0 ? <EmptyState /> : (<div>{knockoutPairs.map((pair, i) => (<KnockoutPair key={i} pair={pair} phaseLabel={activePhase} onEdit={m => { setEditingMatch(m); setShowMatchModal(true); }} onQuickFinish={handleQuickFinish} onDelete={handleDelete} onCreateVuelta={handleCreateVuelta} />))}</div>)}</div>)}
+          {isIdaVueltaPhase(activePhase) && (<div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "0 2px" }}>
+              <h3 style={{ margin: 0, color: "#94a3b8", fontSize: 13, fontWeight: 700 }}>{PHASES.find(p => p.key === activePhase)?.icon} {PHASES.find(p => p.key === activePhase)?.label}<span style={{ marginLeft: 6, padding: "2px 8px", borderRadius: 5, background: "rgba(168,85,247,0.1)", color: "#a855f7", fontSize: 9, fontWeight: 800 }}>IDA Y VUELTA</span></h3>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <button onClick={() => handleAutoGenerate(activePhase)} disabled={autoGenerating} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: autoGenerating ? "rgba(168,85,247,0.08)" : "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", color: "#fff", fontSize: 11, fontWeight: 700, cursor: autoGenerating ? "not-allowed" : "pointer", opacity: autoGenerating ? 0.5 : 1, transition: "all 0.2s" }}><Zap size={13} /> {autoGenerating ? "Generando..." : "Auto-generar"}</button>
+                <span style={{ fontSize: 10, color: "#334155" }}>{knockoutPairs.length} llaves</span>
+              </div>
+            </div>
+            {loading ? <LoadingSpinner /> : knockoutPairs.length === 0 ? <EmptyState /> : (<div>{knockoutPairs.map((pair, i) => (<KnockoutPair key={i} pair={pair} phaseLabel={activePhase} onEdit={m => { setEditingMatch(m); setShowMatchModal(true); }} onQuickFinish={handleQuickFinish} onDelete={handleDelete} onCreateVuelta={handleCreateVuelta} />))}</div>)}
+          </div>)}
 
           {/* Info */}
           <div style={{ marginTop: 20, background: "rgba(239,68,68,0.03)", border: "1px solid rgba(239,68,68,0.1)", borderRadius: 12, padding: "13px 18px" }}>

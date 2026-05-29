@@ -1,14 +1,13 @@
 <?php
 error_reporting(0);
 ini_set('display_errors', 0);
-header("Content-Type: application/json; charset=utf-8");
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
-// ... resto del código ...
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
-$conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
+$conn = $mysqli;
 
 $res = $conn->query("SELECT * FROM equipos");
+if (!$res) { echo json_encode([]); exit; }
 
 $data = [];
 

@@ -1,20 +1,8 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: *");
-header("Content-Type: application/json; charset=UTF-8");
-
- $host = '127.0.0.1';
- $dbname = 'numeros-y-futbol';
- $user = 'root';
- $pass = '';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo json_encode(null);
-    exit();
-}
+error_reporting(0);
+ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
 try {
     $sql = "
@@ -47,6 +35,5 @@ try {
         echo json_encode($match);
     }
 } catch (Exception $e) {
-    // Si falla la consulta, devolver null sin exponer el error
     echo json_encode(null);
 }

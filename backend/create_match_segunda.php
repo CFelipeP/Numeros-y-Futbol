@@ -1,13 +1,19 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
+error_reporting(0); ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth_check.php';
+requireAdmin();
 
- $conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
+$local     = (int)($_POST['local'] ?? 0);
+$visitante = (int)($_POST['visitante'] ?? 0);
 
- $local = $_POST['local'];
- $visitante = $_POST['visitante'];
+if (!$local || !$visitante) {
+    echo json_encode(["error" => "Selecciona ambos equipos"]);
+    exit;
+}
 
- $conn->query("INSERT INTO partidos_segunda (local_id, visitante_id) VALUES ('$local','$visitante')");
- $id = $conn->insert_id;
+$stmt = $conn->prepare("INSERT INTO partidos_segunda (local_id, visitante_id) VALUES (?, ?)");
+$stmt->execute([$local, $visitante]);
 
-echo json_encode(["success" => true, "id" => $id]);
+echo json_encode(["success" => true, "id" => $conn->lastInsertId()]);

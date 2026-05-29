@@ -11,8 +11,10 @@ import {
   UploadCloud,
   ImageIcon, CheckCircle2, RotateCcw, StarOff, Filter, Zap, MessageCircle
 } from "lucide-react";
+import { apiPostForm } from "../apiHelper";
+import { API_BASE } from "../config";
 
-const API = "http://localhost/Numeros-y-Futbol/backend/";
+const API = API_BASE;
 const DIVISION_LABEL = "Tercera División";
 
 const ManageTeamsTercera = () => {
@@ -79,7 +81,7 @@ const ManageTeamsTercera = () => {
             confirmButtonText: "Sí, salir", confirmButtonColor: "#d33"
         }).then((result) => {
             if (result.isConfirmed) {
-                localStorage.removeItem("user");
+                localStorage.removeItem("user"); localStorage.removeItem("token");
                 window.location.href = "/login";
             }
         });
@@ -115,7 +117,7 @@ const ManageTeamsTercera = () => {
         form.append("estadio", formEstadio);
         if (formLogo) form.append("logo", formLogo);
 
-        fetch(`${API}add_team_tercera.php`, { method: "POST", body: form })
+        apiPostForm(`${API}add_team_tercera.php`, form)
             .then(() => {
                 setSubmitting(false);
                 setShowAdd(false);
@@ -164,7 +166,7 @@ const ManageTeamsTercera = () => {
         form.append("estadio", editEstadio);
         if (editLogo) form.append("logo", editLogo);
 
-        fetch(`${API}update_team_tercera.php`, { method: "POST", body: form })
+        apiPostForm(`${API}update_team_tercera.php`, form)
             .then(res => res.json())
             .then(data => {
                 setEditSubmitting(false);
@@ -194,7 +196,7 @@ const ManageTeamsTercera = () => {
             if (result.isConfirmed) {
                 const form = new FormData();
                 form.append("id", id);
-                fetch(`${API}delete_team_tercera.php`, { method: "POST", body: form })
+                apiPostForm(`${API}delete_team_tercera.php`, form)
                     .then(res => res.json())
                     .then(data => {
                         if (data.error) {

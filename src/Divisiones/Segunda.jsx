@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import "./styles2.css";
-
-const API_BASE = "http://numeros-y-futbol.test/backend/";
+import { API_BASE } from "../config";
 
 const IconCalendar = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -64,6 +64,11 @@ const IconTarget = () => (
     <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
   </svg>
 );
+const IconArrowRight = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+  </svg>
+);
 
 const logoUrl = (path) => {
   if (!path) return null;
@@ -105,20 +110,34 @@ const normalizeMatch = (m, tm) => {
   if (!al && m.visitante_id && tm[String(m.visitante_id)]?.logo) al = tm[String(m.visitante_id)].logo;
   if (!hl && hn) { const f = Object.values(tm).find(t => t.nombre === hn); if (f?.logo) hl = f.logo; }
   if (!al && an) { const f = Object.values(tm).find(t => t.nombre === an); if (f?.logo) al = f.logo; }
-  return { home_name: hn, away_name: an, home_logo: hl, away_logo: al, goles_local: gl != null ? gl : null, goles_visitante: gv != null ? gv : null, fecha: m.fecha || m.date || "", estado: m.estado || m.status || "" };
+  return { id: m.id || m.partido_id || null, home_name: hn, away_name: an, home_logo: hl, away_logo: al, goles_local: gl != null ? gl : null, goles_visitante: gv != null ? gv : null, fecha: m.fecha || m.date || "", estado: m.estado || m.status || "" };
 };
 
-const ResultRow = ({ m }) => {
+const ResultRow = ({ m, onVerMas }) => {
   const hw = parseInt(m.goles_local) > parseInt(m.goles_visitante), aw = parseInt(m.goles_visitante) > parseInt(m.goles_local);
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.7rem 0.8rem", borderRadius: "10px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", transition: "all 0.2s ease", cursor: "default" }}
-      onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
-      onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)"; }}>
-      <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: 3, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{m.home_logo && <img src={logoUrl(m.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div>
-      <span style={{ fontSize: "0.75rem", fontWeight: hw ? 800 : 600, color: hw ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.home_name}</span>
-      <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "var(--color-white)", fontFamily: "var(--font-heading)", letterSpacing: "1px", flexShrink: 0, textShadow: "0 0 10px rgba(34,197,94,0.3)" }}>{m.goles_local ?? "-"} - {m.goles_visitante ?? "-"}</span>
-      <span style={{ fontSize: "0.75rem", fontWeight: aw ? 800 : 600, color: aw ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{m.away_name}</span>
-      <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: 3, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{m.away_logo && <img src={logoUrl(m.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.7rem 0.8rem", borderRadius: "10px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", transition: "all 0.2s ease", cursor: "default" }}
+        onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
+        onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)"; }}>
+        <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: 3, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{m.home_logo && <img src={logoUrl(m.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div>
+        <span style={{ fontSize: "0.75rem", fontWeight: hw ? 800 : 600, color: hw ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.home_name}</span>
+        <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "var(--color-white)", fontFamily: "var(--font-heading)", letterSpacing: "1px", flexShrink: 0, textShadow: "0 0 10px rgba(34,197,94,0.3)" }}>{m.goles_local ?? "-"} - {m.goles_visitante ?? "-"}</span>
+        <span style={{ fontSize: "0.75rem", fontWeight: aw ? 800 : 600, color: aw ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{m.away_name}</span>
+        <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: 3, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{m.away_logo && <img src={logoUrl(m.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div>
+      </div>
+      {m.id && onVerMas && (
+        <button onClick={() => onVerMas(m.id)} style={{
+          alignSelf: "flex-end", display: "flex", alignItems: "center", gap: "0.35rem",
+          background: "none", border: "none", color: "#22c55e",
+          fontSize: "0.68rem", fontWeight: 700, cursor: "pointer", padding: "0.25rem 0.6rem",
+          borderRadius: 6, letterSpacing: "0.5px", textTransform: "uppercase",
+          transition: "all 0.2s ease", marginTop: "0.15rem", marginRight: "0.2rem"
+        }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(34,197,94,0.1)"; e.currentTarget.style.gap = "0.5rem"; }}
+           onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.gap = "0.35rem"; }}>
+          Ver más información <IconArrowRight />
+        </button>
+      )}
     </div>
   );
 };
@@ -145,7 +164,7 @@ const TablaClasificacion = ({ datos, playoffTeamIds, showGrupo }) => (
   </div>
 );
 
-const FeaturedMatchCard = ({ match }) => {
+const FeaturedMatchCard = ({ match, onVerMas }) => {
   const st = getMatchStatus(match.estado); const isF = st.variant === "finished", isL = st.variant === "live", isS = st.variant === "scheduled";
   const hw = match.goles_local != null && match.goles_visitante != null && match.goles_local > match.goles_visitante;
   const aw = match.goles_local != null && match.goles_visitante != null && match.goles_visitante > match.goles_local;
@@ -162,7 +181,21 @@ const FeaturedMatchCard = ({ match }) => {
           <div className="sd-featured-team" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}><div className="sd-featured-logo" style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}><img src={logoUrl(match.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} /></div><span className="sd-featured-name" style={{ fontSize: "0.72rem", fontWeight: aw ? 800 : 600, color: aw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.away_name}</span>{aw && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}</div>
         </div>
         <div style={{ height: 1, margin: "1.4rem 0 1rem", background: "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.06) 30%,rgba(255,255,255,0.06) 70%,transparent 100%)" }} />
-        {match.fecha && <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, fontSize: "0.7rem", color: "rgba(255,255,255,0.3)" }}><IconCalendar /><span>{match.fecha}</span></div>}
+        {match.fecha && <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", marginBottom: "0.8rem" }}><IconCalendar /><span>{match.fecha}</span></div>}
+        {match.id && onVerMas && (
+          <button onClick={() => onVerMas(match.id)} style={{
+            width: "100%", padding: "0.6rem 1rem",
+            background: "linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04))",
+            border: "1px solid rgba(34,197,94,0.18)", borderRadius: 10,
+            color: "#22c55e", fontWeight: 700, fontSize: "0.75rem",
+            textTransform: "uppercase", letterSpacing: "1.2px", cursor: "pointer",
+            transition: "all 0.25s ease", display: "flex", alignItems: "center",
+            justifyContent: "center", gap: "0.5rem"
+          }} onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(34,197,94,0.25), rgba(34,197,94,0.08))"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(34,197,94,0.2)"; }}
+             onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04))"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
+            Ver más información <IconArrowRight />
+          </button>
+        )}
       </div>
       <style>{`@keyframes fp2{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.3)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}`}</style>
     </div>
@@ -291,6 +324,7 @@ const PublicTeamView = ({ teamData, viewTab, setViewTab }) => {
 
 // ================= COMPONENTE PRINCIPAL =================
 export default function SegundaDivision() {
+  const navigate = useNavigate();
   const [hash, setHash] = useState(window.location.hash);
   const [tabla, setTabla] = useState([]);
   const [match, setMatch] = useState(null);
@@ -302,6 +336,10 @@ export default function SegundaDivision() {
   const [expandedTeam, setExpandedTeam] = useState(null);
   const [expandedViewTab, setExpandedViewTab] = useState("plantilla");
   const [sidebar, setSidebar] = useState({ next: null, recent: [] });
+
+  const openMatchDetail = useCallback((id) => {
+    if (id) navigate(`/partido/${id}/segunda`);
+  }, [navigate]);
 
   useEffect(() => { const h = () => setHash(window.location.hash); window.addEventListener("hashchange", h); return () => window.removeEventListener("hashchange", h); }, []);
   useEffect(() => {
@@ -353,9 +391,24 @@ export default function SegundaDivision() {
         {activeTab === "clasificacion" && !expandedTeam && (
           <div className="dashboard-grid sd-dashboard-m">
             <div className="sd-sidebar-col-m" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-              <div className="sd-featured-wrap">{match && match.home_name ? <FeaturedMatchCard match={match} /> : <div className="glass-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}><div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}><span style={{ fontSize: "1.5rem", opacity: 0.3 }}>⚽</span></div><p style={{ fontSize: "0.9rem", margin: "0 0 0.3rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Sin partido destacado</p><p style={{ fontSize: "0.75rem", margin: 0, color: "rgba(255,255,255,0.25)" }}>Se mostrará cuando se configure desde el panel</p></div>}</div>
-              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", boxShadow: "0 0 8px #f59e0b", display: "inline-block" }} />Próximo Partido</div>{sidebar.next ? (<div style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(30,41,59,0.4) 100%)", border: "1px solid rgba(245,158,11,0.12)", borderRadius: 16, padding: "1.5rem 1.2rem" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}><span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#f59e0b", background: "rgba(245,158,11,0.12)", padding: "0.2rem 0.6rem", borderRadius: 6 }}>{getMatchStatus(sidebar.next.status || sidebar.next.estado).text}</span></div><div className="sd-next-teams-m" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0 }}><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}>{sidebar.next.home_logo && <img src={logoUrl(sidebar.next.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sidebar.next.home_name}</span></div><div style={{ flexShrink: 0 }}><span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--color-text-muted)", background: "rgba(255,255,255,0.04)", padding: "0.35rem 0.7rem", borderRadius: 8, letterSpacing: "1px" }}>VS</span></div><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0, justifyContent: "flex-end" }}><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{sidebar.next.away_name}</span><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}>{sidebar.next.away_logo && <img src={logoUrl(sidebar.next.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div></div></div>{sidebar.next.fecha && <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.8rem", marginTop: "1rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><IconCalendar /> {sidebar.next.fecha}</div>}</div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📅</div><p style={{ fontSize: "0.85rem", margin: 0, fontWeight: 600 }}>No hay partidos pendientes</p></div>)}</div>
-              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981", display: "inline-block" }} />Últimos Resultados</div>{sidebar.recent?.length > 0 ? (<div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>{sidebar.recent.map(m => (<div key={m.id}><ResultRow m={m} />{m.fecha && <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", paddingLeft: "0.8rem", paddingTop: "0.15rem", paddingBottom: "0.3rem", fontSize: "0.65rem", color: "rgba(255,255,255,0.25)" }}><IconClock /> {m.fecha}</div>}</div>))}</div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📋</div><p style={{ fontSize: "0.85rem", margin: 0 }}>No hay resultados aún</p></div>)}</div>
+              <div className="sd-featured-wrap">{match && match.home_name ? <FeaturedMatchCard match={match} onVerMas={openMatchDetail} /> : <div className="glass-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}><div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}><span style={{ fontSize: "1.5rem", opacity: 0.3 }}>⚽</span></div><p style={{ fontSize: "0.9rem", margin: "0 0 0.3rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Sin partido destacado</p><p style={{ fontSize: "0.75rem", margin: 0, color: "rgba(255,255,255,0.25)" }}>Se mostrará cuando se configure desde el panel</p></div>}</div>
+              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", boxShadow: "0 0 8px #f59e0b", display: "inline-block" }} />Próximo Partido</div>{sidebar.next ? (<div style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(30,41,59,0.4) 100%)", border: "1px solid rgba(245,158,11,0.12)", borderRadius: 16, padding: "1.5rem 1.2rem" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}><span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#f59e0b", background: "rgba(245,158,11,0.12)", padding: "0.2rem 0.6rem", borderRadius: 6 }}>{getMatchStatus(sidebar.next.status || sidebar.next.estado).text}</span></div><div className="sd-next-teams-m" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0 }}><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}>{sidebar.next.home_logo && <img src={logoUrl(sidebar.next.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sidebar.next.home_name}</span></div><div style={{ flexShrink: 0 }}><span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--color-text-muted)", background: "rgba(255,255,255,0.04)", padding: "0.35rem 0.7rem", borderRadius: 8, letterSpacing: "1px" }}>VS</span></div><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0, justifyContent: "flex-end" }}><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{sidebar.next.away_name}</span><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}>{sidebar.next.away_logo && <img src={logoUrl(sidebar.next.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div></div></div>{sidebar.next.fecha && <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.8rem", marginTop: "1rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><IconCalendar /> {sidebar.next.fecha}</div>}
+              {(sidebar.next.id || sidebar.next.partido_id) && (
+                <button onClick={() => openMatchDetail(sidebar.next.id || sidebar.next.partido_id)} style={{
+                  width: "100%", marginTop: "1rem", padding: "0.55rem 1rem",
+                  background: "linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04))",
+                  border: "1px solid rgba(34,197,94,0.18)", borderRadius: 10,
+                  color: "#22c55e", fontWeight: 700, fontSize: "0.72rem",
+                  textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer",
+                  transition: "all 0.25s ease", display: "flex", alignItems: "center",
+                  justifyContent: "center", gap: "0.45rem"
+                }} onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(34,197,94,0.25), rgba(34,197,94,0.08))"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+                   onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04))"; e.currentTarget.style.transform = "translateY(0)"; }}>
+                  Ver más información <IconArrowRight />
+                </button>
+              )}
+              </div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📅</div><p style={{ fontSize: "0.85rem", margin: 0, fontWeight: 600 }}>No hay partidos pendientes</p></div>)}</div>
+              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981", display: "inline-block" }} />Últimos Resultados</div>{sidebar.recent?.length > 0 ? (<div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>{sidebar.recent.map(m => (<div key={m.id}><ResultRow m={m} onVerMas={openMatchDetail} />{m.fecha && <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", paddingLeft: "0.8rem", paddingTop: "0.15rem", paddingBottom: "0.3rem", fontSize: "0.65rem", color: "rgba(255,255,255,0.25)" }}><IconClock /> {m.fecha}</div>}</div>))}</div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📋</div><p style={{ fontSize: "0.85rem", margin: 0 }}>No hay resultados aún</p></div>)}</div>
               <div className="glass-card sd-m-hide" style={{ padding: "1.5rem" }}><div className="section-subtitle" style={{ marginTop: 0, fontSize: "0.85rem" }}>Leyenda</div><div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>{[{ color: "#10b981", label: "PlayOff — Top 4 de cada zona (8 equipos)" }, { color: "#3b82f6", label: "Grupo A (Este)" }, { color: "#f59e0b", label: "Grupo B (Oeste)" }].map((item, i) => (<div key={i} style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}><span style={{ width: 10, height: 10, borderRadius: 2, background: item.color, flexShrink: 0, boxShadow: `0 0 6px ${item.color}40` }} /><span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>{item.label}</span></div>))}<div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}><span style={{ fontSize: "0.7rem", fontWeight: 800, color: "var(--color-text-muted)", width: 18, textAlign: "center", flexShrink: 0 }}>DG</span><span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>Diferencia de goles</span></div></div></div>
             </div>
             <div className="sd-standings-col-m glass-card" style={{ padding: "1.8rem" }}>
@@ -398,15 +451,13 @@ export default function SegundaDivision() {
         )}
       </section>
 
-      <footer className="footer" id="driver-footer"><div className="container footer-inner"><div className="footer-grid"><div className="footer-brand"><h3>NÚMEROS Y FÚTBOL</h3><p>Portal oficial de cobertura del fútbol salvadoreño.</p></div><div className="footer-section"><h4>Divisiones</h4><ul><li><a href="/primera">Primera División</a></li><li><a href="/segunda">Segunda División</a></li><li><a href="#tercera">Tercera División</a></li></ul></div><div className="footer-section"><h4>Contenido</h4><ul><li><a href="/news">Noticias</a></li><li><a href="#">Resultados</a></li><li><a href="/primera">Clasificaciones</a></li></ul></div><div className="footer-section"><h4>Síguenos</h4><ul><li><a href="#">Facebook</a></li><li><a href="#">Twitter / X</a></li><li><a href="#">Instagram</a></li></ul></div></div><div className="footer-bottom"><p>&copy; 2026 Números y Fútbol. Todos los derechos reservados.</p><div className="footer-links"><a href="#">Privacidad</a><a href="#">Términos</a><a href="#">Contacto</a></div></div></div></footer>
+      <footer className="footer" id="driver-footer"><div className="container footer-inner"><div className="footer-grid"><div className="footer-brand"><h3>NÚMEROS Y FÚTBOL</h3><p>Portal oficial hecha por Ariel SOTOMAYOR y Felipe ESCOBAR.</p></div><div className="footer-section"><h4>Divisiones</h4><ul><li><a href="/primera">Primera División</a></li><li><a href="/segunda">Segunda División</a></li><li><a href="#tercera">Tercera División</a></li></ul></div><div className="footer-section"><h4>Contenido</h4><ul><li><a href="/news">Noticias</a></li><li><a href="#">Resultados</a></li><li><a href="/primera">Clasificaciones</a></li></ul></div><div className="footer-section"><h4>Síguenos</h4><ul><li><a href="#">Facebook</a></li><li><a href="#">Twitter / X</a></li><li><a href="#">Instagram</a></li></ul></div></div><div className="footer-bottom"><p>&copy; 2026 Números y Fútbol. Todos los derechos reservados.</p><div className="footer-links"><a href="#">Privacidad</a><a href="#">Términos</a><a href="#">Contacto</a></div></div></div></footer>
 
       <style>{`
 @keyframes pv-playerEntry{from{opacity:0;transform:translate(-50%,-50%) scale(.5)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-
 .pv-team-page{max-width:880px;margin:0 auto;padding-bottom:3rem}
 .pv-back-btn{display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.6);padding:.55rem 1.1rem;border-radius:10px;cursor:pointer;font-weight:600;font-size:.82rem;margin-bottom:1.5rem;transition:all .2s;font-family:inherit}
 .pv-back-btn:hover{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.12)}
-
 .pv-hero-card{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(160deg,rgba(15,23,42,.95) 0%,rgba(15,23,42,.8) 50%,rgba(30,41,59,.9) 100%);border:1px solid rgba(255,255,255,.06);margin-bottom:1.5rem;box-shadow:0 12px 40px rgba(0,0,0,.4)}
 .pv-hero-bg-pattern{position:absolute;inset:0;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
 .pv-hero-content{position:relative;padding:1.8rem 2rem;z-index:1}
@@ -422,13 +473,11 @@ export default function SegundaDivision() {
 .pv-hero-stat strong{display:block;font-size:1.35rem;font-weight:900;font-family:var(--font-heading);color:#f1f5f9;line-height:1}
 .pv-hero-stat span{font-size:.6rem;color:#475569;text-transform:uppercase;letter-spacing:1.2px;margin-top:.25rem;display:block}
 .pv-hero-stat-divider{width:1px;height:32px;background:rgba(255,255,255,.05);flex-shrink:0}
-
 .pv-tabs-bar{display:flex;gap:0;margin-bottom:1.8rem;background:rgba(255,255,255,.025);border-radius:14px;padding:4px;border:1px solid rgba(255,255,255,.04);max-width:340px;margin-left:auto;margin-right:auto}
 .pv-tab-btn{flex:1;padding:.65rem .8rem;border:none;background:none;color:#475569;font-weight:700;font-size:.82rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.45rem;border-radius:11px;transition:all .2s}
 .pv-tab-btn:hover{color:#94a3b8;background:rgba(255,255,255,.03)}
 .pv-tab-btn.active{color:#86efac;background:rgba(34,197,94,.12);box-shadow:0 2px 12px rgba(34,197,94,.15)}
 .pv-tab-btn svg{opacity:.7}.pv-tab-btn.active svg{opacity:1}
-
 .pv-player-row{display:grid;grid-template-columns:34px 34px 1fr 48px 90px 54px;gap:.5rem;align-items:center;padding:.55rem .7rem;border-radius:12px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.025);transition:all .15s}
 .pv-player-row:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.06);transform:translateX(2px)}
 .pv-row-num{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;font-family:monospace}
@@ -444,7 +493,6 @@ export default function SegundaDivision() {
 .pv-row-stats small{color:#334155;font-size:.55rem;font-weight:600;margin-left:1px}
 .pv-row-pj{font-size:.74rem;color:#475569;font-weight:600;text-align:center;font-family:monospace}
 .pv-row-pj small{font-weight:400;font-size:.55rem}
-
 .pv-pos-group{margin-bottom:1.5rem}
 .pv-group-head{display:flex;align-items:center;gap:.55rem;margin-bottom:.6rem;padding:.5rem .8rem;border-bottom:2px solid transparent;border-radius:10px 10px 0 0}
 .pv-group-icon{font-size:.85rem}
@@ -452,26 +500,22 @@ export default function SegundaDivision() {
 .pv-group-count{font-size:.58rem;font-weight:700;padding:2px 9px;border-radius:5px;margin-left:auto}
 .pv-group-list{display:flex;flex-direction:column;gap:.3rem}
 .pv-roster-wrap{max-width:760px;margin:0 auto}
-
 .pv-fm-section{display:flex;flex-direction:column;gap:1.2rem}
 .pv-fm-locked{display:flex;align-items:center;justify-content:center;gap:.7rem;padding:.65rem 1rem;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);flex-wrap:wrap}
 .pv-fm-badge{font-size:.85rem;font-weight:900;color:#86efac;background:rgba(34,197,94,.12);padding:.3rem .9rem;border-radius:8px;border:1px solid rgba(34,197,94,.2);font-family:monospace;letter-spacing:1px}
 .pv-fm-locked-label{font-size:.72rem;color:#475569;font-weight:600}
-
 .pv-pitch-wrap{width:100%;max-width:420px;margin:0 auto}
 .pv-pitch{position:relative;width:100%;aspect-ratio:68/105;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(0deg,#091f12 0px,#091f12 52px,#0c2815 52px,#0c2815 105px);box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 0 80px rgba(0,0,0,.2)}
 .pv-pitch-svg{position:absolute;inset:0;width:100%;height:100%}
 .pv-pitch-empty{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;opacity:.25}
 .pv-pitch-empty p{color:#fff;font-weight:700;font-size:.85rem;margin:0}
 .pv-pitch-empty span{color:#94a3b8;font-size:.72rem}
-
 .pv-pp{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:2;transition:left .45s cubic-bezier(.4,0,.2,1),top .45s cubic-bezier(.4,0,.2,1);animation:pv-playerEntry .5s cubic-bezier(.34,1.56,.64,1) both;cursor:default}
 .pv-pp-dot{width:34px;height:34px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.2);transition:all .2s;font-size:.6rem;font-weight:800;color:#fff}
 .pv-pp:hover .pv-pp-dot{transform:scale(1.18)}
 .pv-pp-dot img{width:100%;height:100%;object-fit:cover}
 .pv-pp-name{font-size:.52rem;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9);white-space:nowrap;max-width:65px;overflow:hidden;text-overflow:ellipsis;text-align:center}
 .pv-pp-role{font-size:.44rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.5px;font-family:monospace}
-
 .pv-subs-card{background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);border-radius:14px;padding:1rem 1.1rem}
 .pv-subs-title{margin:0 0 .65rem;font-size:.78rem;font-weight:700;color:#94a3b8;display:flex;align-items:center;gap:.4rem}
 .pv-subs-bench-icon{font-size:.85rem}
@@ -491,53 +535,30 @@ export default function SegundaDivision() {
 .pv-sub-mini-stats{display:flex;gap:.35rem;flex-shrink:0;font-size:.7rem;font-family:monospace;align-items:center}
 .pv-sub-mini-stats span{display:flex;align-items:baseline;gap:1px}
 .pv-sub-mini-stats small{font-size:.48rem;font-weight:600;color:#334155}
-
-/* ============================================
-   RESPONSIVE: MÓVIL (≤ 768px) — SEGUNDA DIVISIÓN
-   ============================================ */
 @media(max-width:768px){
-  /* Dashboard: sidebar abajo, tabla arriba */
   .sd-dashboard-m{display:flex!important;flex-direction:column-reverse!important;gap:1.5rem!important}
   .sd-sidebar-col-m{order:2!important}
   .sd-standings-col-m{order:1!important}
-
-  /* Page title */
   .sd-page-title-row h2{font-size:1.5rem!important}
   .sd-page-subtitle{font-size:.88rem!important;padding-left:0!important}
-
-  /* Main tabs */
   .sd-main-tabs{border-radius:10px!important}
   .sd-main-tabs button{padding:.6rem .8rem!important;font-size:.78rem!important;gap:.3rem!important}
-
-  /* Table: hide GF/GC, enable scroll */
   .sd-m-hide{display:none!important}
   .sd-table-scroll-m{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;margin:0 -1.8rem!important;padding:0 1.8rem!important;width:calc(100% + 3.6rem)!important}
   .sd-table-m{min-width:380px!important}
   .sd-table-m th,.sd-table-m td{padding:8px 6px!important;font-size:.78rem!important}
   .sd-team-name-m{font-size:.8rem!important;max-width:110px!important;overflow:hidden!important;text-overflow:ellipsis!important}
   .sd-th-pos-m{width:32px!important}
-
-  /* Zona tabs compact */
   .sd-zona-tabs-m{max-width:100%!important}
   .sd-zona-tabs-m button{padding:.5rem .4rem!important;font-size:.68rem!important;gap:.2rem!important}
-
-  /* Next match: stack vertically */
   .sd-next-teams-m{flex-direction:column!important;gap:.8rem!important}
   .sd-next-teams-m>div{width:100%!important;justify-content:center!important}
-
-  /* Featured match: scale down */
   .sd-featured-logo{width:48px!important;height:48px!important;padding:6px!important}
   .sd-featured-score{font-size:1.4rem!important;width:36px!important}
   .sd-featured-name{font-size:.65rem!important;max-width:80px!important}
-
-  /* Team cards grid */
   .sd-teams-grid-m{grid-template-columns:1fr!important;gap:1rem!important}
   .sd-teams-header-m h3{font-size:1.15rem!important}
-
-  /* Glass cards */
   .glass-card{padding:1.2rem!important}
-
-  /* Team detail */
   .pv-team-page{padding:0 .5rem!important}
   .pv-hero-content{padding:1.2rem!important}
   .pv-hero-left{flex-direction:column!important;text-align:center!important;gap:.8rem!important}
@@ -547,48 +568,30 @@ export default function SegundaDivision() {
   .pv-hero-stat-divider{display:none!important}
   .pv-hero-stat{min-width:55px!important}
   .pv-hero-stat strong{font-size:1.1rem!important}
-
-  /* Player rows: compact */
   .pv-player-row{grid-template-columns:30px 30px 1fr!important;gap:.3rem!important;padding:.45rem .55rem!important}
-
-  /* Pitch */
   .pv-pitch-wrap{max-width:280px!important}
   .pv-pp-dot{width:26px!important;height:26px!important;font-size:.48rem!important;border-width:1.5px!important}
   .pv-pp-name{font-size:.4rem!important;max-width:48px!important}
   .pv-pp-role{display:none!important}
-
-  /* Subs */
   .pv-subs-grid{grid-template-columns:1fr!important}
   .pv-sub-mini-stats{display:none!important}
-
-  /* Tabs bar full width */
   .pv-tabs-bar{max-width:100%!important}
 }
-
 @media(max-width:480px){
   .sd-page-title-row h2{font-size:1.3rem!important}
   .sd-main-tabs button{font-size:.72rem!important;padding:.55rem .5rem!important}
   .sd-table-m{min-width:320px!important}
   .sd-team-name-m{font-size:.75rem!important;max-width:85px!important}
-
-  /* Zona tabs even more compact */
   .sd-zona-label-m{display:none!important}
-
-  /* Pitch smaller */
   .pv-pitch-wrap{max-width:240px!important}
   .pv-pp-dot{width:22px!important;height:22px!important;font-size:.42rem!important}
   .pv-pp-name{font-size:.36rem!important;max-width:40px!important}
-
-  /* Hero stats compact */
   .pv-hero-stat strong{font-size:.95rem!important}
   .pv-hero-stat span{font-size:.5rem!important;letter-spacing:.8px!important}
-
-  /* Featured card more compact */
   .sd-featured-logo{width:40px!important;height:40px!important;padding:5px!important}
   .sd-featured-score{font-size:1.2rem!important;width:30px!important}
   .sd-featured-name{font-size:.6rem!important;max-width:65px!important}
 }
-
 @media(max-width:768px) and (orientation:landscape){
   .pv-pitch-wrap{max-width:220px!important}
   .pv-hero-content{padding:1rem 1.2rem!important}

@@ -1,22 +1,16 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+error_reporting(0);
+ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth_check.php';
+requireAdmin();
 
- $host = 'localhost';
- $db   = 'numeros_futbol';  // ← tu nombre de BD
- $user = 'root';
- $pass = 'Info2026/*-';
+$match_id = intval($_GET['id'] ?? $_POST['id'] ?? 0);
+$status   = $_GET['status'] ?? $_POST['status'] ?? '';
+$division = strtolower(trim($_GET['division'] ?? $_POST['division'] ?? 'primera'));
 
- $conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) {
-    echo json_encode(['error' => 'Conexión fallida']);
-    exit;
-}
-
- $match_id = intval($_POST['match_id'] ?? 0);
- $status   = $_POST['status'] ?? '';
-
- $validos = ['Programado', 'En Vivo', 'Finalizado'];
+$validos = ['Pendiente', 'En Curso', 'Finalizado'];
 
 if ($match_id <= 0) {
     echo json_encode(['error' => 'ID inválido']);
@@ -24,22 +18,30 @@ if ($match_id <= 0) {
 }
 
 if (!in_array($status, $validos)) {
-    echo json_encode(['error' => 'Estado no válido. Use: Programado, En Vivo o Finalizado']);
+    echo json_encode(['error' => 'Estado no válido']);
     exit;
 }
 
- $stmt = $conn->prepare("UPDATE matches SET status = ? WHERE id = ?");
- $stmt->bind_param("si", $status, $match_id);
-
-if ($stmt->execute()) {
-    if ($stmt->affected_rows > 0) {
-        echo json_encode(['success' => true, 'status' => $status]);
-    } else {
-        echo json_encode(['error' => 'No se encontró el partido con ID ' . $match_id]);
-    }
-} else {
-    echo json_encode(['error' => 'Error al actualizar: ' . $stmt->error]);
+switch ($division) {
+    case 'segunda':
+        $table  = 'partidos_segunda';
+        $colEst = 'status';
+        break;
+    case 'tercera':
+        $table  = 'partidos_tercera';
+        $colEst = 'status';
+        break;
+    default:
+        $table  = 'partidos';
+        $colEst = 'estado';
+        break;
 }
 
- $stmt->close();
- $conn->close();
+$stmt = $pdo->prepare("UPDATE `$table` SET `$colEst` = ? WHERE id = ?");
+$stmt->execute([$status, $match_id]);
+
+if ($stmt->rowCount() > 0) {
+    echo json_encode(['success' => true, 'status' => $status]);
+} else {
+    echo json_encode(['error' => 'No se encontró el partido con ID ' . $match_id]);
+}

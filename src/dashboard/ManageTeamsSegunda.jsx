@@ -9,8 +9,10 @@ import {
   CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
   Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, UploadCloud, CheckCircle2, Image as ImageIcon, Upload, RotateCcw, StarOff, Filter, Zap, MessageCircle
 } from "lucide-react";
+import { apiPostForm } from "../apiHelper";
+import { API_BASE } from "../config";
 
-const API = "http://localhost/Numeros-y-Futbol/backend/";
+const API = API_BASE;
 const DIVISION_LABEL = "Segunda División";
 
 const ManageTeamsSegunda = () => {
@@ -85,7 +87,7 @@ const ManageTeamsSegunda = () => {
             confirmButtonText: "Sí, salir", confirmButtonColor: "#d33"
         }).then((result) => {
             if (result.isConfirmed) {
-                localStorage.removeItem("user");
+                localStorage.removeItem("user"); localStorage.removeItem("token");
                 window.location.href = "/login";
             }
         });
@@ -122,7 +124,7 @@ const ManageTeamsSegunda = () => {
         form.append("grupo", formGrupo);
         if (formLogo) form.append("logo", formLogo);
 
-        fetch(`${API}add_team_segunda.php`, { method: "POST", body: form })
+        apiPostForm(`${API}add_team_segunda.php`, form)
             .then(() => {
                 setSubmitting(false);
                 setShowAdd(false);
@@ -173,7 +175,7 @@ const ManageTeamsSegunda = () => {
         form.append("grupo", editGrupo);
         if (editLogo) form.append("logo", editLogo);
 
-        fetch(`${API}update_team_segunda.php`, { method: "POST", body: form })
+        apiPostForm(`${API}update_team_segunda.php`, form)
             .then(res => res.json())
             .then(data => {
                 setEditSubmitting(false);
@@ -203,7 +205,7 @@ const ManageTeamsSegunda = () => {
             if (result.isConfirmed) {
                 const form = new FormData();
                 form.append("id", id);
-                fetch(`${API}delete_team_segunda.php`, { method: "POST", body: form })
+                apiPostForm(`${API}delete_team_segunda.php`, form)
                     .then(res => res.json())
                     .then(data => {
                         if (data.error) {

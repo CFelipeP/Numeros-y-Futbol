@@ -1,25 +1,17 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Cache-Control: no-cache');
+error_reporting(0);
+ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
- $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($id <= 0) {
     echo json_encode(['error' => 'ID de equipo no válido']);
     exit;
 }
 
- $host = 'localhost';
- $db   = 'numeros-y-futbol';
- $user = 'root';
- $pass = 'Info2026/*-';
-
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // 1. Info del equipo con stats de tabla_posiciones
     $stmt = $pdo->prepare("
         SELECT e.*, 
                t.puntos, t.partidos_jugados, t.ganados, t.empatados, t.perdidos,
@@ -36,7 +28,6 @@ try {
         exit;
     }
 
-    // 2. Jugadores con estadísticas
     $stmt = $pdo->prepare("
         SELECT j.*,
                IFNULL(s.partidos_jugados, 0) AS pj,
@@ -70,8 +61,7 @@ try {
         'equipo' => $equipo,
         'jugadores' => $jugadores
     ]);
-
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode(['error' => "Error interno del servidor"]);
 }

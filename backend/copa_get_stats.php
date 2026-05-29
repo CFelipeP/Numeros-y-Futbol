@@ -1,11 +1,8 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json");
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
 try {
-    $pdo = new PDO("mysql:host=127.0.0.1;port=3306;dbname=numeros-y-futbol;charset=utf8mb4", "root", "Info2026/*-");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $total      = $pdo->query("SELECT COUNT(*) FROM partidos_copa")->fetchColumn();
     $finalizados= $pdo->query("SELECT COUNT(*) FROM partidos_copa WHERE estado='Finalizado'")->fetchColumn();
@@ -24,5 +21,5 @@ try {
     ]]);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+    echo json_encode(["success" => false, "message" => "Error interno del servidor"]);
 }

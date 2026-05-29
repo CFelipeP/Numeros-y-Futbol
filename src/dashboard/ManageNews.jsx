@@ -10,6 +10,8 @@ import {
   CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
     Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, Upload, Image, FileText, CheckCircle2, RotateCcw, StarOff, Filter, Zap, MessageCircle
 } from "lucide-react";
+import { apiPost, apiPostForm } from "../apiHelper";
+import { API_BASE } from "../config";
 
 export default function ManagePublicNews() {
   const [news, setNews] = useState([]);
@@ -32,7 +34,7 @@ export default function ManagePublicNews() {
 
   const fetchNews = async () => {
     try {
-      const res = await fetch("http://numeros-y-futbol.test/backend/get_all_news.php");
+      const res = await fetch(`${API_BASE}get_all_news.php`);
       const data = await res.json();
       setNews(data);
     } catch (error) {
@@ -54,11 +56,7 @@ export default function ManagePublicNews() {
     if (!result.isConfirmed) return;
 
     try {
-      const res = await fetch("http://numeros-y-futbol.test/backend/delete_news.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
+      const res = await apiPost(`${API_BASE}delete_news.php`, { id });
 
       const text = await res.text();
       let data;
@@ -86,10 +84,7 @@ export default function ManagePublicNews() {
     setEditUploading(true);
 
     try {
-      const res = await fetch("http://numeros-y-futbol.test/backend/upload_image.php", {
-        method: "POST",
-        body: formData
-      });
+      const res = await apiPostForm(`${API_BASE}upload_image.php`, formData);
 
       const text = await res.text();
       let data;
@@ -166,11 +161,7 @@ export default function ManagePublicNews() {
         finalImage = uploadedUrl;
       }
 
-      const res = await fetch("http://numeros-y-futbol.test/backend/update_news.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...editing, imagen: finalImage }),
-      });
+      const res = await apiPost(`${API_BASE}update_news.php`, { ...editing, imagen: finalImage });
 
       const text = await res.text();
       let data;
@@ -248,7 +239,7 @@ export default function ManagePublicNews() {
       confirmButtonColor: "#d33",
     }).then((result) => {
       if (result.isConfirmed) {
-        localStorage.removeItem("user");
+        localStorage.removeItem("user"); localStorage.removeItem("token");
         window.location.href = "/login";
       }
     });

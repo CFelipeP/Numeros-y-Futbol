@@ -1,0 +1,7 @@
+# Deny access to PHP files in uploads
+<FilesMatch "\.php$">
+    Require all denied
+</FilesMatch>
+
+# Disable PHP engine for this directory
+php_flag engine off

@@ -1,6 +1,5 @@
 import React from "react";
-
-const API_BASE = "http://numeros-y-futbol.test/backend/";
+import { API_BASE } from "../config";
 
 const logoUrl = (path) => {
   if (!path) return "";

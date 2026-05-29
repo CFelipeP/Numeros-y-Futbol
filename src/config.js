@@ -1,14 +1,8 @@
-const getApiBase = () => {
-  const host = window.location.hostname;
-  if (host.includes("ngrok")) {
-    return "https://limnologic-carline-nontelescoping.ngrok-free.dev/backend/";
-  }
-  return "http://numeros-y-futbol.test/backend/";
-};
+// Ruta relativa al servidor (funciona con IP local, ngrok, dominio, etc.)
+const API_BASE = "/backend/";
 
-export const API_BASE = getApiBase();
+export { API_BASE };
 
-// Arregla URLs de imágenes que vienen de la DB con http:// quemado
 export const fixUrl = (url) => {
   if (!url) return "";
   if (url.startsWith("http://numeros-y-futbol.test")) {

@@ -1,27 +1,38 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
- $conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
+error_reporting(0); ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth_check.php';
+requireAdmin();
 
- $id = $_POST['id'];
- $nombre = $_POST['nombre'];
- $ciudad = $_POST['ciudad'];
- $estadio = $_POST['estadio'];
+$id      = (int)($_POST['id'] ?? 0);
+$nombre  = $_POST['nombre'] ?? '';
+$ciudad  = $_POST['ciudad'] ?? '';
+$estadio = $_POST['estadio'] ?? '';
+
+if (!$id || empty($nombre)) {
+    echo json_encode(["success" => false, "error" => "ID y nombre son obligatorios"]);
+    exit;
+}
 
 if (!empty($_FILES['logo']['name'])) {
     $archivo = $_FILES['logo'];
-    $nombreArchivo = time() . "_" . $archivo['name'];
+    $nombreArchivo = time() . "_" . basename($archivo['name']);
     $ruta = "uploads/" . $nombreArchivo;
     move_uploaded_file($archivo['tmp_name'], $ruta);
 
-    $old = $conn->query("SELECT logo FROM equipos_tercera WHERE id = $id")->fetch_assoc();
+    $stmt = $conn->prepare("SELECT logo FROM equipos_tercera WHERE id = ?");
+    $stmt->execute([$id]);
+    $old = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($old && $old['logo'] && file_exists($old['logo'])) {
         unlink($old['logo']);
     }
 
-    $conn->query("UPDATE equipos_tercera SET nombre='$nombre', ciudad='$ciudad', estadio='$estadio', logo='$ruta' WHERE id=$id");
+    $stmt2 = $conn->prepare("UPDATE equipos_tercera SET nombre=?, ciudad=?, estadio=?, logo=? WHERE id=?");
+    $stmt2->execute([$nombre, $ciudad, $estadio, $ruta, $id]);
 } else {
-    $conn->query("UPDATE equipos_tercera SET nombre='$nombre', ciudad='$ciudad', estadio='$estadio' WHERE id=$id");
+    $stmt2 = $conn->prepare("UPDATE equipos_tercera SET nombre=?, ciudad=?, estadio=? WHERE id=?");
+    $stmt2->execute([$nombre, $ciudad, $estadio, $id]);
 }
 
 echo json_encode(["success" => true]);

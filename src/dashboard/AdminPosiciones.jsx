@@ -9,8 +9,7 @@ import {
     LogOut, Menu, Trophy, RotateCcw, TrendingUp, TrendingDown, Minus,
     BarChart3, Activity, ChevronDown, Target, MessageCircle
 } from "lucide-react";
-
-const API_BASE = "http://numeros-y-futbol.test/backend/";
+import { API_BASE } from "../config";
 
 const DIVISIONES = [
     { value: "primera", label: "Primera" },
@@ -164,7 +163,7 @@ const AdminPosiciones = () => {
 
     const handleLogout = () => {
         Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir", cancelButtonText: "Cancelar", background: "#1e293b", color: "#fff" })
-            .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); window.location.href = "/login"; } });
+            .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); window.location.href = "/login"; } });
     };
 
     const isSegunda = division === "segunda";

@@ -25,17 +25,20 @@ import Admincopa from "./dashboard/Admincoppresidente";
 import ForgotPassword from "./pages/ForgotPassword";
 import MatchDetail from "./Divisiones/MatchDetail";
 import Managecomments from "./dashboard/Managematchcomments";
+import UserProfile from "./pages/UserProfile";
 
 // Dentro de <Routes>:
 
 // Dentro de tus Routes:
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import MaintenanceGuard from "./components/MaintenanceGuard";
 
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <MaintenanceGuard>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -47,6 +50,7 @@ function App() {
         <Route path="/mynews" element={<ManagePublicNews />} />
         <Route path="/posiciones" element={<AdminPosiciones />} />
         <Route path="/copa-presidente" element={<CopaPresidente />} />
+        <Route path="/perfil" element={<UserProfile />} />
         <Route path="/teams/primera" element={<ManageTeams />} />
         <Route path="/admin/copa" element={<Admincopa />} />
         <Route path="/teams/segunda" element={<ManageTeamsSegunda />} />
@@ -119,6 +123,7 @@ function App() {
         />
 
       </Routes>
+      </MaintenanceGuard>
     </BrowserRouter>
   );
 }

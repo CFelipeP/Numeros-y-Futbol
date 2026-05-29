@@ -1,8 +1,7 @@
 <?php
 error_reporting(0); ini_set('display_errors', 0);
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-require_once 'db.php';
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
 try {
     $pdo->exec("CREATE TABLE IF NOT EXISTS `site_settings` (
@@ -37,5 +36,5 @@ try {
     $rows = $pdo->query("SELECT `key`,`value` FROM site_settings")->fetchAll(PDO::FETCH_KEY_PAIR);
     echo json_encode(["success" => true, "settings" => $rows]);
 } catch (Exception $e) {
-    echo json_encode(["success" => false, "error" => $e->getMessage()]);
+    echo json_encode(["success" => false, "error" => "Error interno del servidor"]);
 }

@@ -1,24 +1,13 @@
 <?php
 error_reporting(0);
 ini_set('display_errors', 0);
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
-try {
-    $conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
-} catch (Exception $e) {
-    echo json_encode(['recent' => [], 'next' => null, 'error' => 'Error de conexión']);
-    exit;
-}
+$conn = $mysqli;
 
-if ($conn->connect_error) {
-    echo json_encode(['recent' => [], 'next' => null, 'error' => 'Error de conexión']);
-    exit;
-}
+$division = $_GET['division'] ?? 'primera';
 
- $division = $_GET['division'] ?? 'primera';
-
-// Primera usa equipo_local/equipo_visitante, Segunda/Tercera usan local_id/visitante_id
 if ($division === 'primera') {
     $tablaPartidos = 'partidos';
     $tablaEquipos  = 'equipos';
@@ -34,7 +23,7 @@ if ($division === 'primera') {
     $colVisitante  = 'visitante_id';
 }
 
- $recent = [];
+$recent = [];
 try {
     $res = $conn->query("
         SELECT p.id, p.fecha, p.goles_local, p.goles_visitante, p.$colEstado AS status,
@@ -54,7 +43,7 @@ try {
     $recent = [];
 }
 
- $next = null;
+$next = null;
 try {
     $res2 = $conn->query("
         SELECT p.id, p.fecha,
@@ -77,4 +66,4 @@ try {
 
 echo json_encode(['recent' => $recent, 'next' => $next]);
 
- $conn->close();
+$conn->close();

@@ -1,41 +1,25 @@
 <?php
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-header("Content-Type: application/json");
+$data = json_decode(file_get_contents("php://input"));
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
+$password = $data->password;
+$email = isset($data->email) ? trim(strtolower($data->email)) : null;
+$apodo = isset($data->apodo) ? trim(strtolower($data->apodo)) : null;
 
-require "db.php";
-
- $data = json_decode(file_get_contents("php://input"));
-
- $password = $data->password;
- $email = isset($data->email) ? trim(strtolower($data->email)) : null;
- $apodo = isset($data->apodo) ? trim(strtolower($data->apodo)) : null;
-
-// Si no llega ni email ni apodo
 if (!$email && !$apodo) {
     http_response_code(400);
-    echo json_encode([
-        "error" => "Ingresa tu correo electrónico o apodo"
-    ]);
+    echo json_encode(["error" => "Ingresa tu correo electrónico o apodo"]);
     exit;
 }
 
 if (!$password) {
     http_response_code(400);
-    echo json_encode([
-        "error" => "La contraseña es obligatoria"
-    ]);
+    echo json_encode(["error" => "La contraseña es obligatoria"]);
     exit;
 }
 
-// Determinar si buscar por email o por apodo
 if ($email) {
     $sql = $conn->prepare("SELECT * FROM usuarios WHERE email=?");
     $sql->execute([$email]);
@@ -44,23 +28,27 @@ if ($email) {
     $sql->execute([$apodo]);
 }
 
- $user = $sql->fetch(PDO::FETCH_ASSOC);
+$user = $sql->fetch(PDO::FETCH_ASSOC);
 
 if ($user && password_verify($password, $user['password'])) {
+    $token = bin2hex(random_bytes(32));
+
+    $stmt = $mysqli->prepare(
+        "INSERT INTO auth_tokens (token, user_id, user_role, expires_at) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))"
+    );
+    $stmt->bind_param("sis", $token, $user['id'], $user['rol']);
+    $stmt->execute();
+    $stmt->close();
 
     echo json_encode([
-        "id" => $user['id'],
+        "id"     => $user['id'],
         "nombre" => $user['nombre'],
-        "apodo" => $user['apodo'],
-        "email" => $user['email'],
-        "rol" => $user['rol']
+        "apodo"  => $user['apodo'],
+        "email"  => $user['email'],
+        "rol"    => $user['rol'],
+        "token"  => $token
     ]);
-
 } else {
-
     http_response_code(401);
-    echo json_encode([
-        "error" => "Credenciales incorrectas"
-    ]);
-
+    echo json_encode(["error" => "Credenciales incorrectas"]);
 }

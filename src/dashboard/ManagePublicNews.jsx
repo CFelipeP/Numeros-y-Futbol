@@ -8,8 +8,10 @@ import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   Target, Trophy, ChevronDown, Send, ImageIcon, ArrowRight, Clock, Tag, User, Eye
 } from "lucide-react";
+import { apiPost, apiPostForm } from "../apiHelper";
+import { API_BASE } from "../config";
 
-const API = "http://numeros-y-futbol.test/backend/";
+const API = API_BASE;
 
 const ManagePublicNews = () => {
   const [form, setForm] = useState({ title: "", author: "", category: "", content: "", image: "" });
@@ -67,7 +69,7 @@ const ManagePublicNews = () => {
     formData.append("file", file);
     setUploading(true);
     try {
-      const res  = await fetch(`${API}upload_image.php`, { method: "POST", body: formData });
+      const res  = await apiPostForm(`${API}upload_image.php`, formData);
       const text = await res.text();
       let data;
       try { data = JSON.parse(text); } catch (e) { setUploading(false); return null; }
@@ -91,11 +93,7 @@ const ManagePublicNews = () => {
         imageUrl = uploaded;
       }
 
-      const res  = await fetch(`${API}create_news.php`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, image: imageUrl })
-      });
+      const res  = await apiPost(`${API}create_news.php`, { ...form, image: imageUrl });
       const text = await res.text();
       let data;
       try { data = JSON.parse(text); } catch (e) { Swal.fire("Error", "Respuesta inválida del servidor", "error"); return; }
@@ -131,7 +129,7 @@ const ManagePublicNews = () => {
 
   const handleLogout = () => {
     Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir", confirmButtonColor: "#d33" })
-      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); window.location.href = "/login"; } });
+      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); window.location.href = "/login"; } });
   };
 
   const navItems = [

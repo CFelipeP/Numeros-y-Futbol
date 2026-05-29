@@ -1,18 +1,12 @@
 <?php
+error_reporting(0);
+ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth_check.php';
+requireAdmin();
 
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
-
-// 🔥 ACTIVAR ERRORES (QUITAR EL SILENCIO)
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-$conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
-
-if ($conn->connect_error) {
-    echo json_encode(["error" => $conn->connect_error]);
-    exit();
-}
+$conn = $mysqli;
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(["error" => "Método no permitido"]);
@@ -26,10 +20,9 @@ if (!isset($_POST['id'])) {
 
 $id = intval($_POST['id']);
 
-// 🔹 VALIDAR EXISTENCIA
-$check = $conn->prepare("SELECT id FROM PARTIDOS WHERE id = ?");
+$check = $conn->prepare("SELECT id FROM partidos WHERE id = ?");
 if (!$check) {
-    echo json_encode(["error" => "Prepare SELECT: " . $conn->error]);
+    echo json_encode(["error" => "Error interno del servidor"]);
     exit();
 }
 
@@ -42,10 +35,9 @@ if ($check->num_rows === 0) {
     exit();
 }
 
-// 🔹 DELETE
-$stmt = $conn->prepare("DELETE FROM PARTIDOS WHERE id = ?");
+$stmt = $conn->prepare("DELETE FROM partidos WHERE id = ?");
 if (!$stmt) {
-    echo json_encode(["error" => "Prepare DELETE: " . $conn->error]);
+    echo json_encode(["error" => "Error interno del servidor"]);
     exit();
 }
 
@@ -54,7 +46,7 @@ $stmt->bind_param("i", $id);
 if ($stmt->execute()) {
     echo json_encode(["success" => true]);
 } else {
-    echo json_encode(["error" => $stmt->error]);
+    echo json_encode(["error" => "Error interno del servidor"]);
 }
 
 $stmt->close();

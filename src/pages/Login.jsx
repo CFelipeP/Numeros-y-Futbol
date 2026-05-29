@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff, AtSign } from "lucide-react";
 import { motion } from "framer-motion"; // <-- AÑADIDO
+import { API_BASE } from "../config";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -28,11 +29,13 @@ export default function Login() {
 
         try {
             const res = await axios.post(
-                "http://localhost/Numeros-y-Futbol/backend/login.php",
+                `${API_BASE}login.php`,
                 datos
             );
 
-            localStorage.setItem("user", JSON.stringify(res.data));
+            const userData = res.data;
+            localStorage.setItem("user", JSON.stringify(userData));
+            if (userData.token) localStorage.setItem("token", userData.token);
 
             Swal.fire({
                 icon: "success",
@@ -41,11 +44,7 @@ export default function Login() {
                 timer: 2000,
                 showConfirmButton: false,
             }).then(() => {
-                if (res.data.rol === "admin") {
-                    navigate("/dashboard");
-                } else {
-                    navigate("/");
-                }
+                navigate(res.data.rol === "admin" ? "/dashboard" : "/perfil");
             });
 
         } catch (error) {

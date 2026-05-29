@@ -6,8 +6,17 @@ const Header = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [accountOpen, setAccountOpen] = useState(false);
     const [mobileAccountOpen, setMobileAccountOpen] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
     const accountRef = useRef(null);
     const location = useLocation();
+
+    useEffect(() => {
+        try {
+            const stored = localStorage.getItem("user");
+            if (stored) setCurrentUser(JSON.parse(stored));
+            else setCurrentUser(null);
+        } catch { setCurrentUser(null); }
+    }, [location]);
 
     // Cerrar dropdown al hacer click fuera
     useEffect(() => {
@@ -563,15 +572,30 @@ const Header = () => {
                                         exit={{ opacity: 0, y: -8, scale: 0.96 }}
                                         transition={{ duration: 0.18, ease: "easeOut" }}
                                     >
-                                        <div className="hdr-dropdown-header">Tu cuenta</div>
-                                        <Link to="/login" onClick={() => setAccountOpen(false)}>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-                                            Iniciar Sesión
-                                        </Link>
-                                        <Link to="/register" onClick={() => setAccountOpen(false)}>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-                                            Registrarse
-                                        </Link>
+                                        <div className="hdr-dropdown-header">{currentUser ? currentUser.nombre || currentUser.apodo || "Mi Cuenta" : "Tu cuenta"}</div>
+                                        {currentUser ? (
+                                            <>
+                                                <Link to="/perfil" onClick={() => setAccountOpen(false)}>
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                                    Mi Perfil
+                                                </Link>
+                                                <Link to="/" onClick={() => { localStorage.removeItem("user"); localStorage.removeItem("token"); setAccountOpen(false); setCurrentUser(null); }}>
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                                    Cerrar Sesión
+                                                </Link>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Link to="/login" onClick={() => setAccountOpen(false)}>
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                                                    Iniciar Sesión
+                                                </Link>
+                                                <Link to="/register" onClick={() => setAccountOpen(false)}>
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                                                    Registrarse
+                                                </Link>
+                                            </>
+                                        )}
                                     </motion.div>
                                 )}
                             </AnimatePresence>
@@ -689,14 +713,29 @@ const Header = () => {
                                         transition={{ duration: 0.2, ease: "easeInOut" }}
                                     >
                                         <div className="hdr-mobile-sub-inner">
-                                            <Link to="/login" onClick={() => setMobileOpen(false)}>
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-                                                Iniciar Sesión
-                                            </Link>
-                                            <Link to="/register" onClick={() => setMobileOpen(false)}>
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-                                                Registrarse
-                                            </Link>
+                                            {currentUser ? (
+                                                <>
+                                                    <Link to="/perfil" onClick={() => setMobileOpen(false)}>
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                                        Mi Perfil
+                                                    </Link>
+                                                    <Link to="/" onClick={() => { localStorage.removeItem("user"); localStorage.removeItem("token"); setMobileOpen(false); setCurrentUser(null); }}>
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                                        Cerrar Sesión
+                                                    </Link>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Link to="/login" onClick={() => setMobileOpen(false)}>
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                                                        Iniciar Sesión
+                                                    </Link>
+                                                    <Link to="/register" onClick={() => setMobileOpen(false)}>
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                                                        Registrarse
+                                                    </Link>
+                                                </>
+                                            )}
                                         </div>
                                     </motion.div>
                                 )}

@@ -1,16 +1,12 @@
 <?php
 error_reporting(0);
 ini_set('display_errors', 0);
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
- $conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
-if ($conn->connect_error) {
-    echo json_encode([]);
-    exit;
-}
+$conn = $mysqli;
 
- $division = $_GET['division'] ?? 'primera';
+$division = $_GET['division'] ?? 'primera';
 
 if ($division === 'primera') {
     $tablaPartidos = 'partidos';
@@ -21,7 +17,7 @@ if ($division === 'primera') {
     $colEstado = 'status';
 }
 
- $res = $conn->query("
+$res = $conn->query("
     SELECT goles_local, goles_visitante, fecha
     FROM $tablaPartidos
     WHERE $colEstado = 'Finalizado'
@@ -33,14 +29,14 @@ if (!$res) {
     exit;
 }
 
- $rows = [];
+$rows = [];
 while ($row = $res->fetch_assoc()) {
     $rows[] = $row;
 }
 
- $data = [];
- $jornada = 1;
- $total = count($rows);
+$data = [];
+$jornada = 1;
+$total = count($rows);
 
 for ($i = 0; $i < $total; $i += 6) {
     $bloque = array_slice($rows, $i, 6);
@@ -65,4 +61,4 @@ for ($i = 0; $i < $total; $i += 6) {
 }
 
 echo json_encode($data);
- $conn->close();
+$conn->close();

@@ -1,25 +1,18 @@
 <?php
+error_reporting(0); ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/config.php';
 
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-header("Content-Type: application/json");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-require "db.php";
 
  $data = json_decode(file_get_contents("php://input"));
  $action = $data->action ?? '';
 
- $SMTP_HOST = "smtp.gmail.com";
- $SMTP_PORT = 587;
- $SMTP_USER = "alejo.sotomayor0411@gmail.com";
- $SMTP_PASS = "vsufqurepdjskxwu";
- $FROM_NAME = "Numeros y Futbol";
+ $SMTP_HOST = env('SMTP_HOST', 'smtp.gmail.com');
+ $SMTP_PORT = (int)env('SMTP_PORT', 587);
+ $SMTP_USER = env('SMTP_USER', '');
+ $SMTP_PASS = env('SMTP_PASS', '');
+ $FROM_NAME = env('SMTP_FROM_NAME', 'Numeros y Futbol');
 
 // ============================================
 // ACCIÓN 1: ENVIAR CÓDIGO
@@ -38,6 +31,14 @@ if ($action === "send_code") {
 
     if (!$stmt->fetch()) {
         echo json_encode(["success" => false, "error" => "No existe una cuenta con ese correo"]);
+        exit;
+    }
+
+    // Rate limiting: check if a code was already sent within last 5 minutes
+    $rateCheck = $conn->prepare("SELECT COUNT(*) FROM reset_tokens WHERE email=? AND created_at > DATE_SUB(NOW(), INTERVAL 5 MINUTE)");
+    $rateCheck->execute([$email]);
+    if ($rateCheck->fetchColumn() > 0) {
+        echo json_encode(["success" => false, "error" => "Ya se envió un código recientemente. Espera 5 minutos antes de solicitar otro."]);
         exit;
     }
 
@@ -219,7 +220,7 @@ HTML;
     } catch (Exception $e) {
         echo json_encode([
             "success" => false,
-            "error" => "No se pudo enviar: " . $mail->ErrorInfo
+            "error" => "Error interno del servidor"
         ]);
     }
     exit;

@@ -1,16 +1,10 @@
 <?php
-// 🔥 EVITA CUALQUIER OUTPUT EXTRA
-error_reporting(0);
-ini_set('display_errors', 0);
+error_reporting(0); ini_set('display_errors', 0);
 ob_start();
-
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Content-Type: application/json");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit();
-}
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth_check.php';
+requireAdmin();
 
 $targetDir = "uploads/";
 
@@ -30,6 +24,16 @@ $ext = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
 
 if (!in_array($ext, $allowed)) {
     echo json_encode(["success" => false, "error" => "Formato inválido"]);
+    exit;
+}
+
+// MIME type validation
+$finfo = finfo_open(FILEINFO_MIME_TYPE);
+$mime = finfo_file($finfo, $_FILES['file']['tmp_name']);
+finfo_close($finfo);
+$allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4'];
+if (!in_array($mime, $allowedMimes)) {
+    echo json_encode(["success" => false, "error" => "Tipo de archivo no permitido"]);
     exit;
 }
 

@@ -1,11 +1,12 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
-header("Cache-Control: no-store, no-cache, must-revalidate");
+error_reporting(0);
+ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
- $conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
+$conn = $mysqli;
 
- $match = $conn->query("
+$match = $conn->query("
     SELECT p.*, 
            t1.nombre as home_name, t1.logo as home_logo,
            t2.nombre as away_name, t2.logo as away_logo,
@@ -22,4 +23,4 @@ if ($match) {
 } else {
     echo json_encode(null);
 }
- $conn->close();
+$conn->close();

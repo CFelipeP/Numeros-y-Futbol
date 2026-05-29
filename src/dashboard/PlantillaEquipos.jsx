@@ -3,6 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { getAuthHeaders } from "../apiHelper";
+import { API_BASE } from "../config";
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   ChevronDown, Plus, Pencil, Trash2, Save, X,
@@ -10,7 +12,7 @@ import {
   Upload, Download, ArrowLeftRight, CheckCircle2, Image as ImageIcon, RotateCcw, StarOff, Filter, Zap, MessageCircle
 } from "lucide-react";
 
-const API = "http://numeros-y-futbol.test/backend/";
+const API = API_BASE;
 
 const DIVISIONES = [
   { key: "primera", label: "Primera", icon: "🔴" },
@@ -651,7 +653,7 @@ export default function PlantillaAdmin() {
     if (!ok.isConfirmed) return;
     const ep = getEndpoints(division);
     try {
-      const r = await axios.post(ep.crud, { action: "delete", id: j.id });
+      const r = await axios.post(ep.crud, { action: "delete", id: j.id }, { headers: getAuthHeaders() });
       if (r.data.success) {
         Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Eliminado", showConfirmButton: false, timer: 1500, background: "#1e293b", color: "#fff" });
         loadPlantilla(equipoId);
@@ -695,7 +697,7 @@ export default function PlantillaAdmin() {
         // SIN es_titular — el backend no necesita saberlo
       };
       if (editPlayer) p.id = editPlayer.id;
-      const r = await axios.post(ep.crud, p);
+      const r = await axios.post(ep.crud, p, { headers: getAuthHeaders() });
       if (r.data.success) {
         setModal(null);
         Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Guardado", showConfirmButton: false, timer: 1500, background: "#1e293b", color: "#fff" });
@@ -712,7 +714,7 @@ export default function PlantillaAdmin() {
     setSaving(true);
     const ep = getEndpoints(division);
     try {
-      const r = await axios.post(ep.crud, { action: "update_stats", jugador_id: editStats.id, ...statsForm });
+      const r = await axios.post(ep.crud, { action: "update_stats", jugador_id: editStats.id, ...statsForm }, { headers: getAuthHeaders() });
       if (r.data.success) {
         setModal(null);
         Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Estadisticas guardadas", showConfirmButton: false, timer: 1500, background: "#1e293b", color: "#fff" });
@@ -730,7 +732,7 @@ export default function PlantillaAdmin() {
     fd.append("foto", f);
     const ep = getEndpoints(division);
     try {
-      const r = await axios.post(ep.upload, fd);
+      const r = await axios.post(ep.upload, fd, { headers: getAuthHeaders() });
       if (r.data.success) setForm(p => ({ ...p, foto: r.data.path }));
     } catch {
       Swal.fire({ background: "#1e293b", color: "#fff", icon: "error", title: "No se pudo subir la foto" });
@@ -763,7 +765,7 @@ export default function PlantillaAdmin() {
         equipo_id: equipoId,
         formacion,
         titulares: JSON.stringify(titulares)
-      });
+      }, { headers: getAuthHeaders() });
 
       if (r.data.success) {
         setInitFromDB(false); // 🔥 CLAVE
@@ -861,7 +863,7 @@ const importPlayers = useCallback(async () => {
       lines.push(headers.map(h => row[h] ?? "").join(","));
     });
     fd.append("csv_text", lines.join("\n"));
-    const r = await axios.post(API + "importar_jugadores.php", fd);
+    const r = await axios.post(API + "importar_jugadores.php", fd, { headers: getAuthHeaders() });
     if (r.data.success) {
       closeImport();
       Swal.fire({ toast: true, position: "top-end", icon: "success", title: r.data.importados + " jugadores importados", showConfirmButton: false, timer: 2000, background: "#1e293b", color: "#fff" });
@@ -878,7 +880,7 @@ const importPlayers = useCallback(async () => {
 
 const handleLogout = () => {
   Swal.fire({ background: "#1e293b", color: "#fff", title: "Cerrar sesion?", icon: "warning", showCancelButton: true, confirmButtonText: "Si", cancelButtonText: "No" })
-    .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); window.location.href = "/login"; } });
+    .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); window.location.href = "/login"; } });
 };
 
 const navClick = useCallback(() => { if (window.innerWidth <= 768) setSidebarOpen(false); setDdOpen(false); }, []);

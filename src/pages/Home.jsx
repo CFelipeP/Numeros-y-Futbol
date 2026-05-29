@@ -8,8 +8,7 @@ import 'driver.js/dist/driver.css';
 
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-
-const BASE_URL = "http://localhost/Numeros-y-Futbol/backend/";
+import { API_BASE, fixUrl } from '../config';
 
 // --- Animaciones ---
 const containerVariants = {
@@ -50,26 +49,42 @@ const ParticleBackground = () => {
   return <Particles id="tsparticles" init={particlesInit} options={options} className="hero-particles" />;
 };
 
+const sanitizeHtml = (html) => {
+  const div = document.createElement('div');
+  div.textContent = html;
+  let result = div.innerHTML;
+  result = result.replace(/&lt;span&gt;/g, '<span>').replace(/&lt;\/span&gt;/g, '</span>');
+  return result;
+};
+
 // --- Hero ---
-const Hero = () => (
+const Hero = ({ settings }) => {
+  const title  = settings?.hero_title  || "Noticias y numeros que <span>genera el fútbol</span>";
+  const desc   = settings?.hero_description || "Cobertura completa de todas las divisiones. Noticias, resultados y análisis del mejor fútbol salvadoreño en vivo.";
+  const btn1   = settings?.hero_btn1_label || "Últimas Noticias";
+  const link1  = settings?.hero_btn1_link  || "#noticias";
+  const btn2   = settings?.hero_btn2_label || "Ver Resultados";
+  const link2  = settings?.hero_btn2_link  || "#divisiones";
+  const banner = settings?.hero_banner_url || "";
+  return (
   <section className="hero">
-    <div className="hero-bg-image" />
+    <div className="hero-bg-image" style={banner ? { backgroundImage:`url(${banner})` } : {}} />
     <ParticleBackground />
     <div className="hero-overlay" />
     <div className="container hero-content">
-      <motion.h1 id="driver-hero" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
-        Noticias y numeros que <span>genera el fútbol</span>
-      </motion.h1>
+      <motion.h1 id="driver-hero" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(title) }} />
       <motion.p className="hero-description" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }}>
-        Cobertura completa de todas las divisiones. Noticias, resultados y análisis del mejor fútbol salvadoreño en vivo.
+        {desc}
       </motion.p>
       <motion.div className="hero-buttons" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.6 }}>
-        <a href="#noticias" className="btn btn-white">Últimas Noticias</a>
-        <a href="#divisiones" className="btn btn-outline-white">Ver Resultados</a>
+        <a href={link1} className="btn btn-white">{btn1}</a>
+        <a href={link2} className="btn btn-outline-white">{btn2}</a>
       </motion.div>
     </div>
   </section>
-);
+  );
+};
 
 // --- Carousel con Cards ---
 const Carousel = () => {
@@ -78,7 +93,7 @@ const Carousel = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${BASE_URL}get_carousel.php`)
+    fetch(`${API_BASE}get_carousel.php`)
       .then(res => res.json())
       .then(data => {
         setMatches(data.data || []);
@@ -90,7 +105,7 @@ const Carousel = () => {
   const getLogoUrl = (logo) => {
     if (!logo) return null;
     if (logo.startsWith("http")) return logo;
-    return `${BASE_URL}${logo}`;
+    return `${API_BASE}${logo}`;
   };
 
   if (loading) {
@@ -432,7 +447,7 @@ const NewsSection = () => {
   const [news, setNews] = useState([]);
 
   useEffect(() => {
-    fetch(`${BASE_URL}get_news.php`)
+    fetch(`${API_BASE}get_news.php`)
       .then(res => res.json())
       .then(data => setNews(data.slice(0, 3)))
       .catch(err => console.error(err));
@@ -447,8 +462,8 @@ const NewsSection = () => {
         </div>
         <div className="news-grid">
           {news.map((n) => {
-            const isVideo   = n.imagen?.includes(".mp4");
-            const isYoutube = n.imagen?.includes("youtube.com") || n.imagen?.includes("youtu.be");
+            const isVideo   = fixUrl(n.imagen)?.includes(".mp4");
+            const isYoutube = fixUrl(n.imagen)?.includes("youtube.com") || fixUrl(n.imagen)?.includes("youtu.be");
 
             const getYoutubeEmbed = (url) => {
               if (!url) return "";
@@ -461,13 +476,13 @@ const NewsSection = () => {
               <Link to={`/noticia/${n.id}`} className="news-card" key={n.id}>
                 {isYoutube ? (
                   <div className="news-card-image youtube-thumb">
-                    <img src={`https://img.youtube.com/vi/${getYoutubeEmbed(n.imagen).split("embed/")[1]}/hqdefault.jpg`} alt="video" className="youtube-img" />
+                    <img src={`https://img.youtube.com/vi/${getYoutubeEmbed(fixUrl(n.imagen)).split("embed/")[1]}/hqdefault.jpg`} alt="video" className="youtube-img" />
                     <div className="play-overlay">▶</div>
                   </div>
                 ) : isVideo ? (
-                  <video src={n.imagen} className="news-card-video" muted autoPlay loop />
+                  <video src={fixUrl(n.imagen)} className="news-card-video" muted autoPlay loop />
                 ) : (
-                  <div className="news-card-image" style={{ backgroundImage: `url(${n.imagen || "https://via.placeholder.com/400x250"})` }} />
+                  <div className="news-card-image" style={{ backgroundImage: `url(${fixUrl(n.imagen) || "https://via.placeholder.com/400x250"})` }} />
                 )}
                 <div className="news-card-body">
                   <span className="badge badge-outline-gray">{n.categoria}</span>
@@ -489,6 +504,18 @@ const NewsSection = () => {
 
 // --- HOME PRINCIPAL ---
 function Home() {
+  const [siteSettings, setSiteSettings] = useState(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE}get_site_settings.php`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.success && d.settings) {
+          setSiteSettings(d.settings);
+        }
+      }).catch(() => {});
+  }, []);
+
   useEffect(() => {
     const alreadyShown = sessionStorage.getItem("tourShown");
     if (!alreadyShown) {
@@ -606,7 +633,7 @@ function Home() {
 
       <Header />
       <main>
-        <Hero />
+        <Hero settings={siteSettings} />
         <Carousel />
         <Divisions />
         <NewsSection />

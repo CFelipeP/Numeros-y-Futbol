@@ -3,13 +3,14 @@ import { Calendar, User, ArrowRight } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
+import { API_BASE, fixUrl } from "../config";
 
 export default function News() {
 
     const [news, setNews] = useState([]);
 
     useEffect(() => {
-        fetch("http://numeros-y-futbol.test/backend/get_news.php")
+        fetch(`${API_BASE}get_news.php`)
             .then(res => res.json())
             .then(data => setNews(data))
             .catch(err => console.error(err));
@@ -75,7 +76,7 @@ export default function News() {
                     {featuredNews && (
                         <article className="main-news-card">
                             <div className="main-news-media">
-                                {renderMedia(featuredNews.imagen, featuredNews.titulo, featuredNews.id)}
+                                {renderMedia(fixUrl(featuredNews.imagen), featuredNews.titulo, featuredNews.id)}
                             </div>
                             <div className="main-news-shine" />
 
@@ -104,7 +105,7 @@ export default function News() {
                         {sideNews.map((n) => (
                             <article key={n.id} className="side-news-card">
                                 <div className="side-news-media">
-                                    {renderMedia(n.imagen, n.titulo, n.id)}
+                                    {renderMedia(fixUrl(n.imagen), n.titulo, n.id)}
                                 </div>
                                 <div className="side-news-content">
                                     <span className="category-badge category-sm">
@@ -133,7 +134,7 @@ export default function News() {
                             <article key={n.id} className="article-card">
                                 <div className="article-image">
                                     <div className="article-media-wrap">
-                                        {renderMedia(n.imagen, n.titulo, n.id)}
+                                        {renderMedia(fixUrl(n.imagen), n.titulo, n.id)}
                                     </div>
                                     <div className="article-image-fade" />
                                     <span className="category-badge">

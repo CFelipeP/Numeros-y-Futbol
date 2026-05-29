@@ -1,22 +1,12 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+error_reporting(0);
+ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: *');
-
- $host = 'localhost';
- $db   = 'numeros-y-futbol';
- $user = 'root';
- $pass = 'Info2026/*-';
-
- $tipo = isset($_GET['tipo']) ? $_GET['tipo'] : 'amarillas';
+$tipo = isset($_GET['tipo']) ? $_GET['tipo'] : 'amarillas';
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
     if ($tipo === 'rojas') {
         $orderBy = "s.tarjetas_rojas DESC";
         $whereExtra = "AND s.tarjetas_rojas > 0";
@@ -48,10 +38,8 @@ try {
         LIMIT 10
     ");
     echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
-
 } catch (Exception $e) {
     echo json_encode([
-        'error' => $e->getMessage(),
-        'line' => $e->getLine()
+        'error' => "Error interno del servidor"
     ]);
 }

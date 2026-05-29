@@ -1,14 +1,8 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json");
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
 try {
-    $pdo = new PDO(
-        "mysql:host=127.0.0.1;port=3306;dbname=numeros-y-futbol;charset=utf8mb4",
-        "root", "Info2026/*-"
-    );
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $stmt = $pdo->query("
         SELECT
@@ -27,7 +21,11 @@ try {
             p.hora,
             p.estado,
             p.fase,
-            p.grupo_copa AS grupo
+            p.llave,
+            p.grupo_copa AS grupo,
+            p.jornada,
+            p.penales_local,
+            p.penales_visitante
         FROM partidos_copa p
         JOIN equipos_copa el ON el.id = p.equipo_local_id
         JOIN equipos_copa ev ON ev.id = p.equipo_visitante_id
@@ -48,11 +46,14 @@ try {
         $row['team2_id']         = (int)$row['team2_id'];
         $row['goles_local']      = $row['goles_local']      !== null ? (int)$row['goles_local']      : null;
         $row['goles_visitante']  = $row['goles_visitante']  !== null ? (int)$row['goles_visitante']  : null;
+        $row['llave']            = $row['llave']            !== null ? (int)$row['llave']            : null;
+        $row['penales_local']    = $row['penales_local']    !== null ? (int)$row['penales_local']    : null;
+        $row['penales_visitante']= $row['penales_visitante']!== null ? (int)$row['penales_visitante']: null;
     }
 
     echo json_encode(["success" => true, "data" => $data]);
 
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+    echo json_encode(["success" => false, "message" => "Error interno del servidor"]);
 }

@@ -1,26 +1,33 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
-$conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
+error_reporting(0); ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth_check.php';
+requireAdmin();
 
-$nombre = $_POST['nombre'];
-$ciudad = $_POST['ciudad'];
-$estadio = $_POST['estadio'];
+$nombre = $_POST['nombre'] ?? '';
+$ciudad = $_POST['ciudad'] ?? '';
+$estadio = $_POST['estadio'] ?? '';
 
-// imagen
-$archivo = $_FILES['logo'];
-$nombreArchivo = time() . "_" . $archivo['name'];
-$ruta = "uploads/" . $nombreArchivo;
+if (empty($nombre)) {
+    echo json_encode(["success" => false, "error" => "El nombre es obligatorio"]);
+    exit;
+}
 
-move_uploaded_file($archivo['tmp_name'], $ruta);
+$ruta = '';
+if (!empty($_FILES['logo']['name'])) {
+    $archivo = $_FILES['logo'];
+    $nombreArchivo = time() . "_" . basename($archivo['name']);
+    $ruta = "uploads/" . $nombreArchivo;
+    move_uploaded_file($archivo['tmp_name'], $ruta);
+}
 
-// guardar equipo
-$conn->query("INSERT INTO equipos (nombre, ciudad, estadio, logo)
-VALUES ('$nombre','$ciudad','$estadio','$ruta')");
+$stmt = $conn->prepare("INSERT INTO equipos (nombre, ciudad, estadio, logo) VALUES (?, ?, ?, ?)");
+$stmt->execute([$nombre, $ciudad, $estadio, $ruta]);
 
-$id = $conn->insert_id;
+$id = $conn->lastInsertId();
 
-// crear en tabla posiciones
-$conn->query("INSERT INTO tabla_posiciones (equipo_id) VALUES ($id)");
+$stmt2 = $conn->prepare("INSERT INTO tabla_posiciones (equipo_id) VALUES (?)");
+$stmt2->execute([$id]);
 
-echo json_encode(["success"=>true]);
+echo json_encode(["success" => true]);

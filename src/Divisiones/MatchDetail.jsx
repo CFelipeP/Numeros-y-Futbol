@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Header from "../components/Header";
+import { API_BASE } from "../config";
 
-const API = "http://numeros-y-futbol.test/backend/";
+const API = API_BASE;
 
 const logoUrl = (p) => {
   if (!p) return null;
@@ -79,14 +80,13 @@ function autoAssign(jugadores, fKey) {
 // ── Componente de campo ──
 const FootballField = ({ jugadores, formacion, flipped }) => {
   const titularesConPos = jugadores.filter(j => j.pos_x !== null && j.pos_y !== null);
-  const { starters, subs } = useMemo(() => {
-    if (titularesConPos.length) {
-      const startersDB = titularesConPos.map(j => ({ ...j, px: Number(j.pos_x), py: Number(j.pos_y) }));
-      const usados = new Set(startersDB.map(j => j.id));
-      return { starters: startersDB, subs: jugadores.filter(j => !usados.has(j.id)) };
-    }
-    return autoAssign(jugadores, formacion);
-  }, [jugadores, formacion]);
+  const { starters, subs } = titularesConPos.length
+    ? (() => {
+        const startersDB = titularesConPos.map(j => ({ ...j, px: Number(j.pos_x), py: Number(j.pos_y) }));
+        const usados = new Set(startersDB.map(j => j.id));
+        return { starters: startersDB, subs: jugadores.filter(j => !usados.has(j.id)) };
+      })()
+    : autoAssign(jugadores, formacion);
 
   const catColor = { portero:"#f59e0b",defensa:"#3b82f6",medio:"#10b981",delantero:"#ef4444" };
 
@@ -122,7 +122,6 @@ const FootballField = ({ jugadores, formacion, flipped }) => {
       {subs && subs.length > 0 && (
         <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4, justifyContent:"center" }}>
           {subs.map(s => {
-             const pos = getPosInfo(s.posicion);
              return <span key={s.id} style={{ fontSize:10, background:"rgba(255,255,255,0.05)", padding:"2px 6px", borderRadius:4, color:"#94a3b8", border:"1px solid rgba(255,255,255,0.08)" }}>#{s.numero_camiseta || '?'} {s.nombre?.split(" ").pop()}</span>
           })}
         </div>
@@ -180,9 +179,9 @@ const Timeline = ({ comentarios, onRefresh, isRefreshing }) => (
     ) : (
       <div style={{ position:"relative" }}>
         <div style={{ position:"absolute", left:28, top:0, bottom:0, width:2, background:"linear-gradient(180deg,rgba(255,0,77,0.3),rgba(255,0,77,0.05))", borderRadius:2 }} />
-        {comentarios.map((c, i) => {
+        {comentarios.map((c) => {
           const cfg = TIPO_CONFIG[c.tipo] || TIPO_CONFIG.comentario;
-          const isGoal = c.tipo === "gol";
+          const isGoal = ["gol","gol_penal","gol_cabeza","gol_tiro_libre"].includes(c.tipo);
           return (
             <div key={c.id} style={{ display:"flex", gap:16, marginBottom:16, position:"relative" }}>
               <div style={{ flexShrink:0, width:58, display:"flex", flexDirection:"column", alignItems:"center", gap:3, zIndex:1 }}>

@@ -1,38 +1,26 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: *");
-header("Content-Type: application/json; charset=UTF-8");
+error_reporting(0);
+ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
- $host = 'localhost';
- $db   = 'numeros-y-futbol';
- $user = 'root';
- $pass = 'Info2026/*-';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo json_encode(["success" => false, "error" => "Error de conexión: " . $e->getMessage()]);
-    exit();
-}
-
- $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if ($id <= 0) {
     echo json_encode(["success" => false, "error" => "ID requerido"]);
     exit();
 }
 
- $stmt = $pdo->prepare("SELECT * FROM equipos_segunda WHERE id = ?");
- $stmt->execute([$id]);
- $equipo = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt = $pdo->prepare("SELECT * FROM equipos_segunda WHERE id = ?");
+$stmt->execute([$id]);
+$equipo = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$equipo) {
     echo json_encode(["success" => false, "error" => "Equipo no encontrado"]);
     exit();
 }
 
- $stmt = $pdo->prepare("
+$stmt = $pdo->prepare("
     SELECT 
         j.*,
         est.id AS stats_id,
@@ -69,8 +57,8 @@ if (!$equipo) {
         END,
         j.numero_camiseta ASC
 ");
- $stmt->execute([$id]);
- $jugadores = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$stmt->execute([$id]);
+$jugadores = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 echo json_encode([
     "success" => true,

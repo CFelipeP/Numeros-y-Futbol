@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { ArrowLeft, User, Mail, Lock, Eye, EyeOff, AtSign } from "lucide-react";
 import { motion } from "framer-motion"; // <-- AÑADIDO
+import { API_BASE } from "../config";
 
 export default function Register() {
     const navigate = useNavigate();
@@ -56,7 +57,7 @@ export default function Register() {
 
         try {
             const res = await axios.post(
-                "http://localhost/Numeros-y-Futbol/backend/register.php",
+                `${API_BASE}register.php`,
                 { nombre, apodo, email, password }
             );
 

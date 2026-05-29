@@ -1,19 +1,13 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Cache-Control: no-cache');
+error_reporting(0);
+ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
- $temporada = isset($_GET['temporada']) ? $_GET['temporada'] : '2025-2026';
- $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 15;
-
- $host = 'localhost';
- $db   = 'numeros_futbol';
- $user = 'root';
- $pass = 'Info2026/*-';
+$temporada = isset($_GET['temporada']) ? $_GET['temporada'] : '2025-2026';
+$limit = isset($_GET['limit']) ? intval($_GET['limit']) : 15;
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
     $stmt = $pdo->prepare("
         SELECT 
             j.id, j.nombre, j.posicion, j.numero_camiseta, j.foto, j.equipo_id,
@@ -29,7 +23,6 @@ try {
     ");
     $stmt->execute([$temporada, $limit]);
     echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
-
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(['error' => 'Error']);

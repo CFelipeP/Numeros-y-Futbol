@@ -1,20 +1,12 @@
 <?php
 error_reporting(0);
 ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=utf-8");
+$conn = $mysqli;
 
-// ... resto del código ...
-
- $conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
-
-if ($conn->connect_error) {
-    echo json_encode(["error" => $conn->connect_error]);
-    exit();
-}
-
- $sql = "
+$sql = "
     SELECT 
         p.id,
         p.fecha,
@@ -36,14 +28,12 @@ if ($conn->connect_error) {
         p.fecha DESC
 ";
 
- $result = $conn->query($sql);
+$result = $conn->query($sql);
 
- $matches = [];
+$matches = [];
 while ($row = $result->fetch_assoc()) {
     $matches[] = $row;
 }
 
 echo json_encode($matches);
- $conn->close();
-
-?>
+$conn->close();

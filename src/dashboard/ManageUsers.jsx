@@ -10,6 +10,8 @@ import {
   CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
   Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, Upload, Mail, CheckCircle2, RotateCcw, StarOff, Filter, Zap, MessageCircle
 } from "lucide-react";
+import { apiFetch } from "../apiHelper";
+import { API_BASE } from "../config";
 
 const ManageUsers = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -23,9 +25,9 @@ const ManageUsers = () => {
   }, [location.pathname]);
 
   useEffect(() => {
-    fetch("http://numeros-y-futbol.test/backend/get_users.php")
+    apiFetch(`${API_BASE}get_users.php`)
       .then(res => res.json())
-      .then(data => { setUsers(data); })
+      .then(data => { if (Array.isArray(data)) setUsers(data); else setUsers([]); })
       .catch(err => console.error("Error cargando usuarios:", err));
   }, []);
 
@@ -35,7 +37,7 @@ const ManageUsers = () => {
       confirmButtonColor: "#d33"
     }).then((result) => {
       if (result.isConfirmed) {
-        localStorage.removeItem("user");
+        localStorage.removeItem("user"); localStorage.removeItem("token");
         window.location.href = "/login";
       }
     });

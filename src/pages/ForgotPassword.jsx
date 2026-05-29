@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { ArrowLeft, Mail, KeyRound, CheckCircle } from "lucide-react";
+import { API_BASE } from "../config";
 
 export default function ForgotPassword() {
     const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function ForgotPassword() {
 
     try {
         const res = await axios.post(
-            "http://localhost/Numeros-y-Futbol/backend/forgot_password.php",
+            `${API_BASE}forgot_password.php`,
             { action: "send_code", email }
         );
 
@@ -45,7 +46,7 @@ export default function ForgotPassword() {
 
         try {
             await axios.post(
-                "http://localhost/Numeros-y-Futbol/backend/forgot_password.php",
+                `${API_BASE}forgot_password.php`,
                 { action: "verify_code", email, codigo }
             );
             setStep(3);
@@ -79,7 +80,7 @@ export default function ForgotPassword() {
 
         try {
             await axios.post(
-                "http://localhost/Numeros-y-Futbol/backend/forgot_password.php",
+                `${API_BASE}forgot_password.php`,
                 { action: "reset_password", email, codigo, new_password: newPassword }
             );
             Swal.fire({

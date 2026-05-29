@@ -1,17 +1,12 @@
 <?php
 error_reporting(0);
 ini_set('display_errors', 0);
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
 
- $conn = new mysqli("localhost", "root", "Info2026/*-", "numeros-y-futbol");
+$conn = $mysqli;
 
-if ($conn->connect_error) {
-    echo json_encode(["error" => $conn->connect_error]);
-    exit;
-}
-
- $sql = "SELECT 
+$sql = "SELECT 
     p.id,
     p.equipo_local,
     p.equipo_visitante,
@@ -30,14 +25,14 @@ WHERE LOWER(p.estado) IN ('programado', 'pendiente', 'por jugar', 'scheduled')
 ORDER BY p.fecha ASC
 LIMIT 1";
 
- $result = $conn->query($sql);
+$result = $conn->query($sql);
 
 if ($result && $result->num_rows > 0) {
     echo json_encode($result->fetch_assoc());
     exit;
 }
 
- $sql2 = "SELECT 
+$sql2 = "SELECT 
     p.id,
     p.equipo_local,
     p.equipo_visitante,
@@ -55,7 +50,7 @@ JOIN equipos e2 ON p.equipo_visitante = e2.id
 ORDER BY p.fecha DESC
 LIMIT 1";
 
- $result2 = $conn->query($sql2);
+$result2 = $conn->query($sql2);
 
 if ($result2 && $result2->num_rows > 0) {
     echo json_encode($result2->fetch_assoc());
