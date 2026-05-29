@@ -1,5 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+// Importamos el Toaster de Sonner
+import { Toaster } from "sonner";
+
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -75,7 +78,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/matches"
           element={
@@ -124,6 +126,25 @@ function App() {
 
       </Routes>
       </MaintenanceGuard>
+
+      {/* ==================== SONNER TOASTER ==================== */}
+      <Toaster
+        position="top-right"
+        richColors
+        closeButton
+        duration={4000}
+        theme="dark"
+        toastOptions={{
+          style: {
+            background: "rgba(15, 23, 42, 0.95)",
+            border: "1px solid rgba(255, 0, 77, 0.3)",
+            color: "#fff",
+            borderRadius: "16px",
+            boxShadow: "0 10px 30px rgba(255, 0, 77, 0.25)",
+            padding: "16px 20px",
+          },
+        }}
+      />
     </BrowserRouter>
   );
 }

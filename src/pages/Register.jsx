@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { ArrowLeft, User, Mail, Lock, Eye, EyeOff, AtSign } from "lucide-react";
-import { motion } from "framer-motion"; // <-- AÑADIDO
+import { motion } from "framer-motion";
 import { API_BASE } from "../config";
 
 export default function Register() {
@@ -108,7 +108,7 @@ export default function Register() {
 
     return (
         <div className="login-page">
-            
+
             <motion.button
                 onClick={() => navigate("/")}
                 className="back-home"
@@ -220,8 +220,8 @@ export default function Register() {
                         className="login-btn"
                         disabled={loading}
                         variants={itemVariants}
-                        whileHover={{ scale: 1.02 }} // Efecto extra: crece un poquito al pasar el ratón
-                        whileTap={{ scale: 0.98 }}   // Efecto extra: se encoge al hacer click
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                     >
                         {loading ? "Registrando..." : "Registrarse"}
                     </motion.button>
