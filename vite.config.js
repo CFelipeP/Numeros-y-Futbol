@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+const PROXY_TARGET = process.env.VITE_PROXY_TARGET || "http://localhost/Numeros-y-Futbol";
+
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -9,7 +11,7 @@ export default defineConfig({
     allowedHosts: true,
     proxy: {
       "/backend": {
-        target: "http://Numeros-y-Futbol.test",
+        target: PROXY_TARGET,
         changeOrigin: true,
       },
     },
