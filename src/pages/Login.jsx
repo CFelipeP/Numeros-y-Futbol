@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff, AtSign } from "lucide-react";
-import { motion } from "framer-motion"; // <-- AÑADIDO
+import { motion } from "framer-motion";
 import { API_BASE } from "../config";
 
 export default function Login() {
