@@ -1,13 +1,21 @@
 <?php
 require_once __DIR__ . '/config.php';
 
-$pdo = new PDO(
-    getDsn(),
-    env('DB_USER', 'root'),
-    env('DB_PASS', '')
-);
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-$conn = $pdo;
+$pdo = null;
+$conn = null;
+try {
+    $pdo = new PDO(
+        getDsn(),
+        env('DB_USER', 'root'),
+        env('DB_PASS', '')
+    );
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn = $pdo;
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode(["error" => "Error de conexión PDO: " . $e->getMessage()]);
+    exit;
+}
 
 $mysqli = new mysqli(
     env('DB_HOST', '127.0.0.1'),
@@ -19,7 +27,7 @@ $mysqli = new mysqli(
 
 if ($mysqli->connect_error) {
     http_response_code(500);
-    echo json_encode(["error" => "Error de conexión interna"]);
+    echo json_encode(["error" => "Error de conexión MySQLi: " . $mysqli->connect_error]);
     exit;
 }
 

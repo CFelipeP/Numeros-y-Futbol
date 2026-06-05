@@ -115,24 +115,15 @@ const ResultRow = ({ m, onVerMas }) => {
   const hw = parseInt(m.goles_local) > parseInt(m.goles_visitante), aw = parseInt(m.goles_visitante) > parseInt(m.goles_local);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.7rem 0.8rem", borderRadius: "10px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", transition: "all 0.2s ease", cursor: "default" }}
-        onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
-        onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)"; }}>
+      <div className="res-row" style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.7rem 0.8rem", borderRadius: "10px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", transition: "all 0.2s ease", cursor: "default" }}>
         <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: 3, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}><img src={logoUrl(m.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div>
-        <span style={{ fontSize: "0.75rem", fontWeight: hw ? 800 : 600, color: hw ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.home_name}</span>
-        <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "var(--color-white)", fontFamily: "var(--font-heading)", letterSpacing: "1px", flexShrink: 0, textShadow: "0 0 10px rgba(255,0,77,0.3)" }}>{m.goles_local ?? "-"} - {m.goles_visitante ?? "-"}</span>
-        <span style={{ fontSize: "0.75rem", fontWeight: aw ? 800 : 600, color: aw ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{m.away_name}</span>
+        <span className="res-name" style={{ fontSize: "0.75rem", fontWeight: hw ? 800 : 600, color: hw ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.home_name}</span>
+        <span className="res-score" style={{ fontSize: "0.8rem", fontWeight: 800, color: "var(--color-white)", fontFamily: "var(--font-heading)", letterSpacing: "1px", flexShrink: 0, textShadow: "0 0 10px rgba(255,0,77,0.3)" }}>{m.goles_local ?? "-"} - {m.goles_visitante ?? "-"}</span>
+        <span className="res-name res-name-away" style={{ fontSize: "0.75rem", fontWeight: aw ? 800 : 600, color: aw ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{m.away_name}</span>
         <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: 3, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}><img src={logoUrl(m.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div>
       </div>
       {m.id && onVerMas && (
-        <button onClick={() => onVerMas(m.id)} style={{
-          alignSelf: "flex-end", display: "flex", alignItems: "center", gap: "0.35rem",
-          background: "none", border: "none", color: "var(--color-accent)",
-          fontSize: "0.68rem", fontWeight: 700, cursor: "pointer", padding: "0.25rem 0.6rem",
-          borderRadius: 6, letterSpacing: "0.5px", textTransform: "uppercase",
-          transition: "all 0.2s ease", marginTop: "0.15rem", marginRight: "0.2rem"
-        }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,0,77,0.1)"; e.currentTarget.style.gap = "0.5rem"; }}
-           onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.gap = "0.35rem"; }}>
+        <button onClick={() => onVerMas(m.id)} className="res-more" style={{ alignSelf: "flex-end", display: "flex", alignItems: "center", gap: "0.35rem", background: "none", border: "none", color: "var(--color-accent)", fontSize: "0.68rem", fontWeight: 700, cursor: "pointer", padding: "0.25rem 0.6rem", borderRadius: 6, letterSpacing: "0.5px", textTransform: "uppercase", transition: "all 0.2s ease", marginTop: "0.15rem", marginRight: "0.2rem" }}>
           Ver más información <IconArrowRight />
         </button>
       )}
@@ -147,49 +138,38 @@ const FeaturedMatchCard = ({ match, onVerMas }) => {
   const aw = match.goles_local != null && match.goles_visitante != null && match.goles_visitante > match.goles_local;
   const sc = isL ? "#ef4444" : isF ? "#10b981" : "#f59e0b", sb = isL ? "rgba(239,68,68,0.15)" : isF ? "rgba(16,185,129,0.12)" : "rgba(245,158,11,0.12)";
   return (
-    <div style={{ position: "relative", borderRadius: 20, overflow: "hidden", background: "linear-gradient(160deg,#1a1f35 0%,#0d1117 40%,#111827 100%)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+    <div className="feat-card" style={{ position: "relative", borderRadius: 20, overflow: "hidden", background: "linear-gradient(160deg,#1a1f35 0%,#0d1117 40%,#111827 100%)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
       <div style={{ height: 3, background: `linear-gradient(90deg,transparent 0%,${sc}66 30%,${sc} 50%,${sc}66 70%,transparent 100%)` }} />
       <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 280, height: 180, borderRadius: "50%", background: `radial-gradient(ellipse,${sc}12 0%,transparent 70%)`, pointerEvents: "none" }} />
       <div style={{ position: "relative", padding: "1.6rem 1.4rem 1.4rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.8rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}><IconStar /><span style={{ fontSize: "0.65rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: 2, color: "rgba(255,255,255,0.4)" }}>Destacado</span></div>
-          <span style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", color: sc, background: sb, padding: "4px 12px", borderRadius: 20, border: `1px solid ${sc}25`, animation: isL ? "fp 2s ease-in-out infinite" : "none" }}>{st.text}</span>
+          <span className="feat-status" style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", color: sc, background: sb, padding: "4px 12px", borderRadius: 20, border: `1px solid ${sc}25`, animation: isL ? "fp 2s ease-in-out infinite" : "none" }}>{st.text}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem" }}>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}>
-            <div style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}><img src={logoUrl(match.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} /></div>
-            <span style={{ fontSize: "0.72rem", fontWeight: hw ? 800 : 600, color: hw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.home_name}</span>
-            {hw && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}
+        <div className="feat-matchup" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem" }}>
+          <div className="feat-team" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}>
+            <div className="feat-logo" style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}><img src={logoUrl(match.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} /></div>
+            <span className="feat-team-name" style={{ fontSize: "0.72rem", fontWeight: hw ? 800 : 600, color: hw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.home_name}</span>
+            {hw && <span className="feat-winner-tag" style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "0 0.8rem", flexShrink: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", background: "rgba(0,0,0,0.35)", borderRadius: 14, padding: "6px 4px", border: "1px solid rgba(255,255,255,0.04)", boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)" }}>
-              <span style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: hw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_local ?? "-"}</span>
+            <div className="feat-score-box" style={{ display: "flex", alignItems: "center", background: "rgba(0,0,0,0.35)", borderRadius: 14, padding: "6px 4px", border: "1px solid rgba(255,255,255,0.04)", boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)" }}>
+              <span className="feat-score-num" style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: hw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_local ?? "-"}</span>
               <span style={{ fontSize: "1rem", color: "rgba(255,255,255,0.2)", margin: "0 2px" }}>:</span>
-              <span style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: aw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_visitante ?? "-"}</span>
+              <span className="feat-score-num" style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: aw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_visitante ?? "-"}</span>
             </div>
             <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, color: "rgba(255,255,255,0.25)" }}>{isS ? "VS" : "FT"}</span>
           </div>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}>
-            <div style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}><img src={logoUrl(match.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} /></div>
-            <span style={{ fontSize: "0.72rem", fontWeight: aw ? 800 : 600, color: aw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.away_name}</span>
-            {aw && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}
+          <div className="feat-team" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}>
+            <div className="feat-logo" style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}><img src={logoUrl(match.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} /></div>
+            <span className="feat-team-name" style={{ fontSize: "0.72rem", fontWeight: aw ? 800 : 600, color: aw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.away_name}</span>
+            {aw && <span className="feat-winner-tag" style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}
           </div>
         </div>
         <div style={{ height: 1, margin: "1.4rem 0 1rem", background: "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.06) 30%,rgba(255,255,255,0.06) 70%,transparent 100%)" }} />
         {match.fecha && <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", marginBottom: "0.8rem" }}><IconCalendar /><span>{match.fecha}</span></div>}
         {match.id && onVerMas && (
-          <button onClick={() => onVerMas(match.id)} style={{
-            width: "100%", padding: "0.6rem 1rem",
-            background: "linear-gradient(135deg, rgba(255,0,77,0.12), rgba(255,0,77,0.04))",
-            border: "1px solid rgba(255,0,77,0.18)", borderRadius: 10,
-            color: "var(--color-accent)", fontWeight: 700, fontSize: "0.75rem",
-            textTransform: "uppercase", letterSpacing: "1.2px", cursor: "pointer",
-            transition: "all 0.25s ease", display: "flex", alignItems: "center",
-            justifyContent: "center", gap: "0.5rem"
-          }} onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(255,0,77,0.25), rgba(255,0,77,0.08))"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(255,0,77,0.2)"; }}
-             onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(255,0,77,0.12), rgba(255,0,77,0.04))"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-            Ver más información <IconArrowRight />
-          </button>
+          <button onClick={() => onVerMas(match.id)} className="feat-btn" style={{ width: "100%", padding: "0.6rem 1rem", background: "linear-gradient(135deg, rgba(255,0,77,0.12), rgba(255,0,77,0.04))", border: "1px solid rgba(255,0,77,0.18)", borderRadius: 10, color: "var(--color-accent)", fontWeight: 700, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1.2px", cursor: "pointer", transition: "all 0.25s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>Ver más información <IconArrowRight /></button>
         )}
       </div>
       <style>{`@keyframes fp{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.3)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}`}</style>
@@ -256,9 +236,9 @@ const PublicPlayerRow = ({ j }) => {
       <div className="pv-row-num" style={{ background: `${pi.color}15`, color: pi.color }}>{j.numero_camiseta || "–"}</div>
       <div className="pv-row-photo">{j.foto ? <img src={logoUrl(j.foto)} alt="" /> : <div className="pv-photo-placeholder"><IconShield /></div>}</div>
       <div className="pv-row-info"><span className="pv-row-name">{j.nombre}</span><span className="pv-row-meta">{[j.edad && `${j.edad} años`, j.nacionalidad].filter(Boolean).join(" · ")}</span></div>
-      <span className="pv-row-pos pv-m-hide" style={{ color: pi.color, borderColor: `${pi.color}30`, background: `${pi.color}0a` }} title={pi.label}>{pi.abbr}</span>
-      <div className="pv-row-stats pv-m-hide">{isGK ? (<><b style={{ color: "#f59e0b" }}>{j.goles_recibidos || 0}</b><small>GR</small><b style={{ color: "#10b981" }}>{j.vaya_invicta || 0}</b><small>VI</small></>) : (<><b style={{ color: "#ef4444" }}>{j.goles || 0}</b><small>G</small><b style={{ color: "#3b82f6" }}>{j.asistencias || 0}</b><small>A</small></>)}</div>
-      <span className="pv-row-pj pv-m-hide">{j.pj || 0} <small>PJ</small></span>
+      <span className="pv-row-pos pv-dk" style={{ color: pi.color, borderColor: `${pi.color}30`, background: `${pi.color}0a` }} title={pi.label}>{pi.abbr}</span>
+      <div className="pv-row-stats pv-dk">{isGK ? (<><b style={{ color: "#f59e0b" }}>{j.goles_recibidos || 0}</b><small>GR</small><b style={{ color: "#10b981" }}>{j.vaya_invicta || 0}</b><small>VI</small></>) : (<><b style={{ color: "#ef4444" }}>{j.goles || 0}</b><small>G</small><b style={{ color: "#3b82f6" }}>{j.asistencias || 0}</b><small>A</small></>)}</div>
+      <span className="pv-row-pj pv-dk">{j.pj || 0} <small>PJ</small></span>
     </div>
   );
 };
@@ -388,7 +368,7 @@ const PublicTeamView = ({ teamData, viewTab, setViewTab }) => {
                     <div key={s.id} className="pv-sub-card" style={{ borderLeftColor: pi.color }}>
                       <div className="pv-sub-avatar">{s.foto ? <img src={logoUrl(s.foto)} alt="" /> : <div className="pv-sub-avatar-empty"><IconShield /></div>}</div>
                       <div className="pv-sub-details"><span className="pv-sub-name">{s.nombre}</span><span className="pv-sub-meta-row"><span className="pv-sub-number" style={{ color: pi.color }}>#{s.numero_camiseta || "–"}</span><span className="pv-sub-pos-label" style={{ color: pi.color, background: `${pi.color}10`, borderColor: `${pi.color}20` }}>{pi.abbr}</span>{s.edad && <span className="pv-sub-age">{s.edad}a</span>}</span></div>
-                      <div className="pv-sub-mini-stats pv-m-hide">{pi.cat === "portero" ? (<><span style={{ color: "#f59e0b" }}>{s.goles_recibidos || 0}<small>GR</small></span><span style={{ color: "#10b981" }}>{s.vaya_invicta || 0}<small>VI</small></span></>) : (<><span style={{ color: "#ef4444" }}>{s.goles || 0}<small>G</small></span><span style={{ color: "#3b82f6" }}>{s.asistencias || 0}<small>A</small></span></>)}</div>
+                      <div className="pv-sub-mini-stats pv-dk">{pi.cat === "portero" ? (<><span style={{ color: "#f59e0b" }}>{s.goles_recibidos || 0}<small>GR</small></span><span style={{ color: "#10b981" }}>{s.vaya_invicta || 0}<small>VI</small></span></>) : (<><span style={{ color: "#ef4444" }}>{s.goles || 0}<small>G</small></span><span style={{ color: "#3b82f6" }}>{s.asistencias || 0}<small>A</small></span></>)}</div>
                     </div>
                   );
                 })}
@@ -415,7 +395,6 @@ export default function PrimeraDivision() {
   const [expandedViewTab, setExpandedViewTab] = useState("plantilla");
   const [sidebar, setSidebar] = useState({ next: null, recent: [] });
 
-  // Mapa de equipos para normalización
   const teamMap = useMemo(() => {
     const tm = {};
     equipos.forEach(t => { tm[String(t.id)] = t; if (t.nombre) tm[t.nombre] = t; });
@@ -476,41 +455,29 @@ export default function PrimeraDivision() {
   return (
     <>
       <Header />
-      <section className="table-section pd-section-m" style={{ paddingBottom: 0 }}>
+      <section className="table-section" style={{ paddingBottom: 0 }}>
         <div className="container" style={{ marginBottom: "1.5rem" }}>
-          <div className="pd-page-title-row" style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}><IconTrophy /><h2 style={{ fontFamily: "var(--font-heading)", fontSize: "2rem", fontWeight: 800, textTransform: "uppercase", margin: 0, background: "linear-gradient(90deg, #fff, var(--color-accent))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Primera División</h2></div>
-          <p className="pd-page-subtitle" style={{ color: "var(--color-text-muted)", fontSize: "1rem", margin: 0, paddingLeft: "1.8rem" }}>Clasificación general, equipos y partido destacado de la Liga Mayor</p>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}><IconTrophy /><h2 className="pd-main-title" style={{ fontFamily: "var(--font-heading)", fontSize: "2rem", fontWeight: 800, textTransform: "uppercase", margin: 0, background: "linear-gradient(90deg, #fff, var(--color-accent))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Primera División</h2></div>
+          <p className="pd-main-sub" style={{ color: "var(--color-text-muted)", fontSize: "1rem", margin: 0, paddingLeft: "1.8rem" }}>Clasificación general, equipos y partido destacado de la Liga Mayor</p>
         </div>
         <div className="container" style={{ marginBottom: "2rem" }}>
-          <div className="pd-main-tabs" style={{ display: "flex", gap: "0.5rem", background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 4, border: "1px solid rgba(255,255,255,0.05)" }}>
+          <div className="pd-tabs" style={{ display: "flex", gap: "0.5rem", background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 4, border: "1px solid rgba(255,255,255,0.05)" }}>
             {[{ key: "clasificacion", label: "Clasificación", icon: "📊" }, { key: "equipos", label: "Equipos", icon: "🛡️" }].map(tab => (
-              <button key={tab.key} onClick={() => changeTab(tab.key)} style={{ flex: 1, padding: "0.75rem 1rem", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.85rem", letterSpacing: "0.5px", textTransform: "uppercase", background: activeTab === tab.key ? "linear-gradient(135deg, rgba(255,0,77,0.2), rgba(255,0,77,0.08))" : "transparent", color: activeTab === tab.key ? "var(--color-accent)" : "var(--color-text-muted)", boxShadow: activeTab === tab.key ? "0 0 15px rgba(255,0,77,0.15)" : "none", transition: "all 0.3s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}><span>{tab.icon}</span>{tab.label}</button>
+              <button key={tab.key} onClick={() => changeTab(tab.key)} className={`pd-tab${activeTab === tab.key ? " pd-tab-active" : ""}`} style={{ flex: 1, padding: "0.75rem 1rem", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.85rem", letterSpacing: "0.5px", textTransform: "uppercase", background: activeTab === tab.key ? "linear-gradient(135deg, rgba(255,0,77,0.2), rgba(255,0,77,0.08))" : "transparent", color: activeTab === tab.key ? "var(--color-accent)" : "var(--color-text-muted)", boxShadow: activeTab === tab.key ? "0 0 15px rgba(255,0,77,0.15)" : "none", transition: "all 0.3s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}><span>{tab.icon}</span>{tab.label}</button>
             ))}
           </div>
         </div>
 
         {activeTab === "clasificacion" && !expandedTeam && (
-          <div className="dashboard-grid pd-dashboard-m">
-            <div className="pd-sidebar-col-m" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          <div className="dashboard-grid">
+            <div className="pd-sidebar">
               {/* PARTIDO DESTACADO */}
-              <div className="pd-featured-wrap">{match && match.home_name ? <FeaturedMatchCard match={match} onVerMas={openMatchDetail} /> : <div className="glass-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}><div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}><span style={{ fontSize: "1.5rem", opacity: 0.3 }}>⚽</span></div><p style={{ fontSize: "0.9rem", margin: "0 0 0.3rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Sin partido destacado</p><p style={{ fontSize: "0.75rem", margin: 0, color: "rgba(255,255,255,0.25)" }}>Se mostrará cuando se configure desde el panel</p></div>}</div>
+              <div className="pd-featured">{match && match.home_name ? <FeaturedMatchCard match={match} onVerMas={openMatchDetail} /> : <div className="glass-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}><div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}><span style={{ fontSize: "1.5rem", opacity: 0.3 }}>⚽</span></div><p style={{ fontSize: "0.9rem", margin: "0 0 0.3rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Sin partido destacado</p><p style={{ fontSize: "0.75rem", margin: 0, color: "rgba(255,255,255,0.25)" }}>Se mostrará cuando se configure desde el panel</p></div>}</div>
 
               {/* PRÓXIMO PARTIDO */}
-              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", boxShadow: "0 0 8px #f59e0b", display: "inline-block" }} />Próximo Partido</div>{sidebar.next ? (<div style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(30,41,59,0.4) 100%)", border: "1px solid rgba(245,158,11,0.12)", borderRadius: 16, padding: "1.5rem 1.2rem" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}><span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#f59e0b", background: "rgba(245,158,11,0.12)", padding: "0.2rem 0.6rem", borderRadius: 6 }}>{getMatchStatus(sidebar.next.estado || sidebar.next.status).text}</span></div><div className="pd-next-teams-m" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0 }}><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}><img src={logoUrl(sidebar.next.home_logo || sidebar.next.local_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sidebar.next.home_name || sidebar.next.local_nombre}</span></div><div style={{ flexShrink: 0 }}><span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--color-text-muted)", background: "rgba(255,255,255,0.04)", padding: "0.35rem 0.7rem", borderRadius: 8, letterSpacing: "1px" }}>VS</span></div><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0, justifyContent: "flex-end" }}><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{sidebar.next.away_name || sidebar.next.visitante_nombre}</span><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}><img src={logoUrl(sidebar.next.away_logo || sidebar.next.visitante_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div></div></div>{sidebar.next.fecha && <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.8rem", marginTop: "1rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><IconCalendar /> {sidebar.next.fecha}</div>}
-              {/* BOTÓN VER MÁS EN PRÓXIMO PARTIDO */}
+              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", boxShadow: "0 0 8px #f59e0b", display: "inline-block" }} />Próximo Partido</div>{sidebar.next ? (<div className="next-match-card" style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(30,41,59,0.4) 100%)", border: "1px solid rgba(245,158,11,0.12)", borderRadius: 16, padding: "1.5rem 1.2rem" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}><span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#f59e0b", background: "rgba(245,158,11,0.12)", padding: "0.2rem 0.6rem", borderRadius: 6 }}>{getMatchStatus(sidebar.next.estado || sidebar.next.status).text}</span></div><div className="next-match-teams" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}><div className="next-match-team" style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0 }}><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}><img src={logoUrl(sidebar.next.home_logo || sidebar.next.local_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div><span className="next-team-name" style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sidebar.next.home_name || sidebar.next.local_nombre}</span></div><div style={{ flexShrink: 0 }}><span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--color-text-muted)", background: "rgba(255,255,255,0.04)", padding: "0.35rem 0.7rem", borderRadius: 8, letterSpacing: "1px" }}>VS</span></div><div className="next-match-team next-match-team-r" style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0, justifyContent: "flex-end" }}><span className="next-team-name" style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{sidebar.next.away_name || sidebar.next.visitante_nombre}</span><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}><img src={logoUrl(sidebar.next.away_logo || sidebar.next.visitante_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div></div></div>{sidebar.next.fecha && <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.8rem", marginTop: "1rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><IconCalendar /> {sidebar.next.fecha}</div>}
               {(sidebar.next.id || sidebar.next.partido_id) && (
-                <button onClick={() => openMatchDetail(sidebar.next.id || sidebar.next.partido_id)} style={{
-                  width: "100%", marginTop: "1rem", padding: "0.55rem 1rem",
-                  background: "linear-gradient(135deg, rgba(255,0,77,0.12), rgba(255,0,77,0.04))",
-                  border: "1px solid rgba(255,0,77,0.18)", borderRadius: 10,
-                  color: "var(--color-accent)", fontWeight: 700, fontSize: "0.72rem",
-                  textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer",
-                  transition: "all 0.25s ease", display: "flex", alignItems: "center",
-                  justifyContent: "center", gap: "0.45rem"
-                }} onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(255,0,77,0.25), rgba(255,0,77,0.08))"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-                   onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(255,0,77,0.12), rgba(255,0,77,0.04))"; e.currentTarget.style.transform = "translateY(0)"; }}>
-                  Ver más información <IconArrowRight />
-                </button>
+                <button onClick={() => openMatchDetail(sidebar.next.id || sidebar.next.partido_id)} className="next-match-btn" style={{ width: "100%", marginTop: "1rem", padding: "0.55rem 1rem", background: "linear-gradient(135deg, rgba(255,0,77,0.12), rgba(255,0,77,0.04))", border: "1px solid rgba(255,0,77,0.18)", borderRadius: 10, color: "var(--color-accent)", fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer", transition: "all 0.25s ease", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.45rem" }}>Ver más información <IconArrowRight /></button>
               )}
               </div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📅</div><p style={{ fontSize: "0.85rem", margin: 0, fontWeight: 600 }}>No hay partidos pendientes</p></div>)}</div>
 
@@ -522,9 +489,9 @@ export default function PrimeraDivision() {
             </div>
 
             {/* CLASIFICACIÓN */}
-            <div className="pd-standings-col-m glass-card" style={{ padding: "1.8rem" }}>
+            <div className="glass-card" style={{ padding: "1.8rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}><h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.3rem", fontWeight: 800, margin: 0, color: "var(--color-white)" }}>Clasificación General</h3><span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", background: "rgba(255,255,255,0.05)", padding: "0.3rem 0.8rem", borderRadius: 20, fontWeight: 600 }}>{tabla.length} equipos</span></div>
-              <div className="table-container pd-table-scroll-m"><table className="standings-table pd-table-m"><thead><tr><th className="pd-th-pos-m" style={{ width: 40, textAlign: "center" }}>#</th><th style={{ textAlign: "left", paddingLeft: 16 }}>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th className="pd-m-hide">GF</th><th className="pd-m-hide">GC</th><th>DG</th><th style={{ minWidth: 50 }}>PTS</th></tr></thead><tbody>{tabla.length === 0 && <tr><td colSpan={10} style={{ textAlign: "center", padding: "3rem 1rem", color: "var(--color-text-muted)" }}>No hay datos disponibles</td></tr>}{tabla.map((team, index) => { const badge = getPosBadge(index); const dg = getDG(team.goles_favor, team.goles_contra); const isBottom = index >= tabla.length - 1 && tabla.length > 4; return (<tr key={team.id} style={{ borderLeft: badge ? `3px solid ${badge.color}` : isBottom ? "3px solid rgba(239,68,68,0.4)" : "3px solid transparent", transition: "all 0.2s ease" }}><td style={{ textAlign: "center" }}>{badge ? <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: 6, background: badge.bg, color: badge.color, fontSize: "0.7rem", fontWeight: 800, fontFamily: "var(--font-heading)" }}>{index + 1}</span> : <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isBottom ? "#ef4444" : "var(--color-text-muted)" }}>{index + 1}</span>}</td><td className="team-cell" style={{ paddingLeft: 16 }}><img src={logoUrl(team.logo)} alt="" style={{ width: 28, height: 28, objectFit: "contain", background: "rgba(255,255,255,0.06)", borderRadius: "50%", padding: 3 }} /><span className="pd-team-name-m" style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--color-text-main)", whiteSpace: "nowrap" }}>{team.nombre}</span></td><td>{team.partidos_jugados}</td><td style={{ color: "#10b981", fontWeight: 600 }}>{team.ganados}</td><td style={{ color: "#f59e0b", fontWeight: 600 }}>{team.empatados}</td><td style={{ color: "#ef4444", fontWeight: 600 }}>{team.perdidos}</td><td className="pd-m-hide">{team.goles_favor}</td><td className="pd-m-hide">{team.goles_contra}</td><td style={{ fontWeight: 700, color: team.goles_favor - team.goles_contra > 0 ? "#10b981" : team.goles_favor - team.goles_contra < 0 ? "#ef4444" : "var(--color-text-muted)", fontSize: "0.85rem" }}>{dg}</td><td style={{ fontWeight: 800, fontSize: "1rem", color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 8px rgba(255,0,77,0.3)" }}>{team.puntos}</td></tr>); })}</tbody></table></div>
+              <div className="pd-table-scroll"><table className="standings-table"><thead><tr><th className="pd-th-pos" style={{ width: 40, textAlign: "center" }}>#</th><th style={{ textAlign: "left", paddingLeft: 16 }}>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th className="pd-hide-m">GF</th><th className="pd-hide-m">GC</th><th>DG</th><th style={{ minWidth: 50 }}>PTS</th></tr></thead><tbody>{tabla.length === 0 && <tr><td colSpan={10} style={{ textAlign: "center", padding: "3rem 1rem", color: "var(--color-text-muted)" }}>No hay datos disponibles</td></tr>}{tabla.map((team, index) => { const badge = getPosBadge(index); const dg = getDG(team.goles_favor, team.goles_contra); const isBottom = index >= tabla.length - 1 && tabla.length > 4; return (<tr key={team.id} className="standings-row" style={{ borderLeft: badge ? `3px solid ${badge.color}` : isBottom ? "3px solid rgba(239,68,68,0.4)" : "3px solid transparent", transition: "all 0.2s ease" }}><td style={{ textAlign: "center" }}>{badge ? <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: 6, background: badge.bg, color: badge.color, fontSize: "0.7rem", fontWeight: 800, fontFamily: "var(--font-heading)" }}>{index + 1}</span> : <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isBottom ? "#ef4444" : "var(--color-text-muted)" }}>{index + 1}</span>}</td><td className="team-cell" style={{ paddingLeft: 16 }}><img src={logoUrl(team.logo)} alt="" style={{ width: 28, height: 28, objectFit: "contain", background: "rgba(255,255,255,0.06)", borderRadius: "50%", padding: 3 }} /><span className="pd-team-name" style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--color-text-main)", whiteSpace: "nowrap" }}>{team.nombre}</span></td><td>{team.partidos_jugados}</td><td style={{ color: "#10b981", fontWeight: 600 }}>{team.ganados}</td><td style={{ color: "#f59e0b", fontWeight: 600 }}>{team.empatados}</td><td style={{ color: "#ef4444", fontWeight: 600 }}>{team.perdidos}</td><td className="pd-hide-m">{team.goles_favor}</td><td className="pd-hide-m">{team.goles_contra}</td><td style={{ fontWeight: 700, color: team.goles_favor - team.goles_contra > 0 ? "#10b981" : team.goles_favor - team.goles_contra < 0 ? "#ef4444" : "var(--color-text-muted)", fontSize: "0.85rem" }}>{dg}</td><td style={{ fontWeight: 800, fontSize: "1rem", color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 8px rgba(255,0,77,0.3)" }}>{team.puntos}</td></tr>); })}</tbody></table></div>
               {tabla.length > 0 && <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)", flexWrap: "wrap", gap: "0.5rem" }}><span>Actualizado: {new Date().toLocaleDateString("es-SV", { day: "numeric", month: "short", year: "numeric" })}</span><span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><IconStadium /> Liga Mayor · El Salvador</span></div>}
             </div>
           </div>
@@ -534,17 +501,15 @@ export default function PrimeraDivision() {
           <div className="container" style={{ paddingBottom: "var(--spacing-lg)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}><div><h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.4rem", fontWeight: 800, margin: "0 0 0.3rem 0", color: "var(--color-white)", display: "flex", alignItems: "center", gap: "0.6rem" }}><IconShield /> Clubes de la Temporada</h3><p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem", margin: 0 }}>Selecciona un equipo para ver su plantilla y formación</p></div><span style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", background: "rgba(255,255,255,0.05)", padding: "0.4rem 1rem", borderRadius: 20, fontWeight: 600 }}>{equipos.length} clubes</span></div>
             {equipos.length === 0 ? <div style={{ textAlign: "center", padding: "4rem 1rem", color: "var(--color-text-muted)" }}><p style={{ fontSize: "1.1rem" }}>No hay equipos registrados</p></div> : (
-              <div className="pd-teams-grid-m" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
+              <div className="pd-teams-grid">
                 {equipos.map(eq => { const stats = getTeamStats(eq.id); const pos = stats ? tabla.indexOf(stats) : -1; const badge = pos >= 0 ? getPosBadge(pos) : null; return (
-                  <div key={eq.id} className="glass-card" style={{ padding: 0, overflow: "hidden", transition: "all 0.3s ease", borderLeft: badge ? `3px solid ${badge.color}` : "3px solid transparent" }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 15px 40px rgba(0,0,0,0.4), 0 0 20px rgba(255,0,77,0.1)"; e.currentTarget.style.borderColor = "rgba(255,0,77,0.3)"; if (badge) e.currentTarget.style.borderLeftColor = badge.color; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-card)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderLeftColor = badge ? badge.color : "transparent"; }}>
+                  <div key={eq.id} className="glass-card pd-team-card" style={{ padding: 0, overflow: "hidden", transition: "all 0.3s ease", borderLeft: badge ? `3px solid ${badge.color}` : "3px solid transparent" }}>
                     <div style={{ height: 6, background: badge ? `linear-gradient(90deg, ${badge.color}, transparent)` : "linear-gradient(90deg, var(--color-accent), transparent)" }} />
                     <div style={{ padding: "1.5rem" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.2rem" }}><div style={{ width: 60, height: 60, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: badge ? `2px solid ${badge.color}40` : "2px solid rgba(255,255,255,0.08)" }}><img src={logoUrl(eq.logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div><div style={{ flex: 1, minWidth: 0 }}><h4 style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem", fontWeight: 800, margin: "0 0 0.2rem 0", color: "var(--color-white)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{eq.nombre}</h4>{badge && <span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: badge.color, background: badge.bg, padding: "0.15rem 0.5rem", borderRadius: 4 }}>Pos. {pos + 1}</span>}</div></div>
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", marginBottom: "1.2rem" }}>{eq.ciudad && <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-text-muted)" }}><IconMapPin /><span>{eq.ciudad}</span></div>}{eq.estadio && <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-text-muted)" }}><IconStadium /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{eq.estadio}</span></div>}</div>
                       {stats && (<><div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "1rem" }}>{[{ l: "PJ", v: stats.partidos_jugados, c: "var(--color-text-main)" }, { l: "G", v: stats.ganados, c: "#10b981" }, { l: "E", v: stats.empatados, c: "#f59e0b" }, { l: "P", v: stats.perdidos, c: "#ef4444" }].map((s, i) => (<div key={i} style={{ textAlign: "center" }}><div style={{ fontSize: "1.1rem", fontWeight: 800, color: s.c, fontFamily: "var(--font-heading)", lineHeight: 1 }}>{s.v}</div><div style={{ fontSize: "0.65rem", color: "var(--color-text-muted)", marginTop: "0.2rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>{s.l}</div></div>))}</div><div style={{ marginTop: "1rem", paddingTop: "0.8rem", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: "0.78rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Puntos</span><div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><div style={{ width: 80, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg, var(--color-accent), #ff3366)", width: `${Math.min((stats.puntos / (tabla[0]?.puntos || 1)) * 100, 100)}%`, transition: "width 0.5s ease" }} /></div><span style={{ fontSize: "1.2rem", fontWeight: 900, color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 10px rgba(255,0,77,0.4)" }}>{stats.puntos}</span></div></div></>)}
-                      <button onClick={() => openTeam(eq.id)} style={{ width: "100%", marginTop: "1.2rem", padding: "0.7rem", background: "linear-gradient(135deg, rgba(255,0,77,0.15), rgba(255,0,77,0.05))", border: "1px solid rgba(255,0,77,0.2)", borderRadius: 10, color: "var(--color-accent)", fontWeight: 700, fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }} onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(255,0,77,0.3), rgba(255,0,77,0.1))"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(255,0,77,0.15), rgba(255,0,77,0.05))"; e.currentTarget.style.transform = "translateY(0)"; }}>Ver Plantilla Completa</button>
+                      <button onClick={() => openTeam(eq.id)} className="pd-team-btn" style={{ width: "100%", marginTop: "1.2rem", padding: "0.7rem", background: "linear-gradient(135deg, rgba(255,0,77,0.15), rgba(255,0,77,0.05))", border: "1px solid rgba(255,0,77,0.2)", borderRadius: 10, color: "var(--color-accent)", fontWeight: 700, fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>Ver Plantilla Completa</button>
                     </div>
                   </div>
                 ); })}
@@ -560,169 +525,263 @@ export default function PrimeraDivision() {
 
       <footer className="footer" id="driver-footer"><div className="container footer-inner"><div className="footer-grid"><div className="footer-brand"><h3>NÚMEROS Y FÚTBOL</h3><p>Portal oficial hecha por Ariel SOTOMAYOR y Felipe ESCOBAR.</p></div><div className="footer-section"><h4>Divisiones</h4><ul><li><a href="/primera">Primera División</a></li><li><a href="/segunda">Segunda División</a></li><li><a href="#tercera">Tercera División</a></li></ul></div><div className="footer-section"><h4>Contenido</h4><ul><li><a href="/news">Noticias</a></li><li><a href="#">Resultados</a></li><li><a href="/primera">Clasificaciones</a></li></ul></div><div className="footer-section"><h4>Síguenos</h4><ul><li><a href="#">Facebook</a></li><li><a href="#">Twitter / X</a></li><li><a href="#">Instagram</a></li></ul></div></div><div className="footer-bottom"><p>&copy; 2026 Números y Fútbol. Todos los derechos reservados.</p><div className="footer-links"><a href="#">Privacidad</a><a href="#">Términos</a><a href="#">Contacto</a></div></div></div></footer>
 
+      {/* ═══════════════════════════════════════════════════════════════
+           RESPONSIVE — Solo overrides para móvil, no toca el desktop
+           ═══════════════════════════════════════════════════════════════ */}
       <style>{`
-@keyframes pv-playerEntry{from{opacity:0;transform:translate(-50%,-50%) scale(.5)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-
-.pv-team-page{max-width:880px;margin:0 auto;padding-bottom:3rem}
-.pv-back-btn{display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.6);padding:.55rem 1.1rem;border-radius:10px;cursor:pointer;font-weight:600;font-size:.82rem;margin-bottom:1.5rem;transition:all .2s;font-family:inherit}
-.pv-back-btn:hover{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.12)}
-
-.pv-hero-card{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(160deg,rgba(15,23,42,.95) 0%,rgba(15,23,42,.8) 50%,rgba(30,41,59,.9) 100%);border:1px solid rgba(255,255,255,.06);margin-bottom:1.5rem;box-shadow:0 12px 40px rgba(0,0,0,.4)}
-.pv-hero-bg-pattern{position:absolute;inset:0;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
-.pv-hero-content{position:relative;padding:1.8rem 2rem;z-index:1}
-.pv-hero-left{display:flex;align-items:center;gap:1.2rem;margin-bottom:1.5rem}
-.pv-hero-logo-ring{width:68px;height:68px;border-radius:50%;padding:6px;background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:2px solid rgba(255,255,255,.1);box-shadow:0 8px 24px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05);flex-shrink:0}
-.pv-hero-logo-ring img{width:100%;height:100%;object-fit:contain}
-.pv-hero-text h2{margin:0;font-size:1.35rem;font-weight:900;color:#f1f5f9;letter-spacing:.5px;line-height:1.2}
-.pv-hero-meta{display:flex;align-items:center;gap:.4rem;margin-top:.35rem;font-size:.78rem;color:#64748b;flex-wrap:wrap}
-.pv-hero-meta svg{width:11px;height:11px;opacity:.6}
-.pv-meta-sep{margin:0 .25rem;opacity:.3}
-.pv-hero-stats-row{display:flex;align-items:center;gap:0;padding:1.2rem 0 0;border-top:1px solid rgba(255,255,255,.05);flex-wrap:wrap}
-.pv-hero-stat{text-align:center;flex:1;min-width:70px}
-.pv-hero-stat strong{display:block;font-size:1.35rem;font-weight:900;font-family:var(--font-heading);color:#f1f5f9;line-height:1}
-.pv-hero-stat span{font-size:.6rem;color:#475569;text-transform:uppercase;letter-spacing:1.2px;margin-top:.25rem;display:block}
-.pv-hero-stat-divider{width:1px;height:32px;background:rgba(255,255,255,.05);flex-shrink:0}
-
-.pv-tabs-bar{display:flex;gap:0;margin-bottom:1.8rem;background:rgba(255,255,255,.025);border-radius:14px;padding:4px;border:1px solid rgba(255,255,255,.04);max-width:340px;margin-left:auto;margin-right:auto}
-.pv-tab-btn{flex:1;padding:.65rem .8rem;border:none;background:none;color:#475569;font-weight:700;font-size:.82rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.45rem;border-radius:11px;transition:all .2s}
-.pv-tab-btn:hover{color:#94a3b8;background:rgba(255,255,255,.03)}
-.pv-tab-btn.active{color:#c4b5fd;background:rgba(124,58,237,.12);box-shadow:0 2px 12px rgba(124,58,237,.15)}
-.pv-tab-btn svg{opacity:.7}
-.pv-tab-btn.active svg{opacity:1}
-
-.pv-player-row{display:grid;grid-template-columns:34px 34px 1fr 48px 90px 54px;gap:.5rem;align-items:center;padding:.55rem .7rem;border-radius:12px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.025);transition:all .15s}
-.pv-player-row:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.06);transform:translateX(2px)}
-.pv-row-num{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;font-family:monospace}
-.pv-row-photo{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.04);overflow:hidden;border:1px solid rgba(255,255,255,.06)}
-.pv-row-photo img{width:100%;height:100%;object-fit:cover}
-.pv-photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.1)}
-.pv-row-info{min-width:0;display:flex;flex-direction:column;gap:1px}
-.pv-row-name{font-size:.84rem;font-weight:700;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pv-row-meta{font-size:.62rem;color:#475569}
-.pv-row-pos{font-size:.6rem;font-weight:800;padding:3px 8px;border-radius:6px;text-align:center;border:1px solid;letter-spacing:.5px;font-family:monospace}
-.pv-row-stats{display:flex;gap:.4rem;font-size:.74rem;align-items:center}
-.pv-row-stats b{font-weight:800;font-family:monospace}
-.pv-row-stats small{color:#334155;font-size:.55rem;font-weight:600;margin-left:1px}
-.pv-row-pj{font-size:.74rem;color:#475569;font-weight:600;text-align:center;font-family:monospace}
-.pv-row-pj small{font-weight:400;font-size:.55rem}
-
-.pv-pos-group{margin-bottom:1.5rem}
-.pv-group-head{display:flex;align-items:center;gap:.55rem;margin-bottom:.6rem;padding:.5rem .8rem;border-bottom:2px solid transparent;border-radius:10px 10px 0 0}
-.pv-group-icon{font-size:.85rem}
-.pv-group-label{font-size:.62rem;font-weight:800;letter-spacing:2.5px;text-transform:uppercase}
-.pv-group-count{font-size:.58rem;font-weight:700;padding:2px 9px;border-radius:5px;margin-left:auto}
-.pv-group-list{display:flex;flex-direction:column;gap:.3rem}
-.pv-roster-wrap{max-width:760px;margin:0 auto}
-
-.pv-fm-section{display:flex;flex-direction:column;gap:1.2rem}
-.pv-fm-locked{display:flex;align-items:center;justify-content:center;gap:.7rem;padding:.65rem 1rem;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)}
-.pv-fm-badge{font-size:.85rem;font-weight:900;color:#c4b5fd;background:rgba(124,58,237,.12);padding:.3rem .9rem;border-radius:8px;border:1px solid rgba(124,58,237,.2);font-family:monospace;letter-spacing:1px}
-.pv-fm-locked-label{font-size:.72rem;color:#475569;font-weight:600}
-
-.pv-pitch-wrap{width:100%;max-width:420px;margin:0 auto}
-.pv-pitch{position:relative;width:100%;aspect-ratio:68/105;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(0deg,#091f12 0px,#091f12 52px,#0c2815 52px,#0c2815 105px);box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 0 80px rgba(0,0,0,.2)}
-.pv-pitch-svg{position:absolute;inset:0;width:100%;height:100%}
-.pv-pitch-empty{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;opacity:.25}
-.pv-pitch-empty p{color:#fff;font-weight:700;font-size:.85rem;margin:0}
-.pv-pitch-empty span{color:#94a3b8;font-size:.72rem}
-
-.pv-pp{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:2;transition:left .45s cubic-bezier(.4,0,.2,1),top .45s cubic-bezier(.4,0,.2,1);animation:pv-playerEntry .5s cubic-bezier(.34,1.56,.64,1) both;cursor:default}
-.pv-pp-dot{width:34px;height:34px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.2);transition:all .2s;font-size:.6rem;font-weight:800;color:#fff}
-.pv-pp:hover .pv-pp-dot{transform:scale(1.18)}
-.pv-pp-dot img{width:100%;height:100%;object-fit:cover}
-.pv-pp-name{font-size:.52rem;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9);white-space:nowrap;max-width:65px;overflow:hidden;text-overflow:ellipsis;text-align:center}
-.pv-pp-role{font-size:.44rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.5px;font-family:monospace}
-
-.pv-subs-card{background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);border-radius:14px;padding:1rem 1.1rem}
-.pv-subs-title{margin:0 0 .65rem;font-size:.78rem;font-weight:700;color:#94a3b8;display:flex;align-items:center;gap:.4rem}
-.pv-subs-bench-icon{font-size:.85rem}
-.pv-subs-title span{font-size:.66rem;font-weight:800;color:#64748b;background:rgba(255,255,255,.04);padding:1px 8px;border-radius:4px;margin-left:.3rem}
-.pv-subs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.4rem}
-.pv-sub-card{display:flex;align-items:center;gap:.6rem;padding:.5rem .65rem;border-radius:10px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.03);border-left:3px solid;transition:all .15s}
-.pv-sub-card:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.06)}
-.pv-sub-avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.04);overflow:hidden;border:1px solid rgba(255,255,255,.06);flex-shrink:0}
-.pv-sub-avatar img{width:100%;height:100%;object-fit:cover}
-.pv-sub-avatar-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.1)}
-.pv-sub-details{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.pv-sub-name{font-size:.78rem;font-weight:600;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pv-sub-meta-row{display:flex;align-items:center;gap:.3rem}
-.pv-sub-number{font-size:.65rem;font-weight:800;font-family:monospace}
-.pv-sub-pos-label{font-size:.52rem;font-weight:700;padding:0 5px;border-radius:4px;border:1px solid;font-family:monospace;letter-spacing:.5px}
-.pv-sub-age{font-size:.58rem;color:#475569}
-.pv-sub-mini-stats{display:flex;gap:.35rem;flex-shrink:0;font-size:.7rem;font-family:monospace;align-items:center}
-.pv-sub-mini-stats span{display:flex;align-items:baseline;gap:1px}
-.pv-sub-mini-stats small{font-size:.48rem;font-weight:600;color:#334155}
-
-/* ============================================
-   RESPONSIVE: SOLO MÓVIL (≤ 768px)
-   ============================================ */
+/* Clase auxiliar para ocultar en móvil */
 @media(max-width:768px){
-  .pd-dashboard-m{display:flex!important;flex-direction:column-reverse!important;gap:1.5rem!important}
-  .pd-sidebar-col-m{order:2!important}
-  .pd-standings-col-m{order:1!important}
+  .pd-hide-m{display:none!important}
+  .pv-dk{display:none!important}
+}
 
-  .pd-page-title-row h2{font-size:1.5rem!important}
-  .pd-page-subtitle{font-size:.88rem!important;padding-left:0!important}
+/* ── Layout: en móvil la tabla va arriba, sidebar abajo ── */
+@media(max-width:768px){
+  .dashboard-grid{
+    display:flex!important;
+    flex-direction:column-reverse!important;
+    gap:1.5rem!important;
+  }
+  .pd-sidebar{order:2!important}
+}
 
-  .pd-main-tabs{border-radius:10px!important}
-  .pd-main-tabs button{padding:.6rem .8rem!important;font-size:.78rem!important;gap:.3rem!important}
+/* ── Título principal ── */
+@media(max-width:768px){
+  .pd-main-title{font-size:1.5rem!important}
+  .pd-main-sub{font-size:.88rem!important;padding-left:0!important}
+}
 
-  .pd-m-hide{display:none!important}
-  .pd-table-scroll-m{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;margin:0 -1.8rem!important;padding:0 1.8rem!important;width:calc(100% + 3.6rem)!important}
-  .pd-table-m{min-width:380px!important}
-  .pd-table-m th,.pd-table-m td{padding:8px 6px!important;font-size:.78rem!important}
-  .pd-team-name-m{font-size:.8rem!important;max-width:100px!important;overflow:hidden!important;text-overflow:ellipsis!important}
-  .pd-th-pos-m{width:32px!important}
+/* ── Tabs ── */
+@media(max-width:768px){
+  .pd-tabs{border-radius:10px!important}
+  .pd-tab{padding:.6rem .7rem!important;font-size:.78rem!important;gap:.3rem!important}
+}
 
-  .pd-next-teams-m{flex-direction:column!important;gap:.8rem!important}
-  .pd-next-teams-m>div{width:100%!important;justify-content:center!important}
-  .pd-next-teams-m>div:empty{display:none!important}
+/* ── Tabla: scroll horizontal con indicador ── */
+@media(max-width:768px){
+  .pd-table-scroll{
+    overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    margin:0 -1.8rem!important;
+    padding:0 1.8rem!important;
+    width:calc(100% + 3.6rem)!important;
+    position:relative;
+  }
+  /* Flecha indicadora de scroll */
+  .pd-table-scroll::after{
+    content:"›";
+    position:absolute;
+    right:8px;
+    top:50%;
+    transform:translateY(-50%);
+    color:rgba(255,255,255,.2);
+    font-size:1.4rem;
+    font-weight:300;
+    pointer-events:none;
+    animation:scrollHint 2.5s ease-in-out infinite;
+    line-height:1;
+  }
+  @keyframes scrollHint{
+    0%,100%{opacity:.15;transform:translateY(-50%) translateX(0)}
+    50%{opacity:.5;transform:translateY(-50%) translateX(5px)}
+  }
+  .standings-table{min-width:380px!important}
+  .standings-table th,
+  .standings-table td{padding:8px 5px!important;font-size:.78rem!important}
+  .pd-th-pos{width:32px!important}
+  .pd-team-name{font-size:.8rem!important;max-width:100px!important;overflow:hidden!important;text-overflow:ellipsis!important;display:inline-block!important;vertical-align:middle}
+  .team-cell img{width:24px!important;height:24px!important}
+}
 
-  .pd-featured-wrap>div>div>div:nth-child(3)>div>div>div{gap:.3rem!important}
-  .pd-featured-wrap [style*="width: 62"]{width:48px!important;height:48px!important;padding:6px!important}
-  .pd-featured-wrap [style*="font-size: 1.8rem"]{font-size:1.4rem!important;width:36px!important}
-  .pd-featured-wrap [style*="font-size: .72rem"]{font-size:.65rem!important;max-width:80px!important}
+@media(max-width:480px){
+  .standings-table{min-width:320px!important}
+  .pd-team-name{font-size:.75rem!important;max-width:80px!important}
+  .team-cell img{width:22px!important;height:22px!important;padding:2px!important}
+  .standings-table th,
+  .standings-table td{padding:7px 4px!important;font-size:.74rem!important}
+}
 
-  .pd-teams-grid-m{grid-template-columns:1fr!important;gap:1rem!important}
+/* ── Próximo partido: stack vertical ── */
+@media(max-width:768px){
+  .next-match-teams{
+    flex-direction:column!important;
+    gap:.8rem!important;
+  }
+  .next-match-team,
+  .next-match-team-r{
+    width:100%!important;
+    justify-content:center!important;
+  }
+  .next-team-name{text-align:center!important}
+  .next-match-team-r .next-team-name{text-align:center!important}
+  .next-match-btn{min-height:44px}
+}
 
-  .glass-card{padding:1.2rem!important}
+/* ── Featured Match Card ── */
+@media(max-width:768px){
+  .feat-card > div:last-child{padding:1.2rem 1rem 1rem!important}
+  .feat-card > div:last-child > div:first-child{margin-bottom:1.2rem!important}
+  .feat-logo{width:48px!important;height:48px!important;padding:6px!important}
+  .feat-team-name{font-size:.65rem!important;max-width:80px!important}
+  .feat-winner-tag{font-size:.48rem!important;padding:1px 6px!important}
+  .feat-score-num{font-size:1.4rem!important;width:36px!important}
+  .feat-score-box{padding:5px 3px!important}
+  .feat-matchup{gap:.4rem!important}
+  .feat-btn{min-height:44px;font-size:.72rem!important}
+}
 
-  .pv-team-page{padding:0 .5rem!important}
+@media(max-width:480px){
+  .feat-card > div:last-child{padding:1rem .8rem!important}
+  .feat-logo{width:42px!important;height:42px!important;padding:5px!important}
+  .feat-team-name{font-size:.6rem!important;max-width:68px!important}
+  .feat-score-num{font-size:1.2rem!important;width:30px!important}
+  .feat-score-box{padding:4px 2px!important}
+  .feat-winner-tag{display:none!important}
+  .feat-btn{padding:.55rem .8rem!important;font-size:.68rem!important}
+}
+
+/* ── Result rows ── */
+@media(max-width:768px){
+  .res-row{padding:.55rem .6rem!important;gap:.4rem!important}
+  .res-row > div:first-child,
+  .res-row > div:last-child{width:26px!important;height:26px!important;padding:2px!important}
+  .res-name{font-size:.7rem!important}
+  .res-score{font-size:.75rem!important}
+  .res-more{min-height:36px;font-size:.65rem!important}
+}
+
+@media(max-width:480px){
+  .res-row > div:first-child,
+  .res-row > div:last-child{width:22px!important;height:22px!important}
+  .res-name{font-size:.65rem!important}
+  .res-score{font-size:.7rem!important}
+}
+
+/* ── Teams grid ── */
+@media(max-width:768px){
+  .pd-teams-grid{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:1rem!important;
+  }
+  .pd-team-card{padding:0!important}
+  .pd-team-btn{min-height:44px}
+}
+
+/* ── Sidebar cards padding ── */
+@media(max-width:768px){
+  .pd-sidebar .glass-card{padding:1.2rem!important}
+}
+
+/* ── Glass card padding general ── */
+@media(max-width:480px){
+  .pd-sidebar .glass-card{padding:1rem!important}
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TEAM VIEW — Responsive
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Back button ── */
+@media(max-width:768px){
+  .pv-back-btn{min-height:44px;font-size:.8rem!important}
+}
+
+/* ── Hero card ── */
+@media(max-width:768px){
   .pv-hero-content{padding:1.2rem!important}
-  .pv-hero-left{flex-direction:column!important;text-align:center!important;gap:.8rem!important}
+  .pv-hero-left{
+    flex-direction:column!important;
+    text-align:center!important;
+    gap:.8rem!important;
+  }
   .pv-hero-logo-ring{width:56px!important;height:56px!important}
   .pv-hero-text h2{font-size:1.1rem!important}
   .pv-hero-meta{justify-content:center!important}
   .pv-hero-stat-divider{display:none!important}
   .pv-hero-stat{min-width:55px!important}
   .pv-hero-stat strong{font-size:1.1rem!important}
-  .pv-player-row{grid-template-columns:30px 30px 1fr!important;gap:.3rem!important;padding:.45rem .55rem!important}
-  .pv-m-hide{display:none!important}
-  .pv-pitch-wrap{max-width:280px!important}
-  .pv-pp-dot{width:26px!important;height:26px!important;font-size:.48rem!important;border-width:1.5px!important}
-  .pv-pp-name{font-size:.4rem!important;max-width:48px!important}
-  .pv-pp-role{display:none!important}
-  .pv-subs-grid{grid-template-columns:1fr!important}
-  .pv-sub-mini-stats{display:none!important}
-  .pv-tabs-bar{max-width:100%!important}
 }
 
 @media(max-width:480px){
-  .pd-page-title-row h2{font-size:1.3rem!important}
-  .pd-main-tabs button{font-size:.72rem!important;padding:.55rem .5rem!important}
-  .pd-table-m{min-width:320px!important}
-  .pd-team-name-m{font-size:.75rem!important;max-width:80px!important}
-  .pv-pitch-wrap{max-width:240px!important}
-  .pv-pp-dot{width:22px!important;height:22px!important;font-size:.42rem!important}
-  .pv-pp-name{font-size:.36rem!important;max-width:40px!important}
   .pv-hero-stat strong{font-size:.95rem!important}
   .pv-hero-stat span{font-size:.5rem!important;letter-spacing:.8px!important}
 }
 
+/* ── Tabs ── */
+@media(max-width:768px){
+  .pv-tabs-bar{max-width:100%!important}
+  .pv-tab-btn{min-height:42px;font-size:.8rem!important}
+}
+
+/* ── Player rows ── */
+@media(max-width:768px){
+  .pv-player-row{
+    display:grid!important;
+    grid-template-columns:30px 30px 1fr!important;
+    gap:.3rem!important;
+    padding:.45rem .55rem!important;
+  }
+}
+
+/* ── Pitch ── */
+@media(max-width:768px){
+  .pv-pitch-wrap{max-width:280px!important}
+  .pv-pp-dot{width:26px!important;height:26px!important;font-size:.48rem!important;border-width:1.5px!important}
+  .pv-pp-name{font-size:.4rem!important;max-width:48px!important}
+  .pv-pp-role{display:none!important}
+}
+
+@media(max-width:480px){
+  .pv-pitch-wrap{max-width:240px!important}
+  .pv-pp-dot{width:22px!important;height:22px!important;font-size:.42rem!important}
+  .pv-pp-name{font-size:.36rem!important;max-width:40px!important}
+}
+
+@media(max-width:360px){
+  .pv-pitch-wrap{max-width:200px!important}
+  .pv-pp-dot{width:18px!important;height:18px!important;font-size:.36rem!important;border-width:1px!important}
+  .pv-pp-name{font-size:.32rem!important;max-width:32px!important}
+}
+
+/* ── Subs ── */
+@media(max-width:768px){
+  .pv-subs-grid{grid-template-columns:1fr!important}
+  .pv-sub-mini-stats{display:none!important}
+}
+
+/* ── Landscape móvil ── */
 @media(max-width:768px) and (orientation:landscape){
   .pv-pitch-wrap{max-width:220px!important}
   .pv-hero-content{padding:1rem 1.2rem!important}
   .pv-hero-left{flex-direction:row!important;text-align:left!important}
+  .feat-matchup{gap:.5rem!important}
+  .feat-logo{width:44px!important;height:44px!important}
+}
+
+/* ── Safe area (notch iPhones) ── */
+@supports(padding:max(0px)){
+  .pv-back-btn{
+    padding-left:max(.55rem,env(safe-area-inset-left))!important;
+    padding-right:max(.55rem,env(safe-area-inset-right))!important;
+  }
+  .feat-btn,
+  .next-match-btn,
+  .pd-team-btn{
+    padding-left:max(.6rem,env(safe-area-inset-left))!important;
+    padding-right:max(.6rem,env(safe-area-inset-right))!important;
+  }
+}
+
+/* ── Scrollbar personalizada sutil ── */
+@media(max-width:768px){
+  .pd-table-scroll{
+    scrollbar-width:thin;
+    scrollbar-color:rgba(255,255,255,.1) transparent;
+  }
+  .pd-table-scroll::-webkit-scrollbar{height:3px}
+  .pd-table-scroll::-webkit-scrollbar-track{background:transparent}
+  .pd-table-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
 }
       `}</style>
     </>

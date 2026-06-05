@@ -123,7 +123,8 @@ export default function UserProfile() {
         .up-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; }
         .up-stat { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px 20px; text-align:center; }
         input:focus { border-color:rgba(239,68,68,0.4)!important; box-shadow:0 0 0 3px rgba(239,68,68,0.1); }
-        @media(max-width:600px){ .up-grid{grid-template-columns:1fr!important;} .up-hero{flex-direction:column;text-align:center;} }
+        @media(max-width:600px){ .up-grid{grid-template-columns:1fr!important;} .up-hero{flex-direction:column;text-align:center;gap:16px;} .up-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;} }
+        @media(max-width:480px){ .up-body{padding:20px 12px 60px!important;} .up-hero{padding:24px 16px!important;} .up-avatar{width:56px;height:56px;font-size:20px;} .up-hero h1{font-size:1.2rem!important;} .up-body-inner{padding:20px!important;} .up-tab{padding:8px 14px;font-size:12px;} }
       `}</style>
 
       <div className="up-body">

@@ -350,11 +350,14 @@ const AdminDashboard = () => {
         }
 
         /* =========================================
-           3. OCULTAR COLUMNAS EN MOVIL
-           ========================================= */
+            3. OCULTAR COLUMNAS EN MOVIL
+            ========================================= */
         .hide-on-mobile { display: table-cell; }
         @media (max-width: 768px) {
             .hide-on-mobile { display: none !important; }
+        }
+        @media (max-width: 480px) {
+            .dash-stats-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
         }
 
         /* =========================================

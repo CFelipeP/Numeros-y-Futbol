@@ -1334,6 +1334,11 @@ const AdminCopPresidente = () => {
           .admin-layout:not(.sidebar-closed) .sidebar{transform:translateX(0)!important}
           .admin-layout .main-content{margin-left:0!important;width:100%!important}
         }
+        @media(max-width:480px){
+          .admin-layout .main-content{padding:16px 12px!important}
+          .content-wrapper h2{font-size:1rem}
+          .content-wrapper h3{font-size:.85rem}
+        }
       `}</style>
     </div>
   );

@@ -1,16 +1,26 @@
 <?php
-error_reporting(0); ini_set('display_errors', 0);
+header('Content-Type: application/json'); // Aseguramos que la respuesta sea JSON
+error_reporting(0); ini_set('display_errors', 0); // Deshabilitamos la muestra de errores para producción
 require_once __DIR__ . '/cors.php';
-require_once __DIR__ . '/db.php';
 
 try {
-    $pdo->exec("CREATE TABLE IF NOT EXISTS `site_settings` (
+    require_once __DIR__ . '/db.php'; // Incluimos la conexión a la base de datos
+
+    // Usamos $conn si está definido en db.php, de lo contrario $pdo.
+    // Asumo que db.php define una de estas variables globalmente.
+    $db = isset($conn) ? $conn : (isset($pdo) ? $pdo : null);
+
+    if ($db === null) {
+        throw new Exception("Conexión a la base de datos no disponible.");
+    }
+
+    $db->exec("CREATE TABLE IF NOT EXISTS `site_settings` (
         `key` varchar(100) NOT NULL,
         `value` TEXT DEFAULT NULL,
         PRIMARY KEY (`key`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
-    // Insert defaults if not present
+    // Insertamos valores por defecto si no están presentes
     $defaults = [
         'site_name'         => 'Números y Fútbol',
         'site_description'  => 'Cobertura completa de todas las divisiones. Noticias, resultados y análisis del mejor fútbol salvadoreño.',
@@ -30,11 +40,15 @@ try {
         'instagram_url'     => '',
     ];
 
-    $ins = $pdo->prepare("INSERT IGNORE INTO site_settings (`key`,`value`) VALUES (?,?)");
+    $ins = $db->prepare("INSERT IGNORE INTO site_settings (`key`,`value`) VALUES (?,?)");
     foreach ($defaults as $k => $v) { $ins->execute([$k, $v]); }
 
-    $rows = $pdo->query("SELECT `key`,`value` FROM site_settings")->fetchAll(PDO::FETCH_KEY_PAIR);
+    $rows = $db->query("SELECT `key`,`value` FROM site_settings")->fetchAll(PDO::FETCH_KEY_PAIR);
     echo json_encode(["success" => true, "settings" => $rows]);
+} catch (PDOException $e) {
+    // Captura errores de la base de datos
+    echo json_encode(["success" => false, "error" => "Error de base de datos: " . $e->getMessage()]);
 } catch (Exception $e) {
-    echo json_encode(["success" => false, "error" => "Error interno del servidor"]);
+    // Captura otros errores generales
+    echo json_encode(["success" => false, "error" => "Error interno del servidor: " . $e->getMessage()]);
 }

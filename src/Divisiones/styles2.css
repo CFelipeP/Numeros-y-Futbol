@@ -770,6 +770,36 @@
       iframe { min-height: 700px; }
     }
 
+    @media (max-width: 480px) {
+      .section-header { margin-bottom: var(--spacing-md); }
+      .section-header h2 { font-size: 1.6rem; }
+      .section-header p { font-size: 0.95rem; }
+      .hero { min-height: 60vh; }
+      .hero h1 { font-size: 1.8rem; }
+      .hero-description { font-size: 1rem; max-width: 100%; }
+      .hero-content { max-width: 100%; }
+      .glass-card { padding: 1.5rem; }
+      .dashboard-grid { gap: 1rem; }
+      .match-list { gap: 0.5rem; }
+      .match-item { padding: 0.6rem; font-size: 0.85rem; }
+      .m-team { font-size: 0.8rem; width: 35%; }
+      .compact-match-teams { gap: 0.5rem; }
+      .compact-team-name { font-size: 0.75rem; }
+      .compact-match-score { font-size: 1.4rem; }
+      .news-grid { gap: 1rem; }
+      .news-card-body { padding: 1rem; }
+      .footer { padding: 2.5rem 0 1.5rem; margin-top: 2rem; }
+      .footer-grid { gap: 2rem; }
+      .divisions-grid { gap: 1rem; }
+      .division-card-body { padding: 1rem; }
+      .division-card-body h3 { font-size: 1.25rem; }
+      .standings-table th,
+      .standings-table td { padding: 6px 4px; font-size: 0.75rem; }
+      .team-cell { gap: 4px; }
+      .team-logo { width: 20px; height: 20px; }
+      iframe { min-height: 500px; }
+    }
+
     .standings-table {
   width: 100%;
   border-collapse: collapse;

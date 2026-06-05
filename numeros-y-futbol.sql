@@ -19,6 +19,25 @@
 CREATE DATABASE IF NOT EXISTS `numeros-y-futbol` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `numeros-y-futbol`;
 
+-- Volcando estructura para tabla numeros-y-futbol.auth_tokens
+CREATE TABLE IF NOT EXISTS `auth_tokens` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `token` varchar(128) NOT NULL,
+  `user_id` int NOT NULL,
+  `user_role` varchar(20) NOT NULL DEFAULT 'usuario',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `token` (`token`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Volcando datos para la tabla numeros-y-futbol.auth_tokens: ~2 rows (aproximadamente)
+INSERT INTO `auth_tokens` (`id`, `token`, `user_id`, `user_role`, `created_at`, `expires_at`) VALUES
+	(1, '70e8d67ed075fb029ce5bf637fba5c7a0d77fc60b65d2516e5eda3021ccf7dfd', 9, 'admin', '2026-05-28 04:33:27', '2026-05-29 04:33:27'),
+	(2, '3058831cabdecee49ae5e3f6b54ee2568e5d671913a384bd60450c21be5adfda', 9, 'admin', '2026-05-28 05:15:10', '2026-05-29 05:15:10'),
+	(3, 'cfa6878039209b991039bb5909640feb89a4999915fe33da61a69675a77f8eb9', 9, 'admin', '2026-05-28 17:46:07', '2026-05-29 17:46:07');
+
 -- Volcando estructura para tabla numeros-y-futbol.equipos
 CREATE TABLE IF NOT EXISTS `equipos` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -865,7 +884,7 @@ CREATE TABLE IF NOT EXISTS `match_comments` (
   KEY `idx_partido` (`partido_id`,`division`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Volcando datos para la tabla numeros-y-futbol.match_comments: ~0 rows (aproximadamente)
+-- Volcando datos para la tabla numeros-y-futbol.match_comments: ~1 rows (aproximadamente)
 INSERT INTO `match_comments` (`id`, `partido_id`, `division`, `minuto`, `tipo`, `descripcion`, `equipo`, `jugador_id`, `created_at`) VALUES
 	(9, 74, 'primera', 1, 'gol', '⚽ ¡GOOOOOL! Cristopher Rauda marca para Alianza F.C. en el minuto 1.', 'Alianza F.C.', 124, '2026-05-28 04:34:00'),
 	(10, 74, 'primera', 1, 'asistencia', '👟 Asistencia de Jugador para el gol de Alianza F.C..', 'Alianza F.C.', NULL, '2026-05-28 04:34:04'),
@@ -910,7 +929,7 @@ CREATE TABLE IF NOT EXISTS `partidos` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Volcando datos para la tabla numeros-y-futbol.partidos: ~0 rows (aproximadamente)
+-- Volcando datos para la tabla numeros-y-futbol.partidos: ~1 rows (aproximadamente)
 INSERT INTO `partidos` (`id`, `equipo_local`, `equipo_visitante`, `goles_local`, `goles_visitante`, `jugado`, `fecha`, `estado`, `featured`) VALUES
 	(74, 5, 15, 2, 0, 0, '2026-05-25 05:19:35', 'Finalizado', 0),
 	(76, 7, 6, 0, 0, 0, '2026-05-28 04:36:32', 'Pendiente', 0);
@@ -1083,6 +1102,32 @@ CREATE TABLE IF NOT EXISTS `reset_tokens` (
 INSERT INTO `reset_tokens` (`id`, `email`, `token`, `codigo`, `creado_en`, `expira_en`, `usado`) VALUES
 	(25, 'vanesotomayor0411@gmail.com', 'b5f5e7b7ad927f88674acd84a4fb06c25f002a3f1d372972f02eb2ba4ee0234d', '768649', '2026-04-22 05:11:21', '2026-04-22 05:26:21', 0),
 	(26, 'arielosotomayor0411@gmail.com', 'd4eed72b0cb0773d328b3f0bc4729d8a9c6d1e240a467b38ebca26cda6c602f5', '889402', '2026-05-06 21:29:23', '2026-05-06 21:44:23', 1);
+
+-- Volcando estructura para tabla numeros-y-futbol.site_settings
+CREATE TABLE IF NOT EXISTS `site_settings` (
+  `key` varchar(100) NOT NULL,
+  `value` text,
+  PRIMARY KEY (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Volcando datos para la tabla numeros-y-futbol.site_settings: ~16 rows (aproximadamente)
+INSERT INTO `site_settings` (`key`, `value`) VALUES
+	('contact_email', ''),
+	('facebook_url', ''),
+	('hero_banner_url', 'https://z-cdn-media.chatglm.cn/files/5838caa0-1db5-471c-a0b7-615971e5c6a9.png?auth_key=1874475322-63d59502a9bd4eccb11f4451b8b598a8-0-73a0c525630ab96d6c6d289fa8ba3645'),
+	('hero_btn1_label', 'Últimas Noticias'),
+	('hero_btn1_link', '#noticias'),
+	('hero_btn2_label', 'Ver Resultados'),
+	('hero_btn2_link', '#divisiones'),
+	('hero_description', 'Cobertura completa de todas las divisiones. Noticias, resultados y análisis del mejor fútbol salvadoreño en vivo.'),
+	('hero_title', 'Noticias y numeros que <span>genera el fútbol</span>'),
+	('instagram_url', ''),
+	('maintenance_mode', '1'),
+	('maintenance_msg', 'Estamos trabajando para mejorar tu experiencia. Vuelve pronto.'),
+	('site_description', 'Cobertura completa de todas las divisiones. Noticias, resultados y análisis del mejor fútbol salvadoreño.'),
+	('site_logo_url', ''),
+	('site_name', 'Números y Fútbol'),
+	('twitter_url', '');
 
 -- Volcando estructura para tabla numeros-y-futbol.tabla_posiciones
 CREATE TABLE IF NOT EXISTS `tabla_posiciones` (
