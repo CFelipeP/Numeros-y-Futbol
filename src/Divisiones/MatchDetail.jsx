@@ -293,8 +293,29 @@ export default function MatchDetail() {
           .md-team-logo { width:64px; height:64px; padding:8px; border-width:2px; }
           .md-team-name { font-size:0.9rem; }
           .md-score-num { font-size:2.5rem; width:50px; }
+          .md-score-sep { font-size:1.4rem; }
           .md-grid-2 { grid-template-columns:1fr; }
           .md-tab span { display:none; }
+          .md-hero-inner { padding:20px 16px 24px; }
+          .md-content { padding:20px 16px 40px; }
+          .md-card { padding:18px; }
+        }
+        @media (max-width:480px) {
+          .md-team-logo { width:48px; height:48px; padding:6px; }
+          .md-team-name { font-size:0.75rem; }
+          .md-score-num { font-size:1.8rem; width:36px; }
+          .md-score-sep { font-size:1rem; margin:0 3px; }
+          .md-score-box { padding:0 8px; }
+          .md-score { padding:6px; border-radius:12px; }
+          .md-score-vs { font-size:1.2rem; letter-spacing:3px; }
+          .md-meta { gap:12px; flex-direction:column; }
+          .md-info-row { gap:12px; flex-direction:column; align-items:flex-start; }
+          .md-info-item { font-size:12px; }
+          .md-tabs { gap:2px; padding:3px; }
+          .md-tab { padding:10px 8px; font-size:11px; }
+          .md-card-title { font-size:11px; }
+          .md-breadcrumb { font-size:11px; flex-wrap:wrap; }
+          .md-breadcrumb button { font-size:11px; padding:5px 10px; }
         }
       `}</style>
 

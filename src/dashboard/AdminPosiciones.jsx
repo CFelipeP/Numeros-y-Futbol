@@ -589,13 +589,12 @@ const AdminPosiciones = () => {
 
                 @media (max-width: 768px) {
                     .hide-on-mobile {
-                        display: none !important; /* Oculta en móvil */
+                        display: none !important;
                     }
                     .show-on-mobile {
-                        display: block !important; /* Muestra en móvil */
+                        display: block !important;
                     }
                     
-                    /* Asegurar que el sidebar no empuje el contenido si admin.css falla */
                     .admin-layout {
                         display: flex;
                         flex-direction: row;
@@ -612,6 +611,9 @@ const AdminPosiciones = () => {
                         margin-left: 0 !important;
                         width: 100% !important;
                     }
+                }
+                @media (max-width: 480px) {
+                    .stats-grid { gap: 0.6rem; }
                 }
             `}</style>
         </div>

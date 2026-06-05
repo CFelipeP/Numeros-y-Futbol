@@ -1,11 +1,9 @@
-import axios from "axios";
-
-const API = "http://localhost/backend";
+import api from "../api";
 
 export const loginUser = (email, password) => {
-  return axios.post(`${API}/login.php`, { email, password });
+  return api.post("login.php", { email, password });
 };
 
 export const registerUser = (nombre, email, password) => {
-  return axios.post(`${API}/register.php`, { nombre, email, password });
+  return api.post("register.php", { nombre, email, password });
 };

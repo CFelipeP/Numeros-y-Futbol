@@ -398,6 +398,12 @@ const ManagePublicNews = () => {
             grid-template-columns: 1fr !important;
           }
         }
+        @media (max-width: 768px) {
+          .content-wrapper > div[style*="grid-template-columns"] { gap: 16px; }
+        }
+        @media (max-width: 480px) {
+          .content-wrapper { padding: 16px 12px !important; }
+        }
       `}</style>
     </div>
   );

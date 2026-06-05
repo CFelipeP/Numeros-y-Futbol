@@ -928,6 +928,141 @@ img {
   }
 }
 
+@media (max-width: 480px) {
+  .section-header {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .section-header h2 {
+    font-size: 1.6rem;
+  }
+
+  .section-header p {
+    font-size: 0.95rem;
+  }
+
+  .hero {
+    min-height: 60vh;
+  }
+
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .hero-description {
+    font-size: 1rem;
+    max-width: 100%;
+  }
+
+  .hero-content {
+    max-width: 100%;
+  }
+
+  .news-card {
+    height: auto;
+  }
+
+  .news-card-image {
+    height: 160px;
+  }
+
+  .featured-news-content {
+    padding: 1.5rem;
+  }
+
+  .featured-news-content h3 {
+    font-size: 1.4rem;
+  }
+
+  .featured-news-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .news-grid {
+    gap: 1.5rem;
+  }
+
+  .divisions-grid {
+    gap: 1rem;
+  }
+
+  .news-page-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .news-page-header p {
+    font-size: 0.95rem;
+  }
+
+  .news-grid-new {
+    grid-template-columns: 1fr;
+  }
+
+  .login-card {
+    padding: 2rem 1.5rem;
+    max-width: 340px;
+  }
+
+  .login-card:hover {
+    transform: none;
+  }
+
+  .login-title {
+    font-size: 1.6rem;
+  }
+
+  .login-logo span {
+    font-size: 1.2rem;
+  }
+
+  .back-home {
+    top: 15px;
+    left: 15px;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+
+  .register-card {
+    width: 100%;
+    max-width: 340px;
+    padding: 30px 24px;
+    margin-top: 60px;
+  }
+
+  .register-navbar {
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .news-page-container {
+    padding: 2rem var(--spacing-sm);
+  }
+
+  .main-news-card h2 {
+    font-size: 1.3rem;
+  }
+
+  .main-news-overlay {
+    padding: 1.5rem;
+  }
+
+  .side-news-card h3 {
+    font-size: 0.95rem;
+  }
+
+  .footer {
+    padding: 2.5rem 0 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .footer-grid {
+    gap: 2rem;
+  }
+}
+
 /* ====================== LOGIN PAGE ====================== */
 .login-page {
   min-height: 100vh;
