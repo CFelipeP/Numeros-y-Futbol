@@ -10,6 +10,7 @@ try {
         env('DB_PASS', '')
     );
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->exec("SET NAMES utf8mb4");
     $conn = $pdo;
 } catch (PDOException $e) {
     http_response_code(500);

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, memo, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
-import axios from "axios";
+import api from "../api";
 import { getAuthHeaders } from "../apiHelper";
 import { API_BASE } from "../config";
 import {
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 const API = API_BASE;
+const rel = (fullUrl) => fullUrl.startsWith(API_BASE) ? fullUrl.slice(API_BASE.length) : fullUrl;
 
 const DIVISIONES = [
   { key: "primera", label: "Primera", icon: "🔴" },
@@ -455,7 +456,7 @@ export default function PlantillaAdmin() {
     setLoading(true);
     setEquipos([]);
     setPlantilla(null);
-    axios.get(ep.teams).then(r => {
+    api.get(rel(ep.teams)).then(r => {
       const d = Array.isArray(r.data) ? r.data : (r.data?.equipos || []);
       setEquipos(d);
       if (savedId && d.some(e => String(e.id) === String(savedId))) {
@@ -487,7 +488,7 @@ export default function PlantillaAdmin() {
     const ep = getEndpoints(division);
 
     try {
-      const r = await axios.get(ep.crud + "?equipo_id=" + id);
+      const r = await api.get(rel(ep.crud) + "?equipo_id=" + id);
 
       if (r.data.success) {
         const jugadores = r.data.jugadores || [];
@@ -653,7 +654,7 @@ export default function PlantillaAdmin() {
     if (!ok.isConfirmed) return;
     const ep = getEndpoints(division);
     try {
-      const r = await axios.post(ep.crud, { action: "delete", id: j.id }, { headers: getAuthHeaders() });
+      const r = await api.post(rel(ep.crud), { action: "delete", id: j.id }, { headers: getAuthHeaders() });
       if (r.data.success) {
         Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Eliminado", showConfirmButton: false, timer: 1500, background: "#1e293b", color: "#fff" });
         loadPlantilla(equipoId);
@@ -697,7 +698,7 @@ export default function PlantillaAdmin() {
         // SIN es_titular — el backend no necesita saberlo
       };
       if (editPlayer) p.id = editPlayer.id;
-      const r = await axios.post(ep.crud, p, { headers: getAuthHeaders() });
+      const r = await api.post(rel(ep.crud), p, { headers: getAuthHeaders() });
       if (r.data.success) {
         setModal(null);
         Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Guardado", showConfirmButton: false, timer: 1500, background: "#1e293b", color: "#fff" });
@@ -714,7 +715,7 @@ export default function PlantillaAdmin() {
     setSaving(true);
     const ep = getEndpoints(division);
     try {
-      const r = await axios.post(ep.crud, { action: "update_stats", jugador_id: editStats.id, ...statsForm }, { headers: getAuthHeaders() });
+      const r = await api.post(rel(ep.crud), { action: "update_stats", jugador_id: editStats.id, ...statsForm }, { headers: getAuthHeaders() });
       if (r.data.success) {
         setModal(null);
         Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Estadisticas guardadas", showConfirmButton: false, timer: 1500, background: "#1e293b", color: "#fff" });
@@ -732,7 +733,7 @@ export default function PlantillaAdmin() {
     fd.append("foto", f);
     const ep = getEndpoints(division);
     try {
-      const r = await axios.post(ep.upload, fd, { headers: getAuthHeaders() });
+      const r = await api.post(rel(ep.upload), fd);
       if (r.data.success) setForm(p => ({ ...p, foto: r.data.path }));
     } catch {
       Swal.fire({ background: "#1e293b", color: "#fff", icon: "error", title: "No se pudo subir la foto" });
@@ -760,7 +761,7 @@ export default function PlantillaAdmin() {
         y: s.y
       }));
 
-      const r = await axios.post(ep.crud, {
+      const r = await api.post(rel(ep.crud), {
         action: "save_formation",
         equipo_id: equipoId,
         formacion,
@@ -863,7 +864,7 @@ const importPlayers = useCallback(async () => {
       lines.push(headers.map(h => row[h] ?? "").join(","));
     });
     fd.append("csv_text", lines.join("\n"));
-    const r = await axios.post(API + "importar_jugadores.php", fd, { headers: getAuthHeaders() });
+    const r = await api.post(rel(API + "importar_jugadores.php"), fd);
     if (r.data.success) {
       closeImport();
       Swal.fire({ toast: true, position: "top-end", icon: "success", title: r.data.importados + " jugadores importados", showConfirmButton: false, timer: 2000, background: "#1e293b", color: "#fff" });
