@@ -4,9 +4,7 @@ $allowedOrigins = [
     'http://localhost:5174',
     'http://localhost',
     'http://localhost/Numeros-y-Futbol',
-    // Añade aquí la IP o dominio de tu Raspberry Pi:
-    // 'http://192.168.x.x',
-    // 'http://tu-dominio.com',
+    'https://limnologic-carline-nontelescoping.ngrok-free.dev',
 ];
 
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';

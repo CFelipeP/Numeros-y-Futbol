@@ -30,6 +30,72 @@ const TIPOS = [
 const logoUrl = p => { if(!p) return null; if(p.startsWith("http")) return p; return API+p; };
 const T = (v) => TIPOS.find(t=>t.value===v) || TIPOS[0];
 
+const posicionesForm = [
+  { value:"portero", label:"Portero", cat:"portero", color:"#f59e0b", abbr:"POR" },
+  { value:"lateral_izquierdo", label:"Lateral Izq", cat:"defensa", color:"#60a5fa", abbr:"LI" },
+  { value:"lateral_derecho", label:"Lateral Der", cat:"defensa", color:"#60a5fa", abbr:"LD" },
+  { value:"central", label:"Central", cat:"defensa", color:"#3b82f6", abbr:"DFC" },
+  { value:"medio_defensivo", label:"MCD", cat:"medio", color:"#34d399", abbr:"MCD" },
+  { value:"medio_central", label:"MC", cat:"medio", color:"#10b981", abbr:"MC" },
+  { value:"medio_ofensivo", label:"MCO", cat:"medio", color:"#059669", abbr:"MCO" },
+  { value:"extremo_izquierdo", label:"EI", cat:"medio", color:"#6ee7b7", abbr:"EI" },
+  { value:"extremo_derecho", label:"ED", cat:"medio", color:"#6ee7b7", abbr:"ED" },
+  { value:"centrodelantero", label:"DC", cat:"delantero", color:"#ef4444", abbr:"DC" },
+  { value:"segundo_delantero", label:"SD", cat:"delantero", color:"#f87171", abbr:"SD" },
+];
+function getPosInfo(v) {
+  if (v === "centrocampista" || v === "medio") v = "medio_central";
+  if (v === "defensa") v = "central";
+  if (v === "delantero") v = "centrodelantero";
+  return posicionesForm.find(p => p.value === v) || { label:v||"?", cat:"medio", color:"#64748b", abbr:"??" };
+}
+const formations = {
+  "4-4-2":   [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"lateral_izquierdo",sc:"defensa",x:12,y:70 },{ sp:"central",sc:"defensa",x:36,y:74 },{ sp:"central",sc:"defensa",x:64,y:74 },{ sp:"lateral_derecho",sc:"defensa",x:88,y:70 },{ sp:"extremo_izquierdo",sc:"medio",x:18,y:48 },{ sp:"medio_central",sc:"medio",x:40,y:46 },{ sp:"medio_central",sc:"medio",x:60,y:46 },{ sp:"extremo_derecho",sc:"medio",x:82,y:48 },{ sp:"centrodelantero",sc:"delantero",x:36,y:22 },{ sp:"centrodelantero",sc:"delantero",x:64,y:22 }],
+  "4-3-3":   [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"lateral_izquierdo",sc:"defensa",x:12,y:70 },{ sp:"central",sc:"defensa",x:36,y:74 },{ sp:"central",sc:"defensa",x:64,y:74 },{ sp:"lateral_derecho",sc:"defensa",x:88,y:70 },{ sp:"medio_defensivo",sc:"medio",x:28,y:48 },{ sp:"medio_central",sc:"medio",x:50,y:44 },{ sp:"medio_defensivo",sc:"medio",x:72,y:48 },{ sp:"extremo_izquierdo",sc:"medio",x:18,y:22 },{ sp:"centrodelantero",sc:"delantero",x:50,y:18 },{ sp:"extremo_derecho",sc:"medio",x:82,y:22 }],
+  "4-2-3-1": [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"lateral_izquierdo",sc:"defensa",x:12,y:70 },{ sp:"central",sc:"defensa",x:36,y:74 },{ sp:"central",sc:"defensa",x:64,y:74 },{ sp:"lateral_derecho",sc:"defensa",x:88,y:70 },{ sp:"medio_defensivo",sc:"medio",x:38,y:56 },{ sp:"medio_defensivo",sc:"medio",x:62,y:56 },{ sp:"extremo_izquierdo",sc:"medio",x:20,y:38 },{ sp:"medio_ofensivo",sc:"medio",x:50,y:34 },{ sp:"extremo_derecho",sc:"medio",x:80,y:38 },{ sp:"centrodelantero",sc:"delantero",x:50,y:18 }],
+};
+const posCompat = {
+  lateral_izquierdo: ["lateral_izquierdo","lateral_derecho","extremo_izquierdo"], lateral_derecho: ["lateral_derecho","lateral_izquierdo","extremo_derecho"],
+  medio_defensivo: ["medio_defensivo","medio_central"], medio_central: ["medio_central","medio_defensivo","medio_ofensivo"],
+  medio_ofensivo: ["medio_ofensivo","medio_central","centrodelantero"], extremo_izquierdo: ["extremo_izquierdo","lateral_izquierdo","extremo_derecho"],
+  extremo_derecho: ["extremo_derecho","lateral_derecho","extremo_izquierdo"], centrodelantero: ["centrodelantero","segundo_delantero","medio_ofensivo"],
+  segundo_delantero: ["segundo_delantero","centrodelantero","extremo_izquierdo"],
+};
+function autoAssign(jugadores, fKey) {
+  const tpl = formations[fKey] || formations["4-4-2"];
+  const sorted = [...jugadores].sort((a,b) => (b.es_titular==1?1:0)-(a.es_titular==1?1:0));
+  const used=new Set(), starters=[], filled=new Set();
+  const pick = fn => sorted.find(j => fn(j) && !used.has(j.id));
+  for (let i=0;i<tpl.length;i++){const s=tpl[i];const c=posCompat[s.sp]||[s.sp];const p=pick(j=>c.includes(j.posicion));if(p){starters.push({...p,px:s.x,py:s.y});used.add(p.id);filled.add(i);}}
+  for (let i=0;i<tpl.length;i++){if(filled.has(i))continue;const s=tpl[i];const p=pick(j=>getPosInfo(j.posicion).cat===s.sc);if(p){starters.push({...p,px:s.x,py:s.y});used.add(p.id);filled.add(i);}}
+  for (let i=0;i<tpl.length;i++){if(filled.has(i))continue;const s=tpl[i];const p=pick(()=>true);if(p){starters.push({...p,px:s.x,py:s.y});used.add(p.id);filled.add(i);}}
+  return { starters, subs: jugadores.filter(j => !used.has(j.id)) };
+}
+
+const posAbrev = (p) => {
+  const map = {"portero":"POR","lateral_izquierdo":"LI","lateral_derecho":"LD","central":"DFC","medio_defensivo":"MCD","medio_central":"MC","medio_ofensivo":"MCO","extremo_izquierdo":"EI","extremo_derecho":"ED","centrodelantero":"DC","segundo_delantero":"SD","defensa":"DEF","medio":"MED","delantero":"DEL"};
+  return map[p] || p?.substring(0,3).toUpperCase() || "?";
+};
+
+const playerOptions = (jugadores, darkOptionStyle, formacion) => {
+  const { starters, subs } = autoAssign(jugadores, formacion);
+  const opt = (j) => `#${j.numero_camiseta || "?"} ${j.nombre} (${posAbrev(j.posicion)})`;
+  return (
+    <>
+      {starters.length > 0 && (
+        <optgroup label={`── Titulares (${starters.length}) ──`} style={darkOptionStyle}>
+          {starters.map(j => <option key={j.id} value={j.id} style={darkOptionStyle}>{opt(j)}</option>)}
+        </optgroup>
+      )}
+      {subs.length > 0 && (
+        <optgroup label={`── Suplentes (${subs.length}) ──`} style={darkOptionStyle}>
+          {subs.map(j => <option key={j.id} value={j.id} style={darkOptionStyle}>{opt(j)}</option>)}
+        </optgroup>
+      )}
+    </>
+  );
+};
+
 const SIDEBAR_ITEMS = [
   { path:"/dashboard",       icon:<LayoutDashboard size={20}/>, label:"Dashboard" },
   { path:"/matches",         icon:<CalendarDays size={20}/>,    label:"Gestionar Partidos" },
@@ -39,6 +105,7 @@ const SIDEBAR_ITEMS = [
     { path:"/teams/segunda", label:"Segunda División" },
     { path:"/teams/tercera", label:"Tercera División" },
   ]},
+  { path:"/manage-seleccion", icon:<Shield size={20}/>, label:"Selección Nacional" },
   { path:"/admin/plantilla",  icon:<Target size={20}/>,         label:"Plantillas" },
   { path:"/posiciones",       icon:<Trophy size={20}/>,         label:"Posiciones" },
   { path:"/admin/copa",       icon:<Trophy size={20}/>,         label:"Copa Presidente" },
@@ -95,6 +162,13 @@ export default function ManageMatchComments() {
   const [cronSegundos,setCronSegundos]= useState(0);
   const [semitiem,    setSemitiem]    = useState(1); 
   const cronRef = useRef(null);
+
+  const [editingComment, setEditingComment] = useState(null);
+  const [editTipo, setEditTipo] = useState("comentario");
+  const [editMinuto, setEditMinuto] = useState("");
+  const [editDescripcion, setEditDescripcion] = useState("");
+  const [editEquipoSel, setEditEquipoSel] = useState("local");
+  const [editJugadorSel, setEditJugadorSel] = useState("");
 
   // ── Funciones para persistir el cronómetro en localStorage ──
   const getTimerData = () => {
@@ -191,7 +265,7 @@ export default function ManageMatchComments() {
   const jugadoresActuales = equipoSel === "local" ? jugadoresLocal : jugadoresVisitante;
   const nombreEquipoSel   = equipoSel === "local" ? partido?.local_nombre : partido?.visitante_nombre;
 
-  const genDescripcion = (t, jugNombre, jug2Nombre) => {
+  const genDescripcion = (t, jugNombre, jug2Nombre, jug2Id) => {
     const min = minuto || minutoActual;
     switch(t) {
       case "gol":            return `⚽ ¡GOOOOOL! ${jugNombre||"Jugador"} marca para ${nombreEquipoSel} en el minuto ${min}.`;
@@ -201,7 +275,7 @@ export default function ManageMatchComments() {
       case "asistencia":     return `👟 Asistencia de ${jugNombre||"Jugador"} para el gol de ${nombreEquipoSel}.`;
       case "tarjeta_amarilla":return `🟨 Tarjeta amarilla para ${jugNombre||"Jugador"} de ${nombreEquipoSel}. Minuto ${min}.`;
       case "tarjeta_roja":   return `🟥 ¡Tarjeta ROJA! ${jugNombre||"Jugador"} queda expulsado. Minuto ${min}.`;
-      case "cambio":         return `🔄 Cambio en ${nombreEquipoSel}: Sale ${jug2Nombre||"Jugador"}, entra ${jugNombre||"Jugador"}. Minuto ${min}.`;
+      case "cambio":         return `🔄 Cambio en ${nombreEquipoSel}: Sale ${jug2Nombre||"Jugador"}, entra ${jugNombre||"Jugador"}. Minuto ${min}. [SALE:${jug2Id||""}]`;
       case "inicio":         return semitiem===1 ? "▶️ ¡Arranca el partido! Primera parte en juego." : "▶️ ¡Empieza la segunda parte!";
       case "descanso":       return `☕ Pitido final de la primera mitad. Descanso con el marcador ${partido?.goles_local??0}-${partido?.goles_visitante??0}.`;
       case "fin":            return `🏁 ¡Pitido final! Resultado definitivo: ${partido?.local_nombre} ${partido?.goles_local??0} - ${partido?.goles_visitante??0} ${partido?.visitante_nombre}.`;
@@ -213,7 +287,7 @@ export default function ManageMatchComments() {
     if (tipo === "comentario") return;
     const jug  = jugadoresActuales.find(j=>String(j.id)===String(jugadorSel));
     const jug2 = jugadoresActuales.find(j=>String(j.id)===String(jugadorSel2));
-    setDescripcion(genDescripcion(tipo, jug?.nombre, jug2?.nombre));
+    setDescripcion(genDescripcion(tipo, jug?.nombre, jug2?.nombre, jug2?.id));
   }, [tipo, jugadorSel, jugadorSel2, equipoSel]);
 
   const handleSubmit = async (e) => {
@@ -261,6 +335,10 @@ export default function ManageMatchComments() {
           }
         }
 
+        if (tipo === "cambio" && jugadorSel && jugadorSel2) {
+          await apiPost(`${API}swap_posiciones.php`, { entra_id: parseInt(jugadorSel), sale_id: parseInt(jugadorSel2), division: selectedDiv });
+        }
+
         Swal.fire({icon:"success",title:"Evento añadido",toast:true,position:"top-end",showConfirmButton:false,timer:1400});
         setDescripcion(""); setMinuto(""); setJugadorSel(""); setJugadorSel2(""); setTipo("comentario");
         fetchDetail();
@@ -276,23 +354,53 @@ export default function ManageMatchComments() {
       const res  = await apiPost(`${API}delete_match_comment.php`, {id:c.id});
       const data = await res.json();
       if (data.success) {
-        const tipoOpt = T(c.tipo);
         const esGol = ["gol","gol_penal","gol_cabeza","gol_tiro_libre"].includes(c.tipo);
         if (esGol) {
           const eq = c.equipo === partido?.visitante_nombre ? "visitante" : "local";
-          const scoreRes = await apiPost(`${API}update_match_score_live.php`, { partido_id:parseInt(selectedPartido), division:selectedDiv, equipo:eq, delta:-1 });
-          const scoreData = await scoreRes.json();
-          if (scoreData.success && partido) {
-            setPartido(prev => ({ ...prev, goles_local:scoreData.goles_local, goles_visitante:scoreData.goles_visitante }));
-          }
+          await apiPost(`${API}update_match_score_live.php`, { partido_id:parseInt(selectedPartido), division:selectedDiv, equipo:eq, delta:-1 });
         }
+        const tipoOpt = T(c.tipo);
         if (tipoOpt.stat && c.jugador_id) {
           await apiPost(`${API}update_stat_from_comment.php`, { jugador_id:c.jugador_id, division:selectedDiv, tipo:tipoOpt.stat, subtipo:tipoOpt.subtipo||"", deshacer:true });
         }
-        setComentarios(prev=>prev.filter(x=>x.id!==c.id));
+        fetchDetail();
         Swal.fire({icon:"success",title:"Eliminado",toast:true,position:"top-end",showConfirmButton:false,timer:1500});
       }
     } catch (_) {}
+  };
+
+  const handleEdit = (c) => {
+    setEditingComment(c);
+    setEditTipo(c.tipo);
+    setEditMinuto(String(c.minuto));
+    setEditDescripcion(c.descripcion);
+    setEditEquipoSel(c.equipo === partido?.visitante_nombre ? "visitante" : "local");
+    setEditJugadorSel(String(c.jugador_id || ""));
+  };
+
+  const handleEditSave = async (e) => {
+    e.preventDefault();
+    if (!editingComment || !editDescripcion.trim()) return;
+    setSubmitting(true);
+    try {
+      const res = await apiPost(`${API}update_match_comment.php`, {
+        id: editingComment.id,
+        minuto: parseInt(editMinuto) || 0,
+        tipo: editTipo,
+        descripcion: editDescripcion.trim(),
+        equipo: editEquipoSel === "local" ? partido?.local_nombre : partido?.visitante_nombre,
+        jugador_id: parseInt(editJugadorSel) || null
+      });
+      const data = await res.json();
+      if (data.success) {
+        Swal.fire({icon:"success",title:"Evento actualizado",toast:true,position:"top-end",showConfirmButton:false,timer:1400});
+        setEditingComment(null);
+        fetchDetail();
+      } else {
+        Swal.fire("Error", data.error||"No se pudo actualizar","error");
+      }
+    } catch (_) { Swal.fire("Error","Error de conexión","error"); }
+    setSubmitting(false);
   };
 
   // ── Funciones del Cronómetro ──
@@ -498,6 +606,55 @@ export default function ManageMatchComments() {
 
               {partido && (
                 <div className="table-container" style={{padding:18}}>
+                  <p style={{margin:"0 0 12px",fontSize:12,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1}}>
+                    <span style={{cursor:"pointer"}} onClick={()=>{}}>📋 Plantilla</span>
+                    <span style={{float:"right",fontSize:10,fontWeight:600,color:"#475569"}}>
+                      <span style={{color:"#22c55e"}}>●</span> Titular <span style={{color:"#64748b",marginLeft:8}}>○</span> Suplente
+                    </span>
+                  </p>
+                  <div style={{display:"flex",gap:6,marginBottom:10}}>
+                    {[{key:"local",label:partido.local_nombre},{key:"visitante",label:partido.visitante_nombre}].map(eq=>(
+                      <button key={eq.key} type="button" onClick={()=>setEquipoSel(eq.key)}
+                        style={{flex:1,padding:"6px 6px",border:`1px solid ${equipoSel===eq.key?"var(--accent-red)":"var(--border)"}`,borderRadius:8,background:equipoSel===eq.key?"rgba(239,68,68,0.12)":"transparent",color:equipoSel===eq.key?"var(--accent-red)":"var(--text-muted)",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:"inherit",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                        {eq.label}
+                      </button>
+                    ))}
+                  </div>
+                  {(() => {
+                    const plantilla = equipoSel === "local" ? jugadoresLocal : jugadoresVisitante;
+                    const formacionKey = equipoSel==="local"?partido?.local_formacion||"4-4-2":partido?.visitante_formacion||"4-4-2";
+                    const { starters: titulares, subs: suplentes } = autoAssign(plantilla, formacionKey);
+                    return (
+                      <div style={{maxHeight:180,overflowY:"auto",display:"flex",flexDirection:"column",gap:3}}>
+                        {titulares.map(j => (
+                          <div key={j.id} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 8px",borderRadius:6,background:"rgba(34,197,94,0.06)",border:"1px solid rgba(34,197,94,0.12)",fontSize:11}}>
+                            <span style={{color:"#22c55e",fontSize:9}}>●</span>
+                            <span style={{fontWeight:700,color:"#94a3b8",minWidth:22}}>#{j.numero_camiseta||"?"}</span>
+                            <span style={{fontWeight:600,color:"#f1f5f9",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:1}}>{j.nombre}</span>
+                            <span style={{fontSize:9,fontWeight:700,color:"#475569",background:"rgba(255,255,255,0.05)",padding:"1px 5px",borderRadius:3}}>{posAbrev(j.posicion)}</span>
+                          </div>
+                        ))}
+                        {suplentes.length > 0 && (
+                          <div style={{borderTop:"1px dashed rgba(255,255,255,0.08)",margin:"4px 0 2px",paddingTop:4}}>
+                            {suplentes.map(j => (
+                              <div key={j.id} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 8px",borderRadius:6,background:"rgba(255,255,255,0.015)",fontSize:11}}>
+                                <span style={{color:"#64748b",fontSize:9}}>○</span>
+                                <span style={{fontWeight:700,color:"#64748b",minWidth:22}}>#{j.numero_camiseta||"?"}</span>
+                                <span style={{fontWeight:500,color:"#94a3b8",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:1}}>{j.nombre}</span>
+                                <span style={{fontSize:9,fontWeight:700,color:"#475569",background:"rgba(255,255,255,0.03)",padding:"1px 5px",borderRadius:3}}>{posAbrev(j.posicion)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {plantilla.length === 0 && <p style={{color:"#475569",fontSize:11,textAlign:"center",padding:8}}>Sin jugadores registrados</p>}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {partido && (
+                <div className="table-container" style={{padding:18}}>
                   <p style={{margin:"0 0 14px",fontSize:12,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1}}>Añadir Evento</p>
                   <form onSubmit={handleSubmit} style={{display:"flex",flexDirection:"column",gap:12}}>
 
@@ -532,7 +689,7 @@ export default function ManageMatchComments() {
                         </label>
                         <select value={jugadorSel} onChange={e=>setJugadorSel(e.target.value)} style={darkInputStyle}>
                           <option value="" style={darkOptionStyle}>— Seleccionar jugador —</option>
-                          {jugadoresActuales.map(j=>(<option key={j.id} value={j.id} style={darkOptionStyle}>#{j.numero_camiseta || "?"} {j.nombre}</option>))}
+                          {playerOptions(jugadoresActuales, darkOptionStyle, equipoSel==="local"?partido?.local_formacion||"4-4-2":partido?.visitante_formacion||"4-4-2")}
                         </select>
                       </div>
                     )}
@@ -542,7 +699,7 @@ export default function ManageMatchComments() {
                         <label style={{display:"block",marginBottom:6,fontSize:11,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1}}>Sale</label>
                         <select value={jugadorSel2} onChange={e=>setJugadorSel2(e.target.value)} style={darkInputStyle}>
                           <option value="" style={darkOptionStyle}>— Seleccionar jugador —</option>
-                          {jugadoresActuales.map(j=>(<option key={j.id} value={j.id} style={darkOptionStyle}>#{j.numero_camiseta || "?"} {j.nombre}</option>))}
+                          {playerOptions(jugadoresActuales, darkOptionStyle, equipoSel==="local"?partido?.local_formacion||"4-4-2":partido?.visitante_formacion||"4-4-2")}
                         </select>
                       </div>
                     )}
@@ -668,12 +825,20 @@ export default function ManageMatchComments() {
                                   <p style={{ fontSize:13,color:isGoal?"#f1f5f9":"#94a3b8",margin:0,lineHeight:1.5,fontWeight:isGoal?600:400}}>{c.descripcion}</p>
                                 </div>
 
-                                <button onClick={()=>handleDelete(c)} title="Eliminar"
-                                  style={{flexShrink:0,width:28,height:28,borderRadius:7,border:"1px solid rgba(239,68,68,.2)",background:"rgba(239,68,68,.06)",color:"#ef4444",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s"}}
-                                  onMouseEnter={e=>e.currentTarget.style.background="rgba(239,68,68,.2)"}
-                                  onMouseLeave={e=>e.currentTarget.style.background="rgba(239,68,68,.06)"}>
-                                  <Trash2 size={12}/>
-                                </button>
+                                <div style={{display:"flex",gap:4,flexShrink:0}}>
+                                  <button onClick={()=>handleEdit(c)} title="Editar"
+                                    style={{width:28,height:28,borderRadius:7,border:"1px solid rgba(59,130,246,.2)",background:"rgba(59,130,246,.06)",color:"#3b82f6",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s"}}
+                                    onMouseEnter={e=>e.currentTarget.style.background="rgba(59,130,246,.2)"}
+                                    onMouseLeave={e=>e.currentTarget.style.background="rgba(59,130,246,.06)"}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                                  </button>
+                                  <button onClick={()=>handleDelete(c)} title="Eliminar"
+                                    style={{width:28,height:28,borderRadius:7,border:"1px solid rgba(239,68,68,.2)",background:"rgba(239,68,68,.06)",color:"#ef4444",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s"}}
+                                    onMouseEnter={e=>e.currentTarget.style.background="rgba(239,68,68,.2)"}
+                                    onMouseLeave={e=>e.currentTarget.style.background="rgba(239,68,68,.06)"}>
+                                    <Trash2 size={12}/>
+                                  </button>
+                                </div>
                               </div>
                             );
                           })}
@@ -687,6 +852,51 @@ export default function ManageMatchComments() {
           </div>
         </div>
       </main>
+
+      {editingComment && (
+        <div style={{position:"fixed",inset:0,zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(4px)",padding:20}}
+          onClick={e=>{if(e.target===e.currentTarget) setEditingComment(null)}}>
+          <div style={{background:"#1e293b",border:"1px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"24px 28px",width:"100%",maxWidth:480}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+              <h3 style={{margin:0,fontSize:16,color:"#f1f5f9"}}>✏️ Editar Evento</h3>
+              <button onClick={()=>setEditingComment(null)} style={{background:"none",border:"none",color:"#64748b",cursor:"pointer",fontSize:20,fontFamily:"inherit"}}>✕</button>
+            </div>
+            <form onSubmit={handleEditSave} style={{display:"flex",flexDirection:"column",gap:12}}>
+              <div>
+                <label style={{display:"block",marginBottom:6,fontSize:11,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1}}>Tipo</label>
+                <select value={editTipo} onChange={e=>setEditTipo(e.target.value)} style={darkInputStyle}>
+                  {TIPOS.map(t=><option key={t.value} value={t.value} style={darkOptionStyle}>{t.icon} {t.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{display:"block",marginBottom:6,fontSize:11,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1}}>Equipo</label>
+                <div style={{display:"flex",gap:8}}>
+                  {[{key:"local",label:partido?.local_nombre},{key:"visitante",label:partido?.visitante_nombre}].map(eq=>(
+                    <button key={eq.key} type="button" onClick={()=>{setEditEquipoSel(eq.key);setEditJugadorSel("")}}
+                      style={{flex:1,padding:"7px 6px",border:`1px solid ${editEquipoSel===eq.key?"var(--accent-red)":"var(--border)"}`,borderRadius:8,background:editEquipoSel===eq.key?"rgba(239,68,68,0.12)":"transparent",color:editEquipoSel===eq.key?"var(--accent-red)":"var(--text-muted)",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+                      {eq.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label style={{display:"block",marginBottom:6,fontSize:11,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1}}>Minuto</label>
+                <input type="number" min="0" max="120" value={editMinuto} onChange={e=>setEditMinuto(e.target.value)} style={darkInputStyle}/>
+              </div>
+              <div>
+                <label style={{display:"block",marginBottom:6,fontSize:11,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:1}}>Descripción</label>
+                <textarea value={editDescripcion} onChange={e=>setEditDescripcion(e.target.value)} rows={3} style={{...darkInputStyle,resize:"vertical",height:"auto"}}/>
+              </div>
+              <div style={{display:"flex",gap:8,marginTop:4}}>
+                <button type="button" onClick={()=>setEditingComment(null)} style={{flex:1,padding:"10px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"#94a3b8",cursor:"pointer",fontWeight:600,fontFamily:"inherit",fontSize:13}}>Cancelar</button>
+                <button type="submit" disabled={submitting} style={{flex:1,padding:"10px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#3b82f6,#2563eb)",color:"white",fontWeight:700,cursor:"pointer",fontFamily:"inherit",fontSize:13}}>
+                  {submitting?"Guardando...":"Guardar Cambios"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <style>{`
         button.nav-item { background:none; border:none; color:var(--text-muted); font-family:inherit; }

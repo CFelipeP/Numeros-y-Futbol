@@ -35,7 +35,7 @@ if ($action === "send_code") {
     }
 
     // Rate limiting: check if a code was already sent within last 5 minutes
-    $rateCheck = $conn->prepare("SELECT COUNT(*) FROM reset_tokens WHERE email=? AND created_at > DATE_SUB(NOW(), INTERVAL 5 MINUTE)");
+    $rateCheck = $conn->prepare("SELECT COUNT(*) FROM reset_tokens WHERE email=? AND creado_en > DATE_SUB(NOW(), INTERVAL 5 MINUTE)");
     $rateCheck->execute([$email]);
     if ($rateCheck->fetchColumn() > 0) {
         echo json_encode(["success" => false, "error" => "Ya se envió un código recientemente. Espera 5 minutos antes de solicitar otro."]);

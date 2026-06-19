@@ -28,6 +28,7 @@ const SIDEBAR_ITEMS = [
     { path:"/teams/primera", label:"Primera División" },
     { path:"/teams/segunda", label:"Segunda División" },
     { path:"/teams/tercera", label:"Tercera División" },
+    { path:"/manage-seleccion", label:"Selección Nacional" },
   ]},
   { path:"/admin/plantilla",  icon:<Target size={20}/>,         label:"Plantillas" },
   { path:"/posiciones",       icon:<Trophy size={20}/>,         label:"Posiciones" },

@@ -49,10 +49,12 @@ try {
 
         if ($action === 'create') {
 
+            $es_titular = intval($data['es_titular'] ?? 0);
+
             $stmt = $conn->prepare("
                 INSERT INTO jugadores 
-                (equipo_id, nombre, posicion, numero_camiseta, edad, nacionalidad)
-                VALUES (?, ?, ?, ?, ?, ?)
+                (equipo_id, nombre, posicion, numero_camiseta, edad, nacionalidad, es_titular)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ");
 
             $stmt->execute([
@@ -61,7 +63,8 @@ try {
                 $data['posicion'],
                 $data['numero_camiseta'],
                 $data['edad'],
-                $data['nacionalidad']
+                $data['nacionalidad'],
+                $es_titular
             ]);
 
             echo json_encode(["success"=>true]);
@@ -70,13 +73,16 @@ try {
 
         if ($action === 'update') {
 
+            $es_titular = intval($data['es_titular'] ?? 0);
+
             $stmt = $conn->prepare("
                 UPDATE jugadores SET
                     nombre = ?,
                     posicion = ?,
                     numero_camiseta = ?,
                     edad = ?,
-                    nacionalidad = ?
+                    nacionalidad = ?,
+                    es_titular = ?
                 WHERE id = ?
             ");
 
@@ -86,6 +92,7 @@ try {
                 $data['numero_camiseta'],
                 $data['edad'],
                 $data['nacionalidad'],
+                $es_titular,
                 $data['id']
             ]);
 
@@ -119,13 +126,13 @@ try {
             $stmt = $conn->prepare("UPDATE equipos SET formacion = ? WHERE id = ?");
             $stmt->execute([$formacion, $equipo_id]);
 
-            $conn->prepare("UPDATE jugadores SET pos_x = NULL, pos_y = NULL WHERE equipo_id = ?")
+            $conn->prepare("UPDATE jugadores SET es_titular = 0, pos_x = NULL, pos_y = NULL WHERE equipo_id = ?")
                  ->execute([$equipo_id]);
 
             foreach ($titulares as $t) {
                 $stmt = $conn->prepare("
                     UPDATE jugadores 
-                    SET pos_x = ?, pos_y = ?
+                    SET es_titular = 1, pos_x = ?, pos_y = ?
                     WHERE id = ? AND equipo_id = ?
                 ");
                 $stmt->execute([

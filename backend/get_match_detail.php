@@ -13,6 +13,16 @@ if ($id <= 0) {
 
 try {
     switch ($division) {
+        case 'seleccion':
+            $tPartidos  = 'partidos_seleccion';
+            $tEquipos   = null;
+            $tJugadores = 'jugadores_seleccion';
+            $colLocal   = 'id';
+            $colVisit   = 'id';
+            $colEstado  = 'estado';
+            $selectFormacion = "'4-4-2' AS local_formacion, '4-4-2' AS visitante_formacion";
+            $selectPosiciones = 'NULL AS pos_x, NULL AS pos_y';
+            break;
         case 'segunda':
             $tPartidos  = 'partidos_segunda';
             $tEquipos   = 'equipos_segunda';
@@ -46,33 +56,65 @@ try {
     }
 
     // ── Partido ──────────────────────────────────────────────────
-    $stmt = $pdo->prepare("
-        SELECT
-            p.id,
-            p.goles_local,
-            p.goles_visitante,
-            p.$colEstado AS estado,
-            p.fecha,
+    if ($division === 'seleccion') {
+        $stmt = $pdo->prepare("
+            SELECT
+                p.id,
+                p.goles_favor AS goles_local,
+                p.goles_contra AS goles_visitante,
+                p.$colEstado AS estado,
+                p.fecha,
+                p.rival_nombre AS visitante_nombre,
+                p.rival_logo AS visitante_logo,
+                p.competicion,
+                p.lugar,
+                NULL AS local_id,
+                NULL AS visitante_id,
+                NULL AS estadio,
+                NULL AS ciudad,
+                $selectFormacion
+            FROM $tPartidos p
+            WHERE p.id = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$id]);
+        $partido = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            el.id AS local_id,
-            el.nombre AS local_nombre,
-            el.logo AS local_logo,
-            el.estadio AS estadio,
-            el.ciudad AS ciudad,
+        // Local = El Salvador
+        $partido['local_id'] = -1;
+        $partido['local_nombre'] = 'El Salvador';
+        $partido['local_logo'] = '/backend/uploads/escudo_elsalvador.png';
+        $partido['estadio'] = $partido['lugar'] ?? null;
+        $partido['ciudad'] = null;
+    } else {
+        $stmt = $pdo->prepare("
+            SELECT
+                p.id,
+                p.goles_local,
+                p.goles_visitante,
+                p.$colEstado AS estado,
+                p.fecha,
 
-            ev.id AS visitante_id,
-            ev.nombre AS visitante_nombre,
-            ev.logo AS visitante_logo,
-            $selectFormacion
+                el.id AS local_id,
+                el.nombre AS local_nombre,
+                el.logo AS local_logo,
+                el.estadio AS estadio,
+                el.ciudad AS ciudad,
 
-        FROM $tPartidos p
-        INNER JOIN $tEquipos el ON p.$colLocal = el.id
-        INNER JOIN $tEquipos ev ON p.$colVisit = ev.id
-        WHERE p.id = ?
-        LIMIT 1
-    ");
-    $stmt->execute([$id]);
-    $partido = $stmt->fetch(PDO::FETCH_ASSOC);
+                ev.id AS visitante_id,
+                ev.nombre AS visitante_nombre,
+                ev.logo AS visitante_logo,
+                $selectFormacion
+
+            FROM $tPartidos p
+            INNER JOIN $tEquipos el ON p.$colLocal = el.id
+            INNER JOIN $tEquipos ev ON p.$colVisit = ev.id
+            WHERE p.id = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$id]);
+        $partido = $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 
     if (!$partido) {
         echo json_encode(["error" => "Partido no encontrado"]);
@@ -94,8 +136,8 @@ try {
         return $s->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    $jugadoresLocal     = obtenerJugadores($pdo, $tJugadores, $partido['local_id']);
-    $jugadoresVisitante = obtenerJugadores($pdo, $tJugadores, $partido['visitante_id']);
+    $jugadoresLocal     = obtenerJugadores($pdo, $tJugadores, $partido['local_id'] ?? 0);
+    $jugadoresVisitante = obtenerJugadores($pdo, $tJugadores, $partido['visitante_id'] ?? 0);
 
     // ── Asegurar que la tabla match_comments existe ─
     try {
