@@ -62,6 +62,7 @@ const Header = () => {
         { href: "/primera", label: "Primera División" },
         { href: "/segunda", label: "Segunda División" },
         { href: "/tercera", label: "Tercera División" },
+        { href: "/seleccion", label: "Selección Nacional" },
         { href: "/news", label: "Noticias" },
         { href: "/copa-presidente", label: "Copa Presidente"},
     ];

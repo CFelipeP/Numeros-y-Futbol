@@ -18,6 +18,8 @@ import Primera from "./Divisiones/Primera";
 import Tercera from "./Divisiones/Tercera";
 import Segunda from "./Divisiones/Segunda";
 import CopaPresidente from "./Divisiones/CopaPresidente";
+import Seleccion from "./Divisiones/Seleccion";
+import ManageSeleccion from "./dashboard/ManageSeleccion";
 import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
 import ScrollToTop from "./components/ScrollToTop";
@@ -59,6 +61,7 @@ function App() {
         <Route path="/teams/segunda" element={<ManageTeamsSegunda />} />
         <Route path="/teams/tercera" element={<ManageTeamsTercera />} />
         <Route path="/segunda" element={<Segunda />} />
+        <Route path="/seleccion" element={<Seleccion />} />
         <Route path="/admin/plantilla" element={<PlantillaEquipos />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/partido/:id/:division" element={<MatchDetail />} />
@@ -75,6 +78,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manage-seleccion"
+          element={
+            <ProtectedRoute>
+              <ManageSeleccion />
             </ProtectedRoute>
           }
         />

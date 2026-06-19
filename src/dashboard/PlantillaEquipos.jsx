@@ -233,6 +233,7 @@ const navItems = [
           { path: "/teams/tercera", label: "Tercera División" },
         ]
       },
+      { path: "/manage-seleccion", icon: <Shield size={20} />, label: "Selección Nacional" },
       { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
       { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
       { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
