@@ -67,7 +67,7 @@ export default function Seleccion() {
   }, []);
 
   if (loading) {
-    return (<><Header /><div style={{ minHeight:"80vh", display:"flex", alignItems:"center", justifyContent:"center", background:"#0f172a", color:"#fff" }}>Cargando...</div></>);
+    return (<><Header /><div style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0f172a", color: "#fff" }}>Cargando...</div></>);
   }
 
   const partidos = data?.partidos || [];
@@ -148,19 +148,19 @@ export default function Seleccion() {
           <div className="sel-hero-stripe" />
           <div className="sel-hero-inner">
             <div className="sel-escudo">
-              {escudoSV ? <img src={escudoSV} alt="El Salvador" /> : <span style={{fontSize:36}}>🇸🇻</span>}
+              {escudoSV ? <img src={escudoSV} alt="El Salvador" /> : <span style={{ fontSize: 36 }}>🇸🇻</span>}
             </div>
             <h1>Selección Salvadoreña</h1>
-            <p>{allJugadores.length} jugadores · {staff.length} cuerpo técnico · {partidos.filter(p => (p.estado||"").toLowerCase()==="finalizado").length} partidos jugados</p>
+            <p>{allJugadores.length} jugadores · {staff.length} cuerpo técnico · {partidos.filter(p => (p.estado || "").toLowerCase() === "finalizado").length} partidos jugados</p>
           </div>
         </div>
 
         <div className="sel-content">
           <div className="sel-tabs">
             {[
-              { key:"partidos", label:"Partidos", icon:"⚽" },
-              { key:"jugadores", label:"Jugadores", icon:"👥" },
-              { key:"tecnico", label:"Cuerpo Técnico", icon:"📋" },
+              { key: "partidos", label: "Partidos", icon: "⚽" },
+              { key: "jugadores", label: "Jugadores", icon: "👥" },
+              { key: "tecnico", label: "Cuerpo Técnico", icon: "📋" },
             ].map(t => (
               <button key={t.key} className={`sel-tab${activeTab === t.key ? " active" : ""}`} onClick={() => setActiveTab(t.key)}>
                 <span>{t.icon}</span> <span>{t.label}</span>
@@ -173,7 +173,7 @@ export default function Seleccion() {
             <div className="sel-card">
               <div className="sel-card-title">⚽ Partidos</div>
               {partidos.length === 0 ? (
-                <p style={{color:"#64748b",textAlign:"center",padding:"2rem 0"}}>No hay partidos registrados</p>
+                <p style={{ color: "#64748b", textAlign: "center", padding: "2rem 0" }}>No hay partidos registrados</p>
               ) : (
                 partidos.map(p => {
                   const st = getMatchStatus(p.estado);
@@ -182,22 +182,22 @@ export default function Seleccion() {
                   const hasScore = p.goles_favor != null;
                   return (
                     <div key={p.id} className="sel-match-row" onClick={() => navigate(`/partido/${p.id}/seleccion`)}>
-                      <span style={{fontSize:20,fontWeight:900,color:"#0099ff"}}>🇸🇻</span>
-                      <span style={{fontSize:13,fontWeight:700,color:"#f1f5f9",flex:1,minWidth:"auto"}}>El Salvador</span>
+                      <span style={{ fontSize: 20, fontWeight: 900, color: "#0099ff" }}>🇸🇻</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9", flex: 1, minWidth: "auto" }}>El Salvador</span>
                       <span className="sel-match-score">
                         {hasScore ? `${p.goles_favor} - ${p.goles_contra}` : "VS"}
                       </span>
                       <div className="sel-rival-logo">
-                        {p.rival_logo ? <img src={logoUrl(p.rival_logo)} alt={p.rival_nombre} /> : <span style={{fontSize:14}}>🏴</span>}
+                        {p.rival_logo ? <img src={logoUrl(p.rival_logo)} alt={p.rival_nombre} /> : <span style={{ fontSize: 14 }}>🏴</span>}
                       </div>
-                      <span style={{fontSize:13,fontWeight:600,color:"#e2e8f0",flex:1,textAlign:"right"}}>{p.rival_nombre}</span>
-                      <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:2,flexShrink:0}}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0", flex: 1, textAlign: "right" }}>{p.rival_nombre}</span>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0 }}>
                         <span className="sel-badge" style={{
                           color: isLive ? "#22c55e" : isFinished ? "#64748b" : "#f59e0b",
                           background: isLive ? "rgba(34,197,94,0.12)" : isFinished ? "rgba(100,116,139,0.12)" : "rgba(245,158,11,0.12)",
                           border: `1px solid ${isLive ? "#22c55e33" : isFinished ? "#64748b33" : "#f59e0b33"}`
                         }}>{st.text}</span>
-                        <span style={{fontSize:9,color:"#475569"}}>{p.competicion || ""}</span>
+                        <span style={{ fontSize: 9, color: "#475569" }}>{p.competicion || ""}</span>
                       </div>
                     </div>
                   );
@@ -210,21 +210,21 @@ export default function Seleccion() {
           {activeTab === "jugadores" && (
             <div className="sel-card">
               <div className="sel-card-title">👥 Todos los jugadores ({allJugadores.length})</div>
-              {["portero","defensa","medio","delantero"].map(cat => {
+              {["portero", "defensa", "medio", "delantero"].map(cat => {
                 const items = grupos[cat];
                 if (!items.length) return null;
                 const cfg = catCfg[cat];
                 return (
                   <div key={cat} className="sel-player-group">
-                    <div className="sel-group-header" style={{color:cfg.color, background:cfg.grad, border:`1px solid ${cfg.border}`}}>
-                      <span>{cfg.icon}</span> {cfg.label} <span style={{fontSize:10,marginLeft:"auto",opacity:0.5}}>{items.length}</span>
+                    <div className="sel-group-header" style={{ color: cfg.color, background: cfg.grad, border: `1px solid ${cfg.border}` }}>
+                      <span>{cfg.icon}</span> {cfg.label} <span style={{ fontSize: 10, marginLeft: "auto", opacity: 0.5 }}>{items.length}</span>
                     </div>
                     {items.map(j => (
                       <div key={j.id} className="sel-player-row">
                         <span className="sel-player-num">#{j.numero_camiseta || "?"}</span>
                         <span className="sel-player-name">{j.nombre}</span>
                         <span className="sel-player-club">{j.equipo || ""}</span>
-                        <span style={{fontSize:10,fontWeight:700,color:getPosInfo(j.posicion).color, background:`${getPosInfo(j.posicion).color}1a`, padding:"2px 7px", borderRadius:4}}>{getPosInfo(j.posicion).abbr}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: getPosInfo(j.posicion).color, background: `${getPosInfo(j.posicion).color}1a`, padding: "2px 7px", borderRadius: 4 }}>{getPosInfo(j.posicion).abbr}</span>
                       </div>
                     ))}
                   </div>
@@ -238,13 +238,13 @@ export default function Seleccion() {
             <div className="sel-card">
               <div className="sel-card-title">📋 Cuerpo Técnico ({staff.length})</div>
               {staff.length === 0 ? (
-                <p style={{color:"#64748b",textAlign:"center",padding:"2rem 0"}}>Sin cuerpo técnico registrado</p>
+                <p style={{ color: "#64748b", textAlign: "center", padding: "2rem 0" }}>Sin cuerpo técnico registrado</p>
               ) : (
                 <div className="sel-staff-grid">
                   {staff.map(s => (
                     <div key={s.id} className="sel-staff-card">
                       <div className="sel-staff-avatar">
-                        {s.foto ? <img src={logoUrl(s.foto)} alt={s.nombre} /> : <span style={{fontSize:24}}>👤</span>}
+                        {s.foto ? <img src={logoUrl(s.foto)} alt={s.nombre} /> : <span style={{ fontSize: 24 }}>👤</span>}
                       </div>
                       <div className="sel-staff-name">{s.nombre}</div>
                       <div className="sel-staff-rol">{s.rol}</div>

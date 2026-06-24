@@ -7,7 +7,7 @@ import { apiPost, apiFetch } from "../apiHelper";
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
-  Search, MessageCircle, Upload, Download
+  Search, MessageCircle, Upload, Download, Eye
 } from "lucide-react";
 import { API_BASE } from "../config";
 
@@ -33,6 +33,7 @@ const SIDEBAR_ITEMS = [
   { path: "/manage-comments", icon: <MessageCircle size={20} />, label: "Gestionar Comentarios" },
   { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
   { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+  { path: "/", icon: <Eye size={20} />, label: "Ver Sitio" },
 ];
 
 const COMPETICIONES = ["Amistoso", "Copa Oro", "Nations League", "Eliminatoria Mundialista", "Copa Centroamericana", "Otro"];

@@ -7,7 +7,7 @@ import { apiPost } from "../apiHelper";
 
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
-  CircleDot, Target, FileText, Trophy, Zap, TrendingUp, RotateCcw, ChevronDown, MessageCircle
+  CircleDot, Target, FileText, Trophy, Zap, TrendingUp, RotateCcw, ChevronDown, MessageCircle, Eye
 } from "lucide-react";
 
 import GoalsChart from "../components/GoalsChart";
@@ -166,6 +166,7 @@ const AdminDashboard = () => {
       { path: "/manage-comments", icon: <MessageCircle size={20} />, label: "Gestionar Comentarios" },
       { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
       { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+      { path: "/", icon: <Eye size={20} />, label: "Ver Sitio" },
     ];
 
   const getStatusStyle = (status) => {

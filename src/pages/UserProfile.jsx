@@ -37,7 +37,7 @@ export default function UserProfile() {
             navigate("/login");
           }
         })
-        .catch(() => {});
+        .catch(() => { });
       setLoading(false);
     } catch (_) {
       localStorage.removeItem("user"); localStorage.removeItem("token");

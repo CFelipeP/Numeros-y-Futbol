@@ -36,7 +36,8 @@ const SIDEBAR_ITEMS = [
   { path:"/manage-news",      icon:<Newspaper size={20}/>,      label:"Noticias Públicas" },
   { path:"/manage-comments",  icon:<MessageCircle size={20}/>,  label:"Narración Partidos" },
   { path:"/users",            icon:<Users size={20}/>,          label:"Usuarios" },
-  { path:"/settings",         icon:<Settings size={20}/>,       label:"Configuración" },
+  { path:"/settings",         icon:<Settings size={20}/>,  label:"Configuración" },
+  { path:"/",                 icon:<Eye size={20}/>,       label:"Ver Sitio" },
 ];
 
 const Toggle = ({ value, onChange, color = "#22c55e" }) => (

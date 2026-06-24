@@ -17,6 +17,7 @@ import Settings from "./dashboard/Settings"; // <--- NUEVO IMPORT
 import Primera from "./Divisiones/Primera";
 import Tercera from "./Divisiones/Tercera";
 import Segunda from "./Divisiones/Segunda";
+import Femenina from "./Divisiones/Femenina";
 import CopaPresidente from "./Divisiones/CopaPresidente";
 import Seleccion from "./Divisiones/Seleccion";
 import ManageSeleccion from "./dashboard/ManageSeleccion";
@@ -62,6 +63,7 @@ function App() {
         <Route path="/teams/tercera" element={<ManageTeamsTercera />} />
         <Route path="/segunda" element={<Segunda />} />
         <Route path="/seleccion" element={<Seleccion />} />
+        <Route path="/femenina" element={<Femenina />} />
         <Route path="/admin/plantilla" element={<PlantillaEquipos />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/partido/:id/:division" element={<MatchDetail />} />

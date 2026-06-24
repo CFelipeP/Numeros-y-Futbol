@@ -271,6 +271,7 @@ const ManageTeamsSegunda = () => {
       { path: "/manage-comments", icon: <MessageCircle size={20} />, label: "Gestionar Comentarios" },
       { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
       { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+      { path: "/", icon: <EyeIcon size={20} />, label: "Ver Sitio" },
     ];
 
     const inputStyle = {

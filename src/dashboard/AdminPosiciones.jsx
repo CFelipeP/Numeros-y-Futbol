@@ -7,7 +7,7 @@ import "animate.css";
 import {
     LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings,
     LogOut, Menu, Trophy, RotateCcw, TrendingUp, TrendingDown, Minus,
-    BarChart3, Activity, ChevronDown, Target, MessageCircle
+    BarChart3, Activity, ChevronDown, Target, MessageCircle, Eye
 } from "lucide-react";
 import { API_BASE } from "../config";
 
@@ -252,6 +252,7 @@ const AdminPosiciones = () => {
       { path: "/manage-comments", icon: <MessageCircle size={20} />, label: "Gestionar Comentarios" },
       { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
       { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+      { path: "/", icon: <Eye size={20} />, label: "Ver Sitio" },
     ];
 
     const renderTeamRow = (team, pos) => {

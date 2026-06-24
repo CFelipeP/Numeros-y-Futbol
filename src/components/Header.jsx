@@ -6,8 +6,12 @@ const Header = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [accountOpen, setAccountOpen] = useState(false);
     const [mobileAccountOpen, setMobileAccountOpen] = useState(false);
+    const [seleccionOpen, setSeleccionOpen] = useState(false);
+    const [divisionesOpen, setDivisionesOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const accountRef = useRef(null);
+    const seleccionRef = useRef(null);
+    const divisionesRef = useRef(null);
     const location = useLocation();
 
     useEffect(() => {
@@ -24,6 +28,12 @@ const Header = () => {
             if (accountRef.current && !accountRef.current.contains(e.target)) {
                 setAccountOpen(false);
             }
+            if (seleccionRef.current && !seleccionRef.current.contains(e.target)) {
+                setSeleccionOpen(false);
+            }
+            if (divisionesRef.current && !divisionesRef.current.contains(e.target)) {
+                setDivisionesOpen(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -34,6 +44,8 @@ const Header = () => {
         setMobileOpen(false);
         setMobileAccountOpen(false);
         setAccountOpen(false);
+        setSeleccionOpen(false);
+        setDivisionesOpen(false);
     }, [location]);
 
     // Cerrar menú móvil al redimensionar
@@ -59,13 +71,26 @@ const Header = () => {
     }, [mobileOpen]);
 
     const navLinks = [
-        { href: "/primera", label: "Primera División" },
-        { href: "/segunda", label: "Segunda División" },
-        { href: "/tercera", label: "Tercera División" },
-        { href: "/seleccion", label: "Selección Nacional" },
+        { href: "/femenina", label: "Femenina" },
         { href: "/news", label: "Noticias" },
         { href: "/copa-presidente", label: "Copa Presidente"},
     ];
+
+    const divisionesLinks = [
+        { href: "/primera", label: "Primera División" },
+        { href: "/segunda", label: "Segunda División" },
+        { href: "/tercera", label: "Tercera División" },
+    ];
+
+    const isDivisionesActive = () => divisionesLinks.some(link => isActive(link.href));
+
+    const seleccionLinks = [
+        { href: "/seleccion", label: "Masculina" },
+        { href: "/seleccion-femenina", label: "Femenina" },
+        { href: "/seleccion-sub17", label: "Sub-17" },
+    ];
+
+    const isSeleccionActive = () => seleccionLinks.some(link => isActive(link.href));
 
     const isActive = (href) => {
         if (href === "/") return location.pathname === "/";
@@ -265,6 +290,10 @@ const Header = () => {
                 }
                 .hdr-dropdown-panel a:hover svg {
                     opacity: 1;
+                }
+                .hdr-dropdown-panel-seleccion,
+                .hdr-dropdown-panel-left {
+                    left: 0;
                 }
                 .hdr-dropdown-divider {
                     height: 1px;
@@ -540,6 +569,41 @@ const Header = () => {
 
                     {/* === NAV ESCRITORIO === */}
                     <nav className="hdr-nav">
+                        {/* Dropdown Divisiones */}
+                        <div className="hdr-dropdown" ref={divisionesRef}>
+                            <button
+                                className={`hdr-nav-link hdr-dropdown-trigger${divisionesOpen ? ' open' : ''}${isDivisionesActive() ? ' active' : ''}`}
+                                onClick={() => setDivisionesOpen(!divisionesOpen)}
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                                Divisiones Masculinas
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                            </button>
+                            <AnimatePresence>
+                                {divisionesOpen && (
+                                    <motion.div
+                                        className="hdr-dropdown-panel hdr-dropdown-panel-left"
+                                        initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                                        transition={{ duration: 0.18, ease: "easeOut" }}
+                                    >
+                                        <div className="hdr-dropdown-header">Divisiones Masculinas</div>
+                                        {divisionesLinks.map(dl => (
+                                            <a
+                                                key={dl.href}
+                                                href={dl.href}
+                                                className={isActive(dl.href) ? 'active' : ''}
+                                                onClick={() => setDivisionesOpen(false)}
+                                            >
+                                                {dl.label}
+                                            </a>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
                         {navLinks.map(link => (
                             <a
                                 key={link.href}
@@ -552,6 +616,41 @@ const Header = () => {
                                 {link.label}
                             </a>
                         ))}
+
+                        {/* Dropdown Selección Nacional */}
+                        <div className="hdr-dropdown" ref={seleccionRef}>
+                            <button
+                                className={`hdr-nav-link hdr-dropdown-trigger${seleccionOpen ? ' open' : ''}${isSeleccionActive() ? ' active' : ''}`}
+                                onClick={() => setSeleccionOpen(!seleccionOpen)}
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H3V6a1 1 0 011-1h2"/><path d="M18 9h3V6a1 1 0 00-1-1h-2"/><path d="M6 5h12v7a6 6 0 01-12 0V5z"/><path d="M9 18h6"/><path d="M10 22h4"/><path d="M10 18v4"/><path d="M14 18v4"/></svg>
+                                Selección
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                            </button>
+                            <AnimatePresence>
+                                {seleccionOpen && (
+                                    <motion.div
+                                        className="hdr-dropdown-panel hdr-dropdown-panel-seleccion"
+                                        initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                                        transition={{ duration: 0.18, ease: "easeOut" }}
+                                    >
+                                        <div className="hdr-dropdown-header">Selección Nacional</div>
+                                        {seleccionLinks.map(sl => (
+                                            <a
+                                                key={sl.href}
+                                                href={sl.href}
+                                                className={isActive(sl.href) ? 'active' : ''}
+                                                onClick={() => setSeleccionOpen(false)}
+                                            >
+                                                {sl.label}
+                                            </a>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
 
                         {/* Dropdown Cuenta */}
                         <div className="hdr-dropdown" ref={accountRef}>
@@ -663,6 +762,46 @@ const Header = () => {
                             {/* Navegación principal */}
                             <div className="hdr-mobile-section-label">Navegación</div>
                             <nav className="hdr-mobile-nav">
+                                {/* Divisiones accordion en móvil */}
+                                <div style={{ width: '100%' }}>
+                                    <button
+                                        className={`hdr-mobile-account-btn${divisionesOpen ? ' open' : ''}`}
+                                        onClick={() => setDivisionesOpen(!divisionesOpen)}
+                                        style={{ width: '100%' }}
+                                    >
+                                        <span className="hdr-mobile-account-left">
+                                            <span className="hdr-mobile-link-icon">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                                            </span>
+                                            Divisiones Masculinas
+                                        </span>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                                    </button>
+                                    <AnimatePresence>
+                                        {divisionesOpen && (
+                                            <motion.div
+                                                className="hdr-mobile-sub"
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: "auto", opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.2, ease: "easeInOut" }}
+                                            >
+                                                <div className="hdr-mobile-sub-inner">
+                                                    {divisionesLinks.map(dl => (
+                                                        <a
+                                                            key={dl.href}
+                                                            href={dl.href}
+                                                            onClick={() => { setMobileOpen(false); setDivisionesOpen(false); }}
+                                                        >
+                                                            {dl.label}
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+
                                 {navLinks.map((link, i) => (
                                     <motion.a
                                         key={link.href}
@@ -683,6 +822,46 @@ const Header = () => {
                                         {link.label}
                                     </motion.a>
                                 ))}
+
+                                {/* Selección Nacional accordion en móvil */}
+                                <div style={{ width: '100%' }}>
+                                    <button
+                                        className={`hdr-mobile-account-btn${seleccionOpen ? ' open' : ''}`}
+                                        onClick={() => setSeleccionOpen(!seleccionOpen)}
+                                        style={{ width: '100%' }}
+                                    >
+                                        <span className="hdr-mobile-account-left">
+                                            <span className="hdr-mobile-link-icon">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H3V6a1 1 0 011-1h2"/><path d="M18 9h3V6a1 1 0 00-1-1h-2"/><path d="M6 5h12v7a6 6 0 01-12 0V5z"/><path d="M9 18h6"/><path d="M10 22h4"/><path d="M10 18v4"/><path d="M14 18v4"/></svg>
+                                            </span>
+                                            Selección Nacional
+                                        </span>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                                    </button>
+                                    <AnimatePresence>
+                                        {seleccionOpen && (
+                                            <motion.div
+                                                className="hdr-mobile-sub"
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: "auto", opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.2, ease: "easeInOut" }}
+                                            >
+                                                <div className="hdr-mobile-sub-inner">
+                                                    {seleccionLinks.map(sl => (
+                                                        <a
+                                                            key={sl.href}
+                                                            href={sl.href}
+                                                            onClick={() => { setMobileOpen(false); setSeleccionOpen(false); }}
+                                                        >
+                                                            {sl.label}
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             </nav>
 
                             <div className="hdr-mobile-divider" />
