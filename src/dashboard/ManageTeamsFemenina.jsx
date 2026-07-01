@@ -1,4 +1,3 @@
-// ========== ManageTeams.jsx ==========
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
@@ -15,35 +14,22 @@ import { API_BASE } from "../config";
 
 const API = API_BASE;
 
-const DIVISIONES = [
-    { key: "primera", label: "Primera División" },
-    { key: "segunda", label: "Segunda División" },
-    { key: "tercera", label: "Tercera División" },
-];
-
-const ManageTeams = () => {
+const ManageTeamsFemenina = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [teamsOpen, setTeamsOpen] = useState(true);
     const location = useLocation();
-
-    // Detectar división desde la URL: /teams/primera, /teams/segunda, /teams/tercera
-    const pathParts = location.pathname.split("/");
-    const currentDivision = pathParts[2] || "primera";
-    const divisionLabel = DIVISIONES.find(d => d.key === currentDivision)?.label || "Primera División";
 
     const [teams, setTeams] = useState([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
 
-    // Si navegas a cualquier /teams/*, abrir el dropdown
     useEffect(() => {
         if (location.pathname.startsWith("/teams/")) setTeamsOpen(true);
     }, [location.pathname]);
 
-    // Cargar equipos de la división actual
     useEffect(() => {
         setLoading(true);
-        fetch(`${API}get_teams.php?division=${currentDivision}`)
+        fetch(`${API}get_teams_femenina.php`)
             .then(res => res.json())
             .then(data => {
                 setTeams(Array.isArray(data) ? data : []);
@@ -53,7 +39,7 @@ const ManageTeams = () => {
                 setTeams([]);
                 setLoading(false);
             });
-    }, [currentDivision]);
+    }, []);
 
     const filteredTeams = teams.filter(t =>
         t.nombre?.toLowerCase().includes(search.toLowerCase()) ||
@@ -120,10 +106,9 @@ const ManageTeams = () => {
         form.append("nombre", formNombre);
         form.append("ciudad", formCiudad);
         form.append("estadio", formEstadio);
-        form.append("division", currentDivision);
         if (formLogo) form.append("logo", formLogo);
 
-        apiPostForm(`${API}add_team.php`, form)
+        apiPostForm(`${API}add_team_femenina.php`, form)
             .then(() => {
                 setSubmitting(false);
                 setShowAdd(false);
@@ -167,10 +152,9 @@ const ManageTeams = () => {
         form.append("nombre", editNombre);
         form.append("ciudad", editCiudad);
         form.append("estadio", editEstadio);
-        form.append("division", currentDivision);
         if (editLogo) form.append("logo", editLogo);
 
-        apiPostForm(`${API}update_team.php`, form)
+        apiPostForm(`${API}update_team_femenina.php`, form)
             .then(res => res.json())
             .then(data => {
                 setEditSubmitting(false);
@@ -188,7 +172,7 @@ const ManageTeams = () => {
     const deleteTeam = (id, nombre) => {
         Swal.fire({
             title: `¿Eliminar ${nombre}?`,
-            html: `<p style="color:#94a3b8;font-size:14px;margin:0">Se eliminará de <b style="color:#60a5fa">${divisionLabel}</b> y su escudo será borrado del servidor.</p>`,
+            html: `<p style="color:#94a3b8;font-size:14px;margin:0">Se eliminará de <b style="color:#60a5fa">Femenina</b> y su escudo será borrado del servidor.</p>`,
             icon: "warning",
             showCancelButton: true,
             confirmButtonText: "Sí, eliminar",
@@ -201,9 +185,8 @@ const ManageTeams = () => {
             if (result.isConfirmed) {
                 const form = new FormData();
                 form.append("id", id);
-                form.append("division", currentDivision);
 
-                apiPostForm(`${API}delete_team.php`, form)
+                apiPostForm(`${API}delete_team_femenina.php`, form)
                 .then(res => res.json())
                 .then(data => {
                     if (data.error) {
@@ -339,16 +322,15 @@ const ManageTeams = () => {
                 </header>
 
                 <div className="content-wrapper">
-                    {/* Header con badge de división */}
                     <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "1.2rem" }}>
                         <h1 className="admin-title" style={{ margin: 0 }}>Gestionar Equipos</h1>
                         <span style={{
                             display: "inline-flex", alignItems: "center", gap: "6px",
                             padding: "6px 14px", borderRadius: "8px",
-                            background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)",
-                            color: "#60a5fa", fontSize: "13px", fontWeight: 700,
+                            background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.2)",
+                            color: "#f472b6", fontSize: "13px", fontWeight: 700,
                         }}>
-                            <Shield size={13} /> {divisionLabel}
+                            <Shield size={13} /> Femenina
                         </span>
                     </div>
 
@@ -369,7 +351,7 @@ const ManageTeams = () => {
 
                         {loading ? (
                             <div style={{ textAlign: "center", padding: "3rem", color: "#64748b" }}>
-                                <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid rgba(255,255,255,0.08)", borderTopColor: "#3b82f6", animation: "tmSpin 0.8s linear infinite", margin: "0 auto 1rem" }} />
+                                <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid rgba(255,255,255,0.08)", borderTopColor: "#ec4899", animation: "tmSpin 0.8s linear infinite", margin: "0 auto 1rem" }} />
                                 <span style={{ fontSize: "0.85rem" }}>Cargando equipos...</span>
                             </div>
                         ) : (
@@ -418,7 +400,7 @@ const ManageTeams = () => {
                             <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#475569' }}>
                                 <Shield size={40} style={{ margin: '0 auto 0.75rem', display: 'block', opacity: 0.2 }} />
                                 <p style={{ fontWeight: 600, color: '#64748b' }}>
-                                    {search ? 'Sin resultados para "' + search + '"' : 'No hay equipos en ' + divisionLabel}
+                                    {search ? 'Sin resultados para "' + search + '"' : 'No hay equipos en Femenina'}
                                 </p>
                                 <p style={{ fontSize: '13px', marginTop: '4px' }}>
                                     {search ? 'Intenta con otro término de búsqueda' : 'Agrega tu primer equipo'}
@@ -429,14 +411,13 @@ const ManageTeams = () => {
                 </div>
             </main>
 
-            {/* MODAL NUEVO EQUIPO */}
             {showAdd && (
                 <div className="tm-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAdd(false); }}>
                     <div className="tm-card animate__animated animate__fadeInUp">
                         <div className="tm-header tm-header-red">
                             <div>
                                 <h2><Plus size={18} style={{ color: '#ef4444' }} /> Nuevo Equipo</h2>
-                                <p className="tm-division-hint">Se agregará a <b>{divisionLabel}</b></p>
+                                <p className="tm-division-hint">Se agregará a <b>Femenina</b></p>
                             </div>
                             <button className="tm-close" onClick={() => setShowAdd(false)}><X size={18} /></button>
                         </div>
@@ -446,7 +427,7 @@ const ManageTeams = () => {
                                     <div className="tm-field">
                                         <label>Nombre del Equipo <span className="tm-required">*</span></label>
                                         <input type="text" value={formNombre} onChange={(e) => setFormNombre(e.target.value)}
-                                            placeholder="Ej: C.D. Águila" style={inputStyle}
+                                            placeholder="Ej: Alianza FC Women" style={inputStyle}
                                             onFocus={(e) => { e.target.style.borderColor = '#ef4444'; e.target.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.1)'; }}
                                             onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
                                         />
@@ -454,7 +435,7 @@ const ManageTeams = () => {
                                     <div className="tm-field">
                                         <label>Ciudad</label>
                                         <input type="text" value={formCiudad} onChange={(e) => setFormCiudad(e.target.value)}
-                                            placeholder="Ej: San Miguel" style={inputStyle}
+                                            placeholder="Ej: San Salvador" style={inputStyle}
                                             onFocus={(e) => { e.target.style.borderColor = '#ef4444'; e.target.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.1)'; }}
                                             onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
                                         />
@@ -462,7 +443,7 @@ const ManageTeams = () => {
                                     <div className="tm-field">
                                         <label>Estadio</label>
                                         <input type="text" value={formEstadio} onChange={(e) => setFormEstadio(e.target.value)}
-                                            placeholder="Ej: Estadio Juan Francisco Barraza" style={inputStyle}
+                                            placeholder="Ej: Estadio Cuscatlán" style={inputStyle}
                                             onFocus={(e) => { e.target.style.borderColor = '#ef4444'; e.target.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.1)'; }}
                                             onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
                                         />
@@ -507,14 +488,13 @@ const ManageTeams = () => {
                 </div>
             )}
 
-            {/* MODAL EDITAR EQUIPO */}
             {showEdit && editingTeam && (
                 <div className="tm-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowEdit(false); }}>
                     <div className="tm-card animate__animated animate__fadeInUp">
                         <div className="tm-header tm-header-blue">
                             <div>
                                 <h2><Save size={18} style={{ color: '#3b82f6' }} /> Editar Equipo</h2>
-                                <p className="tm-division-hint">Editando en <b>{divisionLabel}</b></p>
+                                <p className="tm-division-hint">Editando en <b>Femenina</b></p>
                             </div>
                             <button className="tm-close" onClick={() => setShowEdit(false)}><X size={18} /></button>
                         </div>
@@ -744,4 +724,4 @@ const ManageTeams = () => {
     );
 };
 
-export default ManageTeams;
+export default ManageTeamsFemenina;

@@ -107,9 +107,11 @@ const ManageUsers = () => {
           { path: "/teams/primera", label: "Primera División" },
           { path: "/teams/segunda", label: "Segunda División" },
           { path: "/teams/tercera", label: "Tercera División" },
+          { path: "/teams/femenina", label: "Femenina" },
         ]
       },
       { path: "/manage-seleccion", icon: <Shield size={20} />, label: "Selección Nacional" },
+      { path: "/manage-seleccion-femenina", icon: <Shield size={20} />, label: "Selección Femenina" },
       { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
       { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
       { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
@@ -152,7 +154,7 @@ const ManageUsers = () => {
                       <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: teamsOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
                     </button>
                     <ul style={{
-                      maxHeight: teamsOpen ? "200px" : "0",
+                      maxHeight: teamsOpen ? "400px" : "0",
                       opacity: teamsOpen ? "1" : "0",
                       overflow: "hidden",
                       transition: "max-height 0.3s ease, opacity 0.2s ease",

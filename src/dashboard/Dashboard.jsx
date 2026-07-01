@@ -55,6 +55,7 @@ const DIVISIONES = [
   { value: "primera", label: "Primera" },
   { value: "segunda", label: "Segunda" },
   { value: "tercera", label: "Tercera" },
+  { value: "femenina", label: "Femenina" },
 ];
 
 const AdminDashboard = () => {
@@ -156,9 +157,11 @@ const AdminDashboard = () => {
           { path: "/teams/primera", label: "Primera División" },
           { path: "/teams/segunda", label: "Segunda División" },
           { path: "/teams/tercera", label: "Tercera División" },
+          { path: "/teams/femenina", label: "Femenina" },
         ]
       },
       { path: "/manage-seleccion", icon: <Shield size={20} />, label: "Selección Nacional" },
+      { path: "/manage-seleccion-femenina", icon: <Shield size={20} />, label: "Selección Femenina" },
       { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
       { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
       { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
@@ -195,7 +198,7 @@ const AdminDashboard = () => {
                       <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>{item.icon} {item.label}</span>
                       <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: teamsOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
                     </button>
-                    <ul style={{ maxHeight: teamsOpen ? "200px" : "0", opacity: teamsOpen ? "1" : "0", overflow: "hidden", transition: "max-height 0.3s ease, opacity 0.2s ease", listStyle: "none", padding: teamsOpen ? "2px 0 4px 0" : "0", margin: 0 }}>
+                    <ul style={{ maxHeight: teamsOpen ? "400px" : "0", opacity: teamsOpen ? "1" : "0", overflow: "hidden", transition: "max-height 0.3s ease, opacity 0.2s ease", listStyle: "none", padding: teamsOpen ? "2px 0 4px 0" : "0", margin: 0 }}>
                       {item.children.map(child => (<li key={child.path}><Link to={child.path} className={`nav-item${location.pathname === child.path ? " active" : ""}`} style={{ paddingLeft: "48px", fontSize: "13.5px" }}>{child.label}</Link></li>))}
                     </ul>
                   </li>
@@ -264,7 +267,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          <div className="chart-container">
+          <div className="chart-container" style={{ width: "100%", minWidth: 0 }}>
             <div className="table-header" style={{ flexWrap: "wrap", gap: "10px" }}>
               <h2>Estadísticas de goles</h2>
               <span style={{ fontSize: "11px", color: "#64748b", background: "rgba(255,255,255,0.04)", padding: "4px 10px", borderRadius: "6px" }}>

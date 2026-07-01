@@ -11,6 +11,9 @@ $division = $_GET['division'] ?? 'primera';
 if ($division === 'primera') {
     $tablaPartidos = 'partidos';
     $colEstado = 'estado';
+} elseif ($division === 'femenina') {
+    $tablaPartidos = 'partidos_femenina';
+    $colEstado = 'estado';
 } else {
     $sufijo = $division === 'segunda' ? '_segunda' : '_tercera';
     $tablaPartidos = 'partidos' . $sufijo;

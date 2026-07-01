@@ -19,10 +19,11 @@ const DIVISIONES = [
   { key: "primera", label: "Primera", icon: "🔴" },
   { key: "segunda", label: "Segunda", icon: "🟢" },
   { key: "tercera", label: "Tercera", icon: "🟡" },
+  { key: "femenina", label: "Femenina", icon: "⚪" },
 ];
 
 const getEndpoints = (div) => {
-  const s = div === "segunda" ? "_segunda" : div === "tercera" ? "_tercera" : "";
+  const s = div === "segunda" ? "_segunda" : div === "tercera" ? "_tercera" : div === "femenina" ? "_femenina" : "";
   return {
     teams: API + "get_teams" + s + ".php",
     crud: API + "crud_jugadores" + s + ".php",
@@ -231,9 +232,11 @@ const navItems = [
           { path: "/teams/primera", label: "Primera División" },
           { path: "/teams/segunda", label: "Segunda División" },
           { path: "/teams/tercera", label: "Tercera División" },
+          { path: "/teams/femenina", label: "Femenina" },
         ]
       },
       { path: "/manage-seleccion", icon: <Shield size={20} />, label: "Selección Nacional" },
+      { path: "/manage-seleccion-femenina", icon: <Shield size={20} />, label: "Selección Femenina" },
       { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
       { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
       { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
@@ -1381,7 +1384,7 @@ return (
 }
 @media(min-width:769px){.admin-layout.sidebar-open .sidebar{transform:translateX(0)!important}}
 .teams-dropdown{list-style:none;padding:0;margin:0;max-height:0;overflow:hidden;transition:max-height .3s cubic-bezier(.4,0,.2,1)}
-.teams-dropdown.dropdown-visible{max-height:200px}
+.teams-dropdown.dropdown-visible{max-height:400px}
 .nav-subitem{padding-left:52px!important;font-size:13px!important;opacity:.6;transition:opacity .15s}
 .nav-subitem.active{opacity:1}
 .top-bar-title{font-size:.95rem;font-weight:700;color:#e2e8f0;letter-spacing:-.01em}

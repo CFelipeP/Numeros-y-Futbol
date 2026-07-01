@@ -15,6 +15,7 @@ const DIVISIONES = [
     { value: "primera", label: "Primera" },
     { value: "segunda", label: "Segunda" },
     { value: "tercera", label: "Tercera" },
+    { value: "femenina", label: "Femenina" },
 ];
 
 const logoUrl = (path) => {
@@ -31,7 +32,7 @@ const safeFetch = async (url) => {
 };
 
 const normalizeRow = (row, div) => {
-    if (div === "primera") {
+    if (div === "primera" || div === "femenina") {
         const gf = parseInt(row.goles_favor || 0);
         const gc = parseInt(row.goles_contra || 0);
         return {
@@ -73,7 +74,7 @@ const AdminPosiciones = () => {
     }, []);
 
     const getEndpoints = () => {
-        const s = division === "segunda" ? "_segunda" : division === "tercera" ? "_tercera" : "";
+        const s = division === "segunda" ? "_segunda" : division === "tercera" ? "_tercera" : division === "femenina" ? "_femenina" : "";
         return { get: `${API_BASE}get_tabla${s}.php`, reset: `${API_BASE}reset_tabla${s}.php` };
     };
 
@@ -242,9 +243,11 @@ const AdminPosiciones = () => {
           { path: "/teams/primera", label: "Primera División" },
           { path: "/teams/segunda", label: "Segunda División" },
           { path: "/teams/tercera", label: "Tercera División" },
+          { path: "/teams/femenina", label: "Femenina" },
         ]
       },
       { path: "/manage-seleccion", icon: <Shield size={20} />, label: "Selección Nacional" },
+      { path: "/manage-seleccion-femenina", icon: <Shield size={20} />, label: "Selección Femenina" },
       { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
       { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
       { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
@@ -352,7 +355,7 @@ const AdminPosiciones = () => {
                                             <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>{item.icon} {item.label}</span>
                                             <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: teamsOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
                                         </button>
-                                        <ul style={{ maxHeight: teamsOpen ? "200px" : "0", opacity: teamsOpen ? "1" : "0", overflow: "hidden", transition: "max-height 0.3s ease, opacity 0.2s ease", listStyle: "none", padding: teamsOpen ? "2px 0 4px 0" : "0", margin: 0 }}>
+                                        <ul style={{ maxHeight: teamsOpen ? "400px" : "0", opacity: teamsOpen ? "1" : "0", overflow: "hidden", transition: "max-height 0.3s ease, opacity 0.2s ease", listStyle: "none", padding: teamsOpen ? "2px 0 4px 0" : "0", margin: 0 }}>
                                             {item.children.map(child => (
                                                 <li key={child.path}><Link to={child.path} className={`nav-item${location.pathname === child.path ? " active" : ""}`} style={{ paddingLeft: "48px", fontSize: "13.5px" }}>{child.label}</Link></li>
                                             ))}

@@ -21,6 +21,8 @@ import Femenina from "./Divisiones/Femenina";
 import CopaPresidente from "./Divisiones/CopaPresidente";
 import Seleccion from "./Divisiones/Seleccion";
 import ManageSeleccion from "./dashboard/ManageSeleccion";
+import ManageTeamsFemenina from "./dashboard/ManageTeamsFemenina";
+import ManageSeleccionFemenina from "./dashboard/ManageSeleccionFemenina";
 import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
 import ScrollToTop from "./components/ScrollToTop";
@@ -61,6 +63,7 @@ function App() {
         <Route path="/admin/copa" element={<Admincopa />} />
         <Route path="/teams/segunda" element={<ManageTeamsSegunda />} />
         <Route path="/teams/tercera" element={<ManageTeamsTercera />} />
+        <Route path="/teams/femenina" element={<ManageTeamsFemenina />} />
         <Route path="/segunda" element={<Segunda />} />
         <Route path="/seleccion" element={<Seleccion />} />
         <Route path="/femenina" element={<Femenina />} />
@@ -88,6 +91,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ManageSeleccion />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manage-seleccion-femenina"
+          element={
+            <ProtectedRoute>
+              <ManageSeleccionFemenina />
             </ProtectedRoute>
           }
         />

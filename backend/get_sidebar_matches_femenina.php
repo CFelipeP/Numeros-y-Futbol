@@ -6,28 +6,11 @@ require_once __DIR__ . '/db.php';
 
 $conn = $mysqli;
 
-$division = $_GET['division'] ?? 'primera';
-
-if ($division === 'primera') {
-    $tablaPartidos = 'partidos';
-    $tablaEquipos  = 'equipos';
-    $colEstado     = 'estado';
-    $colLocal      = 'equipo_local';
-    $colVisitante  = 'equipo_visitante';
-} elseif ($division === 'femenina') {
-    $tablaPartidos = 'partidos_femenina';
-    $tablaEquipos  = 'equipos_primera_femenina';
-    $colEstado     = 'estado';
-    $colLocal      = 'equipo_local';
-    $colVisitante  = 'equipo_visitante';
-} else {
-    $sufijo = $division === 'segunda' ? '_segunda' : '_tercera';
-    $tablaPartidos = 'partidos' . $sufijo;
-    $tablaEquipos  = 'equipos' . $sufijo;
-    $colEstado     = 'status';
-    $colLocal      = 'local_id';
-    $colVisitante  = 'visitante_id';
-}
+$tablaPartidos = 'partidos_femenina';
+$tablaEquipos  = 'equipos_primera_femenina';
+$colEstado     = 'estado';
+$colLocal      = 'equipo_local';
+$colVisitante  = 'equipo_visitante';
 
 $recent = [];
 try {

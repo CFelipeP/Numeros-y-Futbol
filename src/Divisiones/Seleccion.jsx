@@ -51,19 +51,16 @@ const catCfg = {
 export default function Seleccion() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
-  const [allJugadores, setAllJugadores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("partidos");
 
   useEffect(() => {
-    Promise.all([
-      fetch(`${API}get_seleccion_detalle.php`).then(r => r.json()),
-      fetch(`${API}get_all_jugadores.php`).then(r => r.json()),
-    ]).then(([d, jd]) => {
-      setData(d);
-      setAllJugadores(jd.success ? jd.jugadores : []);
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    fetch(`${API}get_seleccion_detalle.php`)
+      .then(r => r.json())
+      .then(d => {
+        setData(d);
+        setLoading(false);
+      }).catch(() => setLoading(false));
   }, []);
 
   if (loading) {
@@ -73,14 +70,13 @@ export default function Seleccion() {
   const partidos = data?.partidos || [];
   const jugadores = data?.jugadores || [];
   const staff = data?.staff || [];
-
   const escudoSV = logoUrl("/backend/uploads/escudo_elsalvador.png");
 
   const grupos = {
-    portero: allJugadores.filter(j => getPosInfo(j.posicion).cat === "portero"),
-    defensa: allJugadores.filter(j => getPosInfo(j.posicion).cat === "defensa"),
-    medio: allJugadores.filter(j => getPosInfo(j.posicion).cat === "medio"),
-    delantero: allJugadores.filter(j => getPosInfo(j.posicion).cat === "delantero"),
+    portero: jugadores.filter(j => getPosInfo(j.posicion).cat === "portero"),
+    defensa: jugadores.filter(j => getPosInfo(j.posicion).cat === "defensa"),
+    medio: jugadores.filter(j => getPosInfo(j.posicion).cat === "medio"),
+    delantero: jugadores.filter(j => getPosInfo(j.posicion).cat === "delantero"),
   };
 
   return (
@@ -151,7 +147,7 @@ export default function Seleccion() {
               {escudoSV ? <img src={escudoSV} alt="El Salvador" /> : <span style={{ fontSize: 36 }}>🇸🇻</span>}
             </div>
             <h1>Selección Salvadoreña</h1>
-            <p>{allJugadores.length} jugadores · {staff.length} cuerpo técnico · {partidos.filter(p => (p.estado || "").toLowerCase() === "finalizado").length} partidos jugados</p>
+            <p>{jugadores.length} convocados · {staff.length} cuerpo técnico · {partidos.filter(p => (p.estado || "").toLowerCase() === "finalizado").length} partidos jugados</p>
           </div>
         </div>
 
@@ -209,7 +205,7 @@ export default function Seleccion() {
           {/* ── JUGADORES ── */}
           {activeTab === "jugadores" && (
             <div className="sel-card">
-              <div className="sel-card-title">👥 Todos los jugadores ({allJugadores.length})</div>
+              <div className="sel-card-title">👥 Jugadores convocados ({jugadores.length})</div>
               {["portero", "defensa", "medio", "delantero"].map(cat => {
                 const items = grupos[cat];
                 if (!items.length) return null;

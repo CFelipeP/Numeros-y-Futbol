@@ -501,15 +501,17 @@ export default function PrimeraDivision() {
           <div className="container" style={{ paddingBottom: "var(--spacing-lg)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}><div><h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.4rem", fontWeight: 800, margin: "0 0 0.3rem 0", color: "var(--color-white)", display: "flex", alignItems: "center", gap: "0.6rem" }}><IconShield /> Clubes de la Temporada</h3><p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem", margin: 0 }}>Selecciona un equipo para ver su plantilla y formación</p></div><span style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", background: "rgba(255,255,255,0.05)", padding: "0.4rem 1rem", borderRadius: 20, fontWeight: 600 }}>{equipos.length} clubes</span></div>
             {equipos.length === 0 ? <div style={{ textAlign: "center", padding: "4rem 1rem", color: "var(--color-text-muted)" }}><p style={{ fontSize: "1.1rem" }}>No hay equipos registrados</p></div> : (
-              <div className="pd-teams-grid">
+              <div className="pd-teams-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
                 {equipos.map(eq => { const stats = getTeamStats(eq.id); const pos = stats ? tabla.indexOf(stats) : -1; const badge = pos >= 0 ? getPosBadge(pos) : null; return (
-                  <div key={eq.id} className="glass-card pd-team-card" style={{ padding: 0, overflow: "hidden", transition: "all 0.3s ease", borderLeft: badge ? `3px solid ${badge.color}` : "3px solid transparent" }}>
-                    <div style={{ height: 6, background: badge ? `linear-gradient(90deg, ${badge.color}, transparent)` : "linear-gradient(90deg, var(--color-accent), transparent)" }} />
+                  <div key={eq.id} className="glass-card" style={{ padding: 0, overflow: "hidden", transition: "all 0.3s ease", borderLeft: badge ? `3px solid ${badge.color}` : "3px solid transparent" }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 15px 40px rgba(0,0,0,0.4), 0 0 20px rgba(255,0,77,0.1)"; e.currentTarget.style.borderColor = "rgba(255,0,77,0.3)"; if (badge) e.currentTarget.style.borderLeftColor = badge.color; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-card)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderLeftColor = badge ? badge.color : "transparent"; }}>
+                    <div style={{ height: 6, background: badge ? `linear-gradient(90deg, ${badge.color}, transparent)` : "linear-gradient(90deg, rgba(255,255,255,0.06), transparent)" }} />
                     <div style={{ padding: "1.5rem" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.2rem" }}><div style={{ width: 60, height: 60, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: badge ? `2px solid ${badge.color}40` : "2px solid rgba(255,255,255,0.08)" }}><img src={logoUrl(eq.logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div><div style={{ flex: 1, minWidth: 0 }}><h4 style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem", fontWeight: 800, margin: "0 0 0.2rem 0", color: "var(--color-white)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{eq.nombre}</h4>{badge && <span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: badge.color, background: badge.bg, padding: "0.15rem 0.5rem", borderRadius: 4 }}>Pos. {pos + 1}</span>}</div></div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.2rem" }}><div style={{ width: 60, height: 60, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: badge ? `2px solid ${badge.color}40` : "2px solid rgba(255,255,255,0.08)" }}>{eq.logo && <img src={logoUrl(eq.logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div><div style={{ flex: 1, minWidth: 0 }}><h4 style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem", fontWeight: 800, margin: "0 0 0.2rem 0", color: "var(--color-white)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{eq.nombre}</h4><div style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap" }}>{badge && <span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: badge.color, background: badge.bg, padding: "0.15rem 0.5rem", borderRadius: 4, border: `1px solid ${badge.color}30` }}>Pos. {pos + 1}</span>}</div></div></div>
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", marginBottom: "1.2rem" }}>{eq.ciudad && <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-text-muted)" }}><IconMapPin /><span>{eq.ciudad}</span></div>}{eq.estadio && <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-text-muted)" }}><IconStadium /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{eq.estadio}</span></div>}</div>
                       {stats && (<><div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "1rem" }}>{[{ l: "PJ", v: stats.partidos_jugados, c: "var(--color-text-main)" }, { l: "G", v: stats.ganados, c: "#10b981" }, { l: "E", v: stats.empatados, c: "#f59e0b" }, { l: "P", v: stats.perdidos, c: "#ef4444" }].map((s, i) => (<div key={i} style={{ textAlign: "center" }}><div style={{ fontSize: "1.1rem", fontWeight: 800, color: s.c, fontFamily: "var(--font-heading)", lineHeight: 1 }}>{s.v}</div><div style={{ fontSize: "0.65rem", color: "var(--color-text-muted)", marginTop: "0.2rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>{s.l}</div></div>))}</div><div style={{ marginTop: "1rem", paddingTop: "0.8rem", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: "0.78rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Puntos</span><div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><div style={{ width: 80, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg, var(--color-accent), #ff3366)", width: `${Math.min((stats.puntos / (tabla[0]?.puntos || 1)) * 100, 100)}%`, transition: "width 0.5s ease" }} /></div><span style={{ fontSize: "1.2rem", fontWeight: 900, color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 10px rgba(255,0,77,0.4)" }}>{stats.puntos}</span></div></div></>)}
-                      <button onClick={() => openTeam(eq.id)} className="pd-team-btn" style={{ width: "100%", marginTop: "1.2rem", padding: "0.7rem", background: "linear-gradient(135deg, rgba(255,0,77,0.15), rgba(255,0,77,0.05))", border: "1px solid rgba(255,0,77,0.2)", borderRadius: 10, color: "var(--color-accent)", fontWeight: 700, fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>Ver Plantilla Completa</button>
+                      <button onClick={() => openTeam(eq.id)} style={{ width: "100%", marginTop: "1.2rem", padding: "0.7rem", background: "linear-gradient(135deg, rgba(255,0,77,0.15), rgba(255,0,77,0.05))", border: "1px solid rgba(255,0,77,0.2)", borderRadius: 10, color: "var(--color-accent)", fontWeight: 700, fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }} onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(255,0,77,0.3), rgba(255,0,77,0.1))"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(255,0,77,0.15), rgba(255,0,77,0.05))"; e.currentTarget.style.transform = "translateY(0)"; }}>Ver Plantilla Completa</button>
                     </div>
                   </div>
                 ); })}
@@ -525,6 +527,91 @@ export default function PrimeraDivision() {
 
       <footer className="footer" id="driver-footer"><div className="container footer-inner"><div className="footer-grid"><div className="footer-brand"><h3>NÚMEROS Y FÚTBOL</h3><p>Portal oficial hecha por Ariel SOTOMAYOR y Felipe ESCOBAR.</p></div><div className="footer-section"><h4>Divisiones</h4><ul><li><a href="/primera">Primera División</a></li><li><a href="/segunda">Segunda División</a></li><li><a href="#tercera">Tercera División</a></li></ul></div><div className="footer-section"><h4>Contenido</h4><ul><li><a href="/news">Noticias</a></li><li><a href="#">Resultados</a></li><li><a href="/primera">Clasificaciones</a></li></ul></div><div className="footer-section"><h4>Síguenos</h4><ul><li><a href="#">Facebook</a></li><li><a href="#">Twitter / X</a></li><li><a href="#">Instagram</a></li></ul></div></div><div className="footer-bottom"><p>&copy; 2026 Números y Fútbol. Todos los derechos reservados.</p><div className="footer-links"><a href="#">Privacidad</a><a href="#">Términos</a><a href="#">Contacto</a></div></div></div></footer>
 
+      {/* ═══════════════════════════════════════════════════════════════
+           BASE STYLES — Plantilla pública (Team View)
+           ═══════════════════════════════════════════════════════════════ */}
+      <style>{`
+.pv-team-page{max-width:880px;margin:0 auto;padding-bottom:3rem}
+.pv-back-btn{display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.6);padding:.55rem 1.1rem;border-radius:10px;cursor:pointer;font-weight:600;font-size:.82rem;margin-bottom:1.5rem;transition:all .2s;font-family:inherit}
+.pv-back-btn:hover{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.12)}
+.pv-hero-card{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(160deg,rgba(15,23,42,.95) 0%,rgba(15,23,42,.8) 50%,rgba(30,41,59,.9) 100%);border:1px solid rgba(255,255,255,.06);margin-bottom:1.5rem;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.pv-hero-bg-pattern{position:absolute;inset:0;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.pv-hero-content{position:relative;padding:1.8rem 2rem;z-index:1}
+.pv-hero-left{display:flex;align-items:center;gap:1.2rem;margin-bottom:1.5rem}
+.pv-hero-logo-ring{width:68px;height:68px;border-radius:50%;padding:6px;background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:2px solid rgba(255,255,255,.1);box-shadow:0 8px 24px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05);flex-shrink:0}
+.pv-hero-logo-ring img{width:100%;height:100%;object-fit:contain}
+.pv-hero-text h2{margin:0;font-size:1.35rem;font-weight:900;color:#f1f5f9;letter-spacing:.5px;line-height:1.2}
+.pv-hero-meta{display:flex;align-items:center;gap:.4rem;margin-top:.35rem;font-size:.78rem;color:#64748b;flex-wrap:wrap}
+.pv-hero-meta svg{width:11px;height:11px;opacity:.6}
+.pv-meta-sep{margin:0 .25rem;opacity:.3}
+.pv-hero-stats-row{display:flex;align-items:center;gap:0;padding:1.2rem 0 0;border-top:1px solid rgba(255,255,255,.05);flex-wrap:wrap}
+.pv-hero-stat{text-align:center;flex:1;min-width:70px}
+.pv-hero-stat strong{display:block;font-size:1.35rem;font-weight:900;font-family:var(--font-heading);color:#f1f5f9;line-height:1}
+.pv-hero-stat span{font-size:.6rem;color:#475569;text-transform:uppercase;letter-spacing:1.2px;margin-top:.25rem;display:block}
+.pv-hero-stat-divider{width:1px;height:32px;background:rgba(255,255,255,.05);flex-shrink:0}
+.pv-tabs-bar{display:flex;gap:0;margin-bottom:1.8rem;background:rgba(255,255,255,.025);border-radius:14px;padding:4px;border:1px solid rgba(255,255,255,.04);max-width:340px;margin-left:auto;margin-right:auto}
+.pv-tab-btn{flex:1;padding:.65rem .8rem;border:none;background:none;color:#475569;font-weight:700;font-size:.82rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.45rem;border-radius:11px;transition:all .2s}
+.pv-tab-btn:hover{color:#94a3b8;background:rgba(255,255,255,.03)}
+.pv-tab-btn.active{color:#86efac;background:rgba(34,197,94,.12);box-shadow:0 2px 12px rgba(34,197,94,.15)}
+.pv-tab-btn svg{opacity:.7}.pv-tab-btn.active svg{opacity:1}
+.pv-player-row{display:grid;grid-template-columns:34px 34px 1fr 48px 90px 54px;gap:.5rem;align-items:center;padding:.55rem .7rem;border-radius:12px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.025);transition:all .15s}
+.pv-player-row:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.06);transform:translateX(2px)}
+.pv-row-num{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;font-family:monospace}
+.pv-row-photo{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.04);overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+.pv-row-photo img{width:100%;height:100%;object-fit:cover}
+.pv-photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.1)}
+.pv-row-info{min-width:0;display:flex;flex-direction:column;gap:1px}
+.pv-row-name{font-size:.84rem;font-weight:700;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pv-row-meta{font-size:.62rem;color:#475569}
+.pv-row-pos{font-size:.6rem;font-weight:800;padding:3px 8px;border-radius:6px;text-align:center;border:1px solid;letter-spacing:.5px;font-family:monospace}
+.pv-row-stats{display:flex;gap:.4rem;font-size:.74rem;align-items:center}
+.pv-row-stats b{font-weight:800;font-family:monospace}
+.pv-row-stats small{color:#334155;font-size:.55rem;font-weight:600;margin-left:1px}
+.pv-row-pj{font-size:.74rem;color:#475569;font-weight:600;text-align:center;font-family:monospace}
+.pv-row-pj small{font-weight:400;font-size:.55rem}
+.pv-pos-group{margin-bottom:1.5rem}
+.pv-group-head{display:flex;align-items:center;gap:.55rem;margin-bottom:.6rem;padding:.5rem .8rem;border-bottom:2px solid transparent;border-radius:10px 10px 0 0}
+.pv-group-icon{font-size:.85rem}
+.pv-group-label{font-size:.62rem;font-weight:800;letter-spacing:2.5px;text-transform:uppercase}
+.pv-group-count{font-size:.58rem;font-weight:700;padding:2px 9px;border-radius:5px;margin-left:auto}
+.pv-group-list{display:flex;flex-direction:column;gap:.3rem}
+.pv-roster-wrap{max-width:760px;margin:0 auto}
+.pv-fm-section{display:flex;flex-direction:column;gap:1.2rem}
+.pv-fm-locked{display:flex;align-items:center;justify-content:center;gap:.7rem;padding:.65rem 1rem;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);flex-wrap:wrap}
+.pv-fm-badge{font-size:.85rem;font-weight:900;color:#86efac;background:rgba(34,197,94,.12);padding:.3rem .9rem;border-radius:8px;border:1px solid rgba(34,197,94,.2);font-family:monospace;letter-spacing:1px}
+.pv-fm-locked-label{font-size:.72rem;color:#475569;font-weight:600}
+.pv-pitch-wrap{width:100%;max-width:420px;margin:0 auto}
+.pv-pitch{position:relative;width:100%;aspect-ratio:68/105;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(0deg,#091f12 0px,#091f12 52px,#0c2815 52px,#0c2815 105px);box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 0 80px rgba(0,0,0,.2)}
+.pv-pitch-svg{position:absolute;inset:0;width:100%;height:100%}
+.pv-pitch-empty{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;opacity:.25}
+.pv-pitch-empty p{color:#fff;font-weight:700;font-size:.85rem;margin:0}
+.pv-pitch-empty span{color:#94a3b8;font-size:.72rem}
+.pv-pp{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:2;transition:left .45s cubic-bezier(.4,0,.2,1),top .45s cubic-bezier(.4,0,.2,1);animation:pv-playerEntry .5s cubic-bezier(.34,1.56,.64,1) both;cursor:default}
+.pv-pp-dot{width:34px;height:34px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.2);transition:all .2s;font-size:.6rem;font-weight:800;color:#fff}
+.pv-pp:hover .pv-pp-dot{transform:scale(1.18)}
+.pv-pp-dot img{width:100%;height:100%;object-fit:cover}
+.pv-pp-name{font-size:.52rem;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9);white-space:nowrap;max-width:65px;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.pv-pp-role{font-size:.44rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.5px;font-family:monospace}
+.pv-subs-card{background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);border-radius:14px;padding:1rem 1.1rem}
+.pv-subs-title{margin:0 0 .65rem;font-size:.78rem;font-weight:700;color:#94a3b8;display:flex;align-items:center;gap:.4rem}
+.pv-subs-bench-icon{font-size:.85rem}
+.pv-subs-title span{font-size:.66rem;font-weight:800;color:#64748b;background:rgba(255,255,255,.04);padding:1px 8px;border-radius:4px;margin-left:.3rem}
+.pv-subs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.4rem}
+.pv-sub-card{display:flex;align-items:center;gap:.6rem;padding:.5rem .65rem;border-radius:10px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.03);border-left:3px solid;transition:all .15s}
+.pv-sub-card:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.06)}
+.pv-sub-avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.04);overflow:hidden;border:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.pv-sub-avatar img{width:100%;height:100%;object-fit:cover}
+.pv-sub-avatar-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.1)}
+.pv-sub-details{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pv-sub-name{font-size:.78rem;font-weight:600;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pv-sub-meta-row{display:flex;align-items:center;gap:.3rem}
+.pv-sub-number{font-size:.65rem;font-weight:800;font-family:monospace}
+.pv-sub-pos-label{font-size:.52rem;font-weight:700;padding:0 5px;border-radius:4px;border:1px solid;font-family:monospace;letter-spacing:.5px}
+.pv-sub-age{font-size:.58rem;color:#475569}
+.pv-sub-mini-stats{display:flex;gap:.35rem;flex-shrink:0;font-size:.7rem;font-family:monospace;align-items:center}
+.pv-sub-mini-stats span{display:flex;align-items:baseline;gap:1px}
+.pv-sub-mini-stats small{font-size:.48rem;font-weight:600;color:#334155}
+`}</style>
       {/* ═══════════════════════════════════════════════════════════════
            RESPONSIVE — Solo overrides para móvil, no toca el desktop
            ═══════════════════════════════════════════════════════════════ */}

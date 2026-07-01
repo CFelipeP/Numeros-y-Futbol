@@ -104,8 +104,10 @@ const SIDEBAR_ITEMS = [
     { path:"/teams/primera", label:"Primera División" },
     { path:"/teams/segunda", label:"Segunda División" },
     { path:"/teams/tercera", label:"Tercera División" },
+    { path:"/teams/femenina", label:"Femenina" },
   ]},
   { path:"/manage-seleccion", icon:<Shield size={20}/>, label:"Selección Nacional" },
+  { path:"/manage-seleccion-femenina", icon:<Shield size={20}/>, label:"Selección Femenina" },
   { path:"/admin/plantilla",  icon:<Target size={20}/>,         label:"Plantillas" },
   { path:"/posiciones",       icon:<Trophy size={20}/>,         label:"Posiciones" },
   { path:"/admin/copa",       icon:<Trophy size={20}/>,         label:"Copa Presidente" },
@@ -489,7 +491,7 @@ export default function ManageMatchComments() {
                   <span style={{display:"flex",alignItems:"center",gap:14}}>{item.icon} {item.label}</span>
                   <ChevronDown size={16} style={{transition:"transform .25s",transform:teamsOpen?"rotate(180deg)":"rotate(0deg)",opacity:.4}}/>
                 </button>
-                <ul style={{maxHeight:teamsOpen?"200px":"0",opacity:teamsOpen?"1":"0",overflow:"hidden",transition:"max-height .3s,opacity .2s",listStyle:"none",padding:teamsOpen?"2px 0 4px":"0",margin:0}}>
+                <ul style={{maxHeight:teamsOpen?"400px":"0",opacity:teamsOpen?"1":"0",overflow:"hidden",transition:"max-height .3s,opacity .2s",listStyle:"none",padding:teamsOpen?"2px 0 4px":"0",margin:0}}>
                   {item.children.map(c=>(<li key={c.path}><Link to={c.path} className={`nav-item${location.pathname===c.path?" active":""}`} style={{paddingLeft:48,fontSize:"13.5px"}}>{c.label}</Link></li>))}
                 </ul>
               </li>
