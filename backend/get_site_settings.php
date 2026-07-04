@@ -44,11 +44,11 @@ try {
     foreach ($defaults as $k => $v) { $ins->execute([$k, $v]); }
 
     $rows = $db->query("SELECT `key`,`value` FROM site_settings")->fetchAll(PDO::FETCH_KEY_PAIR);
-    echo json_encode(["success" => true, "settings" => $rows]);
+    echo json_enc(["success" => true, "settings" => $rows]);
 } catch (PDOException $e) {
     // Captura errores de la base de datos
-    echo json_encode(["success" => false, "error" => "Error de base de datos: " . $e->getMessage()]);
+    echo json_enc(["success" => false, "error" => "Error de base de datos: " . $e->getMessage()]);
 } catch (Exception $e) {
     // Captura otros errores generales
-    echo json_encode(["success" => false, "error" => "Error interno del servidor: " . $e->getMessage()]);
+    echo json_enc(["success" => false, "error" => "Error interno del servidor: " . $e->getMessage()]);
 }

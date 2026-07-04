@@ -7,12 +7,42 @@ $id       = intval($_GET['id'] ?? 0);
 $division = strtolower(trim($_GET['division'] ?? 'primera'));
 
 if ($id <= 0) {
-    echo json_encode(["error" => "ID requerido"]);
+    echo json_enc(["error" => "ID requerido"]);
     exit;
 }
 
 try {
     switch ($division) {
+        case 'seleccion-sub17':
+            $tPartidos  = 'partidos_seleccion_sub17';
+            $tEquipos   = null;
+            $tJugadores = 'jugadores_seleccion_sub17';
+            $colLocal   = 'id';
+            $colVisit   = 'id';
+            $colEstado  = 'estado';
+            $selectFormacion = "'4-4-2' AS local_formacion, '4-4-2' AS visitante_formacion";
+            $selectPosiciones = 'NULL AS pos_x, NULL AS pos_y';
+            break;
+        case 'seleccion-sub20':
+            $tPartidos  = 'partidos_seleccion_sub20';
+            $tEquipos   = null;
+            $tJugadores = 'jugadores_seleccion_sub20';
+            $colLocal   = 'id';
+            $colVisit   = 'id';
+            $colEstado  = 'estado';
+            $selectFormacion = "'4-4-2' AS local_formacion, '4-4-2' AS visitante_formacion";
+            $selectPosiciones = 'NULL AS pos_x, NULL AS pos_y';
+            break;
+        case 'seleccion-femenina':
+            $tPartidos  = 'partidos_seleccion_femenina';
+            $tEquipos   = null;
+            $tJugadores = 'jugadores_seleccion_femenina';
+            $colLocal   = 'id';
+            $colVisit   = 'id';
+            $colEstado  = 'estado';
+            $selectFormacion = "'4-4-2' AS local_formacion, '4-4-2' AS visitante_formacion";
+            $selectPosiciones = 'NULL AS pos_x, NULL AS pos_y';
+            break;
         case 'seleccion':
             $tPartidos  = 'partidos_seleccion';
             $tEquipos   = null;
@@ -43,6 +73,16 @@ try {
             $selectFormacion = "'4-4-2' AS local_formacion, '4-4-2' AS visitante_formacion";
             $selectPosiciones = 'posicion_x AS pos_x, posicion_y AS pos_y';
             break;
+        case 'femenina':
+            $tPartidos  = 'partidos_femenina';
+            $tEquipos   = 'equipos_primera_femenina';
+            $tJugadores = 'jugadores_femenina';
+            $colLocal   = 'equipo_local';
+            $colVisit   = 'equipo_visitante';
+            $colEstado  = 'estado';
+            $selectFormacion = 'el.formacion AS local_formacion, ev.formacion AS visitante_formacion';
+            $selectPosiciones = 'COALESCE(pos_x, posicion_x) AS pos_x, COALESCE(pos_y, posicion_y) AS pos_y';
+            break;
         default:
             $tPartidos  = 'partidos';
             $tEquipos   = 'equipos';
@@ -56,7 +96,7 @@ try {
     }
 
     // ── Partido ──────────────────────────────────────────────────
-    if ($division === 'seleccion') {
+    if ($division === 'seleccion' || $division === 'seleccion-femenina' || $division === 'seleccion-sub20' || $division === 'seleccion-sub17') {
         $stmt = $pdo->prepare("
             SELECT
                 p.id,
@@ -117,7 +157,7 @@ try {
     }
 
     if (!$partido) {
-        echo json_encode(["error" => "Partido no encontrado"]);
+        echo json_enc(["error" => "Partido no encontrado"]);
         exit;
     }
 
@@ -184,7 +224,7 @@ try {
     $stmtC->execute([$id, $division]);
     $comentarios = $stmtC->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode([
+    echo json_enc([
         "partido"            => $partido,
         "jugadores_local"    => $jugadoresLocal,
         "jugadores_visitante"=> $jugadoresVisitante,
@@ -192,5 +232,5 @@ try {
     ]);
 
 } catch (Exception $e) {
-    echo json_encode(["error" => "Error interno del servidor"]);
+    echo json_enc(["error" => "Error interno del servidor"]);
 }

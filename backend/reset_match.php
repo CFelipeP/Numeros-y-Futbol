@@ -10,7 +10,7 @@ $conn = $mysqli;
 
 $id = $_POST['id'] ?? null;
 if (!$id) {
-    echo json_encode(['error' => 'ID requerido']);
+    echo json_enc(['error' => 'ID requerido']);
     exit;
 }
 
@@ -22,9 +22,9 @@ $stmt = $conn->prepare("
 $stmt->bind_param('i', $id);
 
 if ($stmt->execute()) {
-    echo json_encode(['success' => true]);
+    echo json_enc(['success' => true]);
 } else {
-    echo json_encode(['error' => 'Error al resetear']);
+    echo json_enc(['error' => 'Error al resetear']);
 }
 
 $stmt->close();

@@ -22,7 +22,7 @@ if ($action === "send_code") {
     $email = trim(strtolower($data->email ?? ''));
 
     if (!$email) {
-        echo json_encode(["success" => false, "error" => "El correo es obligatorio"]);
+        echo json_enc(["success" => false, "error" => "El correo es obligatorio"]);
         exit;
     }
 
@@ -30,7 +30,7 @@ if ($action === "send_code") {
     $stmt->execute([$email]);
 
     if (!$stmt->fetch()) {
-        echo json_encode(["success" => false, "error" => "No existe una cuenta con ese correo"]);
+        echo json_enc(["success" => false, "error" => "No existe una cuenta con ese correo"]);
         exit;
     }
 
@@ -38,7 +38,7 @@ if ($action === "send_code") {
     $rateCheck = $conn->prepare("SELECT COUNT(*) FROM reset_tokens WHERE email=? AND creado_en > DATE_SUB(NOW(), INTERVAL 5 MINUTE)");
     $rateCheck->execute([$email]);
     if ($rateCheck->fetchColumn() > 0) {
-        echo json_encode(["success" => false, "error" => "Ya se envió un código recientemente. Espera 5 minutos antes de solicitar otro."]);
+        echo json_enc(["success" => false, "error" => "Ya se envió un código recientemente. Espera 5 minutos antes de solicitar otro."]);
         exit;
     }
 
@@ -215,12 +215,12 @@ HTML;
         $mail->Body = $html;
         $mail->send();
 
-        echo json_encode(["success" => true, "message" => "Codigo enviado correctamente"]);
+        echo json_enc(["success" => true, "message" => "Codigo enviado correctamente"]);
 
     } catch (Exception $e) {
-        echo json_encode([
+        echo json_enc([
             "success" => false,
-            "error" => "Error interno del servidor"
+            "error" => "Error SMTP: " . $e->getMessage()
         ]);
     }
     exit;
@@ -235,7 +235,7 @@ if ($action === "verify_code") {
     $codigo = trim($data->codigo ?? '');
 
     if (!$email || !$codigo) {
-        echo json_encode(["success" => false, "error" => "Datos incompletos"]);
+        echo json_enc(["success" => false, "error" => "Datos incompletos"]);
         exit;
     }
 
@@ -244,11 +244,11 @@ if ($action === "verify_code") {
     $token = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$token) {
-        echo json_encode(["success" => false, "error" => "Codigo invalido o expirado"]);
+        echo json_enc(["success" => false, "error" => "Codigo invalido o expirado"]);
         exit;
     }
 
-    echo json_encode(["success" => true, "message" => "Codigo verificado"]);
+    echo json_enc(["success" => true, "message" => "Codigo verificado"]);
     exit;
 }
 
@@ -262,12 +262,12 @@ if ($action === "reset_password") {
     $new_password = $data->new_password ?? '';
 
     if (!$email || !$codigo || !$new_password) {
-        echo json_encode(["success" => false, "error" => "Datos incompletos"]);
+        echo json_enc(["success" => false, "error" => "Datos incompletos"]);
         exit;
     }
 
     if (strlen($new_password) < 6) {
-        echo json_encode(["success" => false, "error" => "La nueva contrasena debe tener al menos 6 caracteres"]);
+        echo json_enc(["success" => false, "error" => "La nueva contrasena debe tener al menos 6 caracteres"]);
         exit;
     }
 
@@ -276,7 +276,7 @@ if ($action === "reset_password") {
     $token = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$token) {
-        echo json_encode(["success" => false, "error" => "Codigo invalido o expirado. Solicita uno nuevo."]);
+        echo json_enc(["success" => false, "error" => "Codigo invalido o expirado. Solicita uno nuevo."]);
         exit;
     }
 
@@ -288,8 +288,8 @@ if ($action === "reset_password") {
     $usado = $conn->prepare("UPDATE reset_tokens SET usado=1 WHERE id=?");
     $usado->execute([$token['id']]);
 
-    echo json_encode(["success" => true, "message" => "Contrasena actualizada correctamente"]);
+    echo json_enc(["success" => true, "message" => "Contrasena actualizada correctamente"]);
     exit;
 }
 
-echo json_encode(["success" => false, "error" => "Accion no valida"]);
+echo json_enc(["success" => false, "error" => "Accion no valida"]);

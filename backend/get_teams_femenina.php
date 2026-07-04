@@ -7,7 +7,7 @@ require_once __DIR__ . '/db.php';
 $conn = $mysqli;
 
 $res = $conn->query("SELECT * FROM equipos_primera_femenina");
-if (!$res) { echo json_encode([]); exit; }
+if (!$res) { echo json_enc([]); exit; }
 
 $data = [];
 
@@ -15,4 +15,4 @@ while($row = $res->fetch_assoc()){
     $data[] = $row;
 }
 
-echo json_encode($data);
+echo json_enc($data);

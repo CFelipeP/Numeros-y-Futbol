@@ -26,8 +26,15 @@ const SIDEBAR_ITEMS = [
       { path: "/teams/femenina", label: "Femenina" },
     ]
   },
-  { path: "/manage-seleccion", icon: <Shield size={20} />, label: "Selección Nacional" },
-  { path: "/manage-seleccion-femenina", icon: <Shield size={20} />, label: "Selección Femenina" },
+      {
+        type: "dropdown", icon: <Shield size={20} />, label: "Selecciones",
+        children: [
+          { path: "/manage-seleccion", label: "Masculina" },
+          { path: "/manage-seleccion-femenina", label: "Femenina" },
+          { path: "/manage-seleccion-sub20", label: "Sub-20" },
+            { path: "/manage-seleccion-sub17", label: "Sub-17" },
+        ]
+      },
   { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
   { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
   { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
@@ -61,6 +68,7 @@ export default function ManageSeleccion() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [teamsOpen, setTeamsOpen] = useState(false);
+  const [seleccionesOpen, setSeleccionesOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("partidos");
 
   const [partidos, setPartidos] = useState([]);
@@ -90,7 +98,7 @@ export default function ManageSeleccion() {
 
   const handleLogout = () => {
     Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir", confirmButtonColor: "#d33" })
-      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); window.location.href = "/login"; } });
+      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
   };
 
   return (
@@ -106,11 +114,11 @@ export default function ManageSeleccion() {
               if (item.type === "dropdown") {
                 return (
                   <li key={idx}>
-                    <button className="nav-item" onClick={() => setTeamsOpen(!teamsOpen)} style={{ width: "100%", justifyContent: "space-between" }}>
+                    <button className="nav-item" onClick={() => { const s = item.label === "Selecciones"; s ? setSeleccionesOpen(!seleccionesOpen) : setTeamsOpen(!teamsOpen); }} style={{ width: "100%", justifyContent: "space-between" }}>
                       <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>{item.icon} {item.label}</span>
-                      <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: teamsOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
+                      <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
                     </button>
-                    <ul style={{ maxHeight: teamsOpen ? "400px" : "0", opacity: teamsOpen ? "1" : "0", overflow: "hidden", transition: "max-height 0.3s ease, opacity 0.2s ease", listStyle: "none", padding: teamsOpen ? "2px 0 4px 0" : "0", margin: 0 }}>
+                    <ul style={{ maxHeight: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "400px" : "0", opacity: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "1" : "0", overflow: "hidden", transition: "max-height 0.3s ease, opacity 0.2s ease", listStyle: "none", padding: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "2px 0 4px 0" : "0", margin: 0 }}>
                       {item.children.map(child => (<li key={child.path}><Link to={child.path} className={`nav-item${location.pathname === child.path ? " active" : ""}`} style={{ paddingLeft: "48px", fontSize: "13.5px" }}>{child.label}</Link></li>))}
                     </ul>
                   </li>
@@ -167,6 +175,9 @@ export default function ManageSeleccion() {
           )}
         </div>
       </main>
+      <style>{`
+        button.nav-item { background: none; border: none; color: var(--text-muted); font-family: inherit; }
+      `}</style>
     </div>
   );
 }
@@ -192,7 +203,7 @@ function PartidosTab({ partidos, onReload }) {
     if (!form.rival_nombre.trim()) { Swal.fire({ icon: "info", title: "Nombre del rival requerido", toast: true, position: "top-end", timer: 2000, showConfirmButton: false }); return; }
     const payload = { ...form, action: editId ? "update" : "create", id: editId };
     if (editId) payload.id = editId;
-    apiPost(`${API}crud_partidos_seleccion.php`, payload).then(d => {
+    apiPost(`${API}crud_partidos_seleccion.php`, payload).then(r => r.json()).then(d => {
       if (d.success) { Swal.fire({ icon: "success", title: editId ? "Actualizado" : "Creado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); setShowForm(false); }
       else Swal.fire("Error", d.error || "Error", "error");
     }).catch(() => Swal.fire("Error", "Error de conexión", "error"));
@@ -200,7 +211,7 @@ function PartidosTab({ partidos, onReload }) {
 
   const deletePartido = (id, rival) => {
     Swal.fire({ title: "¿Eliminar partido?", text: `vs ${rival}`, icon: "warning", showCancelButton: true, confirmButtonText: "Sí, eliminar", confirmButtonColor: "#d33" })
-      .then(r => { if (r.isConfirmed) { apiPost(`${API}crud_partidos_seleccion.php`, { action: "delete", id }).then(d => { if (d.success) { Swal.fire({ icon: "success", title: "Eliminado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); } }).catch(() => Swal.fire("Error", "Error", "error")); } });
+      .then(r => { if (r.isConfirmed) { apiPost(`${API}crud_partidos_seleccion.php`, { action: "delete", id }).then(r => r.json()).then(d => { if (d.success) { Swal.fire({ icon: "success", title: "Eliminado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); } }).catch(() => Swal.fire("Error", "Error", "error")); } });
   };
 
   return (
@@ -315,7 +326,7 @@ function JugadoresTab({ jugadores, onReload }) {
     if (!form.nombre.trim()) { Swal.fire({ icon: "info", title: "Nombre requerido", toast: true, position: "top-end", timer: 2000, showConfirmButton: false }); return; }
     const payload = { ...form, action: editId ? "update" : "create", id: editId };
     if (editId) payload.id = editId;
-    apiPost(`${API}crud_jugadores_seleccion.php`, payload).then(d => {
+    apiPost(`${API}crud_jugadores_seleccion.php`, payload).then(r => r.json()).then(d => {
       if (d.success) { Swal.fire({ icon: "success", title: editId ? "Actualizado" : "Creado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); setShowForm(false); }
       else Swal.fire("Error", d.error || "Error", "error");
     }).catch(() => Swal.fire("Error", "Error de conexión", "error"));
@@ -323,7 +334,7 @@ function JugadoresTab({ jugadores, onReload }) {
 
   const deleteJugador = (id, nombre) => {
     Swal.fire({ title: "¿Eliminar jugador?", text: nombre, icon: "warning", showCancelButton: true, confirmButtonText: "Sí, eliminar", confirmButtonColor: "#d33" })
-      .then(r => { if (r.isConfirmed) { apiPost(`${API}crud_jugadores_seleccion.php`, { action: "delete", id }).then(d => { if (d.success) { Swal.fire({ icon: "success", title: "Eliminado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); } }).catch(() => Swal.fire("Error", "Error", "error")); } });
+      .then(r => { if (r.isConfirmed) { apiPost(`${API}crud_jugadores_seleccion.php`, { action: "delete", id }).then(r => r.json()).then(d => { if (d.success) { Swal.fire({ icon: "success", title: "Eliminado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); } }).catch(() => Swal.fire("Error", "Error", "error")); } });
   };
 
   const openImport = () => { setCsvFile(null); setCsvText(""); setCsvPreview([]); setImportModal(true); };
@@ -456,7 +467,7 @@ function JugadoresTab({ jugadores, onReload }) {
       </table>
 
       {importModal && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={closeImport}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={closeImport}>
           <div style={{ background: "#1e293b", borderRadius: 16, maxWidth: 740, width: "100%", maxHeight: "90vh", overflow: "auto", border: "1px solid rgba(255,255,255,0.08)" }} onClick={e => e.stopPropagation()}>
             <div style={{ padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
@@ -575,7 +586,7 @@ function TecnicoTab({ staff, onReload }) {
     if (!form.nombre.trim()) { Swal.fire({ icon: "info", title: "Nombre requerido", toast: true, position: "top-end", timer: 2000, showConfirmButton: false }); return; }
     const payload = { ...form, action: editId ? "update" : "create", id: editId };
     if (editId) payload.id = editId;
-    apiPost(`${API}crud_cuerpo_tecnico.php`, payload).then(d => {
+    apiPost(`${API}crud_cuerpo_tecnico.php`, payload).then(r => r.json()).then(d => {
       if (d.success) { Swal.fire({ icon: "success", title: editId ? "Actualizado" : "Creado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); setShowForm(false); }
       else Swal.fire("Error", d.error || "Error", "error");
     }).catch(() => Swal.fire("Error", "Error de conexión", "error"));
@@ -583,7 +594,7 @@ function TecnicoTab({ staff, onReload }) {
 
   const deleteStaff = (id, nombre) => {
     Swal.fire({ title: "¿Eliminar miembro?", text: nombre, icon: "warning", showCancelButton: true, confirmButtonText: "Sí, eliminar", confirmButtonColor: "#d33" })
-      .then(r => { if (r.isConfirmed) { apiPost(`${API}crud_cuerpo_tecnico.php`, { action: "delete", id }).then(d => { if (d.success) { Swal.fire({ icon: "success", title: "Eliminado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); } }).catch(() => Swal.fire("Error", "Error", "error")); } });
+      .then(r => { if (r.isConfirmed) { apiPost(`${API}crud_cuerpo_tecnico.php`, { action: "delete", id }).then(r => r.json()).then(d => { if (d.success) { Swal.fire({ icon: "success", title: "Eliminado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); } }).catch(() => Swal.fire("Error", "Error", "error")); } });
   };
 
   return (

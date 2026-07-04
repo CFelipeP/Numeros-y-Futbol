@@ -37,13 +37,13 @@ function nullStr($v)    { return ($v===null||$v===''||strtolower((string)$v)==='
 $csv_text = $_POST['csv_text'] ?? '';
 
 if (!$csv_text) {
-    echo json_encode(['success'=>false,'error'=>'Falta csv_text']);
+    echo json_enc(['success'=>false,'error'=>'Falta csv_text']);
     exit();
 }
 
 $lines = array_filter(explode("\n", trim($csv_text)), fn($l) => trim($l) !== '');
 if (count($lines) < 2) {
-    echo json_encode(['success'=>false,'error'=>'CSV vacío o sin datos']);
+    echo json_enc(['success'=>false,'error'=>'CSV vacío o sin datos']);
     exit();
 }
 
@@ -70,7 +70,7 @@ try {
         $posicion          = normPos($row['posicion'] ?? '');
         $numero_camiseta   = nullInt($row['numero_camiseta'] ?? null);
         $edad              = nullInt($row['edad'] ?? null);
-        $club              = nullStr($row['club'] ?? null);
+        $club              = nullStr($row['club'] ?? $row['club_origen'] ?? null);
         $partidos_jugados  = defaultInt($row['partidos_jugados'] ?? 0);
         $goles             = defaultInt($row['goles'] ?? 0);
         $asistencias       = defaultInt($row['asistencias'] ?? 0);
@@ -91,9 +91,9 @@ try {
     }
 
     $conn->commit();
-    echo json_encode(['success'=>true,'importados'=>$importados,'errores'=>$errores]);
+    echo json_enc(['success'=>true,'importados'=>$importados,'errores'=>$errores]);
 
 } catch (Exception $e) {
     $conn->rollBack();
-    echo json_encode(['success'=>false,'error'=>"Error interno del servidor"]);
+    echo json_enc(['success'=>false,'error'=>"Error interno del servidor"]);
 }

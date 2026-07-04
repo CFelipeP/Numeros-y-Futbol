@@ -7,7 +7,7 @@ require_once __DIR__ . '/db.php';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if ($id <= 0) {
-    echo json_encode(["success" => false, "error" => "ID requerido"]);
+    echo json_enc(["success" => false, "error" => "ID requerido"]);
     exit();
 }
 
@@ -16,7 +16,7 @@ $stmt->execute([$id]);
 $equipo = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$equipo) {
-    echo json_encode(["success" => false, "error" => "Equipo no encontrado"]);
+    echo json_enc(["success" => false, "error" => "Equipo no encontrado"]);
     exit();
 }
 
@@ -60,7 +60,7 @@ $stmt = $pdo->prepare("
 $stmt->execute([$id]);
 $jugadores = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-echo json_encode([
+echo json_enc([
     "success" => true,
     "equipo" => $equipo,
     "jugadores" => $jugadores

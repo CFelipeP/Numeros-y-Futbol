@@ -93,10 +93,16 @@ const Carousel = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${API_BASE}get_carousel.php`)
-      .then(res => res.json())
-      .then(data => {
-        setMatches(data.data || []);
+    Promise.all([
+      fetch(`${API_BASE}get_carousel.php?division=primera`).then(res => res.json()),
+      fetch(`${API_BASE}get_carousel.php?division=femenina`).then(res => res.json())
+    ]).then(([data1, data2]) => {
+        const all = [...(data1.data || []), ...(data2.data || [])];
+        all.sort((a, b) => {
+          const order = { 'En Curso': 0, 'Pendiente': 1, 'Finalizado': 2 };
+          return (order[a.estado] ?? 3) - (order[b.estado] ?? 3);
+        });
+        setMatches(all);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -221,7 +227,7 @@ const Carousel = () => {
 
               return (
                 <div className="carousel-card" key={`m-${idx}`}
-                  onClick={() => { if ((isPending || isLive) && match.id) navigate(`/partido/${match.id}/primera`); }}
+                  onClick={() => { if ((isPending || isLive) && match.id) navigate(`/partido/${match.id}/${match.division || 'primera'}`); }}
                   style={{
                   background: "linear-gradient(160deg, #0d1117 0%, #111827 50%, #0f1319 100%)",
                   border: "1px solid #1a2233",

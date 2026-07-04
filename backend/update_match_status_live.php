@@ -10,10 +10,10 @@ $id       = intval($body['id']       ?? 0);
 $division = trim($body['division']   ?? 'primera');
 $estado   = trim($body['estado']     ?? 'En Curso');
 
-if (!$id) { echo json_encode(["success" => false, "error" => "ID requerido"]); exit; }
+if (!$id) { echo json_enc(["success" => false, "error" => "ID requerido"]); exit; }
 
 $allowed = ['Pendiente', 'En Curso', 'Finalizado'];
-if (!in_array($estado, $allowed)) { echo json_encode(["success" => false, "error" => "Estado inválido"]); exit; }
+if (!in_array($estado, $allowed)) { echo json_enc(["success" => false, "error" => "Estado inválido"]); exit; }
 
 try {
     switch ($division) {
@@ -83,7 +83,7 @@ try {
         $pdo->exec("UPDATE `$tablaPos` SET dg = gf - gc WHERE equipo_id IN ($l, $v)");
     }
 
-    echo json_encode(["success" => true, "estado" => $estado]);
+    echo json_enc(["success" => true, "estado" => $estado]);
 } catch (Exception $e) {
-    echo json_encode(["success" => false, "error" => "Error interno del servidor"]);
+    echo json_enc(["success" => false, "error" => "Error interno del servidor"]);
 }

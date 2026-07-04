@@ -15,8 +15,8 @@ try {
     ");
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode(["success" => true, "data" => $data]);
+    echo json_enc(["success" => true, "data" => $data]);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Error interno del servidor"]);
+    echo json_enc(["success" => false, "message" => "Error interno del servidor"]);
 }

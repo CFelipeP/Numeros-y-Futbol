@@ -28,7 +28,7 @@ $res = $conn->query("
 ");
 
 if (!$res) {
-    echo json_encode([]);
+    echo json_enc([]);
     exit;
 }
 
@@ -63,5 +63,5 @@ for ($i = 0; $i < $total; $i += 6) {
     $jornada++;
 }
 
-echo json_encode($data);
+echo json_enc($data);
 $conn->close();

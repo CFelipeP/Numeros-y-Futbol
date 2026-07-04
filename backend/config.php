@@ -1,5 +1,9 @@
 <?php
 
+mb_internal_encoding('UTF-8');
+mb_http_output('UTF-8');
+ini_set('default_charset', 'UTF-8');
+
 $envFile = __DIR__ . '/.env';
 if (file_exists($envFile)) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -14,6 +18,10 @@ if (file_exists($envFile)) {
             putenv("$key=$val");
         }
     }
+}
+
+function json_enc($data, $flags = 0) {
+    return json_encode($data, $flags | JSON_UNESCAPED_UNICODE);
 }
 
 function env($key, $default = null) {

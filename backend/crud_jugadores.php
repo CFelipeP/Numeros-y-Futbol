@@ -19,7 +19,7 @@ try {
         $equipo_id = $_GET['equipo_id'] ?? null;
 
         if (!$equipo_id) {
-            echo json_encode([
+            echo json_enc([
                 "success"=>false,
                 "error"=>"Falta equipo_id"
             ]);
@@ -35,7 +35,7 @@ try {
 
         $stmt->execute([$equipo_id]);
 
-        echo json_encode([
+        echo json_enc([
             "success"=>true,
             "jugadores"=>$stmt->fetchAll(PDO::FETCH_ASSOC)
         ]);
@@ -67,7 +67,7 @@ try {
                 $es_titular
             ]);
 
-            echo json_encode(["success"=>true]);
+            echo json_enc(["success"=>true]);
             exit;
         }
 
@@ -96,7 +96,7 @@ try {
                 $data['id']
             ]);
 
-            echo json_encode(["success"=>true]);
+            echo json_enc(["success"=>true]);
             exit;
         }
 
@@ -105,7 +105,7 @@ try {
             $stmt = $conn->prepare("DELETE FROM jugadores WHERE id = ?");
             $stmt->execute([$data['id']]);
 
-            echo json_encode(["success"=>true]);
+            echo json_enc(["success"=>true]);
             exit;
         }
 
@@ -116,7 +116,7 @@ try {
             $titulares = json_decode($data['titulares'] ?? '[]', true);
 
             if (!$equipo_id || !$formacion) {
-                echo json_encode([
+                echo json_enc([
                     "success"=>false,
                     "error"=>"Datos incompletos"
                 ]);
@@ -143,24 +143,24 @@ try {
                 ]);
             }
 
-            echo json_encode(["success"=>true]);
+            echo json_enc(["success"=>true]);
             exit;
         }
 
-        echo json_encode([
+        echo json_enc([
             "success"=>false,
             "error"=>"Acción no válida"
         ]);
         exit;
     }
 
-    echo json_encode([
+    echo json_enc([
         "success"=>false,
         "error"=>"Método no permitido"
     ]);
 
 } catch (Exception $e) {
-    echo json_encode([
+    echo json_enc([
         "success"=>false,
         "error"=>"Error interno del servidor"
     ]);

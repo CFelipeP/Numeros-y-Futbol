@@ -40,13 +40,13 @@ $division  = $_POST['division']  ?? 'primera';
 $csv_text  = $_POST['csv_text']  ?? '';
 
 if (!$equipo_id || !$csv_text) {
-    echo json_encode(['success'=>false,'error'=>'Faltan equipo_id o csv_text']);
+    echo json_enc(['success'=>false,'error'=>'Faltan equipo_id o csv_text']);
     exit();
 }
 
 $lines = array_filter(explode("\n", trim($csv_text)), fn($l) => trim($l) !== '');
 if (count($lines) < 2) {
-    echo json_encode(['success'=>false,'error'=>'CSV vacío o sin datos']);
+    echo json_enc(['success'=>false,'error'=>'CSV vacío o sin datos']);
     exit();
 }
 
@@ -56,11 +56,13 @@ $headers = array_map('trim', array_map('strtolower', str_getcsv(array_shift($lin
 $table = match($division) {
     'segunda' => 'jugadores_segunda',
     'tercera' => 'jugadores_tercera',
+    'femenina' => 'jugadores_femenina',
     default   => 'jugadores',
 };
 $statsTable = match($division) {
-    'segunda' => null, // segunda tiene stats inline
+    'segunda' => null,
     'tercera' => null,
+    'femenina' => 'estadisticas_jugadores_femenina',
     default   => 'estadisticas_jugadores',
 };
 
@@ -141,6 +143,32 @@ try {
                     $equipo_id,$nombre,$posicion,$numero_camiseta,$edad,$nacionalidad,$es_titular_csv
                 ]);
 
+            } elseif ($division === 'femenina') {
+                $sql = "INSERT INTO jugadores_femenina
+                    (equipo_id,nombre,posicion,numero_camiseta,edad,nacionalidad,es_titular)
+                    VALUES (?,?,?,?,?,?,?)";
+                $stmt = $conn->prepare($sql);
+                $stmt->execute([$equipo_id,$nombre,$posicion,$numero_camiseta,$edad,$nacionalidad,$es_titular_csv]);
+                $jugador_id = $conn->lastInsertId();
+
+                $sql2 = "INSERT INTO estadisticas_jugadores_femenina
+                    (jugador_id,temporada,partidos_jugados,goles,asistencias,goles_cabeza,
+                     goles_tiro_libre,goles_penal,tarjetas_amarillas,tarjetas_rojas,
+                     minutos_jugados,goles_recibidos,vaya_invicta)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    ON DUPLICATE KEY UPDATE
+                        partidos_jugados=VALUES(partidos_jugados),goles=VALUES(goles),
+                        asistencias=VALUES(asistencias),goles_cabeza=VALUES(goles_cabeza),
+                        goles_tiro_libre=VALUES(goles_tiro_libre),goles_penal=VALUES(goles_penal),
+                        tarjetas_amarillas=VALUES(tarjetas_amarillas),tarjetas_rojas=VALUES(tarjetas_rojas),
+                        minutos_jugados=VALUES(minutos_jugados),goles_recibidos=VALUES(goles_recibidos),
+                        vaya_invicta=VALUES(vaya_invicta)";
+                $conn->prepare($sql2)->execute([
+                    $jugador_id,'2025-2026',$pj,$goles,$asistencias,$goles_cabeza,
+                    $goles_tiro_libre,$goles_penal,$tarjetas_amarillas,$tarjetas_rojas,
+                    $minutos_jugados,$goles_recibidos,$vaya_invicta
+                ]);
+
             } else {
                 // Primera: jugadores + estadisticas_jugadores separadas
                 $sql = "INSERT INTO jugadores
@@ -178,9 +206,9 @@ try {
     }
 
     $conn->commit();
-    echo json_encode(['success'=>true,'importados'=>$importados,'errores'=>$errores]);
+    echo json_enc(['success'=>true,'importados'=>$importados,'errores'=>$errores]);
 
 } catch (Exception $e) {
     $conn->rollBack();
-    echo json_encode(['success'=>false,'error'=>"Error interno del servidor"]);
+    echo json_enc(['success'=>false,'error'=>"Error interno del servidor"]);
 }

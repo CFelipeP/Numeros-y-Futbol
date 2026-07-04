@@ -10,13 +10,13 @@ $apodo = isset($data->apodo) ? trim(strtolower($data->apodo)) : null;
 
 if (!$email && !$apodo) {
     http_response_code(400);
-    echo json_encode(["error" => "Ingresa tu correo electrónico o apodo"]);
+    echo json_enc(["error" => "Ingresa tu correo electrónico o apodo"]);
     exit;
 }
 
 if (!$password) {
     http_response_code(400);
-    echo json_encode(["error" => "La contraseña es obligatoria"]);
+    echo json_enc(["error" => "La contraseña es obligatoria"]);
     exit;
 }
 
@@ -40,7 +40,7 @@ if ($user && password_verify($password, $user['password'])) {
     $stmt->execute();
     $stmt->close();
 
-    echo json_encode([
+    echo json_enc([
         "id"     => $user['id'],
         "nombre" => $user['nombre'],
         "apodo"  => $user['apodo'],
@@ -50,5 +50,5 @@ if ($user && password_verify($password, $user['password'])) {
     ]);
 } else {
     http_response_code(401);
-    echo json_encode(["error" => "Credenciales incorrectas"]);
+    echo json_enc(["error" => "Credenciales incorrectas"]);
 }

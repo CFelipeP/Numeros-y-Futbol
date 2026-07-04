@@ -6,7 +6,7 @@ require_once __DIR__ . '/db.php';
 $partido_id = intval($_GET['partido_id'] ?? 0);
 $division   = trim($_GET['division']     ?? 'primera');
 
-if (!$partido_id) { echo json_encode(["error" => "ID requerido"]); exit; }
+if (!$partido_id) { echo json_enc(["error" => "ID requerido"]); exit; }
 
 try {
     $pdo->exec("
@@ -36,7 +36,7 @@ try {
     $stmt->execute([$partido_id, $division]);
     $comentarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode(["success" => true, "comentarios" => $comentarios]);
+    echo json_enc(["success" => true, "comentarios" => $comentarios]);
 } catch (Exception $e) {
-    echo json_encode(["error" => "Error interno del servidor"]);
+    echo json_enc(["error" => "Error interno del servidor"]);
 }

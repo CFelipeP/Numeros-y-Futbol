@@ -22,8 +22,8 @@ try {
         LIMIT ?
     ");
     $stmt->execute([$temporada, $limit]);
-    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+    echo json_enc($stmt->fetchAll(PDO::FETCH_ASSOC));
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Error']);
+    echo json_enc(['error' => 'Error']);
 }

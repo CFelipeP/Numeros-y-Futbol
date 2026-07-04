@@ -17,7 +17,7 @@ $result = $conn->query("SELECT p.*,
     ORDER BY p.fecha DESC, p.id DESC");
 
 if (!$result) {
-    echo json_encode([]);
+    echo json_enc([]);
     exit;
 }
 
@@ -33,4 +33,4 @@ while ($row = $result->fetch_assoc()) {
     $row['away_logo'] = $row['away_logo'];
     $partidos[] = $row;
 }
-echo json_encode($partidos);
+echo json_enc($partidos);

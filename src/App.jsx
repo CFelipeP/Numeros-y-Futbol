@@ -20,9 +20,14 @@ import Segunda from "./Divisiones/Segunda";
 import Femenina from "./Divisiones/Femenina";
 import CopaPresidente from "./Divisiones/CopaPresidente";
 import Seleccion from "./Divisiones/Seleccion";
+import SeleccionFemenina from "./Divisiones/SeleccionFemenina";
+import SeleccionSub20 from "./Divisiones/SeleccionSub20";
+import SeleccionSub17 from "./Divisiones/SeleccionSub17";
 import ManageSeleccion from "./dashboard/ManageSeleccion";
 import ManageTeamsFemenina from "./dashboard/ManageTeamsFemenina";
 import ManageSeleccionFemenina from "./dashboard/ManageSeleccionFemenina";
+import ManageSeleccionSub20 from "./dashboard/ManageSeleccionSub20";
+import ManageSeleccionSub17 from "./dashboard/ManageSeleccionSub17";
 import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
 import ScrollToTop from "./components/ScrollToTop";
@@ -66,6 +71,9 @@ function App() {
         <Route path="/teams/femenina" element={<ManageTeamsFemenina />} />
         <Route path="/segunda" element={<Segunda />} />
         <Route path="/seleccion" element={<Seleccion />} />
+        <Route path="/seleccion-femenina" element={<SeleccionFemenina />} />
+        <Route path="/seleccion-sub20" element={<SeleccionSub20 />} />
+        <Route path="/seleccion-sub17" element={<SeleccionSub17 />} />
         <Route path="/femenina" element={<Femenina />} />
         <Route path="/admin/plantilla" element={<PlantillaEquipos />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -99,6 +107,22 @@ function App() {
           element={
             <ProtectedRoute>
               <ManageSeleccionFemenina />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manage-seleccion-sub20"
+          element={
+            <ProtectedRoute>
+              <ManageSeleccionSub20 />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manage-seleccion-sub17"
+          element={
+            <ProtectedRoute>
+              <ManageSeleccionSub17 />
             </ProtectedRoute>
           }
         />

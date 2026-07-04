@@ -11,7 +11,7 @@ try {
     $goles      = $pdo->query("SELECT COALESCE(SUM(goles_local),0)+COALESCE(SUM(goles_visitante),0) FROM partidos_copa WHERE estado='Finalizado'")->fetchColumn();
     $equipos    = $pdo->query("SELECT COUNT(*) FROM equipos_copa WHERE activo=1")->fetchColumn();
 
-    echo json_encode(["success" => true, "data" => [
+    echo json_enc(["success" => true, "data" => [
         "total"       => (int)$total,
         "finalizados" => (int)$finalizados,
         "pendientes"  => (int)$pendientes,
@@ -21,5 +21,5 @@ try {
     ]]);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Error interno del servidor"]);
+    echo json_enc(["success" => false, "message" => "Error interno del servidor"]);
 }

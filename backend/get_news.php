@@ -13,18 +13,18 @@ try {
         $sql->bindParam(":id", $id, PDO::PARAM_INT);
         $sql->execute();
         $news = $sql->fetch(PDO::FETCH_ASSOC);
-        echo json_encode($news);
+        echo json_enc($news);
     } else {
         // 🔥 TODAS LAS NOTICIAS
         $sql = $conn->prepare("SELECT * FROM noticias ORDER BY fecha DESC");
         $sql->execute();
         $news = $sql->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($news);
+        echo json_enc($news);
     }
 } catch (PDOException $e) {
     // Captura errores de la base de datos
-    echo json_encode(['success' => false, 'message' => 'Error de base de datos: ' . $e->getMessage()]);
+    echo json_enc(['success' => false, 'message' => 'Error de base de datos: ' . $e->getMessage()]);
 } catch (Exception $e) {
     // Captura otros errores generales
-    echo json_encode(['success' => false, 'message' => 'Error interno del servidor: ' . $e->getMessage()]);
+    echo json_enc(['success' => false, 'message' => 'Error interno del servidor: ' . $e->getMessage()]);
 }

@@ -24,6 +24,7 @@ const ManageMatches = () => {
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [teamsOpen, setTeamsOpen] = useState(false);
+  const [seleccionesOpen, setSeleccionesOpen] = useState(false);
     const location = useLocation();
     const [division, setDivision] = useState(() => localStorage.getItem("admin_division") || "primera");
     useEffect(() => { localStorage.setItem("admin_division", division); }, [division]);
@@ -104,7 +105,7 @@ const ManageMatches = () => {
 
     const handleLogout = () => {
         Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir", confirmButtonColor: "#d33" })
-            .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); window.location.href = "/login"; } });
+            .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
     };
 
     const getActiveGrupo = () => {
@@ -274,8 +275,15 @@ const ManageMatches = () => {
           { path: "/teams/femenina", label: "Femenina" },
         ]
       },
-      { path: "/manage-seleccion", icon: <Shield size={20} />, label: "Selección Nacional" },
-      { path: "/manage-seleccion-femenina", icon: <Shield size={20} />, label: "Selección Femenina" },
+      {
+        type: "dropdown", icon: <Shield size={20} />, label: "Selecciones",
+        children: [
+          { path: "/manage-seleccion", label: "Masculina" },
+          { path: "/manage-seleccion-femenina", label: "Femenina" },
+          { path: "/manage-seleccion-sub20", label: "Sub-20" },
+            { path: "/manage-seleccion-sub17", label: "Sub-17" },
+        ]
+      },
       { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
       { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
       { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
@@ -363,11 +371,11 @@ const ManageMatches = () => {
                             if (item.type === "dropdown") {
                                 return (
                                     <li key={idx}>
-                                        <button className="nav-item" onClick={() => setTeamsOpen(!teamsOpen)} style={{ width: "100%", justifyContent: "space-between" }}>
+                                        <button className="nav-item" onClick={() => { const s = item.label === "Selecciones"; s ? setSeleccionesOpen(!seleccionesOpen) : setTeamsOpen(!teamsOpen); }} style={{ width: "100%", justifyContent: "space-between" }}>
                                             <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>{item.icon} {item.label}</span>
-                                            <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: teamsOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
+                                            <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
                                         </button>
-                                        <ul style={{ maxHeight: teamsOpen ? "400px" : "0", opacity: teamsOpen ? "1" : "0", overflow: "hidden", transition: "max-height 0.3s ease, opacity 0.2s ease", listStyle: "none", padding: teamsOpen ? "2px 0 4px 0" : "0", margin: 0 }}>
+                                        <ul style={{ maxHeight: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "400px" : "0", opacity: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "1" : "0", overflow: "hidden", transition: "max-height 0.3s ease, opacity 0.2s ease", listStyle: "none", padding: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "2px 0 4px 0" : "0", margin: 0 }}>
                                             {item.children.map(child => (<li key={child.path}><Link to={child.path} className={`nav-item${location.pathname === child.path ? " active" : ""}`} style={{ paddingLeft: "48px", fontSize: "13.5px" }}>{child.label}</Link></li>))}
                                         </ul>
                                     </li>
@@ -506,9 +514,9 @@ const ManageMatches = () => {
                                 </div>
                             )}
                             <div className="nm-selects-row nm-selects-row-lg">
-                                {renderCustomSelect("Equipo Local", newLocal, searchLocal, setSearchLocal, openSelectLocal, setOpenSelectLocal, filteredLocal, handleSelectLocal, localRef)}
+                                {renderCustomSelect("Equipo Local", newLocal, searchLocal, setSearchLocal, openSelectLocal, (v) => { setOpenSelectLocal(v); if (v) setOpenSelectVisitante(false); }, filteredLocal, handleSelectLocal, localRef)}
                                 <div className="nm-vs-badge nm-vs-badge-lg"><span>VS</span></div>
-                                {renderCustomSelect("Equipo Visitante", newVisitante, searchVisitante, setSearchVisitante, openSelectVisitante, setOpenSelectVisitante, filteredVisitante, handleSelectVisitante, visitanteRef)}
+                                {renderCustomSelect("Equipo Visitante", newVisitante, searchVisitante, setSearchVisitante, openSelectVisitante, (v) => { setOpenSelectVisitante(v); if (v) setOpenSelectLocal(false); }, filteredVisitante, handleSelectVisitante, visitanteRef)}
                             </div>
                             <div className="nm-preview nm-preview-lg">
                                 <div className="nm-preview-side">
@@ -675,7 +683,7 @@ const ManageMatches = () => {
     .cs-sel-logo-lg { width: 38px; height: 38px; border-radius: 10px; padding: 3px; }
     .cs-sel-name-lg { font-size: 16px; font-weight: 800; }
     .cs-placeholder-lg { font-size: 15px; }
-    .cs-dropdown { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; box-shadow: 0 16px 40px -8px rgba(0,0,0,0.6); z-index: 50; overflow: hidden; }
+    .cs-dropdown { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; box-shadow: 0 16px 40px -8px rgba(0,0,0,0.6); z-index: 500; overflow: hidden; }
     .cs-search-wrap { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .cs-search-icon { color: #334155; flex-shrink: 0; }
     .cs-search-input { flex: 1; background: none; border: none; outline: none; color: #e2e8f0; font-size: 13px; }

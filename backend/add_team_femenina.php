@@ -10,7 +10,7 @@ $ciudad  = $_POST['ciudad'] ?? '';
 $estadio = $_POST['estadio'] ?? '';
 
 if (empty($nombre)) {
-    echo json_encode(["success" => false, "error" => "El nombre es obligatorio"]);
+    echo json_enc(["success" => false, "error" => "El nombre es obligatorio"]);
     exit;
 }
 
@@ -30,4 +30,4 @@ $id = $conn->lastInsertId();
 $stmt2 = $conn->prepare("INSERT INTO tabla_posiciones_femenina (equipo_id) VALUES (?)");
 $stmt2->execute([$id]);
 
-echo json_encode(["success" => true]);
+echo json_enc(["success" => true]);

@@ -11,12 +11,12 @@ $assignments = $body['assignments'] ?? [];
 // Validar: solo letras A-Z
 foreach ($assignments as $grupo => $ids) {
     if (!preg_match('/^[A-Z]$/', $grupo)) {
-        echo json_encode(['success' => false, 'message' => "Grupo inválido: $grupo"]);
+        echo json_enc(['success' => false, 'message' => "Grupo inválido: $grupo"]);
         exit;
     }
     // Máximo 4 por grupo
     if (count($ids) > 4) {
-        echo json_encode(['success' => false, 'message' => "Grupo $grupo tiene más de 4 equipos"]);
+        echo json_enc(['success' => false, 'message' => "Grupo $grupo tiene más de 4 equipos"]);
         exit;
     }
 }
@@ -36,9 +36,9 @@ try {
     }
 
     $pdo->commit();
-    echo json_encode(['success' => true, 'message' => 'Grupos guardados']);
+    echo json_enc(['success' => true, 'message' => 'Grupos guardados']);
 
 } catch (Exception $e) {
     $pdo->rollBack();
-    echo json_encode(['success' => false, 'message' => "Error interno del servidor"]);
+    echo json_enc(['success' => false, 'message' => "Error interno del servidor"]);
 }

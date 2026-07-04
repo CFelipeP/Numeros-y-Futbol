@@ -1,15 +1,44 @@
 <?php
-header('Content-Type: application/json'); // Aseguramos que la respuesta sea JSON
-error_reporting(0); ini_set('display_errors', 0); // Deshabilitamos la muestra de errores para producción
+header('Content-Type: application/json');
+error_reporting(0); ini_set('display_errors', 0);
 require_once __DIR__ . '/cors.php';
 
 try {
-    require_once __DIR__ . '/db.php'; // Incluimos la conexión a la base de datos
+    require_once __DIR__ . '/db.php';
 
-    // Solo Primera División, los más recientes primero
+    $division = $_GET['division'] ?? 'primera';
+
+    switch ($division) {
+        case 'femenina':
+            $tPartidos = 'partidos_femenina';
+            $tEquipos  = 'equipos_primera_femenina';
+            $colLocal  = 'equipo_local';
+            $colVisit  = 'equipo_visitante';
+            break;
+        case 'segunda':
+            $tPartidos = 'partidos_segunda';
+            $tEquipos  = 'equipos_segunda';
+            $colLocal  = 'local_id';
+            $colVisit  = 'visitante_id';
+            break;
+        case 'tercera':
+            $tPartidos = 'partidos_tercera';
+            $tEquipos  = 'equipos_tercera';
+            $colLocal  = 'local_id';
+            $colVisit  = 'visitante_id';
+            break;
+        default:
+            $tPartidos = 'partidos';
+            $tEquipos  = 'equipos';
+            $colLocal  = 'equipo_local';
+            $colVisit  = 'equipo_visitante';
+            break;
+    }
+
     $sql = $conn->query("
         SELECT
             p.id,
+            '$division' AS division,
             p.goles_local,
             p.goles_visitante,
             p.estado,
@@ -18,9 +47,9 @@ try {
             el.logo   AS logo1,
             ev.nombre AS team2,
             ev.logo   AS logo2
-        FROM partidos p
-        JOIN equipos el ON p.equipo_local     = el.id
-        JOIN equipos ev ON p.equipo_visitante = ev.id
+        FROM $tPartidos p
+        JOIN $tEquipos el ON p.$colLocal = el.id
+        JOIN $tEquipos ev ON p.$colVisit = ev.id
         WHERE p.estado IN ('Finalizado', 'En Curso', 'Pendiente')
         ORDER BY
             FIELD(p.estado, 'En Curso', 'Pendiente', 'Finalizado'),
@@ -29,12 +58,9 @@ try {
     ");
 
     $partidos = $sql->fetchAll(PDO::FETCH_ASSOC);
-
-    echo json_encode(["success" => true, "data" => $partidos]);
+    echo json_enc(["success" => true, "data" => $partidos]);
 } catch (PDOException $e) {
-    // Captura errores de la base de datos
-    echo json_encode(['success' => false, 'message' => 'Error de base de datos: ' . $e->getMessage()]);
+    echo json_enc(['success' => false, 'message' => 'Error de base de datos: ' . $e->getMessage()]);
 } catch (Exception $e) {
-    // Captura otros errores generales
-    echo json_encode(['success' => false, 'message' => 'Error interno del servidor: ' . $e->getMessage()]);
+    echo json_enc(['success' => false, 'message' => 'Error interno del servidor: ' . $e->getMessage()]);
 }

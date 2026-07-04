@@ -19,7 +19,7 @@ $result = $conn->query("
 ");
 
 if (!$result) {
-    echo json_encode([]);
+    echo json_enc([]);
     exit;
 }
 
@@ -32,5 +32,5 @@ while ($row = $result->fetch_assoc()) {
     $datos[] = $row;
 }
 
-echo json_encode($datos);
+echo json_enc($datos);
 $conn->close();

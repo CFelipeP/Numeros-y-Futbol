@@ -7,7 +7,7 @@ requireAdmin();
 
 $sql = "SELECT id, nombre, email, rol FROM usuarios";
 $stmt = $conn->query($sql);
-if (!$stmt) { echo json_encode([]); exit; }
+if (!$stmt) { echo json_enc([]); exit; }
 
 $users = [];
 
@@ -22,5 +22,5 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     ];
 }
 
-echo json_encode($users);
+echo json_enc($users);
 ?>

@@ -27,9 +27,9 @@ try {
         ORDER BY score ASC
         LIMIT 10
     ");
-    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+    echo json_enc($stmt->fetchAll(PDO::FETCH_ASSOC));
 } catch (Exception $e) {
-    echo json_encode([
+    echo json_enc([
         'error' => "Error interno del servidor"
     ]);
 }

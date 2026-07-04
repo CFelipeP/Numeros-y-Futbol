@@ -9,12 +9,12 @@ requireAdmin();
 $conn = $mysqli;
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(["error" => "Método no permitido"]);
+    echo json_enc(["error" => "Método no permitido"]);
     exit();
 }
 
 if (!isset($_POST['id'])) {
-    echo json_encode(["error" => "ID no enviado"]);
+    echo json_enc(["error" => "ID no enviado"]);
     exit();
 }
 
@@ -22,7 +22,7 @@ $id = intval($_POST['id']);
 
 $check = $conn->prepare("SELECT id FROM partidos WHERE id = ?");
 if (!$check) {
-    echo json_encode(["error" => "Error interno del servidor"]);
+    echo json_enc(["error" => "Error interno del servidor"]);
     exit();
 }
 
@@ -31,22 +31,22 @@ $check->execute();
 $check->store_result();
 
 if ($check->num_rows === 0) {
-    echo json_encode(["error" => "No existe"]);
+    echo json_enc(["error" => "No existe"]);
     exit();
 }
 
 $stmt = $conn->prepare("DELETE FROM partidos WHERE id = ?");
 if (!$stmt) {
-    echo json_encode(["error" => "Error interno del servidor"]);
+    echo json_enc(["error" => "Error interno del servidor"]);
     exit();
 }
 
 $stmt->bind_param("i", $id);
 
 if ($stmt->execute()) {
-    echo json_encode(["success" => true]);
+    echo json_enc(["success" => true]);
 } else {
-    echo json_encode(["error" => "Error interno del servidor"]);
+    echo json_enc(["error" => "Error interno del servidor"]);
 }
 
 $stmt->close();

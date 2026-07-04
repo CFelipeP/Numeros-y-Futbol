@@ -4,7 +4,13 @@ require_once __DIR__ . '/db.php';
 function getAuthToken() {
     $header = $_SERVER['HTTP_AUTHORIZATION']
            ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
+           ?? $_ENV['HTTP_AUTHORIZATION']
+           ?? $_SERVER['HTTP_AUTHORIZATION']
            ?? '';
+    if (!$header && function_exists('getallheaders')) {
+        $headers = getallheaders();
+        $header = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    }
     if (!$header && function_exists('apache_request_headers')) {
         $headers = apache_request_headers();
         $header = $headers['Authorization'] ?? $headers['authorization'] ?? '';
@@ -36,7 +42,7 @@ function requireAdmin() {
     $user = getCurrentUser();
     if (!$user || $user['user_role'] !== 'admin') {
         http_response_code(401);
-        echo json_encode(["success" => false, "error" => "No autorizado"]);
+        echo json_enc(["success" => false, "error" => "No autorizado"]);
         exit;
     }
     return $user;
@@ -46,7 +52,7 @@ function requireAuth() {
     $user = getCurrentUser();
     if (!$user) {
         http_response_code(401);
-        echo json_encode(["success" => false, "error" => "No autorizado"]);
+        echo json_enc(["success" => false, "error" => "No autorizado"]);
         exit;
     }
     return $user;

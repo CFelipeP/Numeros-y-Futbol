@@ -13,10 +13,10 @@ $sql = "SELECT tp.id, tp.equipo_id, e.nombre, e.logo, e.grupo,
         ORDER BY e.grupo ASC, tp.pts DESC, tp.dg DESC, tp.gf DESC";
 
 $result = $conn->query($sql);
-if (!$result) { echo json_encode([]); exit; }
+if (!$result) { echo json_enc([]); exit; }
 $data = [];
 while ($row = $result->fetch_assoc()) {
     $data[] = $row;
 }
-echo json_encode($data);
+echo json_enc($data);
 $conn->close();

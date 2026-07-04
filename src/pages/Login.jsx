@@ -44,7 +44,7 @@ export default function Login() {
                 timer: 2000,
                 showConfirmButton: false,
             }).then(() => {
-                navigate(res.data.rol === "admin" ? "/dashboard" : "/perfil");
+                navigate(res.data.rol === "admin" ? "/dashboard" : "/");
             });
 
         } catch (error) {

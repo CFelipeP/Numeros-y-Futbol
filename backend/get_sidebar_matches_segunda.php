@@ -36,5 +36,5 @@ while ($row = $res->fetch_assoc()) {
     $recent[] = $row;
 }
 
-echo json_encode(["next" => $next, "recent" => $recent]);
+echo json_enc(["next" => $next, "recent" => $recent]);
 $conn->close();

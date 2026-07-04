@@ -17,12 +17,12 @@ try {
         INNER JOIN equipos e ON e.id = j.equipo_id
         ORDER BY j.numero_camiseta ASC
     ");
-    echo json_encode([
+    echo json_enc([
         "success" => true,
         "jugadores" => $stmt->fetchAll(PDO::FETCH_ASSOC)
     ]);
 } catch (Exception $e) {
-    echo json_encode([
+    echo json_enc([
         "success" => false,
         "error" => "Error interno del servidor"
     ]);

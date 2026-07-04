@@ -6,11 +6,11 @@ require_once __DIR__ . '/auth_check.php';
 $currentUser = requireAuth();
 
 $id = intval($_GET['id'] ?? 0);
-if (!$id) { echo json_encode(["error" => "ID requerido"]); exit; }
+if (!$id) { echo json_enc(["error" => "ID requerido"]); exit; }
 
 if ($id !== (int)$currentUser['user_id'] && $currentUser['user_role'] !== 'admin') {
     http_response_code(403);
-    echo json_encode(["error" => "No autorizado"]);
+    echo json_enc(["error" => "No autorizado"]);
     exit;
 }
 
@@ -18,8 +18,8 @@ try {
     $stmt = $pdo->prepare("SELECT id, nombre, apodo, email, rol FROM usuarios WHERE id = ?");
     $stmt->execute([$id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$user) { echo json_encode(["error" => "Usuario no encontrado"]); exit; }
-    echo json_encode(["success" => true, "user" => $user]);
+    if (!$user) { echo json_enc(["error" => "Usuario no encontrado"]); exit; }
+    echo json_enc(["success" => true, "user" => $user]);
 } catch (Exception $e) {
-    echo json_encode(["error" => "Error interno del servidor"]);
+    echo json_enc(["error" => "Error interno del servidor"]);
 }

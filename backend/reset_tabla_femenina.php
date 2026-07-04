@@ -9,5 +9,5 @@ requireAdmin();
 $conn = $mysqli;
 
 $sql = "UPDATE tabla_posiciones_femenina SET partidos_jugados=0, ganados=0, empatados=0, perdidos=0, goles_favor=0, goles_contra=0, puntos=0";
-echo json_encode(["success" => $conn->query($sql)]);
+echo json_enc(["success" => $conn->query($sql)]);
 $conn->close();

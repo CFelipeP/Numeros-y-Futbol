@@ -24,7 +24,7 @@ try {
     ");
 
     $match = $stmt->fetch(PDO::FETCH_ASSOC);
-    echo json_encode($match ?: null);
+    echo json_enc($match ?: null);
 } catch (Throwable $e) {
-    echo json_encode(null);
+    echo json_enc(null);
 }

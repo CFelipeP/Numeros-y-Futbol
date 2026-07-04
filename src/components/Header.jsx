@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const Header = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -13,6 +14,21 @@ const Header = () => {
     const seleccionRef = useRef(null);
     const divisionesRef = useRef(null);
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        setCurrentUser(null);
+        Swal.fire({
+            icon: "success",
+            title: "Deslogueo exitoso",
+            timer: 2000,
+            showConfirmButton: false,
+        }).then(() => {
+            navigate("/");
+        });
+    };
 
     useEffect(() => {
         try {
@@ -87,6 +103,7 @@ const Header = () => {
     const seleccionLinks = [
         { href: "/seleccion", label: "Masculina" },
         { href: "/seleccion-femenina", label: "Femenina" },
+        { href: "/seleccion-sub20", label: "Sub-20" },
         { href: "/seleccion-sub17", label: "Sub-17" },
     ];
 
@@ -679,10 +696,10 @@ const Header = () => {
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                                     Mi Perfil
                                                 </Link>
-                                                <Link to="/" onClick={() => { localStorage.removeItem("user"); localStorage.removeItem("token"); setAccountOpen(false); setCurrentUser(null); }}>
+                                                <a href="/" onClick={(e) => { e.preventDefault(); setAccountOpen(false); handleLogout(); }} className="account-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 18px', fontSize: '13px', fontWeight: 500, transition: 'background 0.2s' }}>
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                                                     Cerrar Sesión
-                                                </Link>
+                                                </a>
                                             </>
                                         ) : (
                                             <>
@@ -899,10 +916,10 @@ const Header = () => {
                                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                                         Mi Perfil
                                                     </Link>
-                                                    <Link to="/" onClick={() => { localStorage.removeItem("user"); localStorage.removeItem("token"); setMobileOpen(false); setCurrentUser(null); }}>
+                                                    <a href="/" onClick={(e) => { e.preventDefault(); setMobileOpen(false); handleLogout(); }} className="account-item" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 18px', fontSize: '13px', fontWeight: 500, transition: 'background 0.2s' }}>
                                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                                                         Cerrar Sesión
-                                                    </Link>
+                                                    </a>
                                                 </>
                                             ) : (
                                                 <>

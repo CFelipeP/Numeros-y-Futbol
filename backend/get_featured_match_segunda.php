@@ -19,8 +19,8 @@ $match = $conn->query("
 ")->fetch_assoc();
 
 if ($match) {
-    echo json_encode($match);
+    echo json_enc($match);
 } else {
-    echo json_encode(null);
+    echo json_enc(null);
 }
 $conn->close();

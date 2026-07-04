@@ -11,7 +11,7 @@ $sale_id  = intval($data['sale_id'] ?? 0);
 $division = $data['division'] ?? 'primera';
 
 if (!$entra_id || !$sale_id) {
-    echo json_encode(["success" => false, "error" => "Se requieren entra_id y sale_id"]);
+    echo json_enc(["success" => false, "error" => "Se requieren entra_id y sale_id"]);
     exit;
 }
 
@@ -23,6 +23,11 @@ switch ($division) {
         break;
     case 'tercera':
         $tabla = 'jugadores_tercera';
+        $colX  = 'posicion_x';
+        $colY  = 'posicion_y';
+        break;
+    case 'femenina':
+        $tabla = 'jugadores_femenina';
         $colX  = 'posicion_x';
         $colY  = 'posicion_y';
         break;
@@ -43,7 +48,7 @@ try {
 
     if (!$sale) {
         $pdo->rollBack();
-        echo json_encode(["success" => false, "error" => "Jugador no encontrado"]);
+        echo json_enc(["success" => false, "error" => "Jugador no encontrado"]);
         exit;
     }
 
@@ -61,9 +66,9 @@ try {
     }
 
     $pdo->commit();
-    echo json_encode(["success" => true]);
+    echo json_enc(["success" => true]);
 
 } catch (Exception $e) {
     $pdo->rollBack();
-    echo json_encode(["success" => false, "error" => "Error interno"]);
+    echo json_enc(["success" => false, "error" => "Error interno"]);
 }

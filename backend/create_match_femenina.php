@@ -9,11 +9,11 @@ $local     = (int)($_POST['local'] ?? 0);
 $visitante = (int)($_POST['visitante'] ?? 0);
 
 if (!$local || !$visitante) {
-    echo json_encode(["error" => "Selecciona ambos equipos"]);
+    echo json_enc(["success" => false, "error" => "Selecciona ambos equipos"]);
     exit;
 }
 
 $stmt = $conn->prepare("INSERT INTO partidos_femenina (equipo_local, equipo_visitante) VALUES (?, ?)");
 $stmt->execute([$local, $visitante]);
 
-echo json_encode(["success" => true, "id" => $conn->lastInsertId()]);
+echo json_enc(["success" => true, "id" => $conn->lastInsertId()]);

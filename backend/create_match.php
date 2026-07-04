@@ -12,7 +12,7 @@ $local = $_POST['local'] ?? null;
 $visitante = $_POST['visitante'] ?? null;
 
 if (!$local || !$visitante || $local == $visitante) {
-    echo json_encode(["error" => "Datos inválidos"]);
+    echo json_enc(["error" => "Datos inválidos"]);
     exit;
 }
 
@@ -23,8 +23,8 @@ $stmt = $conn->prepare("INSERT INTO partidos (equipo_local, equipo_visitante, fe
 $stmt->bind_param("ii", $local, $visitante);
 
 if (!$stmt->execute()) {
-    echo json_encode(["error" => "Error interno del servidor"]);
+    echo json_enc(["error" => "Error interno del servidor"]);
     exit;
 }
 
-echo json_encode(["success" => true]);
+echo json_enc(["success" => true]);

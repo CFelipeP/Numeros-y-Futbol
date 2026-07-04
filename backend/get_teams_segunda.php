@@ -12,8 +12,8 @@ try {
         FROM equipos_segunda
         ORDER BY nombre ASC
     ");
-    echo json_encode($stmt->fetch_all(MYSQLI_ASSOC));
+    echo json_enc($stmt->fetch_all(MYSQLI_ASSOC));
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => "Error interno del servidor"]);
+    echo json_enc(['error' => "Error interno del servidor"]);
 }

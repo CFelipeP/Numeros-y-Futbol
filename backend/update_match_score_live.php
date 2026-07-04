@@ -11,7 +11,7 @@ $division = trim($body['division']     ?? 'primera');
 $equipo   = trim($body['equipo']       ?? 'local');    // 'local' | 'visitante'
 $delta    = intval($body['delta']      ?? 1);           // +1 = gol, -1 = deshacer
 
-if (!$id) { echo json_encode(["success" => false, "error" => "ID requerido"]); exit; }
+if (!$id) { echo json_enc(["success" => false, "error" => "ID requerido"]); exit; }
 
 try {
     switch ($division) {
@@ -43,7 +43,7 @@ try {
     $s->execute([$id]);
     $row = $s->fetch(PDO::FETCH_ASSOC);
 
-    echo json_encode(["success" => true, "goles_local" => (int)$row['goles_local'], "goles_visitante" => (int)$row['goles_visitante']]);
+    echo json_enc(["success" => true, "goles_local" => (int)$row['goles_local'], "goles_visitante" => (int)$row['goles_visitante']]);
 } catch (Exception $e) {
-    echo json_encode(["success" => false, "error" => "Error interno del servidor"]);
+    echo json_enc(["success" => false, "error" => "Error interno del servidor"]);
 }

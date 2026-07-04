@@ -7,11 +7,11 @@ requireAdmin();
 
 $id = (int)($_POST['id'] ?? 0);
 if (!$id) {
-    echo json_encode(["success" => false, "error" => "ID requerido"]);
+    echo json_enc(["success" => false, "error" => "ID requerido"]);
     exit;
 }
 
 $stmt = $conn->prepare("DELETE FROM partidos_segunda WHERE id = ?");
 $stmt->execute([$id]);
 
-echo json_encode(["success" => true]);
+echo json_enc(["success" => true]);

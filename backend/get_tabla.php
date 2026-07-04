@@ -9,7 +9,7 @@ $conn = $mysqli;
 $insert = $conn->query("INSERT INTO tabla_posiciones (equipo_id, partidos_jugados, ganados, empatados, perdidos, goles_favor, goles_contra, puntos) SELECT id, 0, 0, 0, 0, 0, 0, 0 FROM equipos WHERE id NOT IN (SELECT equipo_id FROM tabla_posiciones)");
 
 if (!$insert) {
-    echo json_encode(["error" => "Error interno del servidor"]);
+    echo json_enc(["error" => "Error interno del servidor"]);
     exit;
 }
 
@@ -25,8 +25,8 @@ if ($result) {
 }
 
 if (empty($data)) {
-    echo json_encode(["error" => "La consulta no devolvió datos. Revisa que la tabla tabla_posiciones tenga registros."]);
+    echo json_enc(["error" => "La consulta no devolvió datos. Revisa que la tabla tabla_posiciones tenga registros."]);
     exit;
 }
 
-echo json_encode($data);
+echo json_enc($data);

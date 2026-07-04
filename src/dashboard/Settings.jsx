@@ -30,8 +30,15 @@ const SIDEBAR_ITEMS = [
     { path:"/teams/tercera", label:"Tercera División" },
     { path:"/teams/femenina", label:"Femenina" },
   ]},
-  { path:"/manage-seleccion", icon:<Shield size={20}/>, label:"Selección Nacional" },
-  { path:"/manage-seleccion-femenina", icon:<Shield size={20}/>, label:"Selección Femenina" },
+  {
+        type: "dropdown", icon: <Shield size={20}/>, label: "Selecciones",
+        children: [
+          { path:"/manage-seleccion", label:"Masculina" },
+          { path:"/manage-seleccion-femenina", label:"Femenina" },
+          { path:"/manage-seleccion-sub20", label:"Sub-20" },
+          { path:"/manage-seleccion-sub17", label:"Sub-17" },
+        ]
+  },
   { path:"/admin/plantilla",  icon:<Target size={20}/>,         label:"Plantillas" },
   { path:"/posiciones",       icon:<Trophy size={20}/>,         label:"Posiciones" },
   { path:"/admin/copa",       icon:<Trophy size={20}/>,         label:"Copa Presidente" },
@@ -51,6 +58,7 @@ const Toggle = ({ value, onChange, color = "#22c55e" }) => (
 export default function SettingsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [teamsOpen, setTeamsOpen]     = useState(false);
+  const [seleccionesOpen, setSeleccionesOpen] = useState(false);
   const [activeTab, setActiveTab]     = useState("site");
   const [loading, setLoading]         = useState(true);
   const [saving, setSaving]           = useState(false);
@@ -162,7 +170,7 @@ export default function SettingsPage() {
 
   const handleLogout = () => {
     Swal.fire({ title:"¿Cerrar sesión?", icon:"warning", showCancelButton:true, confirmButtonText:"Sí, salir", confirmButtonColor:"#d33" })
-      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); window.location.href="/login"; }});
+      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href="/login"; }); }});
   };
 
   const inp = { width:"100%", padding:"10px 14px", borderRadius:8, border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"#f1f5f9", fontSize:14, fontFamily:"inherit", outline:"none" };
@@ -190,11 +198,11 @@ export default function SettingsPage() {
             {SIDEBAR_ITEMS.map((item, idx) => {
               if (item.type === "dropdown") return (
                 <li key={idx}>
-                  <button className="nav-item" onClick={()=>setTeamsOpen(!teamsOpen)} style={{width:"100%",justifyContent:"space-between"}}>
+                  <button className="nav-item" onClick={()=>{const s=item.label==="Selecciones";s?setSeleccionesOpen(!seleccionesOpen):setTeamsOpen(!teamsOpen);}} style={{width:"100%",justifyContent:"space-between"}}>
                     <span style={{display:"flex",alignItems:"center",gap:14}}>{item.icon} {item.label}</span>
-                    <ChevronDown size={16} style={{transition:"transform 0.25s",transform:teamsOpen?"rotate(180deg)":"rotate(0deg)",opacity:0.4}}/>
+                    <ChevronDown size={16} style={{transition:"transform 0.25s",transform:(item.label==="Selecciones"?seleccionesOpen:teamsOpen)?"rotate(180deg)":"rotate(0deg)",opacity:0.4}}/>
                   </button>
-                  <ul style={{maxHeight:teamsOpen?"400px":"0",opacity:teamsOpen?"1":"0",overflow:"hidden",transition:"max-height 0.3s ease,opacity 0.2s ease",listStyle:"none",padding:teamsOpen?"2px 0 4px 0":"0",margin:0}}>
+                  <ul style={{maxHeight:(item.label==="Selecciones"?seleccionesOpen:teamsOpen)?"400px":"0",opacity:(item.label==="Selecciones"?seleccionesOpen:teamsOpen)?"1":"0",overflow:"hidden",transition:"max-height 0.3s ease,opacity 0.2s ease",listStyle:"none",padding:(item.label==="Selecciones"?seleccionesOpen:teamsOpen)?"2px 0 4px 0":"0",margin:0}}>
                     {item.children.map(c=>(
                       <li key={c.path}><Link to={c.path} className={`nav-item${location.pathname===c.path?" active":""}`} style={{paddingLeft:48,fontSize:"13.5px"}}>{c.label}</Link></li>
                     ))}

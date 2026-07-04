@@ -70,7 +70,7 @@ export default function Seleccion() {
   const partidos = data?.partidos || [];
   const jugadores = data?.jugadores || [];
   const staff = data?.staff || [];
-  const escudoSV = logoUrl("/backend/uploads/escudo_elsalvador.png");
+  const escudoSV = logoUrl("/uploads/escudo_elsalvador.png");
 
   const grupos = {
     portero: jugadores.filter(j => getPosInfo(j.posicion).cat === "portero"),

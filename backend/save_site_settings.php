@@ -9,7 +9,7 @@ $body = json_decode(file_get_contents("php://input"), true);
 $settings = $body['settings'] ?? [];
 
 if (empty($settings)) {
-    echo json_encode(["success" => false, "error" => "No settings received"]);
+    echo json_enc(["success" => false, "error" => "No settings received"]);
     exit;
 }
 
@@ -35,7 +35,7 @@ try {
             $stmt->execute([$k, $val]);
         }
     }
-    echo json_encode(["success" => true]);
+    echo json_enc(["success" => true]);
 } catch (Exception $e) {
-    echo json_encode(["success" => false, "error" => "Error interno del servidor"]);
+    echo json_enc(["success" => false, "error" => "Error interno del servidor"]);
 }

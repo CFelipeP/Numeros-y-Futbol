@@ -11,7 +11,7 @@ $ciudad  = $_POST['ciudad'] ?? '';
 $estadio = $_POST['estadio'] ?? '';
 
 if (!$id || empty($nombre)) {
-    echo json_encode(["success" => false, "error" => "ID y nombre son obligatorios"]);
+    echo json_enc(["success" => false, "error" => "ID y nombre son obligatorios"]);
     exit;
 }
 
@@ -35,4 +35,4 @@ if (!empty($_FILES['logo']['name'])) {
     $stmt2->execute([$nombre, $ciudad, $estadio, $id]);
 }
 
-echo json_encode(["success" => true]);
+echo json_enc(["success" => true]);

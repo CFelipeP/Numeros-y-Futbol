@@ -13,7 +13,7 @@ $subtipo    = trim($body['subtipo']      ?? '');
 $deshacer   = (bool)($body['deshacer']   ?? false);
 
 if (!$jugador_id || !$tipo) {
-    echo json_encode(["success" => false, "error" => "Datos incompletos"]);
+    echo json_enc(["success" => false, "error" => "Datos incompletos"]);
     exit;
 }
 
@@ -44,7 +44,7 @@ switch ($tipo) {
         $cols = ['tarjetas_rojas'];
         break;
     default:
-        echo json_encode(["success" => true, "skipped" => true]);
+        echo json_enc(["success" => true, "skipped" => true]);
         exit;
 }
 
@@ -73,7 +73,7 @@ try {
         $upd->execute([$delta, $jugador_id, $temporada]);
     }
 
-    echo json_encode(["success" => true, "jugador_id" => $jugador_id, "cols" => $cols, "delta" => $delta]);
+    echo json_enc(["success" => true, "jugador_id" => $jugador_id, "cols" => $cols, "delta" => $delta]);
 } catch (Exception $e) {
-    echo json_encode(["success" => false, "error" => "Error interno del servidor"]);
+    echo json_enc(["success" => false, "error" => "Error interno del servidor"]);
 }

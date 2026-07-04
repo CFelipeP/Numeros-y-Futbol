@@ -8,11 +8,11 @@ $currentUser = requireAuth();
 $body = json_decode(file_get_contents("php://input"), true);
 $id   = intval($body['id'] ?? 0);
 
-if (!$id) { echo json_encode(["success" => false, "error" => "ID requerido"]); exit; }
+if (!$id) { echo json_enc(["success" => false, "error" => "ID requerido"]); exit; }
 
 if ($id !== (int)$currentUser['user_id']) {
     http_response_code(403);
-    echo json_encode(["success" => false, "error" => "No puedes modificar otro usuario"]);
+    echo json_enc(["success" => false, "error" => "No puedes modificar otro usuario"]);
     exit;
 }
 
@@ -37,7 +37,7 @@ if (!empty($body['password'])) {
 }
 
 if (empty($fields)) {
-    echo json_encode(["success" => false, "error" => "Nada que actualizar"]);
+    echo json_enc(["success" => false, "error" => "Nada que actualizar"]);
     exit;
 }
 
@@ -52,11 +52,11 @@ try {
     $s->execute([$id]);
     $user = $s->fetch(PDO::FETCH_ASSOC);
 
-    echo json_encode(["success" => true, "user" => $user]);
+    echo json_enc(["success" => true, "user" => $user]);
 } catch (PDOException $e) {
     if ($e->getCode() == 23000) {
-        echo json_encode(["success" => false, "error" => "El email o apodo ya está en uso"]);
+        echo json_enc(["success" => false, "error" => "El email o apodo ya está en uso"]);
     } else {
-        echo json_encode(["success" => false, "error" => "Error interno del servidor"]);
+        echo json_enc(["success" => false, "error" => "Error interno del servidor"]);
     }
 }

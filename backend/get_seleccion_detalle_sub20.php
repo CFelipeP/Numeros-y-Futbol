@@ -1,0 +1,28 @@
+<?php
+error_reporting(0); ini_set('display_errors', 0);
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/db.php';
+
+try {
+    $stmt = $pdo->prepare("SELECT * FROM partidos_seleccion_sub20 ORDER BY fecha DESC, id DESC");
+    $stmt->execute();
+    $partidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmt = $pdo->prepare("SELECT * FROM jugadores_seleccion_sub20 ORDER BY numero_camiseta ASC");
+    $stmt->execute();
+    $jugadores = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmt = $pdo->prepare("SELECT * FROM cuerpo_tecnico_seleccion_sub20 ORDER BY id ASC");
+    $stmt->execute();
+    $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    echo json_enc([
+        "success" => true,
+        "partidos" => $partidos,
+        "jugadores" => $jugadores,
+        "staff" => $staff
+    ]);
+
+} catch (Exception $e) {
+    echo json_enc(["success" => false, "error" => $e->getMessage()]);
+}

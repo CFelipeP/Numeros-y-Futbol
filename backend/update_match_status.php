@@ -13,12 +13,12 @@ $division = strtolower(trim($_GET['division'] ?? $_POST['division'] ?? 'primera'
 $validos = ['Pendiente', 'En Curso', 'Finalizado'];
 
 if ($match_id <= 0) {
-    echo json_encode(['error' => 'ID inválido']);
+    echo json_enc(['error' => 'ID inválido']);
     exit;
 }
 
 if (!in_array($status, $validos)) {
-    echo json_encode(['error' => 'Estado no válido']);
+    echo json_enc(['error' => 'Estado no válido']);
     exit;
 }
 
@@ -41,7 +41,7 @@ $stmt = $pdo->prepare("UPDATE `$table` SET `$colEst` = ? WHERE id = ?");
 $stmt->execute([$status, $match_id]);
 
 if ($stmt->rowCount() > 0) {
-    echo json_encode(['success' => true, 'status' => $status]);
+    echo json_enc(['success' => true, 'status' => $status]);
 } else {
-    echo json_encode(['error' => 'No se encontró el partido con ID ' . $match_id]);
+    echo json_enc(['error' => 'No se encontró el partido con ID ' . $match_id]);
 }

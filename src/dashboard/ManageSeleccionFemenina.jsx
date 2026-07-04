@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { createPortal } from "react-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
 import "animate.css";
@@ -7,7 +8,7 @@ import { apiPost, apiFetch } from "../apiHelper";
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
-  Search, MessageCircle, Upload, Eye
+  Search, MessageCircle, Upload, Download, Eye
 } from "lucide-react";
 import { API_BASE } from "../config";
 
@@ -26,8 +27,15 @@ const SIDEBAR_ITEMS = [
       { path: "/teams/femenina", label: "Femenina" },
     ]
   },
-  { path: "/manage-seleccion", icon: <Shield size={20} />, label: "Selección Nacional" },
-  { path: "/manage-seleccion-femenina", icon: <Shield size={20} />, label: "Selección Femenina" },
+      {
+        type: "dropdown", icon: <Shield size={20} />, label: "Selecciones",
+        children: [
+          { path: "/manage-seleccion", label: "Masculina" },
+          { path: "/manage-seleccion-femenina", label: "Femenina" },
+          { path: "/manage-seleccion-sub20", label: "Sub-20" },
+            { path: "/manage-seleccion-sub17", label: "Sub-17" },
+        ]
+      },
   { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
   { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
   { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
@@ -60,6 +68,7 @@ export default function ManageSeleccionFemenina() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [teamsOpen, setTeamsOpen] = useState(true);
+  const [seleccionesOpen, setSeleccionesOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("partidos");
 
   const [partidos, setPartidos] = useState([]);
@@ -89,7 +98,7 @@ export default function ManageSeleccionFemenina() {
 
   const handleLogout = () => {
     Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir", confirmButtonColor: "#d33" })
-      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); window.location.href = "/login"; } });
+      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
   };
 
   return (
@@ -105,11 +114,11 @@ export default function ManageSeleccionFemenina() {
               if (item.type === "dropdown") {
                 return (
                   <li key={idx}>
-                    <button className="nav-item" onClick={() => setTeamsOpen(!teamsOpen)} style={{ width: "100%", justifyContent: "space-between" }}>
+                    <button className="nav-item" onClick={() => { const s = item.label === "Selecciones"; s ? setSeleccionesOpen(!seleccionesOpen) : setTeamsOpen(!teamsOpen); }} style={{ width: "100%", justifyContent: "space-between" }}>
                       <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>{item.icon} {item.label}</span>
-                      <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: teamsOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
+                      <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
                     </button>
-                    <ul style={{ maxHeight: teamsOpen ? "400px" : "0", opacity: teamsOpen ? "1" : "0", overflow: "hidden", transition: "max-height 0.3s ease, opacity 0.2s ease", listStyle: "none", padding: teamsOpen ? "2px 0 4px 0" : "0", margin: 0 }}>
+                    <ul style={{ maxHeight: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "400px" : "0", opacity: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "1" : "0", overflow: "hidden", transition: "max-height 0.3s ease, opacity 0.2s ease", listStyle: "none", padding: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "2px 0 4px 0" : "0", margin: 0 }}>
                       {item.children.map(child => (<li key={child.path}><Link to={child.path} className={`nav-item${location.pathname === child.path ? " active" : ""}`} style={{ paddingLeft: "48px", fontSize: "13.5px" }}>{child.label}</Link></li>))}
                     </ul>
                   </li>
@@ -166,6 +175,9 @@ export default function ManageSeleccionFemenina() {
           )}
         </div>
       </main>
+      <style>{`
+        button.nav-item { background: none; border: none; color: var(--text-muted); font-family: inherit; }
+      `}</style>
     </div>
   );
 }
@@ -191,7 +203,7 @@ function PartidosTabFemenina({ partidos, onReload }) {
     if (!form.rival_nombre.trim()) { Swal.fire({ icon: "info", title: "Nombre del rival requerido", toast: true, position: "top-end", timer: 2000, showConfirmButton: false }); return; }
     const payload = { ...form, action: editId ? "update" : "create", id: editId };
     if (editId) payload.id = editId;
-    apiPost(`${API}crud_partidos_seleccion_femenina.php`, payload).then(d => {
+    apiPost(`${API}crud_partidos_seleccion_femenina.php`, payload).then(r => r.json()).then(d => {
       if (d.success) { Swal.fire({ icon: "success", title: editId ? "Actualizado" : "Creado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); setShowForm(false); }
       else Swal.fire("Error", d.error || "Error", "error");
     }).catch(() => Swal.fire("Error", "Error de conexión", "error"));
@@ -199,7 +211,7 @@ function PartidosTabFemenina({ partidos, onReload }) {
 
   const deletePartido = (id, rival) => {
     Swal.fire({ title: "¿Eliminar partido?", text: `vs ${rival}`, icon: "warning", showCancelButton: true, confirmButtonText: "Sí, eliminar", confirmButtonColor: "#d33" })
-      .then(r => { if (r.isConfirmed) { apiPost(`${API}crud_partidos_seleccion_femenina.php`, { action: "delete", id }).then(d => { if (d.success) { Swal.fire({ icon: "success", title: "Eliminado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); } }).catch(() => Swal.fire("Error", "Error", "error")); } });
+      .then(r => { if (r.isConfirmed) { apiPost(`${API}crud_partidos_seleccion_femenina.php`, { action: "delete", id }).then(r => r.json()).then(d => { if (d.success) { Swal.fire({ icon: "success", title: "Eliminado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); } }).catch(() => Swal.fire("Error", "Error", "error")); } });
   };
 
   return (
@@ -277,6 +289,12 @@ function JugadoresTabFemenina({ jugadores, onReload }) {
   const [form, setForm] = useState({ nombre: "", posicion: "", numero_camiseta: "", foto: "", edad: "", club_origen: "", partidos_jugados: 0, goles: 0, asistencias: 0, atajadas: 0 });
   const [uploading, setUploading] = useState(false);
 
+  const [importModal, setImportModal] = useState(false);
+  const [csvFile, setCsvFile] = useState(null);
+  const [csvText, setCsvText] = useState("");
+  const [csvPreview, setCsvPreview] = useState([]);
+  const [importing, setImporting] = useState(false);
+
   const openCreate = () => {
     setEditId(null);
     setForm({ nombre: "", posicion: "", numero_camiseta: "", foto: "", edad: "", club_origen: "", partidos_jugados: 0, goles: 0, asistencias: 0, atajadas: 0 });
@@ -308,7 +326,7 @@ function JugadoresTabFemenina({ jugadores, onReload }) {
     if (!form.nombre.trim()) { Swal.fire({ icon: "info", title: "Nombre requerido", toast: true, position: "top-end", timer: 2000, showConfirmButton: false }); return; }
     const payload = { ...form, action: editId ? "update" : "create", id: editId };
     if (editId) payload.id = editId;
-    apiPost(`${API}crud_jugadores_seleccion_femenina.php`, payload).then(d => {
+    apiPost(`${API}crud_jugadores_seleccion_femenina.php`, payload).then(r => r.json()).then(d => {
       if (d.success) { Swal.fire({ icon: "success", title: editId ? "Actualizada" : "Creada", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); setShowForm(false); }
       else Swal.fire("Error", d.error || "Error", "error");
     }).catch(() => Swal.fire("Error", "Error de conexión", "error"));
@@ -316,7 +334,61 @@ function JugadoresTabFemenina({ jugadores, onReload }) {
 
   const deleteJugador = (id, nombre) => {
     Swal.fire({ title: "¿Eliminar jugadora?", text: nombre, icon: "warning", showCancelButton: true, confirmButtonText: "Sí, eliminar", confirmButtonColor: "#d33" })
-      .then(r => { if (r.isConfirmed) { apiPost(`${API}crud_jugadores_seleccion_femenina.php`, { action: "delete", id }).then(d => { if (d.success) { Swal.fire({ icon: "success", title: "Eliminada", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); } }).catch(() => Swal.fire("Error", "Error", "error")); } });
+      .then(r => { if (r.isConfirmed) { apiPost(`${API}crud_jugadores_seleccion_femenina.php`, { action: "delete", id }).then(r => r.json()).then(d => { if (d.success) { Swal.fire({ icon: "success", title: "Eliminada", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); } }).catch(() => Swal.fire("Error", "Error", "error")); } });
+  };
+
+  const openImport = () => { setCsvFile(null); setCsvText(""); setCsvPreview([]); setImportModal(true); };
+  const closeImport = () => { setImportModal(false); setCsvFile(null); setCsvText(""); setCsvPreview([]); };
+
+  const parseCSVPreview = (text) => {
+    const lines = text.trim().split("\n").filter(l => l.trim());
+    if (!lines.length) { setCsvPreview([]); return; }
+    const h = lines[0].split(",").map(h => h.trim().toLowerCase());
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+      const v = lines[i].split(",").map(x => x.trim());
+      if (v.length < 2 || !v[0]) continue;
+      const row = {};
+      h.forEach((key, idx) => { row[key] = v[idx] ?? ""; });
+      if (row.posicion) {
+        const pi = POSICIONES.find(p => p.value === row.posicion || p.abbr.toLowerCase() === row.posicion.toLowerCase());
+        row.posicion = pi ? pi.value : row.posicion;
+      }
+      if (row.nombre) rows.push(row);
+    }
+    setCsvPreview(rows);
+  };
+
+  const downloadTemplate = () => {
+    const t = "nombre,posicion,numero_camiseta,edad,club,partidos_jugados,goles,asistencias,atajadas\nMaria Perez,centrodelantero,9,25,Club X,10,5,3,0\nAna Lopez,portero,1,28,Club Y,12,0,1,35";
+    const blob = new Blob([t], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "plantilla_seleccion_femenina.csv";
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  };
+
+  const importPlayers = async () => {
+    setImporting(true);
+    try {
+      const fd = new FormData();
+      const headers = Object.keys(csvPreview[0] || {}).filter(k => k !== "posicion_original");
+      const lines = [headers.join(",")];
+      csvPreview.forEach(row => { lines.push(headers.map(h => row[h] ?? "").join(",")); });
+      fd.append("csv_text", lines.join("\n"));
+      const res = await fetch(`${API}importar_jugadores_seleccion_femenina.php`, { method: "POST", body: fd, headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+      const d = await res.json();
+      if (d.success) {
+        closeImport();
+        Swal.fire({ toast: true, position: "top-end", icon: "success", title: d.importados + " jugadoras importadas", showConfirmButton: false, timer: 2000 });
+        onReload();
+      } else {
+        Swal.fire({ icon: "error", title: "Error en importación", text: d.error || (d.errores || []).join("\n") });
+      }
+    } catch (err) {
+      Swal.fire({ icon: "error", title: "Error de conexión" });
+    } finally { setImporting(false); }
   };
 
   const posAbbr = (v) => POSICIONES.find(p => p.value === v)?.abbr || v || "—";
@@ -326,7 +398,10 @@ function JugadoresTabFemenina({ jugadores, onReload }) {
     <div className="table-container">
       <div className="table-header" style={{ flexWrap: "wrap" }}>
         <h2 style={{ margin: 0 }}>Jugadoras ({jugadores.length})</h2>
-        <button className="btn-add" onClick={openCreate}><Plus size={18} /> Nueva Jugadora</button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button className="btn-add" onClick={openImport}><Upload size={16} /> Importar CSV</button>
+          <button className="btn-add" onClick={openCreate}><Plus size={18} /> Nueva Jugadora</button>
+        </div>
       </div>
 
       {showForm && (
@@ -390,6 +465,87 @@ function JugadoresTabFemenina({ jugadores, onReload }) {
           ))}
         </tbody>
       </table>
+
+      {importModal && createPortal(
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={closeImport}>
+          <div style={{ background: "#1e293b", borderRadius: 16, maxWidth: 740, width: "100%", maxHeight: "90vh", overflow: "auto", border: "1px solid rgba(255,255,255,0.08)" }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <h3 style={{ margin: 0, color: "#f1f5f9", fontSize: 16 }}>Importar Jugadoras</h3>
+                <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: 12 }}>Sube un archivo CSV o pega el texto</p>
+              </div>
+              <button onClick={closeImport} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", padding: 4 }}><X size={18} /></button>
+            </div>
+            <div style={{ padding: "20px 24px" }}>
+              <button onClick={downloadTemplate} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer", marginBottom: 16 }}><Download size={13} /> Descargar plantilla CSV</button>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "18px 24px", borderRadius: 14, border: "2px dashed rgba(255,255,255,0.1)", cursor: "pointer", color: "#94a3b8", fontSize: 13, fontWeight: 600 }}>
+                  <Upload size={16} /> Seleccionar archivo CSV
+                  <input type="file" accept=".csv,text/csv" onChange={e => {
+                    const f = e.target.files[0]; if (!f) return; setCsvFile(f);
+                    const reader = new FileReader();
+                    reader.onload = ev => { setCsvText(ev.target.result); parseCSVPreview(ev.target.result); };
+                    reader.readAsText(f);
+                  }} style={{ display: "none" }} />
+                </label>
+                <div style={{ textAlign: "center", fontSize: 11, color: "#475569" }}>o</div>
+                <textarea value={csvText} onChange={e => { setCsvText(e.target.value); if (e.target.value.trim()) parseCSVPreview(e.target.value); else setCsvPreview([]); }} placeholder="Pega aquí el contenido del CSV..." style={{ width: "100%", minHeight: 100, padding: 14, borderRadius: 12, border: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.015)", color: "#e2e8f0", fontSize: 11, fontFamily: "monospace", resize: "vertical", outline: "none", boxSizing: "border-box" }} />
+              </div>
+              {csvFile && (
+                <div style={{ marginTop: 12, padding: "12px 16px", borderRadius: 12, background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.12)", display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#34d399", fontWeight: 600 }}>
+                  <Upload size={15} /> {csvFile.name}
+                  <button onClick={() => { setCsvFile(null); setCsvText(""); setCsvPreview([]); }} style={{ marginLeft: "auto", background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 12 }}>Quitar</button>
+                </div>
+              )}
+              {csvPreview.length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "0 4px 8px" }}>
+                    <span style={{ fontSize: 11, color: "#475569", fontWeight: 700 }}>{csvPreview.length} fila{csvPreview.length !== 1 ? "s" : ""} por importar</span>
+                    <button onClick={() => { setCsvPreview([]); setCsvText(""); setCsvFile(null); }} style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: 11, textDecoration: "underline" }}>Limpiar</button>
+                  </div>
+                  <div style={{ maxHeight: 220, overflow: "auto", borderRadius: 10, border: "1px solid rgba(255,255,255,0.04)" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, fontFamily: "monospace" }}>
+                      <thead><tr style={{ background: "rgba(255,255,255,0.04)", position: "sticky", top: 0 }}>
+                        {["#", "Nombre", "Pos", "#", "Edad", "Club", "PJ", "G", "A", "Atj"].map((h, i) => (
+                          <th key={i} style={{ padding: "6px 8px", textAlign: "left", color: "#475569", fontWeight: 700 }}>{h}</th>
+                        ))}
+                      </tr></thead>
+                      <tbody>
+                        {csvPreview.map((r, i) => (
+                          <tr key={i} style={{ background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)" }}>
+                            <td style={{ padding: "4px 8px", color: "#334155" }}>{i + 1}</td>
+                            <td style={{ padding: "4px 8px", color: "#e2e8f0", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.nombre}</td>
+                            <td style={{ padding: "4px 8px" }}>
+                              <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, fontWeight: 700, color: getPosColor(r.posicion), background: getPosColor(r.posicion) + "15", border: "1px solid " + getPosColor(r.posicion) + "25" }}>{posAbbr(r.posicion)}</span>
+                            </td>
+                            <td style={{ padding: "4px 6px", textAlign: "center", color: "#64748b" }}>{r.numero_camiseta || "—"}</td>
+                            <td style={{ padding: "4px 6px", textAlign: "center", color: "#64748b" }}>{r.edad || "—"}</td>
+                            <td style={{ padding: "4px 6px", textAlign: "center", color: "#64748b" }}>{r.club || "—"}</td>
+                            <td style={{ padding: "4px 6px", textAlign: "center", color: "#64748b" }}>{r.partidos_jugados || "—"}</td>
+                            <td style={{ padding: "4px 6px", textAlign: "center", color: "#f87171", fontWeight: 700 }}>{r.goles || "—"}</td>
+                            <td style={{ padding: "4px 6px", textAlign: "center", color: "#60a5fa", fontWeight: 700 }}>{r.asistencias || "—"}</td>
+                            <td style={{ padding: "4px 6px", textAlign: "center", color: "#f59e0b", fontWeight: 700 }}>{r.atajadas || "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div style={{ padding: "16px 24px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 11, color: "#475569" }}>Jugadoras actuales: {jugadores.length}</span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="btn-cancel" onClick={closeImport}>Cancelar</button>
+                <button className="btn-save" onClick={importPlayers} disabled={importing || csvPreview.length === 0} style={{ opacity: importing || csvPreview.length === 0 ? 0.5 : 1 }}>
+                  <Upload size={14} />{importing ? "Importando..." : "Importar " + csvPreview.length}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
@@ -431,7 +587,7 @@ function TecnicoTabFemenina({ staff, onReload }) {
     if (!form.nombre.trim()) { Swal.fire({ icon: "info", title: "Nombre requerido", toast: true, position: "top-end", timer: 2000, showConfirmButton: false }); return; }
     const payload = { ...form, action: editId ? "update" : "create", id: editId };
     if (editId) payload.id = editId;
-    apiPost(`${API}crud_cuerpo_tecnico_femenina.php`, payload).then(d => {
+    apiPost(`${API}crud_cuerpo_tecnico_femenina.php`, payload).then(r => r.json()).then(d => {
       if (d.success) { Swal.fire({ icon: "success", title: editId ? "Actualizado" : "Creado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); setShowForm(false); }
       else Swal.fire("Error", d.error || "Error", "error");
     }).catch(() => Swal.fire("Error", "Error de conexión", "error"));
@@ -439,7 +595,7 @@ function TecnicoTabFemenina({ staff, onReload }) {
 
   const deleteStaff = (id, nombre) => {
     Swal.fire({ title: "¿Eliminar miembro?", text: nombre, icon: "warning", showCancelButton: true, confirmButtonText: "Sí, eliminar", confirmButtonColor: "#d33" })
-      .then(r => { if (r.isConfirmed) { apiPost(`${API}crud_cuerpo_tecnico_femenina.php`, { action: "delete", id }).then(d => { if (d.success) { Swal.fire({ icon: "success", title: "Eliminado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); } }).catch(() => Swal.fire("Error", "Error", "error")); } });
+      .then(r => { if (r.isConfirmed) { apiPost(`${API}crud_cuerpo_tecnico_femenina.php`, { action: "delete", id }).then(r => r.json()).then(d => { if (d.success) { Swal.fire({ icon: "success", title: "Eliminado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(onReload); } }).catch(() => Swal.fire("Error", "Error", "error")); } });
   };
 
   return (

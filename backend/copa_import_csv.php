@@ -10,7 +10,7 @@ try {
     $csvContent = $input['csv'] ?? '';
 
     if (!$csvContent) {
-        echo json_encode(["success" => false, "message" => "No se proporcionó contenido CSV"]);
+        echo json_enc(["success" => false, "message" => "No se proporcionó contenido CSV"]);
         exit;
     }
 
@@ -21,7 +21,7 @@ try {
 
     $lines = explode("\n", trim($csvContent));
     if (count($lines) < 2) {
-        echo json_encode(["success" => false, "message" => "CSV vacío o sin datos"]);
+        echo json_enc(["success" => false, "message" => "CSV vacío o sin datos"]);
         exit;
     }
 
@@ -37,7 +37,7 @@ try {
     if ($divisionIdx === false) $divisionIdx = array_search('div', $header);
 
     if ($grupoIdx === false || $nombreIdx === false) {
-        echo json_encode(["success" => false, "message" => "CSV necesita columnas: Grupo, Nombre"]);
+        echo json_enc(["success" => false, "message" => "CSV necesita columnas: Grupo, Nombre"]);
         exit;
     }
 
@@ -157,7 +157,7 @@ try {
 
     $pdo->commit();
 
-    echo json_encode([
+    echo json_enc([
         "success"      => true,
         "importados"   => $importados,
         "total_lineas" => count($lines),
@@ -169,5 +169,5 @@ try {
         $pdo->rollBack();
     }
     http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Error interno del servidor"]);
+    echo json_enc(["success" => false, "message" => "Error interno del servidor"]);
 }

@@ -9,5 +9,5 @@ requireAdmin();
 $conn = $mysqli;
 
 $sql = "UPDATE tabla_posiciones_segunda SET pj=0, pg=0, pe=0, pp=0, gf=0, gc=0, dg=0, pts=0";
-echo json_encode(["success" => $conn->query($sql)]);
+echo json_enc(["success" => $conn->query($sql)]);
 $conn->close();

@@ -7,22 +7,28 @@ requireAdmin();
 
 $id = (int)($_POST['id'] ?? 0);
 if (!$id) {
-    echo json_encode(["success" => false, "error" => "ID requerido"]);
+    echo json_enc(["success" => false, "error" => "ID requerido"]);
     exit;
 }
 
-$stmt = $conn->prepare("SELECT logo FROM equipos_primera_femenina WHERE id = ?");
-$stmt->execute([$id]);
-$old = $stmt->fetch(PDO::FETCH_ASSOC);
+$conn->beginTransaction();
+try {
+    $stmt = $conn->prepare("SELECT logo FROM equipos_primera_femenina WHERE id = ?");
+    $stmt->execute([$id]);
+    $old = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if ($old && $old['logo'] && file_exists($old['logo'])) {
-    unlink($old['logo']);
+    if ($old && $old['logo'] && file_exists($old['logo'])) {
+        unlink($old['logo']);
+    }
+
+    $conn->prepare("DELETE FROM estadisticas_jugadores_femenina WHERE jugador_id IN (SELECT id FROM jugadores_femenina WHERE equipo_id = ?)")->execute([$id]);
+    $conn->prepare("DELETE FROM jugadores_femenina WHERE equipo_id = ?")->execute([$id]);
+    $conn->prepare("DELETE FROM tabla_posiciones_femenina WHERE equipo_id = ?")->execute([$id]);
+    $conn->prepare("DELETE FROM equipos_primera_femenina WHERE id = ?")->execute([$id]);
+
+    $conn->commit();
+    echo json_enc(["success" => true]);
+} catch (Exception $e) {
+    $conn->rollBack();
+    echo json_enc(["success" => false, "error" => "Error interno"]);
 }
-
-$stmt2 = $conn->prepare("DELETE FROM tabla_posiciones_femenina WHERE equipo_id = ?");
-$stmt2->execute([$id]);
-
-$stmt3 = $conn->prepare("DELETE FROM equipos_primera_femenina WHERE id = ?");
-$stmt3->execute([$id]);
-
-echo json_encode(["success" => true]);

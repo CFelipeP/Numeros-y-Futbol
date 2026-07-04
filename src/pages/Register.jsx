@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -18,6 +18,16 @@ export default function Register() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    useEffect(() => {
+        setNombre("");
+        setApodo("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+    }, []);
+
     const register = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -33,12 +43,23 @@ export default function Register() {
             return;
         }
 
-        if (password.length < 6) {
+        if (password.length < 5 || password.length > 12) {
             setLoading(false);
             Swal.fire({
                 icon: "error",
                 title: "Error",
-                text: "La contraseña debe tener al menos 6 caracteres.",
+                text: "La contraseña debe tener entre 5 y 12 caracteres.",
+                confirmButtonText: "Entendido"
+            });
+            return;
+        }
+
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(password)) {
+            setLoading(false);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "La contraseña debe contener al menos una mayúscula, una minúscula y un carácter especial.",
                 confirmButtonText: "Entendido"
             });
             return;
@@ -61,6 +82,17 @@ export default function Register() {
                 { nombre, apodo, email, password }
             );
 
+            if (!res.data.success) {
+                setLoading(false);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: res.data.error || "No se pudo completar el registro.",
+                    confirmButtonText: "Entendido"
+                });
+                return;
+            }
+
             Swal.fire({
                 icon: "success",
                 title: "¡Registro Exitoso!",
@@ -72,11 +104,10 @@ export default function Register() {
 
         } catch (error) {
             setLoading(false);
-            const mensaje = error.response?.data?.error || "No se pudo completar el registro.";
             Swal.fire({
                 icon: "error",
                 title: "Error",
-                text: mensaje,
+                text: "Error de conexión. Intenta de nuevo.",
                 confirmButtonText: "Entendido"
             });
         }
@@ -139,7 +170,7 @@ export default function Register() {
                 <motion.h1 className="login-title" variants={itemVariants}>Crear Cuenta</motion.h1>
                 <motion.p className="login-subtitle" variants={itemVariants}>Únete a la comunidad futbolera</motion.p>
 
-                <form onSubmit={register}>
+                <form onSubmit={register} autoComplete="off">
                     <motion.div className="input-group" variants={itemVariants}>
                         <User className="input-icon" />
                         <input
@@ -181,11 +212,10 @@ export default function Register() {
                         <Lock className="input-icon" />
                         <input
                             type={showPassword ? "text" : "password"}
-                            placeholder="Contraseña (mínimo 6 caracteres)"
+                            placeholder="Contraseña"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            minLength={6}
                         />
                         <button
                             type="button"
@@ -204,7 +234,6 @@ export default function Register() {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
-                            minLength={6}
                         />
                         <button
                             type="button"

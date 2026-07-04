@@ -235,8 +235,15 @@ const navItems = [
           { path: "/teams/femenina", label: "Femenina" },
         ]
       },
-      { path: "/manage-seleccion", icon: <Shield size={20} />, label: "Selección Nacional" },
-      { path: "/manage-seleccion-femenina", icon: <Shield size={20} />, label: "Selección Femenina" },
+      {
+        type: "dropdown", icon: <Shield size={20} />, label: "Selecciones",
+        children: [
+          { path: "/manage-seleccion", label: "Masculina" },
+          { path: "/manage-seleccion-femenina", label: "Femenina" },
+          { path: "/manage-seleccion-sub20", label: "Sub-20" },
+            { path: "/manage-seleccion-sub17", label: "Sub-17" },
+        ]
+      },
       { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
       { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
       { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
@@ -248,28 +255,32 @@ const navItems = [
     ];
 
 // ─── TeamSelect ───────────────────────────────────────────────────────────────
-const TeamSelect = memo(function TeamSelect({ equipos, value, onChange }) {
-  const [open, setOpen] = useState(false);
+const TeamSelect = memo(function TeamSelect({ equipos, value, onChange, open, onOpenChange }) {
   const ref = useRef(null);
+  const isControlled = open !== undefined && onOpenChange !== undefined;
+  const [internalOpen, setInternalOpen] = useState(false);
+  const currentOpen = isControlled ? open : internalOpen;
+  const setCurrentOpen = isControlled ? onOpenChange : setInternalOpen;
+
   useEffect(() => {
-    const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const h = e => { if (ref.current && !ref.current.contains(e.target)) setCurrentOpen(false); };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
-  }, []);
+  }, [setCurrentOpen]);
   const sel = equipos.find(e => String(e.id) === String(value));
   return (
     <div ref={ref} className="pl-team-sel">
-      <button className="pl-team-sel-btn" onClick={() => setOpen(!open)}>
+      <button className="pl-team-sel-btn" onClick={() => setCurrentOpen(!currentOpen)}>
         {sel?.logo ? <img src={API + sel.logo} className="pl-team-sel-logo" alt="" /> : <Shield size={18} className="pl-team-sel-icon" />}
         <span className="pl-team-sel-name">{sel?.nombre || "Selecciona un equipo"}</span>
-        <ChevronDown size={16} className={"pl-team-sel-arrow" + (open ? " open" : "")} />
+        <ChevronDown size={16} className={"pl-team-sel-arrow" + (currentOpen ? " open" : "")} />
       </button>
-      {open && (
+      {currentOpen && (
         <div className="pl-team-sel-drop">
           {equipos.length === 0 && <div className="pl-team-sel-empty">Sin equipos</div>}
           {equipos.map(eq => (
             <button key={eq.id} className={"pl-team-sel-opt" + (String(eq.id) === String(value) ? " active" : "")}
-              onClick={() => { onChange(parseInt(eq.id)); setOpen(false); }}>
+              onClick={() => { onChange(parseInt(eq.id)); setCurrentOpen(false); }}>
               {eq.logo ? <img src={API + eq.logo} className="pl-team-sel-opt-logo" alt="" /> : <Shield size={14} className="pl-team-sel-icon" />}
               <span>{eq.nombre}</span>
             </button>
@@ -353,6 +364,7 @@ export default function PlantillaAdmin() {
   const [initFromDB, setInitFromDB] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [ddOpen, setDdOpen] = useState(false);
+  const [seleccionesOpen, setSeleccionesOpen] = useState(false);
   const [tab, setTab] = useState("plantilla");
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -376,6 +388,7 @@ export default function PlantillaAdmin() {
   const debounceRef = useRef(null);
   const [division, setDivision] = useState(() => localStorage.getItem("admin_division") || "primera");
   const [divDD, setDivDD] = useState(false);
+  const [teamDD, setTeamDD] = useState(false);
   const divRef = useRef(null);
 
   // Import CSV
@@ -886,7 +899,7 @@ const importPlayers = useCallback(async () => {
 
 const handleLogout = () => {
   Swal.fire({ background: "#1e293b", color: "#fff", title: "Cerrar sesion?", icon: "warning", showCancelButton: true, confirmButtonText: "Si", cancelButtonText: "No" })
-    .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); window.location.href = "/login"; } });
+    .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
 };
 
 const navClick = useCallback(() => { if (window.innerWidth <= 768) setSidebarOpen(false); setDdOpen(false); }, []);
@@ -908,13 +921,16 @@ return (
           {navItems.map((item, i) => {
             if (item.type === "dropdown") {
               const a = item.children.some(c => location.pathname === c.path);
+              const isSel = item.label === "Selecciones";
+              const isOpen = isSel ? seleccionesOpen : ddOpen;
+              const toggle = isSel ? () => setSeleccionesOpen(!seleccionesOpen) : () => setDdOpen(!ddOpen);
               return (
                 <li key={i}>
-                  <button className={"nav-item" + (a ? " active" : "")} onClick={() => setDdOpen(!ddOpen)} style={{ width: "100%", justifyContent: "space-between" }}>
+                  <button className={"nav-item" + (a ? " active" : "")} onClick={toggle} style={{ width: "100%", justifyContent: "space-between" }}>
                     <span style={{ display: "flex", alignItems: "center", gap: 14 }}>{item.icon} {item.label}</span>
-                    <ChevronDown size={16} style={{ transform: ddOpen ? "rotate(180deg)" : "", transition: "transform .2s" }} />
+                    <ChevronDown size={16} style={{ transform: isOpen ? "rotate(180deg)" : "", transition: "transform .2s" }} />
                   </button>
-                  <ul className={"teams-dropdown" + (ddOpen ? " dropdown-visible" : "")}>
+                  <ul className={"teams-dropdown" + (isOpen ? " dropdown-visible" : "")}>
                     {item.children.map(c => (
                       <li key={c.path}>
                         <Link to={c.path} className={"nav-item nav-subitem" + (location.pathname === c.path ? " active" : "")} onClick={navClick}>{c.label}</Link>
@@ -951,7 +967,7 @@ return (
         <div className="pl-header">
           <h1>Plantillas</h1>
           <div ref={divRef} className="pl-div-dd">
-            <button className="pl-div-btn" onClick={() => setDivDD(!divDD)}>
+            <button className="pl-div-btn" onClick={() => { setDivDD(!divDD); setTeamDD(false); }}>
               <Trophy size={14} />{curDiv.icon} {curDiv.label} Division
               <ChevronDown size={15} className={"pl-div-arrow" + (divDD ? " open" : "")} />
             </button>
@@ -969,7 +985,13 @@ return (
 
         {/* Toolbar */}
         <div className="pl-toolbar">
-          <TeamSelect equipos={equipos} value={equipoId} onChange={handleEquipoChange} />
+          <TeamSelect
+            equipos={equipos}
+            value={equipoId}
+            onChange={handleEquipoChange}
+            open={teamDD}
+            onOpenChange={(v) => { setTeamDD(v); if (v) setDivDD(false); }}
+          />
           {plantilla && (
             <div className="pl-search">
               <Search size={15} className="pl-search-ic" />
@@ -1460,21 +1482,21 @@ button.nav-item{background:none;border:none;color:#94a3b8;font-family:inherit;wi
 .pl-div-btn{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);color:#94a3b8;font-size:13px;font-weight:700;cursor:pointer;transition:all .25s;letter-spacing:-.01em;backdrop-filter:blur(8px)}
 .pl-div-btn:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:#cbd5e1}
 .pl-div-arrow{transition:transform .25s cubic-bezier(.4,0,.2,1)}.pl-div-arrow.open{transform:rotate(180deg)}
-.pl-div-drop{position:absolute;top:calc(100% + 10px);right:0;background:rgba(15,23,42,.95);border:1px solid rgba(255,255,255,.06);border-radius:16px;overflow:hidden;min-width:220px;z-index:200;box-shadow:0 25px 60px rgba(0,0,0,.5);opacity:0;pointer-events:none;transform:translateY(-8px) scale(.98);transition:all .25s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(20px)}
+.pl-div-drop{position:absolute;top:calc(100% + 10px);right:0;background:rgba(15,23,42,.95);border:1px solid rgba(255,255,255,.06);border-radius:16px;overflow:hidden;min-width:220px;z-index:500;box-shadow:0 25px 60px rgba(0,0,0,.5);opacity:0;pointer-events:none;transform:translateY(-8px) scale(.98);transition:all .25s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(20px)}
 .pl-div-drop.show{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
 .pl-div-opt{display:flex;align-items:center;gap:10px;width:100%;padding:13px 20px;border:none;background:transparent;color:#94a3b8;font-size:13px;font-weight:500;cursor:pointer;text-align:left;transition:all .15s}
 .pl-div-opt:hover{background:rgba(255,255,255,.04);color:#e2e8f0}
 .pl-div-opt.active{background:rgba(255,255,255,.06);color:#f1f5f9;font-weight:700}
 .pl-div-dot{margin-left:auto;width:6px;height:6px;border-radius:50%;background:#22d3ee;box-shadow:0 0 10px rgba(34,211,238,.5)}
 .pl-toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;position:relative}
-.pl-team-sel{position:relative;flex:1;min-width:260px;z-index:200}
+.pl-team-sel{position:relative;flex:1;min-width:260px;z-index:500}
 .pl-team-sel-btn{width:100%;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:#f1f5f9;font-size:14px;cursor:pointer;text-align:left;transition:all .25s;backdrop-filter:blur(4px)}
 .pl-team-sel-btn:hover{border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
 .pl-team-sel-logo{width:30px;height:30px;border-radius:10px;object-fit:contain;flex-shrink:0;background:rgba(255,255,255,.04);padding:3px}
 .pl-team-sel-icon{color:#475569;flex-shrink:0}
 .pl-team-sel-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .pl-team-sel-arrow{color:#475569;transition:transform .25s cubic-bezier(.4,0,.2,1);flex-shrink:0}.pl-team-sel-arrow.open{transform:rotate(180deg)}
-.pl-team-sel-drop{position:absolute;top:calc(100% + 8px);left:0;right:0;background:rgba(15,23,42,.95);border:1px solid rgba(255,255,255,.06);border-radius:16px;max-height:300px;overflow-y:auto;z-index:201;box-shadow:0 25px 60px rgba(0,0,0,.5);animation:fadeIn .2s ease-out;backdrop-filter:blur(20px)}
+.pl-team-sel-drop{position:absolute;top:calc(100% + 8px);left:0;right:0;background:rgba(15,23,42,.95);border:1px solid rgba(255,255,255,.06);border-radius:16px;max-height:300px;overflow-y:auto;z-index:501;box-shadow:0 25px 60px rgba(0,0,0,.5);animation:fadeIn .2s ease-out;backdrop-filter:blur(20px)}
 .pl-team-sel-drop::-webkit-scrollbar{width:3px}.pl-team-sel-drop::-webkit-scrollbar-thumb{background:rgba(255,255,255,.06);border-radius:4px}
 .pl-team-sel-opt{width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border:none;background:transparent;color:#cbd5e1;font-size:13px;cursor:pointer;transition:all .12s;text-align:left;border-bottom:1px solid rgba(255,255,255,.02)}
 .pl-team-sel-opt:last-child{border-bottom:none}

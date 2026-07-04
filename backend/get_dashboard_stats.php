@@ -11,7 +11,7 @@ $validDivisions = ['primera' => ['partidos', 'estado', 'tabla_posiciones', '_'],
                    'femenina' => ['partidos_femenina', 'estado', 'tabla_posiciones_femenina', '_femenina']];
 
 if (!isset($validDivisions[$division])) {
-    echo json_encode(['error' => 'División inválida']);
+    echo json_enc(['error' => 'División inválida']);
     exit;
 }
 
@@ -51,7 +51,7 @@ try {
     $usuarios = (int)$conn->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();
 } catch (Exception $e) {}
 
-echo json_encode([
+echo json_enc([
     'pendientes' => $pendientes,
     'jugados'    => $jugados,
     'goles'      => $goles,

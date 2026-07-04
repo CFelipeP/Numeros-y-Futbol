@@ -28,7 +28,7 @@ LIMIT 1";
 $result = $conn->query($sql);
 
 if ($result && $result->num_rows > 0) {
-    echo json_encode($result->fetch_assoc());
+    echo json_enc($result->fetch_assoc());
     exit;
 }
 
@@ -53,8 +53,8 @@ LIMIT 1";
 $result2 = $conn->query($sql2);
 
 if ($result2 && $result2->num_rows > 0) {
-    echo json_encode($result2->fetch_assoc());
+    echo json_enc($result2->fetch_assoc());
     exit;
 }
 
-echo json_encode(new stdClass());
+echo json_enc(new stdClass());

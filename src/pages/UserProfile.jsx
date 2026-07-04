@@ -81,7 +81,7 @@ export default function UserProfile() {
 
   const handleLogout = () => {
     Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir", confirmButtonColor: "#d33", cancelButtonText: "Cancelar" })
-      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); navigate("/"); } });
+      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 2000, showConfirmButton: false }).then(() => navigate("/")); } });
   };
 
   const initials = (u) => {

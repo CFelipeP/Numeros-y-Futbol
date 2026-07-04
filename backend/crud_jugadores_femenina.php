@@ -36,12 +36,12 @@ function countTitulares(PDO $db, int $equipo_id, ?int $excludeId=null): int {
 // ─── GET ────────────────────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $equipo_id = intval($_GET['equipo_id'] ?? 0);
-    if (!$equipo_id) { echo json_encode(['success'=>false,'error'=>'Falta equipo_id']); exit(); }
+    if (!$equipo_id) { echo json_enc(['success'=>false,'error'=>'Falta equipo_id']); exit(); }
 
     $eq = $conn->prepare("SELECT * FROM equipos_primera_femenina WHERE id=?");
     $eq->execute([$equipo_id]);
     $equipo = $eq->fetch(PDO::FETCH_ASSOC);
-    if (!$equipo) { echo json_encode(['success'=>false,'error'=>'Equipo no encontrado']); exit(); }
+    if (!$equipo) { echo json_enc(['success'=>false,'error'=>'Equipo no encontrado']); exit(); }
 
     $st = $conn->prepare("
         SELECT j.*,
@@ -65,16 +65,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $st->execute([$equipo_id]);
     $jugadores = $st->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode(['success'=>true,'equipo'=>$equipo,'jugadores'=>$jugadores]);
+    echo json_enc(['success'=>true,'equipo'=>$equipo,'jugadores'=>$jugadores]);
     exit();
 }
 
 // ─── DELETE ─────────────────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     $id = intval($_GET['id'] ?? 0);
-    if (!$id) { echo json_encode(['success'=>false,'error'=>'Falta id']); exit(); }
+    if (!$id) { echo json_enc(['success'=>false,'error'=>'Falta id']); exit(); }
     $conn->prepare("DELETE FROM jugadores_femenina WHERE id=?")->execute([$id]);
-    echo json_encode(['success'=>true]);
+    echo json_enc(['success'=>true]);
     exit();
 }
 
@@ -95,14 +95,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $foto       = trim($data['foto'] ?? '') ?: null;
         $es_titular = intval($data['es_titular'] ?? 0);
 
-        if (!$equipo_id||!$nombre) { echo json_encode(['success'=>false,'error'=>'Datos incompletos']); exit(); }
+        if (!$equipo_id||!$nombre) { echo json_enc(['success'=>false,'error'=>'Datos incompletos']); exit(); }
 
         // Verificar dorsal duplicado
         if ($num !== null) {
             $chk = $conn->prepare("SELECT COUNT(*) FROM jugadores_femenina WHERE equipo_id=? AND numero_camiseta=?");
             $chk->execute([$equipo_id, $num]);
             if ($chk->fetchColumn() > 0) {
-                echo json_encode(['success'=>false,'error'=>"El dorsal #{$num} ya existe en este equipo"]);
+                echo json_enc(['success'=>false,'error'=>"El dorsal #{$num} ya existe en este equipo"]);
                 exit();
             }
         }
@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $cnt = $conn->prepare("SELECT COUNT(*) FROM jugadores_femenina WHERE equipo_id=? AND es_titular=1");
             $cnt->execute([$equipo_id]);
             if ($cnt->fetchColumn() >= 11) {
-                echo json_encode(['success'=>false,'error'=>'Ya hay 11 titulares. Baja uno primero.']);
+                echo json_enc(['success'=>false,'error'=>'Ya hay 11 titulares. Baja uno primero.']);
                 exit();
             }
         }
@@ -124,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->prepare("INSERT IGNORE INTO estadisticas_jugadores_femenina (jugador_id,temporada) VALUES (?,'2025-2026')")
             ->execute([$jugador_id]);
 
-        echo json_encode(['success'=>true,'id'=>$jugador_id]);
+        echo json_enc(['success'=>true,'id'=>$jugador_id]);
         exit();
     }
 
@@ -140,14 +140,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $foto       = trim($data['foto'] ?? '') ?: null;
         $es_titular = intval($data['es_titular'] ?? 0);
 
-        if (!$id||!$nombre) { echo json_encode(['success'=>false,'error'=>'Datos incompletos']); exit(); }
+        if (!$id||!$nombre) { echo json_enc(['success'=>false,'error'=>'Datos incompletos']); exit(); }
 
         // Verificar dorsal duplicado (excluyendo al jugador actual)
         if ($num !== null) {
             $chk = $conn->prepare("SELECT COUNT(*) FROM jugadores_femenina WHERE equipo_id=? AND numero_camiseta=? AND id!=?");
             $chk->execute([$equipo_id, $num, $id]);
             if ($chk->fetchColumn() > 0) {
-                echo json_encode(['success'=>false,'error'=>"El dorsal #{$num} ya existe en este equipo"]);
+                echo json_enc(['success'=>false,'error'=>"El dorsal #{$num} ya existe en este equipo"]);
                 exit();
             }
         }
@@ -157,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $cnt = $conn->prepare("SELECT COUNT(*) FROM jugadores_femenina WHERE equipo_id=? AND es_titular=1 AND id!=?");
             $cnt->execute([$equipo_id, $id]);
             if ($cnt->fetchColumn() >= 11) {
-                echo json_encode(['success'=>false,'error'=>'Ya hay 11 titulares. Baja uno primero.']);
+                echo json_enc(['success'=>false,'error'=>'Ya hay 11 titulares. Baja uno primero.']);
                 exit();
             }
         }
@@ -165,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->prepare("UPDATE jugadores_femenina SET nombre=?,posicion=?,numero_camiseta=?,edad=?,nacionalidad=?,foto=?,es_titular=? WHERE id=?")
             ->execute([$nombre,$posicion,$num,$edad,$nac,$foto,$es_titular,$id]);
 
-        echo json_encode(['success'=>true]);
+        echo json_enc(['success'=>true]);
         exit();
     }
 
@@ -175,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $changes   = $data['changes'] ?? [];
 
         if (!$equipo_id || empty($changes)) {
-            echo json_encode(['success'=>false,'error'=>'Datos incompletos']);
+            echo json_enc(['success'=>false,'error'=>'Datos incompletos']);
             exit();
         }
 
@@ -191,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $totalTit = count(array_filter($estado));
         if ($totalTit > 11) {
-            echo json_encode(['success'=>false,'error'=>'No se puede superar 11 titulares.']);
+            echo json_enc(['success'=>false,'error'=>'No se puede superar 11 titulares.']);
             exit();
         }
 
@@ -201,14 +201,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([(int)(bool)$ch['es_titular'], (int)$ch['id'], $equipo_id]);
         }
         $conn->commit();
-        echo json_encode(['success'=>true]);
+        echo json_enc(['success'=>true]);
         exit();
     }
 
     // ── UPDATE_STATS ─────────────────────────────────────────────────────────
     if ($action === 'update_stats') {
         $jugador_id = intval($data['jugador_id'] ?? 0);
-        if (!$jugador_id) { echo json_encode(['success'=>false,'error'=>'Falta jugador_id']); exit(); }
+        if (!$jugador_id) { echo json_enc(['success'=>false,'error'=>'Falta jugador_id']); exit(); }
 
         $conn->prepare("
             INSERT INTO estadisticas_jugadores_femenina
@@ -232,16 +232,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             intval($data['goles_recibidos']??0), intval($data['vaya_invicta']??0),
         ]);
 
-        echo json_encode(['success'=>true]);
+        echo json_enc(['success'=>true]);
         exit();
     }
 
     // ── DELETE ──────────────────────────────────────────────────────────────────
     if ($action === 'delete') {
         $id = intval($data['id'] ?? 0);
-        if (!$id) { echo json_encode(['success'=>false,'error'=>'Falta id']); exit(); }
+        if (!$id) { echo json_enc(['success'=>false,'error'=>'Falta id']); exit(); }
         $conn->prepare("DELETE FROM jugadores_femenina WHERE id=?")->execute([$id]);
-        echo json_encode(['success'=>true]);
+        echo json_enc(['success'=>true]);
         exit();
     }
 
@@ -259,12 +259,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $st->execute([$t['x']??null, $t['y']??null, intval($t['id']), $equipo_id]);
             }
         }
-        echo json_encode(['success'=>true]);
+        echo json_enc(['success'=>true]);
         exit();
     }
 
-    echo json_encode(['success'=>false,'error'=>'Accion desconocida: '.$action]);
+    echo json_enc(['success'=>false,'error'=>'Accion desconocida: '.$action]);
     exit();
 }
 
-echo json_encode(['success'=>false,'error'=>'Método no permitido']);
+echo json_enc(['success'=>false,'error'=>'Método no permitido']);

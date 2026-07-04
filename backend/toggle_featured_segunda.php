@@ -10,7 +10,7 @@ try {
     $featured = (int)($_POST['featured'] ?? 0);
 
     if ($id <= 0) {
-        echo json_encode(["error" => "ID inválido"]);
+        echo json_enc(["error" => "ID inválido"]);
         exit;
     }
 
@@ -23,7 +23,7 @@ try {
         $stmt->execute([$id]);
     }
 
-    echo json_encode(["success" => true]);
+    echo json_enc(["success" => true]);
 } catch (Throwable $e) {
-    echo json_encode(["error" => "Error interno del servidor"]);
+    echo json_enc(["error" => "Error interno del servidor"]);
 }

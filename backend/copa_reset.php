@@ -23,12 +23,12 @@ try {
         $pdo->query("UPDATE equipos_copa SET grupo = NULL");
         $msg = "Copa reiniciada completamente";
     } else {
-        echo json_encode(["success" => false, "message" => "Modo inválido"]);
+        echo json_enc(["success" => false, "message" => "Modo inválido"]);
         exit;
     }
 
-    echo json_encode(["success" => true, "message" => $msg]);
+    echo json_enc(["success" => true, "message" => $msg]);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Error interno del servidor"]);
+    echo json_enc(["success" => false, "message" => "Error interno del servidor"]);
 }

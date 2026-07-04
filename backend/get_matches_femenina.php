@@ -24,7 +24,7 @@ ORDER BY p.fecha DESC";
 $result = $conn->query($sql);
 
 if (!$result) {
-    echo json_encode(["error" => "Error interno del servidor"]);
+    echo json_enc(["error" => "Error interno del servidor"]);
     exit;
 }
 
@@ -34,4 +34,4 @@ while ($row = $result->fetch_assoc()) {
     $data[] = $row;
 }
 
-echo json_encode($data);
+echo json_enc($data);

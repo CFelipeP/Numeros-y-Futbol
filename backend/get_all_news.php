@@ -9,5 +9,5 @@ $stmt->execute();
 
 $news = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-echo json_encode($news);
+echo json_enc($news);
 ?>

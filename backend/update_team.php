@@ -9,7 +9,7 @@ requireAdmin();
 $conn = $mysqli;
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(["error" => "Método no permitido"]);
+    echo json_enc(["error" => "Método no permitido"]);
     exit();
 }
 
@@ -19,12 +19,12 @@ $ciudad = trim($_POST['ciudad'] ?? '');
 $estadio = trim($_POST['estadio'] ?? '');
 
 if ($id === 0) {
-    echo json_encode(["error" => "ID no válido"]);
+    echo json_enc(["error" => "ID no válido"]);
     exit();
 }
 
 if (empty($nombre)) {
-    echo json_encode(["error" => "El nombre es obligatorio"]);
+    echo json_enc(["error" => "El nombre es obligatorio"]);
     exit();
 }
 
@@ -38,12 +38,12 @@ if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
 
     $tiposPermitidos = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'image/svg+xml'];
     if (!in_array($archivo['type'], $tiposPermitidos)) {
-        echo json_encode(["error" => "Formato de imagen no válido. Solo JPG, PNG, WEBP o SVG"]);
+        echo json_enc(["error" => "Formato de imagen no válido. Solo JPG, PNG, WEBP o SVG"]);
         exit();
     }
 
     if ($tamano > 2 * 1024 * 1024) {
-        echo json_encode(["error" => "La imagen no puede superar los 2MB"]);
+        echo json_enc(["error" => "La imagen no puede superar los 2MB"]);
         exit();
     }
 
@@ -59,7 +59,7 @@ if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
     if (move_uploaded_file($tmpName, $rutaDestino)) {
         $logoPath = 'uploads/escudos/' . $nuevoNombre;
     } else {
-        echo json_encode(["error" => "Error al guardar la imagen"]);
+        echo json_enc(["error" => "Error al guardar la imagen"]);
         exit();
     }
 }
@@ -67,14 +67,14 @@ if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
 if ($logoPath) {
     $stmt = $conn->prepare("UPDATE equipos SET nombre = ?, ciudad = ?, estadio = ?, logo = ? WHERE id = ?");
     if (!$stmt) {
-        echo json_encode(["error" => "Error interno del servidor"]);
+        echo json_enc(["error" => "Error interno del servidor"]);
         exit();
     }
     $stmt->bind_param("ssssi", $nombre, $ciudad, $estadio, $logoPath, $id);
 } else {
     $stmt = $conn->prepare("UPDATE equipos SET nombre = ?, ciudad = ?, estadio = ? WHERE id = ?");
     if (!$stmt) {
-        echo json_encode(["error" => "Error interno del servidor"]);
+        echo json_enc(["error" => "Error interno del servidor"]);
         exit();
     }
     $stmt->bind_param("sssi", $nombre, $ciudad, $estadio, $id);
@@ -82,12 +82,12 @@ if ($logoPath) {
 
 if ($stmt->execute()) {
     if ($stmt->affected_rows > 0) {
-        echo json_encode(["success" => true]);
+        echo json_enc(["success" => true]);
     } else {
-        echo json_encode(["success" => true, "info" => "No se modificó ningún campo"]);
+        echo json_enc(["success" => true, "info" => "No se modificó ningún campo"]);
     }
 } else {
-    echo json_encode(["error" => "Error interno del servidor"]);
+    echo json_enc(["error" => "Error interno del servidor"]);
 }
 
 $stmt->close();

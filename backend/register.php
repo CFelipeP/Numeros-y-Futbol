@@ -8,7 +8,7 @@ try {
     $data = json_decode(file_get_contents("php://input"));
 
     if (!$data) {
-        echo json_encode([
+        echo json_enc([
             "success" => false,
             "error" => "No llegaron datos"
         ]);
@@ -22,25 +22,33 @@ try {
 
     // Validar campos vacíos
     if (!$nombre || !$apodo || !$email || !$password) {
-        echo json_encode([
+        echo json_enc([
             "success" => false,
             "error" => "Todos los campos son obligatorios"
         ]);
         exit;
     }
 
-    // Validar longitud de contraseña
-    if (strlen($password) < 6) {
-        echo json_encode([
+    // Validar longitud y complejidad de contraseña
+    if (strlen($password) < 5 || strlen($password) > 12) {
+        echo json_enc([
             "success" => false,
-            "error" => "La contraseña debe tener al menos 6 caracteres"
+            "error" => "La contraseña debe tener entre 5 y 12 caracteres"
+        ]);
+        exit;
+    }
+
+    if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};\':"\\\\|,.<>\/?])/', $password)) {
+        echo json_enc([
+            "success" => false,
+            "error" => "La contraseña debe contener al menos una mayúscula, una minúscula y un carácter especial"
         ]);
         exit;
     }
 
     // Validar apodo sin espacios y solo caracteres válidos
     if (!preg_match('/^[a-zA-Z0-9_]+$/', $apodo)) {
-        echo json_encode([
+        echo json_enc([
             "success" => false,
             "error" => "El apodo solo puede contener letras, números y guiones bajos (sin espacios)"
         ]);
@@ -49,7 +57,7 @@ try {
 
     // Validar longitud del apodo
     if (strlen($apodo) < 3 || strlen($apodo) > 20) {
-        echo json_encode([
+        echo json_enc([
             "success" => false,
             "error" => "El apodo debe tener entre 3 y 20 caracteres"
         ]);
@@ -58,7 +66,7 @@ try {
 
     // Validar email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        echo json_encode([
+        echo json_enc([
             "success" => false,
             "error" => "El correo electrónico no es válido"
         ]);
@@ -70,7 +78,7 @@ try {
     $check->execute([$email]);
 
     if ($check->fetch()) {
-        echo json_encode([
+        echo json_enc([
             "success" => false,
             "error" => "El correo ya existe"
         ]);
@@ -82,7 +90,7 @@ try {
     $checkApodo->execute([$apodo]);
 
     if ($checkApodo->fetch()) {
-        echo json_encode([
+        echo json_enc([
             "success" => false,
             "error" => "Este apodo ya está en uso. Elige otro."
         ]);
@@ -96,14 +104,14 @@ try {
     $sql = $conn->prepare("INSERT INTO usuarios (nombre, apodo, email, password, rol) VALUES (?, ?, ?, ?, 'usuario')");
     $sql->execute([$nombre, $apodo, $email, $hashedPassword]);
 
-    echo json_encode([
+    echo json_enc([
         "success" => true,
         "message" => "Registro exitoso"
     ]);
 
 } catch (Exception $e) {
 
-    echo json_encode([
+    echo json_enc([
         "success" => false,
         "error" => "Error interno del servidor"
     ]);

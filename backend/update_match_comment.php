@@ -14,7 +14,7 @@ $equipo      = trim($body['equipo']         ?? '');
 $jugador_id  = !empty($body['jugador_id'])  ? intval($body['jugador_id']) : null;
 
 if (!$id || !$descripcion) {
-    echo json_encode(["success" => false, "error" => "Datos incompletos"]);
+    echo json_enc(["success" => false, "error" => "Datos incompletos"]);
     exit;
 }
 
@@ -26,7 +26,7 @@ try {
     ");
     $stmt->execute([$minuto, $tipo, $descripcion, $equipo, $jugador_id, $id]);
 
-    echo json_encode(["success" => true]);
+    echo json_enc(["success" => true]);
 } catch (Exception $e) {
-    echo json_encode(["success" => false, "error" => "Error interno del servidor"]);
+    echo json_enc(["success" => false, "error" => "Error interno del servidor"]);
 }

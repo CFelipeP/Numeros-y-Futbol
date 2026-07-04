@@ -13,7 +13,7 @@ if (!is_dir($targetDir)) {
 }
 
 if (!isset($_FILES['foto']) || $_FILES['foto']['error'] !== UPLOAD_ERR_OK) {
-    echo json_encode(["success" => false, "error" => "No se subió ninguna imagen"]);
+    echo json_enc(["success" => false, "error" => "No se subió ninguna imagen"]);
     exit;
 }
 
@@ -22,7 +22,7 @@ $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 $allowed = ['jpg', 'jpeg', 'png', 'webp'];
 
 if (!in_array($ext, $allowed)) {
-    echo json_encode(["success" => false, "error" => "Formato no permitido. Usa JPG, PNG o WEBP"]);
+    echo json_enc(["success" => false, "error" => "Formato no permitido. Usa JPG, PNG o WEBP"]);
     exit;
 }
 
@@ -30,11 +30,11 @@ $filename = 'seleccion_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
 $destPath = $targetDir . $filename;
 
 if (!move_uploaded_file($file['tmp_name'], $destPath)) {
-    echo json_encode(["success" => false, "error" => "Error al guardar la imagen"]);
+    echo json_enc(["success" => false, "error" => "Error al guardar la imagen"]);
     exit;
 }
 
-echo json_encode([
+echo json_enc([
     "success" => true,
     "url" => '/backend/uploads/' . $filename
 ]);

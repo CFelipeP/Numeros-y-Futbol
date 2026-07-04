@@ -35,5 +35,5 @@ while ($row = $result->fetch_assoc()) {
     $matches[] = $row;
 }
 
-echo json_encode($matches);
+echo json_enc($matches);
 $conn->close();

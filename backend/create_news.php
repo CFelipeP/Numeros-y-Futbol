@@ -16,7 +16,7 @@ $imagen = $data["image"] ?? "";
 $estado = "Publicado";
 
 if (!$titulo || !$autor) {
-    echo json_encode(["success" => false, "error" => "Campos vacíos"]);
+    echo json_enc(["success" => false, "error" => "Campos vacíos"]);
     exit;
 }
 
@@ -36,7 +36,7 @@ $result = $sql->execute([
 ]);
 
 if ($result) {
-    echo json_encode(["success" => true]);
+    echo json_enc(["success" => true]);
 } else {
-    echo json_encode(["success" => false]);
+    echo json_enc(["success" => false]);
 }

@@ -15,7 +15,7 @@ $result = $conn->query("
 ");
 $afectados = $conn->affected_rows;
 
-echo json_encode([
+echo json_enc([
     'success' => true,
     'reset_count' => $afectados
 ]);

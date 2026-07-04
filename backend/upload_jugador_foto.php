@@ -12,12 +12,12 @@ if (!is_dir($uploadDir)) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(["success" => false, "error" => "Método no permitido"]);
+    echo json_enc(["success" => false, "error" => "Método no permitido"]);
     exit();
 }
 
 if (!isset($_FILES['foto']) || $_FILES['foto']['error'] !== UPLOAD_ERR_OK) {
-    echo json_encode(["success" => false, "error" => "No se recibió archivo"]);
+    echo json_enc(["success" => false, "error" => "No se recibió archivo"]);
     exit();
 }
 
@@ -26,12 +26,12 @@ if (!isset($_FILES['foto']) || $_FILES['foto']['error'] !== UPLOAD_ERR_OK) {
  $permitidas = ['jpg', 'jpeg', 'png', 'webp'];
 
 if (!in_array($ext, $permitidas)) {
-    echo json_encode(["success" => false, "error" => "Formato no permitido (jpg, png, webp)"]);
+    echo json_enc(["success" => false, "error" => "Formato no permitido (jpg, png, webp)"]);
     exit();
 }
 
 if ($archivo['size'] > 2 * 1024 * 1024) {
-    echo json_encode(["success" => false, "error" => "Máximo 2MB"]);
+    echo json_enc(["success" => false, "error" => "Máximo 2MB"]);
     exit();
 }
 
@@ -39,7 +39,7 @@ if ($archivo['size'] > 2 * 1024 * 1024) {
  $ruta = $uploadDir . $nombre;
 
 if (move_uploaded_file($archivo['tmp_name'], $ruta)) {
-    echo json_encode(["success" => true, "path" => "uploads/jugadores/" . $nombre]);
+    echo json_enc(["success" => true, "path" => "uploads/jugadores/" . $nombre]);
 } else {
-    echo json_encode(["success" => false, "error" => "Error al guardar"]);
+    echo json_enc(["success" => false, "error" => "Error al guardar"]);
 }

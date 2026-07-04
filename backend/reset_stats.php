@@ -4,7 +4,7 @@ ini_set('display_errors', 0);
 require_once __DIR__ . '/cors.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'error' => 'Método no permitido']);
+    echo json_enc(['success' => false, 'error' => 'Método no permitido']);
     exit;
 }
 
@@ -19,10 +19,11 @@ $validDivisions = [
     'primera' => ['partidos', 'tabla_posiciones', "partidos_jugados = 0, ganados = 0, empatados = 0, perdidos = 0, goles_favor = 0, goles_contra = 0, puntos = 0"],
     'segunda' => ['partidos_segunda', 'tabla_posiciones_segunda', 'pj = 0, pg = 0, pe = 0, pp = 0, gf = 0, gc = 0, dg = 0, pts = 0'],
     'tercera' => ['partidos_tercera', 'tabla_posiciones_tercera', 'pj = 0, pg = 0, pe = 0, pp = 0, gf = 0, gc = 0, dg = 0, pts = 0'],
+    'femenina' => ['partidos_femenina', 'tabla_posiciones_femenina', 'partidos_jugados = 0, ganados = 0, empatados = 0, perdidos = 0, goles_favor = 0, goles_contra = 0, puntos = 0'],
 ];
 
 if (!isset($validDivisions[$division])) {
-    echo json_encode(['success' => false, 'error' => 'División inválida']);
+    echo json_enc(['success' => false, 'error' => 'División inválida']);
     exit;
 }
 
@@ -32,14 +33,14 @@ $setCols         = $validDivisions[$division][2];
 
 $ok1 = $conn->exec("UPDATE $tablaPosiciones SET $setCols");
 if ($ok1 === false) {
-    echo json_encode(['success' => false, 'error' => 'Error al reiniciar posiciones en ' . $tablaPosiciones]);
+    echo json_enc(['success' => false, 'error' => 'Error al reiniciar posiciones en ' . $tablaPosiciones]);
     exit;
 }
 
 $ok2 = $conn->exec("DELETE FROM $tablaPartidos");
 if ($ok2 === false) {
-    echo json_encode(['success' => false, 'error' => 'Error al eliminar partidos de ' . $tablaPartidos]);
+    echo json_enc(['success' => false, 'error' => 'Error al eliminar partidos de ' . $tablaPartidos]);
     exit;
 }
 
-echo json_encode(['success' => true, 'message' => 'Temporada reiniciada correctamente']);
+echo json_enc(['success' => true, 'message' => 'Temporada reiniciada correctamente']);

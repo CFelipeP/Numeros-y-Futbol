@@ -19,4 +19,4 @@ $conn->query("
         puntos = 0
 ");
 
-echo json_encode(["success" => true, "message" => "Tabla reiniciada"]);
+echo json_enc(["success" => true, "message" => "Tabla reiniciada"]);

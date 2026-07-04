@@ -97,14 +97,14 @@ try {
 
     $pdo->commit();
 
-    echo json_encode([
+    echo json_enc([
         'success' => true,
         'message' => 'Equipos sincronizados correctamente'
     ]);
 
 } catch (Exception $e) {
     $pdo->rollBack();
-    echo json_encode([
+    echo json_enc([
         'success' => false,
         'message' => "Error interno del servidor"
     ]);

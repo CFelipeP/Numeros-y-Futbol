@@ -9,14 +9,14 @@ requireAdmin();
 $conn = $mysqli;
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(["error" => "Método no permitido"]);
+    echo json_enc(["error" => "Método no permitido"]);
     exit();
 }
 
 $id = intval($_POST['id'] ?? 0);
 
 if ($id === 0) {
-    echo json_encode(["error" => "ID no válido"]);
+    echo json_enc(["error" => "ID no válido"]);
     exit();
 }
 
@@ -28,7 +28,7 @@ $equipo = $result->fetch_assoc();
 $stmt->close();
 
 if (!$equipo) {
-    echo json_encode(["error" => "Equipo no encontrado"]);
+    echo json_enc(["error" => "Equipo no encontrado"]);
     exit();
 }
 
@@ -39,7 +39,7 @@ $stmt->close();
 
 $stmt = $conn->prepare("DELETE FROM equipos WHERE id = ?");
 if (!$stmt) {
-    echo json_encode(["error" => "Error interno del servidor"]);
+    echo json_enc(["error" => "Error interno del servidor"]);
     exit();
 }
 
@@ -52,9 +52,9 @@ if ($stmt->execute()) {
             unlink($rutaArchivo);
         }
     }
-    echo json_encode(["success" => true]);
+    echo json_enc(["success" => true]);
 } else {
-    echo json_encode(["error" => "Error interno del servidor"]);
+    echo json_enc(["error" => "Error interno del servidor"]);
 }
 
 $stmt->close();

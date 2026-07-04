@@ -107,8 +107,8 @@ try {
     ");
     $stmt->execute([$team1, $team2, $gLocal, $gVisit, $fecha, $hora, $estado, $fase, $llave, $grupo, $jornada, $pLocal, $pVisit, $id]);
 
-    echo json_encode(["success" => true]);
+    echo json_enc(["success" => true]);
 } catch (Exception $e) {
     http_response_code(400);
-    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+    echo json_enc(["success" => false, "message" => $e->getMessage()]);
 }

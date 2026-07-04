@@ -13,7 +13,7 @@ if (!file_exists($targetDir)) {
 }
 
 if (!isset($_FILES['file'])) {
-    echo json_encode(["success" => false, "error" => "No file"]);
+    echo json_enc(["success" => false, "error" => "No file"]);
     exit;
 }
 
@@ -23,7 +23,7 @@ $allowed = ["jpg", "jpeg", "png", "mp4"];
 $ext = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
 
 if (!in_array($ext, $allowed)) {
-    echo json_encode(["success" => false, "error" => "Formato inválido"]);
+    echo json_enc(["success" => false, "error" => "Formato inválido"]);
     exit;
 }
 
@@ -33,7 +33,7 @@ $mime = finfo_file($finfo, $_FILES['file']['tmp_name']);
 finfo_close($finfo);
 $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4'];
 if (!in_array($mime, $allowedMimes)) {
-    echo json_encode(["success" => false, "error" => "Tipo de archivo no permitido"]);
+    echo json_enc(["success" => false, "error" => "Tipo de archivo no permitido"]);
     exit;
 }
 
@@ -42,13 +42,13 @@ $targetFile = $targetDir . $newName;
 
 if (move_uploaded_file($file["tmp_name"], $targetFile)) {
     ob_clean(); // 🔥 LIMPIA CUALQUIER BASURA
-    echo json_encode([
+    echo json_enc([
         "success" => true,
         "url" => "http://numeros-y-futbol.test/backend/" . $targetFile
     ]);
 } else {
     ob_clean();
-    echo json_encode([
+    echo json_enc([
         "success" => false,
         "error" => "Error al subir"
     ]);

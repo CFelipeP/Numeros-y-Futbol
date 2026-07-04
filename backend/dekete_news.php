@@ -8,7 +8,7 @@ requireAdmin();
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (!isset($data["id"])) {
-    echo json_encode(["error" => "ID requerido"]);
+    echo json_enc(["error" => "ID requerido"]);
     exit;
 }
 
@@ -16,5 +16,5 @@ $sql = "DELETE FROM noticias WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->execute([$data["id"]]);
 
-echo json_encode(["success" => true]);
+echo json_enc(["success" => true]);
 ?>

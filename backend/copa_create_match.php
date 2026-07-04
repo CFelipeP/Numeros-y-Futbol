@@ -90,8 +90,8 @@ try {
     ");
     $stmt->execute([$team1, $team2, $gLocal, $gVisit, $fecha, $hora, $estado, $fase, $llave, $grupo, $jornada, $pLocal, $pVisit]);
 
-    echo json_encode(["success" => true, "id" => $pdo->lastInsertId()]);
+    echo json_enc(["success" => true, "id" => $pdo->lastInsertId()]);
 } catch (Exception $e) {
     http_response_code(400);
-    echo json_encode(["success" => false, "message" => "Error interno del servidor"]);
+    echo json_enc(["success" => false, "message" => "Error interno del servidor"]);
 }

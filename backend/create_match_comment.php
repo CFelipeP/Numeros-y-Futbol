@@ -16,7 +16,7 @@ $equipo      = trim($body['equipo']        ?? '');
 $jugador_id  = !empty($body['jugador_id']) ? intval($body['jugador_id']) : null;
 
 if (!$partido_id || !$descripcion) {
-    echo json_encode(["success" => false, "error" => "Datos incompletos"]);
+    echo json_enc(["success" => false, "error" => "Datos incompletos"]);
     exit;
 }
 
@@ -51,7 +51,7 @@ try {
     ");
     $stmt->execute([$partido_id, $division, $minuto, $tipo, $descripcion, $equipo, $jugador_id]);
 
-    echo json_encode(["success" => true, "id" => $pdo->lastInsertId()]);
+    echo json_enc(["success" => true, "id" => $pdo->lastInsertId()]);
 } catch (Exception $e) {
-    echo json_encode(["success" => false, "error" => "Error interno del servidor"]);
+    echo json_enc(["success" => false, "error" => "Error interno del servidor"]);
 }

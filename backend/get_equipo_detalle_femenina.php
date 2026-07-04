@@ -7,7 +7,7 @@ require_once __DIR__ . '/db.php';
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($id <= 0) {
-    echo json_encode(['error' => 'ID de equipo no válido']);
+    echo json_enc(['error' => 'ID de equipo no válido']);
     exit;
 }
 
@@ -24,7 +24,7 @@ try {
     $equipo = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$equipo) {
-        echo json_encode(['error' => 'Equipo no encontrado']);
+        echo json_enc(['error' => 'Equipo no encontrado']);
         exit;
     }
 
@@ -57,11 +57,11 @@ try {
     $stmt->execute([$id]);
     $jugadores = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode([
+    echo json_enc([
         'equipo' => $equipo,
         'jugadores' => $jugadores
     ]);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => "Error interno del servidor"]);
+    echo json_enc(['error' => "Error interno del servidor"]);
 }

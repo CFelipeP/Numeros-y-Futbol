@@ -13,7 +13,7 @@ $g1 = $_POST['goles_local'] ?? null;
 $g2 = $_POST['goles_visitante'] ?? null;
 
 if (!$id) {
-    echo json_encode(["error" => "ID requerido"]);
+    echo json_enc(["error" => "ID requerido"]);
     exit;
 }
 
@@ -57,14 +57,14 @@ if ((string)$g1 === '-1') {
 
     $stmt = $conn->prepare("UPDATE partidos SET goles_local=NULL, goles_visitante=NULL, estado='Pendiente' WHERE id=?");
     $stmt->bind_param("i", $id); $stmt->execute(); $stmt->close();
-    echo json_encode(["success" => true, "reset" => true]);
+    echo json_enc(["success" => true, "reset" => true]);
     $conn->close();
     exit;
 }
 
 // ====================== MODO NORMAL ======================
 if ($g1 === "" || $g2 === "" || $g1 === null || $g2 === null) {
-    echo json_encode(["error" => "Goles inválidos"]);
+    echo json_enc(["error" => "Goles inválidos"]);
     exit;
 }
 
@@ -79,7 +79,7 @@ $m = $res->fetch_assoc();
 $stmt->close();
 
 if (!$m) {
-    echo json_encode(["error" => "Partido no encontrado"]);
+    echo json_enc(["error" => "Partido no encontrado"]);
     exit;
 }
 
@@ -142,5 +142,5 @@ if ($g1 > $g2) {
     $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
 }
 
-echo json_encode(["success" => true]);
+echo json_enc(["success" => true]);
 $conn->close();

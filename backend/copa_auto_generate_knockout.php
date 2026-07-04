@@ -11,7 +11,7 @@ $force = !empty($body['force']);
 $validFases = ['octavos', 'cuartos', 'semis', 'final'];
 if (!in_array($fase, $validFases, true)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Fase inválida']);
+    echo json_enc(['success' => false, 'message' => 'Fase inválida']);
     exit;
 }
 
@@ -33,7 +33,7 @@ try {
         if ($force) {
             $pdo->prepare("DELETE FROM partidos_copa WHERE fase = ?")->execute([$fase]);
         } else {
-            echo json_encode(['success' => false, 'message' => "Ya existen partidos en " . ucfirst($fase) . ". Usa force=true para regenerar."]);
+            echo json_enc(['success' => false, 'message' => "Ya existen partidos en " . ucfirst($fase) . ". Usa force=true para regenerar."]);
             exit;
         }
     }
@@ -42,11 +42,11 @@ try {
     $qualified = getQualifiedForPhase($pdo, $fase, $prevPhaseMap[$fase]);
 
     if (count($qualified) < 2) {
-        echo json_encode(['success' => false, 'message' => "No hay suficientes equipos clasificados para " . ucfirst($fase) . " (mínimo 2, hay " . count($qualified) . ")"]);
+        echo json_enc(['success' => false, 'message' => "No hay suficientes equipos clasificados para " . ucfirst($fase) . " (mínimo 2, hay " . count($qualified) . ")"]);
         exit;
     }
     if (count($qualified) % 2 !== 0) {
-        echo json_encode(['success' => false, 'message' => "Número impar de clasificados (" . count($qualified) . ") para " . ucfirst($fase) . ". No se puede emparejar."]);
+        echo json_enc(['success' => false, 'message' => "Número impar de clasificados (" . count($qualified) . ") para " . ucfirst($fase) . ". No se puede emparejar."]);
         exit;
     }
 
@@ -58,7 +58,7 @@ try {
     }
 
     if (empty($pairs)) {
-        echo json_encode(['success' => false, 'message' => 'No se pudieron generar las parejas. Verifica las clasificaciones.']);
+        echo json_enc(['success' => false, 'message' => 'No se pudieron generar las parejas. Verifica las clasificaciones.']);
         exit;
     }
 
@@ -86,7 +86,7 @@ try {
 
     $pdo->commit();
 
-    echo json_encode([
+    echo json_enc([
         'success' => true,
         'message' => "{$created} partido(s) generado(s) en " . ucfirst($fase),
         'pairs'   => count($pairs),
@@ -96,7 +96,7 @@ try {
 } catch (Exception $e) {
     if ($pdo->inTransaction()) $pdo->rollBack();
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Error interno del servidor']);
+    echo json_enc(['success' => false, 'message' => 'Error interno del servidor']);
 }
 
 /* ─── Funciones ──────────────────────────────────────────────────────────── */

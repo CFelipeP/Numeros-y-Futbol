@@ -19,7 +19,7 @@ try {
     $stmt->execute();
     $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode([
+    echo json_enc([
         "success" => true,
         "partidos" => $partidos,
         "jugadores" => $jugadores,
@@ -27,5 +27,5 @@ try {
     ]);
 
 } catch (Exception $e) {
-    echo json_encode(["success" => false, "error" => $e->getMessage()]);
+    echo json_enc(["success" => false, "error" => $e->getMessage()]);
 }

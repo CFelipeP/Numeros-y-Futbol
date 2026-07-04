@@ -45,10 +45,17 @@ export default function ForgotPassword() {
         setLoading(true);
 
         try {
-            await axios.post(
+            const res = await axios.post(
                 `${API_BASE}forgot_password.php`,
                 { action: "verify_code", email, codigo }
             );
+
+            if (!res.data.success) {
+                Swal.fire({ icon: "error", title: "Error", text: res.data.error, confirmButtonText: "Entendido" });
+                setLoading(false);
+                return;
+            }
+
             setStep(3);
             Swal.fire({
                 icon: "success",
@@ -57,8 +64,7 @@ export default function ForgotPassword() {
                 showConfirmButton: false
             });
         } catch (error) {
-            const msg = error.response?.data?.error || "Código inválido o expirado.";
-            Swal.fire({ icon: "error", title: "Error", text: msg, confirmButtonText: "Entendido" });
+            Swal.fire({ icon: "error", title: "Error", text: "Error de conexión.", confirmButtonText: "Entendido" });
         } finally {
             setLoading(false);
         }
@@ -79,10 +85,17 @@ export default function ForgotPassword() {
         setLoading(true);
 
         try {
-            await axios.post(
+            const res = await axios.post(
                 `${API_BASE}forgot_password.php`,
                 { action: "reset_password", email, codigo, new_password: newPassword }
             );
+
+            if (!res.data.success) {
+                Swal.fire({ icon: "error", title: "Error", text: res.data.error, confirmButtonText: "Entendido" });
+                setLoading(false);
+                return;
+            }
+
             Swal.fire({
                 icon: "success",
                 title: "¡Contraseña Actualizada!",
@@ -90,8 +103,7 @@ export default function ForgotPassword() {
                 confirmButtonText: "Ir a Login"
             }).then(() => navigate("/login"));
         } catch (error) {
-            const msg = error.response?.data?.error || "No se pudo actualizar.";
-            Swal.fire({ icon: "error", title: "Error", text: msg, confirmButtonText: "Entendido" });
+            Swal.fire({ icon: "error", title: "Error", text: "Error de conexión.", confirmButtonText: "Entendido" });
         } finally {
             setLoading(false);
         }

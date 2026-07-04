@@ -53,6 +53,6 @@ try {
     $next = null;
 }
 
-echo json_encode(['recent' => $recent, 'next' => $next]);
+echo json_enc(['recent' => $recent, 'next' => $next]);
 
 $conn->close();

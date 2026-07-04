@@ -30,10 +30,10 @@ try {
     $match = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$match) {
-        echo json_encode(null);
+        echo json_enc(null);
     } else {
-        echo json_encode($match);
+        echo json_enc($match);
     }
 } catch (Exception $e) {
-    echo json_encode(null);
+    echo json_enc(null);
 }

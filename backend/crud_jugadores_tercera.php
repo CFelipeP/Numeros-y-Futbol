@@ -16,7 +16,7 @@ $action = $data['action'] ?? $_GET['action'] ?? "";
 if ($_SERVER["REQUEST_METHOD"] === "GET" && !$action) {
     $equipo_id = (int)($_GET["equipo_id"] ?? 0);
     if (!$equipo_id) {
-        echo json_encode(["success" => false, "error" => "ID de equipo requerido"]);
+        echo json_enc(["success" => false, "error" => "ID de equipo requerido"]);
         exit;
     }
 
@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && !$action) {
     $eq = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$eq) {
-        echo json_encode(["success" => false, "error" => "Equipo no encontrado"]);
+        echo json_enc(["success" => false, "error" => "Equipo no encontrado"]);
         exit;
     }
 
@@ -51,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && !$action) {
     $stmt2->execute([$equipo_id]);
     $jugadores = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode(["success" => true, "equipo" => $eq, "jugadores" => $jugadores]);
+    echo json_enc(["success" => true, "equipo" => $eq, "jugadores" => $jugadores]);
     exit;
 }
 
@@ -66,7 +66,7 @@ $equipo_id = (int)($data["equipo_id"] ?? 0);
     $es_titular      = (int)($data["es_titular"] ?? 0);
 
     if (!$equipo_id || !$nombre) {
-        echo json_encode(["success" => false, "error" => "Equipo y nombre son obligatorios"]);
+        echo json_enc(["success" => false, "error" => "Equipo y nombre son obligatorios"]);
         exit;
     }
 
@@ -78,7 +78,7 @@ $equipo_id = (int)($data["equipo_id"] ?? 0);
     $stmt2 = $conn->prepare("INSERT IGNORE INTO $TABLA_STATS (jugador_id, temporada) VALUES (?, '2025-2026')");
     $stmt2->execute([$jugador_id]);
 
-    echo json_encode(["success" => true, "message" => "Jugador creado", "id" => $jugador_id]);
+    echo json_enc(["success" => true, "message" => "Jugador creado", "id" => $jugador_id]);
     exit;
 }
 
@@ -93,42 +93,42 @@ if ($action === "update") {
     $es_titular      = (int)($data["es_titular"] ?? 0);
 
     if (!$id || !$nombre) {
-        echo json_encode(["success" => false, "error" => "ID y nombre son obligatorios"]);
+        echo json_enc(["success" => false, "error" => "ID y nombre son obligatorios"]);
         exit;
     }
 
     $stmt = $conn->prepare("UPDATE $TABLA SET nombre=?, posicion=?, numero_camiseta=?, foto=?, edad=?, nacionalidad=?, es_titular=? WHERE id=?");
     $stmt->execute([$nombre, $posicion, $numero_camiseta, $foto, $edad, $nacionalidad, $es_titular, $id]);
 
-    echo json_encode(["success" => true, "message" => "Jugador actualizado"]);
+    echo json_enc(["success" => true, "message" => "Jugador actualizado"]);
     exit;
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "DELETE" || $action === "delete") {
     $id = (int)($_GET["id"] ?? $data["id"] ?? 0);
     if (!$id) {
-        echo json_encode(["success" => false, "error" => "ID requerido"]);
+        echo json_enc(["success" => false, "error" => "ID requerido"]);
         exit;
     }
 
     $stmt = $conn->prepare("DELETE FROM $TABLA WHERE id = ?");
     $stmt->execute([$id]);
 
-    echo json_encode(["success" => true, "message" => "Jugador eliminado"]);
+    echo json_enc(["success" => true, "message" => "Jugador eliminado"]);
     exit;
 }
 
 if ($action === "toggle_titular") {
     $id = (int)($data["id"] ?? 0);
     if (!$id) {
-        echo json_encode(["success" => false, "error" => "ID requerido"]);
+        echo json_enc(["success" => false, "error" => "ID requerido"]);
         exit;
     }
 
     $stmt = $conn->prepare("UPDATE $TABLA SET es_titular = IF(es_titular = 1, 0, 1) WHERE id = ?");
     $stmt->execute([$id]);
 
-    echo json_encode(["success" => true, "message" => "Estado cambiado"]);
+    echo json_enc(["success" => true, "message" => "Estado cambiado"]);
     exit;
 }
 
@@ -148,7 +148,7 @@ if ($action === "update_stats") {
     $vaya_invicta      = (int)($data["vaya_invicta"] ?? 0);
 
     if (!$jugador_id) {
-        echo json_encode(["success" => false, "error" => "ID de jugador requerido"]);
+        echo json_enc(["success" => false, "error" => "ID de jugador requerido"]);
         exit;
     }
 
@@ -161,7 +161,7 @@ if ($action === "update_stats") {
     $stmt->execute([$jugador_id, $temporada, $pj, $goles, $asistencias, $goles_penal, $goles_cabeza, $goles_tiro_libre,
                     $tarjetas_amarillas, $tarjetas_rojas, $minutos_jugados, $goles_recibidos, $vaya_invicta]);
 
-    echo json_encode(["success" => true, "message" => "Estadísticas actualizadas"]);
+    echo json_enc(["success" => true, "message" => "Estadísticas actualizadas"]);
     exit;
 }
 
@@ -171,7 +171,7 @@ if ($action === "save_formation") {
     $titulares = json_decode($data["titulares"] ?? "[]", true);
 
     if (!$equipo_id) {
-        echo json_encode(["success" => false, "error" => "ID de equipo requerido"]);
+        echo json_enc(["success" => false, "error" => "ID de equipo requerido"]);
         exit;
     }
 
@@ -189,8 +189,8 @@ if ($action === "save_formation") {
         $stmt3->execute([$px, $py, $tid, $equipo_id]);
     }
 
-    echo json_encode(["success" => true, "message" => "Formación guardada"]);
+    echo json_enc(["success" => true, "message" => "Formación guardada"]);
     exit;
 }
 
-echo json_encode(["success" => false, "error" => "Acción no válida"]);
+echo json_enc(["success" => false, "error" => "Acción no válida"]);
