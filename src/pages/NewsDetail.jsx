@@ -20,7 +20,6 @@ export default function NewsDetail() {
                 setLoading(false);
             })
             .catch(err => {
-                console.error(err);
                 setLoading(false);
             });
     }, [id]);

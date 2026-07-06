@@ -296,3 +296,42 @@ $mysqli->query("CREATE TABLE IF NOT EXISTS `auth_tokens` (
     UNIQUE KEY `token` (`token`),
     KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `login_attempts` (
+    `id`          INT NOT NULL AUTO_INCREMENT,
+    `ip`          VARCHAR(45) NOT NULL,
+    `email_apodo` VARCHAR(150) DEFAULT NULL,
+    `intento`     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_ip_intento` (`ip`, `intento`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `equipos_tercera` (
+    `id`        INT NOT NULL AUTO_INCREMENT,
+    `nombre`    VARCHAR(100) NOT NULL,
+    `ciudad`    VARCHAR(100) DEFAULT NULL,
+    `estadio`   VARCHAR(150) DEFAULT NULL,
+    `grupo`     VARCHAR(50) DEFAULT NULL,
+    `logo`      VARCHAR(255) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `formacion` VARCHAR(10) DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+try { $mysqli->query("ALTER TABLE equipos_tercera ADD COLUMN `grupo` VARCHAR(50) DEFAULT NULL AFTER `estadio`"); }
+catch (Exception $e) { if (!str_contains($e->getMessage(), 'Duplicate column')) { /* ignorar si ya existe */ } }
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `tabla_posiciones_tercera` (
+    `id`              INT NOT NULL AUTO_INCREMENT,
+    `equipo_id`       INT NOT NULL,
+    `pj`              INT NOT NULL DEFAULT 0,
+    `pg`              INT NOT NULL DEFAULT 0,
+    `pe`              INT NOT NULL DEFAULT 0,
+    `pp`              INT NOT NULL DEFAULT 0,
+    `gf`              INT NOT NULL DEFAULT 0,
+    `gc`              INT NOT NULL DEFAULT 0,
+    `dg`              INT NOT NULL DEFAULT 0,
+    `pts`             INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `equipo_id` (`equipo_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");

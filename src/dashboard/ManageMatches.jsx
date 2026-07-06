@@ -98,7 +98,6 @@ const ManageMatches = () => {
     const getStatus = (match) => match.status || match.estado || "Pendiente";
     const safeJson = async (res) => {
         const text = await res.text();
-        console.log("LO QUE DEVOLVIÓ EL SERVIDOR:", text);
         if (text.trim().startsWith("<")) throw new Error("Error del servidor (PHP): " + text.substring(0, 200));
         return JSON.parse(text);
     };
@@ -140,7 +139,7 @@ const ManageMatches = () => {
         const form = new FormData(); form.append("local", newLocal); form.append("visitante", newVisitante);
         apiPostForm(getEndpoints().create, form).then(safeJson).then(data => {
             setSubmitting(false);
-            if (data.error) { Swal.fire("Error", data.error, "error"); return; }
+            if (data.error || !data.success) { Swal.fire("Error", data.error || "Error al crear partido", "error"); return; }
             setShowNewMatch(false);
             Swal.fire({ icon: "success", title: "Partido creado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(() => loadMatches());
         }).catch(() => { setSubmitting(false); Swal.fire("Error", "No se pudo crear el partido.", "error"); });
@@ -159,7 +158,7 @@ const ManageMatches = () => {
         const form = new FormData(); form.append("match_id", selectedMatch.id); form.append("goles_local", golesLocal); form.append("goles_visitante", golesVisitante);
         apiPostForm(getEndpoints().update, form).then(safeJson).then(data => {
             setSubmitting(false);
-            if (data.error) { Swal.fire("Error", data.error, "error"); return; }
+            if (data.error || !data.success) { Swal.fire("Error", data.error || "Error al guardar resultado", "error"); return; }
             setShowResult(false);
             Swal.fire({ icon: "success", title: "Resultado guardado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false }).then(() => loadMatches());
         }).catch(() => { setSubmitting(false); Swal.fire("Error", "No se pudo guardar.", "error"); });

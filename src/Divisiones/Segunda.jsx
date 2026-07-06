@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import "./styles2.css";
 import { API_BASE } from "../config";
 
@@ -348,7 +349,7 @@ export default function SegundaDivision() {
     else { setActiveTab("clasificacion"); setExpandedTeam(null); }
   }, [hash]);
 
-  const loadTeamDetail = async (id) => { setExpandedTeam({ equipo: { id }, jugadores: [] }); try { const data = await safeFetch(`${API_BASE}get_equipo_detalle_segunda.php?id=${id}`); setExpandedTeam(data); } catch (err) { console.error(err); setExpandedTeam(null); window.location.hash = "equipos"; } };
+  const loadTeamDetail = async (id) => { setExpandedTeam({ equipo: { id }, jugadores: [] }); try { const data = await safeFetch(`${API_BASE}get_equipo_detalle_segunda.php?id=${id}`); setExpandedTeam(data); } catch (err) { setExpandedTeam(null); window.location.hash = "equipos"; } };
   const openTeam = (id) => { window.location.hash = `equipo-${id}-${expandedViewTab}`; };
 
   useEffect(() => {
@@ -361,7 +362,7 @@ export default function SegundaDivision() {
       let feat = null;
       if (mD && !Array.isArray(mD) && Object.keys(mD).length > 0 && (mD.home_name || mD.local_nombre)) { const n = normalizeMatch(mD, tm); if (n && n.home_name && n.away_name) feat = n; }
       setMatch(feat);
-    }).catch(err => { console.error(err); setError(err.message); }).finally(() => setLoading(false));
+    }).catch(err => { setError(err.message); }).finally(() => setLoading(false));
   }, []);
 
   const getTeamStats = (id) => tabla.find(t => t.equipo_id === id);
@@ -451,7 +452,7 @@ export default function SegundaDivision() {
         )}
       </section>
 
-      <footer className="footer" id="driver-footer"><div className="container footer-inner"><div className="footer-grid"><div className="footer-brand"><h3>NÚMEROS Y FÚTBOL</h3><p>Portal oficial hecha por Ariel SOTOMAYOR y Felipe ESCOBAR.</p></div><div className="footer-section"><h4>Divisiones</h4><ul><li><a href="/primera">Primera División</a></li><li><a href="/segunda">Segunda División</a></li><li><a href="#tercera">Tercera División</a></li></ul></div><div className="footer-section"><h4>Contenido</h4><ul><li><a href="/news">Noticias</a></li><li><a href="#">Resultados</a></li><li><a href="/primera">Clasificaciones</a></li></ul></div><div className="footer-section"><h4>Síguenos</h4><ul><li><a href="#">Facebook</a></li><li><a href="#">Twitter / X</a></li><li><a href="#">Instagram</a></li></ul></div></div><div className="footer-bottom"><p>&copy; 2026 Números y Fútbol. Todos los derechos reservados.</p><div className="footer-links"><a href="#">Privacidad</a><a href="#">Términos</a><a href="#">Contacto</a></div></div></div></footer>
+      <Footer />
 
       <style>{`
 @keyframes pv-playerEntry{from{opacity:0;transform:translate(-50%,-50%) scale(.5)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}

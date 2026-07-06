@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import "./styles2.css";
 import { API_BASE } from "../config";
 
@@ -231,6 +232,16 @@ export default function TerceraDivision() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("clasificacion");
   const [sidebar, setSidebar] = useState({ next: null, recent: [] });
+  const [vistaZona, setVistaZona] = useState("general");
+  const [filtroEquipos, setFiltroEquipos] = useState("todos");
+
+  const GRUPOS = ["Occidente A", "Occidente B", "Oriente A", "Oriente B"];
+  const gruposFiltrados = GRUPOS.map(g => ({
+    key: g,
+    label: g,
+    tabla: tabla.filter(t => t.grupo === g),
+    equipos: equipos.filter(t => t.grupo === g),
+  }));
 
   const openMatchDetail = useCallback((id) => {
     if (id) navigate(`/partido/${id}/tercera`);
@@ -274,7 +285,6 @@ export default function TerceraDivision() {
       }
       setMatch(feat);
     }).catch((err) => {
-      console.error("Error cargando datos:", err);
       setError(err.message);
     }).finally(() => setLoading(false));
   }, []);
@@ -457,52 +467,129 @@ export default function TerceraDivision() {
               </div>
             </div>
 
-            {/* ====== TABLA CLASIFICACIÓN ====== */}
+            {/* ====== TABLA CLASIFICACIÓN POR GRUPO ====== */}
             <div className="td-standings-col-m glass-card" style={{ padding: "1.8rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
                 <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.3rem", fontWeight: 800, margin: 0, color: "var(--color-white)" }}>Clasificación General</h3>
                 <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", background: "rgba(255,255,255,0.05)", padding: "0.3rem 0.8rem", borderRadius: "20px", fontWeight: 600 }}>{tabla.length} equipos</span>
               </div>
 
-              <div className="table-container td-table-scroll-m">
-                <table className="standings-table td-table-m">
-                  <thead>
-                    <tr>
-                      <th className="td-th-pos-m" style={{ width: 40, textAlign: "center" }}>#</th>
-                      <th style={{ textAlign: "left", paddingLeft: "16px" }}>Equipo</th>
-                      <th>PJ</th><th>G</th><th>E</th><th>P</th><th className="td-m-hide">GF</th><th className="td-m-hide">GC</th><th>DG</th>
-                      <th style={{ minWidth: 50 }}>PTS</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tabla.length === 0 && (
-                      <tr><td colSpan={10} style={{ textAlign: "center", padding: "3rem 1rem", color: "var(--color-text-muted)" }}>No hay datos disponibles</td></tr>
-                    )}
-                    {tabla.map((team, index) => {
-                      const dg = getDG(team.gf, team.gc);
-                      return (
-                        <tr key={team.id} style={{ borderLeft: "3px solid transparent", transition: "all 0.2s ease" }}>
-                          <td style={{ textAlign: "center" }}>
-                            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-muted)" }}>{index + 1}</span>
-                          </td>
-                          <td className="team-cell" style={{ paddingLeft: "16px" }}>
-                            {team.logo && <img src={logoUrl(team.logo)} alt={team.nombre} style={{ width: 28, height: 28, objectFit: "contain", background: "rgba(255,255,255,0.06)", borderRadius: "50%", padding: "3px" }} />}
-                            <span className="td-team-name-m" style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--color-text-main)", whiteSpace: "nowrap" }}>{team.nombre}</span>
-                          </td>
-                          <td>{team.pj}</td>
-                          <td style={{ color: "#10b981", fontWeight: 600 }}>{team.pg}</td>
-                          <td style={{ color: "#f59e0b", fontWeight: 600 }}>{team.pe}</td>
-                          <td style={{ color: "#ef4444", fontWeight: 600 }}>{team.pp}</td>
-                          <td className="td-m-hide">{team.gf}</td>
-                          <td className="td-m-hide">{team.gc}</td>
-                          <td style={{ fontWeight: 700, color: team.gf - team.gc > 0 ? "#10b981" : team.gf - team.gc < 0 ? "#ef4444" : "var(--color-text-muted)", fontSize: "0.85rem" }}>{dg}</td>
-                          <td style={{ fontWeight: 800, fontSize: "1rem", color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 8px rgba(168,85,247,0.3)" }}>{team.pts}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              {/* Group tabs */}
+              <div style={{ display: "flex", gap: "0.4rem", marginBottom: "1.2rem", flexWrap: "wrap", background: "rgba(255,255,255,0.03)", borderRadius: "10px", padding: "4px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                {[{ key: "general", label: "General", icon: "📊" }, ...GRUPOS.map(g => ({ key: g, label: g, icon: "" }))].map(z => (
+                  <button key={z.key} onClick={() => setVistaZona(z.key)} style={{
+                    flex: 1, minWidth: "fit-content", padding: "0.45rem 0.7rem", borderRadius: "8px",
+                    border: "none", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700,
+                    fontSize: "0.72rem", letterSpacing: "0.5px", textTransform: "uppercase",
+                    background: vistaZona === z.key ? "linear-gradient(135deg, rgba(168,85,247,0.2), rgba(168,85,247,0.08))" : "transparent",
+                    color: vistaZona === z.key ? "#a855f7" : "var(--color-text-muted)",
+                    boxShadow: vistaZona === z.key ? "0 0 12px rgba(168,85,247,0.12)" : "none",
+                    transition: "all 0.3s ease", whiteSpace: "nowrap"
+                  }}>{z.icon} {z.label}</button>
+                ))}
               </div>
+
+              {/* General view: all groups with headers */}
+              {vistaZona === "general" && GRUPOS.map(grupo => {
+                const gData = gruposFiltrados.find(g => g.key === grupo);
+                const gTabla = gData?.tabla || [];
+                if (gTabla.length === 0) return null;
+                return (
+                  <div key={grupo} style={{ marginBottom: "1.8rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.8rem", padding: "0.4rem 0.8rem", background: "rgba(168,85,247,0.08)", borderRadius: "8px", border: "1px solid rgba(168,85,247,0.12)" }}>
+                      <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#a855f7", boxShadow: "0 0 6px #a855f7" }} />
+                      <span style={{ fontFamily: "var(--font-heading)", fontSize: "0.9rem", fontWeight: 800, color: "#a855f7", textTransform: "uppercase", letterSpacing: "1px" }}>{grupo}</span>
+                    </div>
+                    <div className="table-container td-table-scroll-m">
+                      <table className="standings-table td-table-m">
+                        <thead>
+                          <tr>
+                            <th className="td-th-pos-m" style={{ width: 40, textAlign: "center" }}>#</th>
+                            <th style={{ textAlign: "left", paddingLeft: "16px" }}>Equipo</th>
+                            <th>PJ</th><th>G</th><th>E</th><th>P</th><th className="td-m-hide">GF</th><th className="td-m-hide">GC</th><th>DG</th>
+                            <th style={{ minWidth: 50 }}>PTS</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gTabla.map((team, index) => {
+                            const dg = getDG(team.gf, team.gc);
+                            return (
+                              <tr key={team.id} style={{ borderLeft: "3px solid transparent", transition: "all 0.2s ease" }}>
+                                <td style={{ textAlign: "center" }}>
+                                  <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-muted)" }}>{index + 1}</span>
+                                </td>
+                                <td className="team-cell" style={{ paddingLeft: "16px" }}>
+                                  {team.logo && <img src={logoUrl(team.logo)} alt={team.nombre} style={{ width: 28, height: 28, objectFit: "contain", background: "rgba(255,255,255,0.06)", borderRadius: "50%", padding: "3px" }} />}
+                                  <span className="td-team-name-m" style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--color-text-main)", whiteSpace: "nowrap" }}>{team.nombre}</span>
+                                </td>
+                                <td>{team.pj}</td>
+                                <td style={{ color: "#10b981", fontWeight: 600 }}>{team.pg}</td>
+                                <td style={{ color: "#f59e0b", fontWeight: 600 }}>{team.pe}</td>
+                                <td style={{ color: "#ef4444", fontWeight: 600 }}>{team.pp}</td>
+                                <td className="td-m-hide">{team.gf}</td>
+                                <td className="td-m-hide">{team.gc}</td>
+                                <td style={{ fontWeight: 700, color: team.gf - team.gc > 0 ? "#10b981" : team.gf - team.gc < 0 ? "#ef4444" : "var(--color-text-muted)", fontSize: "0.85rem" }}>{dg}</td>
+                                <td style={{ fontWeight: 800, fontSize: "1rem", color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 8px rgba(168,85,247,0.3)" }}>{team.pts}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Individual group view */}
+              {vistaZona !== "general" && (() => {
+                const gData = gruposFiltrados.find(g => g.key === vistaZona);
+                const gTabla = gData?.tabla || [];
+                if (gTabla.length === 0) return (
+                  <div style={{ textAlign: "center", padding: "3rem 1rem", color: "var(--color-text-muted)" }}>No hay equipos en {vistaZona}</div>
+                );
+                return (
+                  <div className="table-container td-table-scroll-m">
+                    <table className="standings-table td-table-m">
+                      <thead>
+                        <tr>
+                          <th className="td-th-pos-m" style={{ width: 40, textAlign: "center" }}>#</th>
+                          <th style={{ textAlign: "left", paddingLeft: "16px" }}>Equipo</th>
+                          <th>PJ</th><th>G</th><th>E</th><th>P</th><th className="td-m-hide">GF</th><th className="td-m-hide">GC</th><th>DG</th>
+                          <th style={{ minWidth: 50 }}>PTS</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {gTabla.map((team, index) => {
+                          const dg = getDG(team.gf, team.gc);
+                          return (
+                            <tr key={team.id} style={{ borderLeft: "3px solid transparent", transition: "all 0.2s ease" }}>
+                              <td style={{ textAlign: "center" }}>
+                                <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-muted)" }}>{index + 1}</span>
+                              </td>
+                              <td className="team-cell" style={{ paddingLeft: "16px" }}>
+                                {team.logo && <img src={logoUrl(team.logo)} alt={team.nombre} style={{ width: 28, height: 28, objectFit: "contain", background: "rgba(255,255,255,0.06)", borderRadius: "50%", padding: "3px" }} />}
+                                <span className="td-team-name-m" style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--color-text-main)", whiteSpace: "nowrap" }}>{team.nombre}</span>
+                              </td>
+                              <td>{team.pj}</td>
+                              <td style={{ color: "#10b981", fontWeight: 600 }}>{team.pg}</td>
+                              <td style={{ color: "#f59e0b", fontWeight: 600 }}>{team.pe}</td>
+                              <td style={{ color: "#ef4444", fontWeight: 600 }}>{team.pp}</td>
+                              <td className="td-m-hide">{team.gf}</td>
+                              <td className="td-m-hide">{team.gc}</td>
+                              <td style={{ fontWeight: 700, color: team.gf - team.gc > 0 ? "#10b981" : team.gf - team.gc < 0 ? "#ef4444" : "var(--color-text-muted)", fontSize: "0.85rem" }}>{dg}</td>
+                              <td style={{ fontWeight: 800, fontSize: "1rem", color: "var(--color-white)", fontFamily: "var(--font-heading)", textShadow: "0 0 8px rgba(168,85,247,0.3)" }}>{team.pts}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
+
+              {tabla.length === 0 && (
+                <div style={{ textAlign: "center", padding: "3rem 1rem", color: "var(--color-text-muted)" }}>No hay datos de clasificación</div>
+              )}
 
               {tabla.length > 0 && (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "0.78rem", color: "var(--color-text-muted)", flexWrap: "wrap", gap: "0.5rem" }}>
@@ -532,9 +619,25 @@ export default function TerceraDivision() {
                 <p style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>No hay equipos registrados</p>
               </div>
             ) : (
-              <div className="td-teams-grid-m" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
-                {equipos.map((equipo) => {
-                  const stats = getTeamStats(equipo.id);
+              <>
+                {/* Group tabs for equipos */}
+                <div style={{ display: "flex", gap: "0.4rem", marginBottom: "1.5rem", flexWrap: "wrap", background: "rgba(255,255,255,0.03)", borderRadius: "10px", padding: "4px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  {[{ key: "todos", label: "Todos", icon: "🛡️" }, ...GRUPOS.map(g => ({ key: g, label: g, icon: "" }))].map(z => (
+                    <button key={z.key} onClick={() => setFiltroEquipos(z.key)} style={{
+                      flex: 1, minWidth: "fit-content", padding: "0.45rem 0.7rem", borderRadius: "8px",
+                      border: "none", cursor: "pointer", fontFamily: "var(--font-heading)", fontWeight: 700,
+                      fontSize: "0.72rem", letterSpacing: "0.5px", textTransform: "uppercase",
+                      background: filtroEquipos === z.key ? "linear-gradient(135deg, rgba(168,85,247,0.2), rgba(168,85,247,0.08))" : "transparent",
+                      color: filtroEquipos === z.key ? "#a855f7" : "var(--color-text-muted)",
+                      boxShadow: filtroEquipos === z.key ? "0 0 12px rgba(168,85,247,0.12)" : "none",
+                      transition: "all 0.3s ease", whiteSpace: "nowrap"
+                    }}>{z.icon} {z.label}</button>
+                  ))}
+                </div>
+
+                <div className="td-teams-grid-m" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
+                  {(filtroEquipos === "todos" ? equipos : equipos.filter(e => e.grupo === filtroEquipos)).map((equipo) => {
+                    const stats = getTeamStats(equipo.id);
                   return (
                     <div key={equipo.id} className="glass-card" style={{ padding: 0, overflow: "hidden", transition: "all 0.3s ease", cursor: "default", borderLeft: "3px solid transparent" }}
                       onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 15px 40px rgba(0,0,0,0.4), 0 0 20px rgba(168,85,247,0.1)"; e.currentTarget.style.borderColor = "rgba(168,85,247,0.3)"; }}
@@ -548,6 +651,7 @@ export default function TerceraDivision() {
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <h4 style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem", fontWeight: 800, margin: "0 0 0.2rem 0", color: "var(--color-white)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{equipo.nombre}</h4>
+                            {equipo.grupo && <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#a855f7", background: "rgba(168,85,247,0.1)", padding: "0.15rem 0.5rem", borderRadius: "4px", textTransform: "uppercase", letterSpacing: "0.5px" }}>{equipo.grupo}</span>}
                           </div>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", marginBottom: "1.2rem" }}>
@@ -593,26 +697,14 @@ export default function TerceraDivision() {
                   );
                 })}
               </div>
+              </>
             )}
           </div>
         )}
 
       </section>
 
-      <footer className="footer" id="driver-footer">
-        <div className="container footer-inner">
-          <div className="footer-grid">
-            <div className="footer-brand"><h3>NÚMEROS Y FÚTBOL</h3><p>Portal oficial hecha por Ariel SOTOMAYOR y Felipe ESCOBAR.</p></div>
-            <div className="footer-section"><h4>Divisiones</h4><ul><li><a href="/primera">Primera División</a></li><li><a href="/segunda">Segunda División</a></li><li><a href="/tercera">Tercera División</a></li></ul></div>
-            <div className="footer-section"><h4>Contenido</h4><ul><li><a href="/news">Noticias</a></li><li><a href="#">Resultados</a></li><li><a href="/primera">Clasificaciones</a></li></ul></div>
-            <div className="footer-section"><h4>Síguenos</h4><ul><li><a href="#">Facebook</a></li><li><a href="#">Twitter / X</a></li><li><a href="#">Instagram</a></li></ul></div>
-          </div>
-          <div className="footer-bottom">
-            <p>&copy; 2026 Números y Fútbol. Todos los derechos reservados.</p>
-            <div className="footer-links"><a href="#">Privacidad</a><a href="#">Términos</a><a href="#">Contacto</a></div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       <style>{`
 /* ============================================

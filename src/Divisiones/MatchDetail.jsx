@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import { API_BASE } from "../config";
 
 const API = API_BASE;
@@ -862,6 +863,8 @@ export default function MatchDetail() {
           </div>
         </div>
       </div>
+
+      <Footer />
     </>
   );
 }

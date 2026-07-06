@@ -12,6 +12,7 @@ $local = $_POST['local'] ?? null;
 $visitante = $_POST['visitante'] ?? null;
 
 if (!$local || !$visitante || $local == $visitante) {
+    http_response_code(400);
     echo json_enc(["error" => "Datos inválidos"]);
     exit;
 }

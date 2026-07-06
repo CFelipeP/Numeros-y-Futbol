@@ -9,6 +9,7 @@ $id      = (int)($_POST['id'] ?? 0);
 $nombre  = $_POST['nombre'] ?? '';
 $ciudad  = $_POST['ciudad'] ?? '';
 $estadio = $_POST['estadio'] ?? '';
+$grupo   = $_POST['grupo']  ?? '';
 
 if (!$id || empty($nombre)) {
     echo json_enc(["success" => false, "error" => "ID y nombre son obligatorios"]);
@@ -28,11 +29,11 @@ if (!empty($_FILES['logo']['name'])) {
         unlink($old['logo']);
     }
 
-    $stmt2 = $conn->prepare("UPDATE equipos_tercera SET nombre=?, ciudad=?, estadio=?, logo=? WHERE id=?");
-    $stmt2->execute([$nombre, $ciudad, $estadio, $ruta, $id]);
+    $stmt2 = $conn->prepare("UPDATE equipos_tercera SET nombre=?, ciudad=?, estadio=?, logo=?, grupo=? WHERE id=?");
+    $stmt2->execute([$nombre, $ciudad, $estadio, $ruta, $grupo, $id]);
 } else {
-    $stmt2 = $conn->prepare("UPDATE equipos_tercera SET nombre=?, ciudad=?, estadio=? WHERE id=?");
-    $stmt2->execute([$nombre, $ciudad, $estadio, $id]);
+    $stmt2 = $conn->prepare("UPDATE equipos_tercera SET nombre=?, ciudad=?, estadio=?, grupo=? WHERE id=?");
+    $stmt2->execute([$nombre, $ciudad, $estadio, $grupo, $id]);
 }
 
 echo json_enc(["success" => true]);

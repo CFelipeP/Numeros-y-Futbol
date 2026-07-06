@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import "./styles2.css";
 import { API_BASE } from "../config";
 
@@ -250,6 +251,8 @@ export default function SeleccionFemenina() {
           )}
         </div>
       </div>
+
+      <Footer />
     </>
   );
 }

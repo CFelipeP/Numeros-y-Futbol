@@ -13,7 +13,7 @@ export default function News() {
         fetch(`${API_BASE}get_news.php`)
             .then(res => res.json())
             .then(data => setNews(data))
-            .catch(err => console.error(err));
+            .catch(() => {});
     }, []);
 
     const featuredNews = news[0];

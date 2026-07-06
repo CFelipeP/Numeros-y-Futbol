@@ -24,8 +24,6 @@ export default function ForgotPassword() {
             { action: "send_code", email }
         );
 
-        console.log("RESPUESTA:", res.data); // 👈 Agrega esto
-
         if (!res.data.success) {
             Swal.fire({ icon: "error", title: "Error", text: res.data.error });
             return;
@@ -34,7 +32,7 @@ export default function ForgotPassword() {
         setStep(2);
         Swal.fire({ icon: "success", title: "¡Código Enviado!", text: "Revisa tu bandeja de entrada (y spam)." });
     } catch (error) {
-        console.error("ERROR:", error);
+        Swal.fire({ icon: "error", title: "Error", text: "No se pudo enviar el código. Verifica tu conexión.", confirmButtonText: "Entendido" });
     } finally {
         setLoading(false);
     }
@@ -77,8 +75,12 @@ export default function ForgotPassword() {
             Swal.fire({ icon: "error", title: "Error", text: "Las contraseñas no coinciden.", confirmButtonText: "Entendido" });
             return;
         }
-        if (newPassword.length < 6) {
-            Swal.fire({ icon: "error", title: "Error", text: "Mínimo 6 caracteres.", confirmButtonText: "Entendido" });
+        if (newPassword.length < 5 || newPassword.length > 12) {
+            Swal.fire({ icon: "error", title: "Error", text: "La contraseña debe tener entre 5 y 12 caracteres.", confirmButtonText: "Entendido" });
+            return;
+        }
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(newPassword)) {
+            Swal.fire({ icon: "error", title: "Error", text: "Debe contener mayúscula, minúscula y carácter especial.", confirmButtonText: "Entendido" });
             return;
         }
 

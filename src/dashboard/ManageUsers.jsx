@@ -29,7 +29,7 @@ const ManageUsers = () => {
     apiFetch(`${API_BASE}get_users.php`)
       .then(res => res.json())
       .then(data => { if (Array.isArray(data)) setUsers(data); else setUsers([]); })
-      .catch(err => console.error("Error cargando usuarios:", err));
+      .catch(() => setUsers([]));
   }, []);
 
   const handleLogout = () => {

@@ -1,4 +1,5 @@
 <?php
+error_reporting(0); ini_set('display_errors', 0);
 require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/db.php';
 
@@ -17,6 +18,17 @@ if (!$email && !$apodo) {
 if (!$password) {
     http_response_code(400);
     echo json_enc(["error" => "La contraseña es obligatoria"]);
+    exit;
+}
+
+$ip = $_SERVER['REMOTE_ADDR'];
+$rateStmt = $pdo->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip=? AND intento > DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
+$rateStmt->execute([$ip]);
+$attempts = (int)$rateStmt->fetchColumn();
+
+if ($attempts >= 6) {
+    http_response_code(429);
+    echo json_enc(["error" => "Demasiados intentos fallidos. Cuenta bloqueada por 15 minutos."]);
     exit;
 }
 
@@ -49,6 +61,20 @@ if ($user && password_verify($password, $user['password'])) {
         "token"  => $token
     ]);
 } else {
-    http_response_code(401);
-    echo json_enc(["error" => "Credenciales incorrectas"]);
+    $logStmt = $pdo->prepare("INSERT INTO login_attempts (ip, email_apodo) VALUES (?, ?)");
+    $logStmt->execute([$ip, $email ?? $apodo ?? '']);
+
+    $attemptsAfter = $attempts + 1;
+    $remaining = 6 - $attemptsAfter;
+
+    if ($remaining <= 3 && $remaining > 0) {
+        http_response_code(401);
+        echo json_enc(["error" => "Credenciales incorrectas. Te " . ($remaining === 1 ? "queda" : "quedan") . " $remaining intento" . ($remaining !== 1 ? "s" : "") . "."]);
+    } elseif ($remaining <= 0) {
+        http_response_code(429);
+        echo json_enc(["error" => "Demasiados intentos fallidos. Cuenta bloqueada por 15 minutos."]);
+    } else {
+        http_response_code(401);
+        echo json_enc(["error" => "Credenciales incorrectas"]);
+    }
 }

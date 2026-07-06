@@ -66,7 +66,8 @@ export default function UserProfile() {
   const handleChangePwd = async (e) => {
     e.preventDefault();
     if (pwd.nuevo !== pwd.confirmar) { Swal.fire("Error", "Las contraseñas no coinciden", "error"); return; }
-    if (pwd.nuevo.length < 6) { Swal.fire("Error", "Mínimo 6 caracteres", "error"); return; }
+    if (pwd.nuevo.length < 5 || pwd.nuevo.length > 12) { Swal.fire("Error", "La contraseña debe tener entre 5 y 12 caracteres", "error"); return; }
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(pwd.nuevo)) { Swal.fire("Error", "Debe contener mayúscula, minúscula y carácter especial", "error"); return; }
     setSaving(true);
     try {
       const res = await apiPost(`${API}update_user_profile.php`, { id: user.id, action: "change_password", current_password: pwd.current, new_password: pwd.nuevo });

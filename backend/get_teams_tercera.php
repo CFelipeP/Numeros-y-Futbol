@@ -6,12 +6,26 @@ require_once __DIR__ . '/db.php';
 
 $conn = $mysqli;
 
-$result = $conn->query("SELECT * FROM equipos_tercera ORDER BY nombre ASC");
+$data = [];
 
-$datos = [];
-while ($row = $result->fetch_assoc()) {
-    $datos[] = $row;
+try {
+    $res = $conn->query("SELECT * FROM equipos_tercera ORDER BY FIELD(grupo, 'Occidente A','Occidente B','Oriente A','Oriente B'), nombre ASC");
+} catch (Exception $e) {
+    $res = false;
 }
 
-echo json_enc($datos);
-$conn->close();
+if (!$res) {
+    try {
+        $res = $conn->query("SELECT * FROM equipos_tercera ORDER BY nombre ASC");
+    } catch (Exception $e) {
+        $res = false;
+    }
+}
+
+if ($res) {
+    while ($row = $res->fetch_assoc()) {
+        $data[] = $row;
+    }
+}
+
+echo json_enc($data);

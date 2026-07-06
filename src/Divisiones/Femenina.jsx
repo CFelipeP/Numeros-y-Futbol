@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import "./styles2.css";
 import { API_BASE } from "../config";
 
@@ -421,7 +422,7 @@ export default function Femenina() {
   const loadTeamDetail = async (id) => {
     setExpandedTeam({ equipo: { id }, jugadores: [] });
     try { const data = await safeFetch(`${API_BASE}get_equipo_detalle_femenina.php?id=${id}`); setExpandedTeam(data); }
-    catch (err) { console.error(err); setExpandedTeam(null); window.location.hash = "equipos"; }
+    catch (err) { setExpandedTeam(null); window.location.hash = "equipos"; }
   };
 
   const changeTab = (tab) => { setActiveTab(tab); setExpandedTeam(null); window.location.hash = tab; };
@@ -443,7 +444,7 @@ export default function Femenina() {
       if (!feat || !feat.home_name) { if (sD?.next && (sD.next.featured == 1 || sD.next.destacado == 1)) feat = normalizeMatch(sD.next, tm); }
       setMatch(feat);
       if (!feat || !feat.home_name) { safeFetch(`${API_BASE}get_matches_femenina.php`).then(am => { const a = Array.isArray(am) ? am : []; const f = a.find(m => m.featured == 1 || m.destacado == 1); if (f) setMatch(normalizeMatch(f, tm)); }).catch(() => {}); }
-    }).catch(err => { console.error(err); setError(err.message); }).finally(() => setLoading(false));
+    }).catch(err => { setError(err.message); }).finally(() => setLoading(false));
   }, []);
 
   const getTeamStats = (id) => tabla.find(t => t.equipo_id === id);
@@ -525,7 +526,7 @@ export default function Femenina() {
         )}
       </section>
 
-      <footer className="footer" id="driver-footer"><div className="container footer-inner"><div className="footer-grid"><div className="footer-brand"><h3>NÚMEROS Y FÚTBOL</h3><p>Portal oficial hecha por Ariel SOTOMAYOR y Felipe ESCOBAR.</p></div><div className="footer-section"><h4>Divisiones</h4><ul><li><a href="/primera">Primera División</a></li><li><a href="/segunda">Segunda División</a></li><li><a href="#tercera">Tercera División</a></li></ul></div><div className="footer-section"><h4>Contenido</h4><ul><li><a href="/news">Noticias</a></li><li><a href="#">Resultados</a></li><li><a href="/primera">Clasificaciones</a></li></ul></div><div className="footer-section"><h4>Síguenos</h4><ul><li><a href="#">Facebook</a></li><li><a href="#">Twitter / X</a></li><li><a href="#">Instagram</a></li></ul></div></div><div className="footer-bottom"><p>&copy; 2026 Números y Fútbol. Todos los derechos reservados.</p><div className="footer-links"><a href="#">Privacidad</a><a href="#">Términos</a><a href="#">Contacto</a></div></div></div></footer>
+      <Footer />
 
       {/* ═══════════════════════════════════════════════════════════════
            BASE STYLES — Plantilla pública (Team View)

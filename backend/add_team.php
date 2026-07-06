@@ -5,9 +5,9 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
 
-$nombre = $_POST['nombre'] ?? '';
-$ciudad = $_POST['ciudad'] ?? '';
-$estadio = $_POST['estadio'] ?? '';
+$nombre  = trim(strip_tags($_POST['nombre']  ?? ''));
+$ciudad  = trim(strip_tags($_POST['ciudad']  ?? ''));
+$estadio = trim(strip_tags($_POST['estadio'] ?? ''));
 
 if (empty($nombre)) {
     echo json_enc(["success" => false, "error" => "El nombre es obligatorio"]);

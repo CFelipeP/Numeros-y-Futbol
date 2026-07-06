@@ -220,7 +220,7 @@ HTML;
     } catch (Exception $e) {
         echo json_enc([
             "success" => false,
-            "error" => "Error SMTP: " . $e->getMessage()
+            "error" => "Error al enviar el correo. Intenta de nuevo."
         ]);
     }
     exit;

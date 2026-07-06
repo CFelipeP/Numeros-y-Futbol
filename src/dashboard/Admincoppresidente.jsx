@@ -409,10 +409,6 @@ const MatchModal = ({ match, teams, phase, allMatches, onSave, onClose }) => {
       payload.penales_visitante = form.penales_visitante;
     }
 
-    console.log("AVAILABLE", availableTeams);
-    console.log("FORM", form);
-    console.log("PAYLOAD", payload);
-
     const res = await apiPost(`${API_BASE}${endpoint}`, payload).then(r => r.json());
 
     if (res.success) {
@@ -433,8 +429,6 @@ const MatchModal = ({ match, teams, phase, allMatches, onSave, onClose }) => {
     }
 
   } catch (err) {
-
-    console.error(err);
 
     Swal.fire({
       toast: true,
@@ -774,8 +768,6 @@ const GroupModal = ({ teams, existingMatches, onSave, onClose }) => {
             .replace(/[\u0300-\u036f]/g, "")
         );
 
-      console.log("HEADER:", header);
-
       const grupoIdx = header.findIndex(c => c === "grupo");
 
       const nombreIdx = header.findIndex(c =>
@@ -785,12 +777,6 @@ const GroupModal = ({ teams, existingMatches, onSave, onClose }) => {
       const divisionIdx = header.findIndex(c =>
         ["division", "div"].includes(c)
       );
-
-      console.log({
-        grupoIdx,
-        nombreIdx,
-        divisionIdx
-      });
 
       if (grupoIdx === -1 || nombreIdx === -1) {
         Swal.fire({
@@ -842,8 +828,6 @@ const GroupModal = ({ teams, existingMatches, onSave, onClose }) => {
           .split(separator)
           .map(c => c.trim().replace(/^"|"$/g, ""));
 
-        console.log("ROW:", cols);
-
         const g = cols[grupoIdx]?.toUpperCase();
 
         const n = cols[nombreIdx]?.trim();
@@ -852,13 +836,6 @@ const GroupModal = ({ teams, existingMatches, onSave, onClose }) => {
           divisionIdx !== -1
             ? (cols[divisionIdx]?.trim() || "")
             : "";
-
-        console.log({
-          grupo: g,
-          nombre: n,
-          division: d
-        });
-
 
         if (!GROUPS.includes(g) || !n) { log.push(`❌ Fila ${i + 1}: datos incompletos`); continue; }
 

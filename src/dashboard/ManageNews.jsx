@@ -90,7 +90,6 @@ export default function ManagePublicNews() {
       const text = await res.text();
       let data;
       try { data = JSON.parse(text); } catch (e) {
-        console.error("JSON roto:", text);
         setEditUploading(false);
         return null;
       }
@@ -100,6 +99,7 @@ export default function ManagePublicNews() {
       if (data.success) {
         return data.url;
       } else {
+        Swal.fire("Error", data.error || "Error al subir imagen", "error");
         return null;
       }
     } catch (error) {

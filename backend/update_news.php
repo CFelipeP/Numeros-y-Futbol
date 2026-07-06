@@ -8,9 +8,16 @@ requireAdmin();
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (!isset($data["id"])) {
+    http_response_code(400);
     echo json_enc(["error" => "ID requerido"]);
     exit;
 }
+
+$id        = intval($data["id"]);
+$titulo    = trim(strip_tags($data["titulo"]    ?? ""));
+$contenido = trim(strip_tags($data["contenido"] ?? "", '<b><i><u><p><br><a><strong><em><ul><ol><li><h1><h2><h3><h4><h5><h6><img><span><div>'));
+$imagen    = trim($data["imagen"]    ?? "");
+$categoria = trim(strip_tags($data["categoria"] ?? ""));
 
 $sql = "UPDATE noticias 
         SET titulo = ?, contenido = ?, imagen = ?, categoria = ?
@@ -19,11 +26,11 @@ $sql = "UPDATE noticias
 $stmt = $conn->prepare($sql);
 
 $stmt->execute([
-    $data["titulo"],
-    $data["contenido"],
-    $data["imagen"],
-    $data["categoria"],
-    $data["id"]
+    $titulo,
+    $contenido,
+    $imagen,
+    $categoria,
+    $id
 ]);
 
 echo json_enc(["success" => true]);

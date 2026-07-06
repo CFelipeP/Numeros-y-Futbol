@@ -227,6 +227,7 @@ CREATE TABLE `equipos_tercera` (
   `nombre` varchar(100) NOT NULL,
   `ciudad` varchar(100) DEFAULT NULL,
   `estadio` varchar(150) DEFAULT NULL,
+  `grupo` varchar(50) DEFAULT NULL,
   `logo` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `formacion` varchar(10) DEFAULT NULL,
@@ -240,7 +241,39 @@ CREATE TABLE `equipos_tercera` (
 
 LOCK TABLES `equipos_tercera` WRITE;
 /*!40000 ALTER TABLE `equipos_tercera` DISABLE KEYS */;
-INSERT INTO `equipos_tercera` VALUES (9,'C.D. Estrellas Del Sur','Chirilagua','Estadio Municipal Carlos Moon','uploads/1778806361_CD ESTRELLAS DEL SUR.png','2026-05-15 00:52:41','4-4-2'),(10,'C.S.D Vendaval','Apopa','Estadio Joaquín Gutiérrez','uploads/1778807010_vendaval 2.png','2026-05-15 01:03:30',NULL),(11,'C.D. Buenos Aires','Morazán','Estadio Municipal de Osicala','uploads/1778807163_buenos aires 2.png','2026-05-15 01:06:03',NULL),(12,' Academia BP','San Salvador','Canchas del Estadio Cuscatlán','uploads/1778807456_academia bp2.png','2026-05-15 01:10:56',NULL),(14,'A.D Izalco','Izalco','Estadio Salvador Mariona','uploads/1778808698_IZALCOs.png','2026-05-15 01:31:38',NULL),(15,'C.D. 11 Municipal','Ahuachapán','Estadio Arturo Simeón Magaña','uploads/1778808985_C.D. 11 Municipal.png','2026-05-15 01:36:25',NULL),(16,'Brasil FC','Cantón El Brazo','Estadio Juan Francisco Posada','uploads/1778809144_brasil fc.png','2026-05-15 01:39:04',NULL),(17,'C.D. El Vencedor','Santa Elena','Estadio José Germán Rivas','uploads/1778810314_CD EL VENCEDOT.png','2026-05-15 01:58:34',NULL);
+INSERT INTO `equipos_tercera` VALUES
+(1,'Municipal','Sonsonate',NULL,'Occidente A',NULL,'2026-07-05 00:00:00',NULL),
+(2,'Buenos Aires FC','Morazán',NULL,'Occidente A',NULL,'2026-07-05 00:00:00',NULL),
+(3,'UD Santos','La Libertad',NULL,'Occidente A',NULL,'2026-07-05 00:00:00',NULL),
+(4,'La Hachadura','Sonsonate',NULL,'Occidente A',NULL,'2026-07-05 00:00:00',NULL),
+(5,'AD Izalco','Sonsonate',NULL,'Occidente A',NULL,'2026-07-05 00:00:00',NULL),
+(6,'11 Municipal','Ahuachapán',NULL,'Occidente A',NULL,'2026-07-05 00:00:00',NULL),
+(7,'Juventud Candelareño','Santa Ana',NULL,'Occidente A',NULL,'2026-07-05 00:00:00',NULL),
+(8,'Marte Soyapango','San Salvador',NULL,'Occidente B',NULL,'2026-07-05 00:00:00',NULL),
+(9,'Academia BP','La Libertad',NULL,'Occidente B',NULL,'2026-07-05 00:00:00',NULL),
+(10,'Tenancingo','Cuscatlán',NULL,'Occidente B',NULL,'2026-07-05 00:00:00',NULL),
+(11,'Nacional Las Margaritas','La Libertad',NULL,'Occidente B',NULL,'2026-07-05 00:00:00',NULL),
+(12,'Vendaval','San Salvador',NULL,'Occidente B',NULL,'2026-07-05 00:00:00',NULL),
+(13,'Atlético Belén','San Salvador',NULL,'Occidente B',NULL,'2026-07-05 00:00:00',NULL),
+(14,'Brasilia FC','Cuscatlán',NULL,'Occidente B',NULL,'2026-07-05 00:00:00',NULL),
+(15,'Santo Tomás','Chalatenango',NULL,'Occidente B',NULL,'2026-07-05 00:00:00',NULL),
+(16,'CD Audaz','San Vicente',NULL,'Oriente A',NULL,'2026-07-05 00:00:00',NULL),
+(17,'Nonualco FC','La Paz',NULL,'Oriente A',NULL,'2026-07-05 00:00:00',NULL),
+(18,'Atlético Verapaz','San Vicente',NULL,'Oriente A',NULL,'2026-07-05 00:00:00',NULL),
+(19,'San Marcos','Usulután',NULL,'Oriente A',NULL,'2026-07-05 00:00:00',NULL),
+(20,'FORFUT','Cabañas',NULL,'Oriente A',NULL,'2026-07-05 00:00:00',NULL),
+(21,'CD El Roble','Cabañas',NULL,'Oriente A',NULL,'2026-07-05 00:00:00',NULL),
+(22,'CD El Vencedor','Usulután',NULL,'Oriente A',NULL,'2026-07-05 00:00:00',NULL),
+(23,'SESSA','San Vicente',NULL,'Oriente A',NULL,'2026-07-05 00:00:00',NULL),
+(24,'San Rafael Obrajuelo','San Salvador',NULL,'Oriente A',NULL,'2026-07-05 00:00:00',NULL),
+(25,'Sal Y Mar','La Unión',NULL,'Oriente B',NULL,'2026-07-05 00:00:00',NULL),
+(26,'Brasil FC','San Miguel',NULL,'Oriente B',NULL,'2026-07-05 00:00:00',NULL),
+(27,'Racing de Gualuca','San Miguel',NULL,'Oriente B',NULL,'2026-07-05 00:00:00',NULL),
+(28,'Real Sociedad','Morazán',NULL,'Oriente B',NULL,'2026-07-05 00:00:00',NULL),
+(29,'Estrellas del Sur','San Miguel',NULL,'Oriente B',NULL,'2026-07-05 00:00:00',NULL),
+(30,'CD Buenos Aires','Morazán',NULL,'Oriente B',NULL,'2026-07-05 00:00:00',NULL),
+(31,'Atlético San Simón','Morazán',NULL,'Oriente B',NULL,'2026-07-05 00:00:00',NULL),
+(32,'Vista Hermosa','Morazán',NULL,'Oriente B',NULL,'2026-07-05 00:00:00',NULL);
 /*!40000 ALTER TABLE `equipos_tercera` ENABLE KEYS */;
 UNLOCK TABLES;
 

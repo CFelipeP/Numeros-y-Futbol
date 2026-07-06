@@ -11,7 +11,7 @@ $partido_id  = intval($body['partido_id']  ?? 0);
 $division    = trim($body['division']      ?? 'primera');
 $minuto      = intval($body['minuto']      ?? 0);
 $tipo        = trim($body['tipo']          ?? 'comentario');
-$descripcion = trim($body['descripcion']  ?? '');
+$descripcion = trim(strip_tags($body['descripcion']  ?? ''));
 $equipo      = trim($body['equipo']        ?? '');
 $jugador_id  = !empty($body['jugador_id']) ? intval($body['jugador_id']) : null;
 

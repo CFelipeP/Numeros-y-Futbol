@@ -456,7 +456,7 @@ const NewsSection = () => {
     fetch(`${API_BASE}get_news.php`)
       .then(res => res.json())
       .then(data => setNews(data.slice(0, 3)))
-      .catch(err => console.error(err));
+      .catch(() => {});
   }, []);
 
   return (

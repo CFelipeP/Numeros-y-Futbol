@@ -44,7 +44,6 @@ const ManageTeamsSegunda = () => {
                 setLoading(false);
             })
             .catch(err => {
-                console.error("Error cargando equipos segunda:", err);
                 setError(err.message);
                 setTeams([]);
                 setLoading(false);
@@ -126,17 +125,15 @@ const ManageTeamsSegunda = () => {
         if (formLogo) form.append("logo", formLogo);
 
         apiPostForm(`${API}add_team_segunda.php`, form)
-            .then(() => {
+            .then(res => res.json())
+            .then(data => {
                 setSubmitting(false);
+                if (!data.success) { Swal.fire("Error", data.error || "No se pudo crear", "error"); return; }
                 setShowAdd(false);
                 Swal.fire({ icon: "success", title: "Equipo creado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false })
                     .then(() => window.location.reload());
             })
-            .catch(err => {
-                console.error("Error creando equipo:", err);
-                setSubmitting(false);
-                Swal.fire("Error", "No se pudo conectar al servidor", "error");
-            });
+            .catch(() => { setSubmitting(false); Swal.fire("Error", "No se pudo conectar al servidor", "error"); });
     };
 
     const openEdit = (team) => {
@@ -189,7 +186,6 @@ const ManageTeamsSegunda = () => {
                 }
             })
             .catch(err => {
-                console.error("Error actualizando:", err);
                 setEditSubmitting(false);
                 Swal.fire("Error", "No se pudo conectar al servidor", "error");
             });
@@ -445,7 +441,7 @@ const ManageTeamsSegunda = () => {
                                     {filteredTeams.map((team) => (
                                         <tr key={team.id}>
                                             <td>
-                                                <img src={`${API}${team.logo}`} alt={team.nombre} onError={(e) => { e.target.style.display = 'none'; }} style={{ width: '38px', height: '38px', objectFit: 'contain', borderRadius: '8px', background: '#fff', padding: '2px' }} />
+                                                {team.logo ? <img src={`${API}${team.logo}`} alt={team.nombre} onError={(e) => { e.target.style.display = 'none'; }} style={{ width: '38px', height: '38px', objectFit: 'contain', borderRadius: '8px', background: '#fff', padding: '2px' }} /> : <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#475569' }}>N/A</div>}
                                             </td>
                                             <td style={{ fontWeight: '700' }}>{team.nombre}</td>
                                             <td>{getGrupoBadge(team.grupo)}</td>

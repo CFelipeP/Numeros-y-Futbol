@@ -18,7 +18,8 @@ $allowed = ['site_name','site_description','hero_title','hero_description','hero
             'maintenance_mode','maintenance_msg','site_logo_url','contact_email',
             'facebook_url','twitter_url','instagram_url'];
 
-$stripHtmlKeys = ['hero_title'];
+$stripHtmlKeys = ['hero_title', 'site_name', 'hero_btn1_label', 'hero_btn2_label', 'maintenance_msg'];
+$urlKeys = ['facebook_url', 'twitter_url', 'instagram_url', 'hero_banner_url', 'site_logo_url'];
 
 try {
     $pdo->exec("CREATE TABLE IF NOT EXISTS `site_settings` (
@@ -28,9 +29,13 @@ try {
     $stmt = $pdo->prepare("INSERT INTO site_settings (`key`,`value`) VALUES (?,?) ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)");
     foreach ($settings as $k => $v) {
         if (in_array($k, $allowed)) {
-            $val = $v;
+            $val = trim($v);
             if (in_array($k, $stripHtmlKeys)) {
-                $val = strip_tags($val, '<span>');
+                $val = strip_tags($val);
+            }
+            if (in_array($k, $urlKeys) && $val !== '' && !filter_var($val, FILTER_VALIDATE_URL)) {
+                echo json_enc(["success" => false, "error" => "URL inválida en $k"]);
+                exit;
             }
             $stmt->execute([$k, $val]);
         }

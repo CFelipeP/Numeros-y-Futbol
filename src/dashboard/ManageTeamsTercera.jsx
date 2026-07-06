@@ -16,6 +16,7 @@ import { API_BASE } from "../config";
 
 const API = API_BASE;
 const DIVISION_LABEL = "Tercera División";
+const GRUPOS = ["Occidente A", "Occidente B", "Oriente A", "Oriente B"];
 
 const ManageTeamsTercera = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -45,7 +46,6 @@ const ManageTeamsTercera = () => {
                 setLoading(false);
             })
             .catch(err => {
-                console.error("Error cargando equipos tercera:", err);
                 setError(err.message);
                 setTeams([]);
                 setLoading(false);
@@ -67,12 +67,14 @@ const ManageTeamsTercera = () => {
     const [formNombre, setFormNombre] = useState("");
     const [formCiudad, setFormCiudad] = useState("");
     const [formEstadio, setFormEstadio] = useState("");
+    const [formGrupo, setFormGrupo] = useState("");
     const [formLogo, setFormLogo] = useState(null);
     const [logoPreview, setLogoPreview] = useState(null);
 
     const [editNombre, setEditNombre] = useState("");
     const [editCiudad, setEditCiudad] = useState("");
     const [editEstadio, setEditEstadio] = useState("");
+    const [editGrupo, setEditGrupo] = useState("");
     const [editLogo, setEditLogo] = useState(null);
     const [editLogoPreview, setEditLogoPreview] = useState(null);
 
@@ -89,7 +91,7 @@ const ManageTeamsTercera = () => {
     };
 
     const openAdd = () => {
-        setFormNombre(""); setFormCiudad(""); setFormEstadio("");
+        setFormNombre(""); setFormCiudad(""); setFormEstadio(""); setFormGrupo("");
         setFormLogo(null); setLogoPreview(null);
         setShowAdd(true);
     };
@@ -116,20 +118,19 @@ const ManageTeamsTercera = () => {
         form.append("nombre", formNombre);
         form.append("ciudad", formCiudad);
         form.append("estadio", formEstadio);
+        form.append("grupo", formGrupo);
         if (formLogo) form.append("logo", formLogo);
 
         apiPostForm(`${API}add_team_tercera.php`, form)
-            .then(() => {
+            .then(res => res.json())
+            .then(data => {
                 setSubmitting(false);
+                if (!data.success) { Swal.fire("Error", data.error || "No se pudo crear", "error"); return; }
                 setShowAdd(false);
                 Swal.fire({ icon: "success", title: "Equipo creado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false })
                     .then(() => window.location.reload());
             })
-            .catch(err => {
-                console.error("Error creando equipo:", err);
-                setSubmitting(false);
-                Swal.fire("Error", "No se pudo conectar al servidor", "error");
-            });
+            .catch(() => { setSubmitting(false); Swal.fire("Error", "No se pudo conectar al servidor", "error"); });
     };
 
     const openEdit = (team) => {
@@ -137,6 +138,7 @@ const ManageTeamsTercera = () => {
         setEditNombre(team.nombre || "");
         setEditCiudad(team.ciudad || "");
         setEditEstadio(team.estadio || "");
+        setEditGrupo(team.grupo || "");
         setEditLogo(null);
         setEditLogoPreview(team.logo ? `${API}${team.logo}` : null);
         setShowEdit(true);
@@ -165,6 +167,7 @@ const ManageTeamsTercera = () => {
         form.append("nombre", editNombre);
         form.append("ciudad", editCiudad);
         form.append("estadio", editEstadio);
+        form.append("grupo", editGrupo);
         if (editLogo) form.append("logo", editLogo);
 
         apiPostForm(`${API}update_team_tercera.php`, form)
@@ -180,7 +183,6 @@ const ManageTeamsTercera = () => {
                 }
             })
             .catch(err => {
-                console.error("Error actualizando:", err);
                 setEditSubmitting(false);
                 Swal.fire("Error", "No se pudo conectar al servidor", "error");
             });
@@ -343,9 +345,9 @@ const ManageTeamsTercera = () => {
                                 <tbody>
                                     {filteredTeams.map((team) => (
                                         <tr key={team.id}>
-                                            <td>
-                                                <img src={`${API}${team.logo}`} alt={team.nombre} onError={(e) => { e.target.style.display = 'none'; }} style={{ width: '38px', height: '38px', objectFit: 'contain', borderRadius: '8px', background: '#fff', padding: '2px' }} />
-                                            </td>
+                                                <td>
+                                                    {team.logo ? <img src={`${API}${team.logo}`} alt={team.nombre} onError={(e) => { e.target.style.display = 'none'; }} style={{ width: '38px', height: '38px', objectFit: 'contain', borderRadius: '8px', background: '#fff', padding: '2px' }} /> : <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#475569' }}>N/A</div>}
+                                                </td>
                                             <td style={{ fontWeight: '700' }}>{team.nombre}</td>
                                             <td style={{ color: '#94a3b8' }}>{team.ciudad || '—'}</td>
                                             <td style={{ color: '#94a3b8' }}>{team.estadio || '—'}</td>
@@ -397,6 +399,13 @@ const ManageTeamsTercera = () => {
                                         <label>Estadio</label>
                                         <input type="text" value={formEstadio} onChange={(e) => setFormEstadio(e.target.value)} placeholder="Ej: Estadio Juan Francisco Barraza" style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
                                     </div>
+                                    <div className="tm-field">
+                                        <label>Grupo</label>
+                                        <select value={formGrupo} onChange={(e) => setFormGrupo(e.target.value)} style={inputStyle}>
+                                            <option value="">Seleccionar grupo</option>
+                                            {GRUPOS.map(g => <option key={g} value={g}>{g}</option>)}
+                                        </select>
+                                    </div>
                                 </div>
                                 <div className="tm-logo-section">
                                     <div className="tm-logo-preview-wrap tm-logo-preview-amber">
@@ -447,6 +456,13 @@ const ManageTeamsTercera = () => {
                                     <div className="tm-field">
                                         <label>Estadio</label>
                                         <input type="text" value={editEstadio} onChange={(e) => setEditEstadio(e.target.value)} style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
+                                    </div>
+                                    <div className="tm-field">
+                                        <label>Grupo</label>
+                                        <select value={editGrupo} onChange={(e) => setEditGrupo(e.target.value)} style={inputStyle}>
+                                            <option value="">Seleccionar grupo</option>
+                                            {GRUPOS.map(g => <option key={g} value={g}>{g}</option>)}
+                                        </select>
                                     </div>
                                 </div>
                                 <div className="tm-logo-section">
