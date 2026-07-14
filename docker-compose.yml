@@ -1,0 +1,37 @@
+services:
+  app:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=numeros-y-futbol
+      - DB_USER=numeros
+      - DB_PASS=Info2026/*-
+    volumes:
+      - uploads:/var/www/html/backend/uploads
+    restart: unless-stopped
+
+  db:
+    image: mariadb:10.11
+    environment:
+      - MARIADB_ROOT_PASSWORD=root2026
+      - MARIADB_DATABASE=numeros-y-futbol
+      - MARIADB_USER=numeros
+      - MARIADB_PASSWORD=Info2026/*-
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  dbdata:
+  uploads:
