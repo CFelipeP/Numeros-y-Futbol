@@ -7,6 +7,7 @@ $division = $_GET['division'] ?? 'primera';
 
 $validDivisions = ['primera' => ['partidos', 'estado', 'tabla_posiciones', '_'],
                    'segunda' => ['partidos_segunda', 'status', 'tabla_posiciones_segunda', '_segunda'],
+                   'ascenso' => ['partidos_segunda', 'status', 'tabla_posiciones_segunda', '_segunda'],
                    'tercera' => ['partidos_tercera', 'status', 'tabla_posiciones_tercera', '_tercera'],
                    'femenina' => ['partidos_femenina', 'estado', 'tabla_posiciones_femenina', '_femenina']];
 

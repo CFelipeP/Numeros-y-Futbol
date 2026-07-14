@@ -24,6 +24,7 @@ if (!in_array($status, $validos)) {
 
 switch ($division) {
     case 'segunda':
+    case 'ascenso':
         $table  = 'partidos_segunda';
         $colEst = 'status';
         break;

@@ -15,7 +15,7 @@ if ($division === 'primera') {
     $tablaPartidos = 'partidos_femenina';
     $colEstado = 'estado';
 } else {
-    $sufijo = $division === 'segunda' ? '_segunda' : '_tercera';
+    $sufijo = $division === 'segunda' || $division === 'ascenso' ? '_segunda' : '_tercera';
     $tablaPartidos = 'partidos' . $sufijo;
     $colEstado = 'status';
 }

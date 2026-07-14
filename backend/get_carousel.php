@@ -16,6 +16,7 @@ try {
             $colVisit  = 'equipo_visitante';
             break;
         case 'segunda':
+        case 'ascenso':
             $tPartidos = 'partidos_segunda';
             $tEquipos  = 'equipos_segunda';
             $colLocal  = 'local_id';

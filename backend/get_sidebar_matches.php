@@ -21,7 +21,7 @@ if ($division === 'primera') {
     $colLocal      = 'equipo_local';
     $colVisitante  = 'equipo_visitante';
 } else {
-    $sufijo = $division === 'segunda' ? '_segunda' : '_tercera';
+    $sufijo = $division === 'segunda' || $division === 'ascenso' ? '_segunda' : '_tercera';
     $tablaPartidos = 'partidos' . $sufijo;
     $tablaEquipos  = 'equipos' . $sufijo;
     $colEstado     = 'status';

@@ -252,6 +252,7 @@ $mysqli->query("CREATE TABLE IF NOT EXISTS `estadisticas_jugadores_femenina` (
     `vaya_invicta` INT DEFAULT 0,
     PRIMARY KEY (`id`),
     KEY `jugador_id` (`jugador_id`),
+    UNIQUE KEY `uniq_jugador_temp` (`jugador_id`, `temporada`),
     KEY `goles` (`goles`),
     KEY `tarjetas_amarillas` (`tarjetas_amarillas`),
     KEY `tarjetas_rojas` (`tarjetas_rojas`),
@@ -335,3 +336,221 @@ $mysqli->query("CREATE TABLE IF NOT EXISTS `tabla_posiciones_tercera` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `equipo_id` (`equipo_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `equipos_ascenso` (
+    `id`         INT NOT NULL AUTO_INCREMENT,
+    `nombre`     VARCHAR(100) NOT NULL,
+    `ciudad`     VARCHAR(100) DEFAULT NULL,
+    `estadio`    VARCHAR(150) DEFAULT NULL,
+    `logo`       VARCHAR(255) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `formacion`  VARCHAR(10) DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `tabla_posiciones_ascenso` (
+    `id`              INT NOT NULL AUTO_INCREMENT,
+    `equipo_id`       INT NOT NULL,
+    `pj`              INT NOT NULL DEFAULT 0,
+    `pg`              INT NOT NULL DEFAULT 0,
+    `pe`              INT NOT NULL DEFAULT 0,
+    `pp`              INT NOT NULL DEFAULT 0,
+    `gf`              INT NOT NULL DEFAULT 0,
+    `gc`              INT NOT NULL DEFAULT 0,
+    `dg`              INT NOT NULL DEFAULT 0,
+    `pts`             INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `equipo_id` (`equipo_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `partidos_ascenso` (
+    `id`              INT NOT NULL AUTO_INCREMENT,
+    `local_id`        INT DEFAULT NULL,
+    `visitante_id`    INT DEFAULT NULL,
+    `goles_local`     INT DEFAULT 0,
+    `goles_visitante` INT DEFAULT 0,
+    `fecha`           DATE DEFAULT NULL,
+    `hora`            TIME DEFAULT NULL,
+    `status`          VARCHAR(20) DEFAULT 'Pendiente',
+    `featured`        TINYINT(1) NOT NULL DEFAULT 0,
+    `created_at`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `jugadores_ascenso` (
+    `id`              INT NOT NULL AUTO_INCREMENT,
+    `equipo_id`       INT NOT NULL,
+    `nombre`          VARCHAR(150) NOT NULL,
+    `posicion`        VARCHAR(30) NOT NULL DEFAULT 'centrodelantero',
+    `numero_camiseta` INT DEFAULT NULL,
+    `foto`            VARCHAR(255) DEFAULT NULL,
+    `edad`            INT DEFAULT NULL,
+    `nacionalidad`    VARCHAR(100) DEFAULT NULL,
+    `posicion_x`      DECIMAL(5,2) DEFAULT NULL,
+    `posicion_y`      DECIMAL(5,2) DEFAULT NULL,
+    `es_titular`      TINYINT(1) DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `equipo_id` (`equipo_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `estadisticas_jugadores_ascenso` (
+    `id`                 INT NOT NULL AUTO_INCREMENT,
+    `jugador_id`         INT NOT NULL,
+    `temporada`          VARCHAR(20) DEFAULT '2025-2026',
+    `partidos_jugados`   INT DEFAULT 0,
+    `goles`              INT DEFAULT 0,
+    `asistencias`        INT DEFAULT 0,
+    `goles_cabeza`       INT DEFAULT 0,
+    `goles_tiro_libre`   INT DEFAULT 0,
+    `goles_penal`        INT DEFAULT 0,
+    `tarjetas_amarillas` INT DEFAULT 0,
+    `tarjetas_rojas`     INT DEFAULT 0,
+    `minutos_jugados`    INT DEFAULT 0,
+    `goles_recibidos`    INT DEFAULT 0,
+    `vaya_invicta`       INT DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `jugador_id` (`jugador_id`),
+    UNIQUE KEY `uniq_jugador_temp` (`jugador_id`, `temporada`),
+    KEY `goles` (`goles`),
+    KEY `tarjetas_amarillas` (`tarjetas_amarillas`),
+    KEY `tarjetas_rojas` (`tarjetas_rojas`),
+    KEY `goles_recibidos` (`goles_recibidos`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `equipos_segunda` (
+    `id`         INT NOT NULL AUTO_INCREMENT,
+    `nombre`     VARCHAR(100) NOT NULL,
+    `ciudad`     VARCHAR(100) DEFAULT NULL,
+    `estadio`    VARCHAR(150) DEFAULT NULL,
+    `logo`       VARCHAR(255) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `formacion`  VARCHAR(10) DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `tabla_posiciones_segunda` (
+    `id`              INT NOT NULL AUTO_INCREMENT,
+    `equipo_id`       INT NOT NULL,
+    `pj`              INT NOT NULL DEFAULT 0,
+    `pg`              INT NOT NULL DEFAULT 0,
+    `pe`              INT NOT NULL DEFAULT 0,
+    `pp`              INT NOT NULL DEFAULT 0,
+    `gf`              INT NOT NULL DEFAULT 0,
+    `gc`              INT NOT NULL DEFAULT 0,
+    `dg`              INT NOT NULL DEFAULT 0,
+    `pts`             INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `equipo_id` (`equipo_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `partidos_segunda` (
+    `id`              INT NOT NULL AUTO_INCREMENT,
+    `local_id`        INT DEFAULT NULL,
+    `visitante_id`    INT DEFAULT NULL,
+    `goles_local`     INT DEFAULT 0,
+    `goles_visitante` INT DEFAULT 0,
+    `fecha`           DATE DEFAULT NULL,
+    `hora`            TIME DEFAULT NULL,
+    `status`          VARCHAR(20) DEFAULT 'Pendiente',
+    `featured`        TINYINT(1) NOT NULL DEFAULT 0,
+    `created_at`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `jugadores_segunda` (
+    `id`              INT NOT NULL AUTO_INCREMENT,
+    `equipo_id`       INT NOT NULL,
+    `nombre`          VARCHAR(150) NOT NULL,
+    `posicion`        VARCHAR(30) NOT NULL DEFAULT 'centrodelantero',
+    `numero_camiseta` INT DEFAULT NULL,
+    `foto`            VARCHAR(255) DEFAULT NULL,
+    `edad`            INT DEFAULT NULL,
+    `nacionalidad`    VARCHAR(100) DEFAULT NULL,
+    `posicion_x`      DECIMAL(5,2) DEFAULT NULL,
+    `posicion_y`      DECIMAL(5,2) DEFAULT NULL,
+    `es_titular`      TINYINT(1) DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `equipo_id` (`equipo_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `estadisticas_jugadores_segunda` (
+    `id`                 INT NOT NULL AUTO_INCREMENT,
+    `jugador_id`         INT NOT NULL,
+    `temporada`          VARCHAR(20) DEFAULT '2025-2026',
+    `partidos_jugados`   INT DEFAULT 0,
+    `goles`              INT DEFAULT 0,
+    `asistencias`        INT DEFAULT 0,
+    `goles_cabeza`       INT DEFAULT 0,
+    `goles_tiro_libre`   INT DEFAULT 0,
+    `goles_penal`        INT DEFAULT 0,
+    `tarjetas_amarillas` INT DEFAULT 0,
+    `tarjetas_rojas`     INT DEFAULT 0,
+    `minutos_jugados`    INT DEFAULT 0,
+    `goles_recibidos`    INT DEFAULT 0,
+    `vaya_invicta`       INT DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `jugador_id` (`jugador_id`),
+    UNIQUE KEY `uniq_jugador_temp` (`jugador_id`, `temporada`),
+    KEY `goles` (`goles`),
+    KEY `tarjetas_amarillas` (`tarjetas_amarillas`),
+    KEY `tarjetas_rojas` (`tarjetas_rojas`),
+    KEY `goles_recibidos` (`goles_recibidos`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `visitas` (
+    `id`          INT NOT NULL AUTO_INCREMENT,
+    `ip_hash`     CHAR(64) NOT NULL,
+    `pagina`      VARCHAR(255) DEFAULT NULL,
+    `user_agent`  TEXT DEFAULT NULL,
+    `referer`     VARCHAR(500) DEFAULT NULL,
+    `es_bot`      TINYINT(1) DEFAULT 0,
+    `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_ip_hash` (`ip_hash`),
+    KEY `idx_created` (`created_at`),
+    KEY `idx_pagina` (`pagina`),
+    KEY `idx_dedup` (`ip_hash`, `pagina`, `created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `ips_bloqueadas` (
+    `id`         INT NOT NULL AUTO_INCREMENT,
+    `ip`         VARCHAR(45) NOT NULL,
+    `motivo`     VARCHAR(255) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `ip` (`ip`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+// --- Migrar visitas viejas: renombrar columna ip -> ip_hash si existe ---
+try {
+    $mysqli->query("ALTER TABLE `visitas` CHANGE COLUMN `ip` `ip_hash` CHAR(64) NOT NULL");
+} catch (Exception $e) {}
+try {
+    $mysqli->query("ALTER TABLE `visitas` DROP COLUMN `bloqueado`");
+} catch (Exception $e) {}
+try {
+    $mysqli->query("DROP TABLE IF EXISTS `ips_bloqueadas`");
+} catch (Exception $e) {}
+
+// --- Tabla match_comments ---
+$mysqli->query("CREATE TABLE IF NOT EXISTS `match_comments` (
+    `id`          INT NOT NULL AUTO_INCREMENT,
+    `partido_id`  INT NOT NULL,
+    `division`    VARCHAR(20) NOT NULL DEFAULT 'primera',
+    `minuto`      INT NOT NULL DEFAULT 0,
+    `tipo`        ENUM('gol','gol_penal','gol_cabeza','gol_tiro_libre','asistencia','tarjeta_amarilla','tarjeta_roja','cambio','comentario','inicio','descanso','fin','penal') NOT NULL DEFAULT 'comentario',
+    `descripcion` TEXT NOT NULL,
+    `equipo`      VARCHAR(150) DEFAULT NULL,
+    `jugador_id`  INT DEFAULT NULL,
+    `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_partido` (`partido_id`, `division`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+// --- Migración: agregar UNIQUE KEY a tablas de stats existentes ---
+try { $mysqli->query("ALTER TABLE estadisticas_jugadores_ascenso ADD UNIQUE KEY uniq_jugador_temp (jugador_id, temporada)"); } catch (Exception $e) {}
+try { $mysqli->query("ALTER TABLE estadisticas_jugadores_femenina ADD UNIQUE KEY uniq_jugador_temp (jugador_id, temporada)"); } catch (Exception $e) {}
+
+// --- Limpiar duplicados de stats (conservar la fila con menor id) ---
+try { $mysqli->query("DELETE t1 FROM estadisticas_jugadores_ascenso t1 INNER JOIN estadisticas_jugadores_ascenso t2 WHERE t1.id > t2.id AND t1.jugador_id = t2.jugador_id AND t1.temporada = t2.temporada"); } catch (Exception $e) {}
+try { $mysqli->query("DELETE t1 FROM estadisticas_jugadores_femenina t1 INNER JOIN estadisticas_jugadores_femenina t2 WHERE t1.id > t2.id AND t1.jugador_id = t2.jugador_id AND t1.temporada = t1.temporada"); } catch (Exception $e) {}
