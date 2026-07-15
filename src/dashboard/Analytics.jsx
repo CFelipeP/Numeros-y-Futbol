@@ -312,12 +312,10 @@ const Analytics = () => {
             <style>{`
                 @keyframes spin { to { transform: rotate(360deg); } }
                 @media (max-width: 768px) {
-                    .admin-layout { grid-template-columns: 1fr !important; }
                     .analytics-stat-grid { grid-template-columns: 1fr !important; }
                     .analytics-chart-grid { grid-template-columns: 1fr !important; }
                 }
                 @media (max-width: 1000px) {
-                    .admin-layout { grid-template-columns: 1fr !important; }
                     .analytics-chart-grid { grid-template-columns: 1fr !important; }
                 }
             `}</style>
