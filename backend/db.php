@@ -640,9 +640,25 @@ $mysqli->query("CREATE TABLE IF NOT EXISTS `partidos_copa` (
     `llave`              INT DEFAULT NULL,
     `grupo_copa`         CHAR(1) DEFAULT NULL,
     `jornada`            VARCHAR(10) DEFAULT NULL,
+    `orden`              INT NOT NULL DEFAULT 0,
     `penales_local`      INT DEFAULT NULL,
     `penales_visitante`  INT DEFAULT NULL,
     PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+// --- Visitas de navegador (analíticas únicas) ---
+$mysqli->query("CREATE TABLE IF NOT EXISTS `browser_visits` (
+    `id`             INT NOT NULL AUTO_INCREMENT,
+    `browser_token`  CHAR(36) NOT NULL,
+    `user_agent`     TEXT,
+    `ip_hash`        CHAR(64) NOT NULL,
+    `first_visit`    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `last_visit`     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `visit_count`    INT NOT NULL DEFAULT 1,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_browser_token` (`browser_token`),
+    KEY `idx_ip_hash` (`ip_hash`),
+    KEY `idx_last_visit` (`last_visit`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
 // --- Noticias y Usuarios ---

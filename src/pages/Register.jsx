@@ -154,7 +154,7 @@ export default function Register() {
 
             {/* Contenedor principal animado */}
             <motion.div 
-                className="login-card"
+                className="login-card register-card"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"

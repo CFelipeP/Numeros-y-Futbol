@@ -64,8 +64,8 @@ try {
 
     // Crear partidos
     $insertStmt = $pdo->prepare("
-        INSERT INTO partidos_copa (equipo_local_id, equipo_visitante_id, fase, estado, llave, jornada)
-        VALUES (?, ?, ?, 'Pendiente', ?, ?)
+        INSERT INTO partidos_copa (equipo_local_id, equipo_visitante_id, fase, estado, llave, jornada, orden)
+        VALUES (?, ?, ?, 'Pendiente', ?, ?, ?)
     ");
 
     $created = 0;
@@ -75,11 +75,11 @@ try {
         $t2 = (int)$pair['team2'];
 
         if ($isIdaVuelta) {
-            $insertStmt->execute([$t1, $t2, $fase, $llave, 'ida']);
-            $insertStmt->execute([$t2, $t1, $fase, $llave, 'vuelta']);
+            $insertStmt->execute([$t1, $t2, $fase, $llave, 'ida', $llave]);
+            $insertStmt->execute([$t2, $t1, $fase, $llave, 'vuelta', $llave]);
             $created += 2;
         } else {
-            $insertStmt->execute([$t1, $t2, $fase, $llave, null]);
+            $insertStmt->execute([$t1, $t2, $fase, $llave, null, $llave]);
             $created++;
         }
     }

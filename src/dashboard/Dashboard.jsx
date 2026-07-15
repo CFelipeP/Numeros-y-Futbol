@@ -371,34 +371,6 @@ const AdminDashboard = () => {
         @media (max-width: 480px) {
             .dash-stats-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
         }
-
-        /* =========================================
-           4. SIDEBAR EN MOVIL (Forzando bajada)
-           ========================================= */
-        @media (max-width: 768px) {
-            .admin-layout {
-                display: flex;
-                flex-direction: row;
-            }
-            .admin-layout .sidebar {
-                position: fixed !important;
-                z-index: 50 !important;
-                top: 50px !important; /* Baja la caja entera 25px para salir de la barra de estado del celular */
-                height: calc(100% - 50px) !important; /* Ajusta la altura para no generar scroll vertical */
-                transform: translateX(-100%);
-                transition: transform 0.3s ease !important;
-            }
-            
-            /* Cuando el sidebar está abierto, lo movemos a la vista */
-            .admin-layout:not(.sidebar-closed) .sidebar {
-                transform: translateX(0) !important;
-            }
-
-            .admin-layout .main-content {
-                margin-left: 0 !important;
-                width: 100% !important;
-            }
-        }
       `}</style>
     </div>
   );

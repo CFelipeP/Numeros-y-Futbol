@@ -6,7 +6,7 @@ import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings,
   LogOut, Menu, Trophy, Target, Plus, Edit2, Trash2, Save, X,
   RefreshCw, ChevronDown, RotateCcw, Users2, Upload, AlertTriangle,
-  CheckCircle2, Clock, Swords, ArrowRight, Lock, ArrowLeftRight, Zap, MessageCircle, Eye, BarChart3
+  CheckCircle2, Clock, Swords, ArrowRight, Lock, ArrowLeftRight, Zap, MessageCircle, Eye, BarChart3, ChevronUp
 } from "lucide-react";
 import { apiPost } from "../apiHelper";
 import { API_BASE } from "../config";
@@ -1084,11 +1084,16 @@ const GroupTable = ({ groupName, teams, matches, onEdit, onQuickFinish, onDelete
 };
 
 /* ─── Fila de llave (ida/vuelta) ─────────────────────────────────────────── */
-const KnockoutPair = ({ pair, onEdit, onQuickFinish, onDelete, onCreateVuelta, phaseLabel }) => {
+const KnockoutPair = ({ pair, onEdit, onQuickFinish, onDelete, onCreateVuelta, phaseLabel, index, total, onMoveUp, onMoveDown }) => {
+  const showReorder = onMoveUp && onMoveDown && typeof index === "number" && total > 1;
   if (pair.type === "single") {
     const m = pair.match; const st = statusStyle(m.estado); const fin = m.estado === "Finalizado";
     return (<div style={{ background: "rgba(255,255,255,0.01)", border: "1px solid #1e293b", borderRadius: 12, overflow: "hidden", marginBottom: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px" }}>
+        {showReorder && (<div style={{ display: "flex", flexDirection: "column", gap: 2, marginRight: 2 }}>
+          {index > 0 && <button onClick={() => onMoveUp(index)} style={miniBtn("#3b82f6")} title="Subir"><ChevronUp size={12} /></button>}
+          {index < total - 1 && <button onClick={() => onMoveDown(index)} style={miniBtn("#3b82f6")} title="Bajar"><ChevronDown size={12} /></button>}
+        </div>)}
         <TeamBadge logo={m.logo1} name={m.team1} size={32} /><div style={{ flex: 1, textAlign: "right" }}><div style={{ fontSize: 12, fontWeight: 700, color: "#cbd5e1" }}>{m.team1 || "TBD"}</div>{m.division1 && <DivisionPill division={m.division1} />}</div>
         <div style={{ textAlign: "center", minWidth: 80 }}><div style={{ fontFamily: "monospace", fontSize: 20, fontWeight: 900, color: fin ? "#e2b340" : "#1e293b" }}>{fin ? `${m.goles_local ?? 0} – ${m.goles_visitante ?? 0}` : "– –"}</div><div style={{ fontSize: 9, color: "#334155", marginTop: 2 }}>{m.fecha ? m.fecha.substring(5, 10) : ""} {m.hora ? m.hora.substring(0, 5) : ""}</div></div>
         <div style={{ flex: 1 }}><div style={{ fontSize: 12, fontWeight: 700, color: "#cbd5e1" }}>{m.team2 || "TBD"}</div>{m.division2 && <DivisionPill division={m.division2} />}</div><TeamBadge logo={m.logo2} name={m.team2} size={32} />
@@ -1099,7 +1104,12 @@ const KnockoutPair = ({ pair, onEdit, onQuickFinish, onDelete, onCreateVuelta, p
   }
   const { ida, vuelta } = pair; const idaFin = ida.estado === "Finalizado", vueFin = vuelta.estado === "Finalizado"; const agg = (idaFin && vueFin) ? getAggregate(ida, vuelta) : null;
   return (<div style={{ background: "rgba(255,255,255,0.01)", border: "1px solid #1e293b", borderRadius: 12, overflow: "hidden", marginBottom: 10 }}>
-    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderBottom: "1px solid #0f172a", background: "rgba(59,130,246,0.02)" }}><span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 5, background: "rgba(59,130,246,0.12)", color: "#60a5fa", fontWeight: 800, letterSpacing: "0.5px", minWidth: 34, textAlign: "center" }}>IDA</span><TeamBadge logo={ida.logo1} name={ida.team1} size={26} /><div style={{ flex: 1, textAlign: "right" }}><div style={{ fontSize: 11, fontWeight: 700, color: "#cbd5e1" }}>{ida.team1 || "TBD"}</div></div><div style={{ textAlign: "center", minWidth: 70 }}><div style={{ fontFamily: "monospace", fontSize: 16, fontWeight: 900, color: idaFin ? "#e2b340" : "#1e293b" }}>{idaFin ? `${ida.goles_local ?? 0} – ${ida.goles_visitante ?? 0}` : "– –"}</div><div style={{ fontSize: 8, color: "#334155" }}>{ida.fecha ? ida.fecha.substring(5, 10) : ""} {ida.hora ? ida.hora.substring(0, 5) : ""}</div></div><div style={{ flex: 1 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#cbd5e1" }}>{ida.team2 || "TBD"}</div></div><TeamBadge logo={ida.logo2} name={ida.team2} size={26} /><div style={{ display: "flex", gap: 3, marginLeft: 6 }}>{!idaFin && <button onClick={() => onQuickFinish(ida)} style={miniBtn("#10b981")}>✓</button>}<button onClick={() => onEdit(ida)} style={miniBtn("#3b82f6")}><Edit2 size={9} /></button><button onClick={() => onDelete(ida.id)} style={miniBtn("#ef4444")}><Trash2 size={9} /></button></div></div>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderBottom: "1px solid #0f172a", background: "rgba(59,130,246,0.02)" }}>
+      {showReorder && (<div style={{ display: "flex", flexDirection: "column", gap: 2, marginRight: 2 }}>
+        {index > 0 && <button onClick={() => onMoveUp(index)} style={miniBtn("#3b82f6")} title="Subir"><ChevronUp size={12} /></button>}
+        {index < total - 1 && <button onClick={() => onMoveDown(index)} style={miniBtn("#3b82f6")} title="Bajar"><ChevronDown size={12} /></button>}
+      </div>)}
+      <span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 5, background: "rgba(59,130,246,0.12)", color: "#60a5fa", fontWeight: 800, letterSpacing: "0.5px", minWidth: 34, textAlign: "center" }}>IDA</span><TeamBadge logo={ida.logo1} name={ida.team1} size={26} /><div style={{ flex: 1, textAlign: "right" }}><div style={{ fontSize: 11, fontWeight: 700, color: "#cbd5e1" }}>{ida.team1 || "TBD"}</div></div><div style={{ textAlign: "center", minWidth: 70 }}><div style={{ fontFamily: "monospace", fontSize: 16, fontWeight: 900, color: idaFin ? "#e2b340" : "#1e293b" }}>{idaFin ? `${ida.goles_local ?? 0} – ${ida.goles_visitante ?? 0}` : "– –"}</div><div style={{ fontSize: 8, color: "#334155" }}>{ida.fecha ? ida.fecha.substring(5, 10) : ""} {ida.hora ? ida.hora.substring(0, 5) : ""}</div></div><div style={{ flex: 1 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#cbd5e1" }}>{ida.team2 || "TBD"}</div></div><TeamBadge logo={ida.logo2} name={ida.team2} size={26} /><div style={{ display: "flex", gap: 3, marginLeft: 6 }}>{!idaFin && <button onClick={() => onQuickFinish(ida)} style={miniBtn("#10b981")}>✓</button>}<button onClick={() => onEdit(ida)} style={miniBtn("#3b82f6")}><Edit2 size={9} /></button><button onClick={() => onDelete(ida.id)} style={miniBtn("#ef4444")}><Trash2 size={9} /></button></div></div>
     <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "rgba(168,85,247,0.02)" }}><span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 5, background: "rgba(168,85,247,0.12)", color: "#a855f7", fontWeight: 800, letterSpacing: "0.5px", minWidth: 34, textAlign: "center" }}>VUELTA</span><TeamBadge logo={vuelta.logo1} name={vuelta.team1} size={26} /><div style={{ flex: 1, textAlign: "right" }}><div style={{ fontSize: 11, fontWeight: 700, color: "#cbd5e1" }}>{vuelta.team1 || "TBD"}</div></div><div style={{ textAlign: "center", minWidth: 70 }}><div style={{ fontFamily: "monospace", fontSize: 16, fontWeight: 900, color: vueFin ? "#e2b340" : "#1e293b" }}>{vueFin ? `${vuelta.goles_local ?? 0} – ${vuelta.goles_visitante ?? 0}` : "– –"}</div><div style={{ fontSize: 8, color: "#334155" }}>{vuelta.fecha ? vuelta.fecha.substring(5, 10) : ""} {vuelta.hora ? vuelta.hora.substring(0, 5) : ""}</div></div><div style={{ flex: 1 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#cbd5e1" }}>{vuelta.team2 || "TBD"}</div></div><TeamBadge logo={vuelta.logo2} name={vuelta.team2} size={26} /><div style={{ display: "flex", gap: 3, marginLeft: 6 }}>{!vueFin && <button onClick={() => onQuickFinish(vuelta)} style={miniBtn("#10b981")}>✓</button>}<button onClick={() => onEdit(vuelta)} style={miniBtn("#3b82f6")}><Edit2 size={9} /></button><button onClick={() => onDelete(vuelta.id)} style={miniBtn("#ef4444")}><Trash2 size={9} /></button></div></div>
     {agg && (<div style={{ padding: "10px 16px", borderTop: "1px solid #0f172a", background: "rgba(0,0,0,0.2)", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" }}><span style={{ fontSize: 9, fontWeight: 800, color: "#475569", letterSpacing: "1px" }}>GLOBAL</span><div style={{ display: "flex", alignItems: "center", gap: 8 }}><TeamBadge logo={ida.logo1} name={ida.team1} size={18} /><span style={{ fontFamily: "monospace", fontSize: 18, fontWeight: 900, color: "#e2e8f0" }}>{agg.t1}</span><span style={{ color: "#334155", fontWeight: 900 }}>–</span><span style={{ fontFamily: "monospace", fontSize: 18, fontWeight: 900, color: "#e2e8f0" }}>{agg.t2}</span><TeamBadge logo={ida.logo2} name={ida.team2} size={18} /></div>{agg.method !== "Global" && <span style={{ fontSize: 9, padding: "2px 8px", borderRadius: 5, fontWeight: 800, background: agg.method === "Penales" ? "rgba(168,85,247,0.12)" : "rgba(245,158,11,0.12)", color: agg.method === "Penales" ? "#a855f7" : "#f59e0b" }}>{agg.method}{agg.method === "Penales" ? ` (${agg.pV}–${agg.pL})` : ""}</span>}{agg.winner && <span style={{ fontSize: 10, padding: "3px 10px", borderRadius: 6, fontWeight: 800, background: "rgba(16,185,129,0.12)", color: "#10b981", display: "flex", alignItems: "center", gap: 4 }}><CheckCircle2 size={12} /> {agg.winner === 1 ? ida.team1 : ida.team2}</span>}</div>)}
   </div>);
@@ -1193,6 +1203,29 @@ const AdminCopPresidente = () => {
   };
   const handleDelete = (id) => { Swal.fire({ title: "¿Eliminar partido?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "Cancelar", confirmButtonColor: "#ef4444", background: "#1e293b", color: "#fff" }).then(async r => { if (!r.isConfirmed) return; try { const res = await apiPost(`${API_BASE}copa_delete_match.php`, { id }).then(r => r.json()); if (res.success) { Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Eliminado", showConfirmButton: false, timer: 1800 }); fetchData(); } } catch { Swal.fire({ toast: true, position: "top-end", icon: "error", title: "Error", showConfirmButton: false, timer: 2000 }); } }); };
   const handleQuickFinish = async (match) => { const { value: score } = await Swal.fire({ title: "Resultado rápido", html: `<div style="display:flex;align-items:center;gap:16px;justify-content:center;margin:16px 0"><div style="text-align:center"><div style="font-size:11px;color:#94a3b8;margin-bottom:8px;font-weight:600">${match.team1}</div><input id="gl" type="number" min="0" value="0" style="width:68px;text-align:center;font-size:28px;font-weight:900;background:#0f172a;border:1px solid #1e293b;color:#e2e8f0;border-radius:10px;padding:10px"/></div><span style="font-size:20px;color:#334155;font-weight:900">–</span><div style="text-align:center"><div style="font-size:11px;color:#94a3b8;margin-bottom:8px;font-weight:600">${match.team2}</div><input id="gv" type="number" min="0" value="0" style="width:68px;text-align:center;font-size:28px;font-weight:900;background:#0f172a;border:1px solid #1e293b;color:#e2e8f0;borderRadius:10px;padding:10px"/></div></div>`, background: "#1e293b", color: "#fff", showCancelButton: true, confirmButtonText: "Guardar", cancelButtonText: "Cancelar", confirmButtonColor: "#10b981", preConfirm: () => ({ gl: parseInt(document.getElementById("gl").value) || 0, gv: parseInt(document.getElementById("gv").value) || 0 }) }); if (!score) return; try { await apiPost(`${API_BASE}copa_update_match.php`, { id: match.id, goles_local: score.gl, goles_visitante: score.gv, estado: "Finalizado" }).then(r => r.json()); Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Resultado guardado", showConfirmButton: false, timer: 1600 }); fetchData(); } catch (err) { Swal.fire({ toast: true, position: "top-end", icon: "error", title: err.message || "No se pudo guardar", showConfirmButton: false, timer: 2200 }); } };
+
+  const handleReorder = async (fromIndex, direction) => {
+    const toIndex = direction === "up" ? fromIndex - 1 : fromIndex + 1;
+    if (toIndex < 0 || toIndex >= knockoutPairs.length) return;
+    const swapped = [...knockoutPairs];
+    [swapped[fromIndex], swapped[toIndex]] = [swapped[toIndex], swapped[fromIndex]];
+    const ordenes = [];
+    swapped.forEach((pair, idx) => {
+      const newOrden = idx + 1;
+      if (pair.type === "pair") {
+        ordenes.push({ id: pair.ida.id, orden: newOrden });
+        ordenes.push({ id: pair.vuelta.id, orden: newOrden });
+      } else if (pair.type === "single") {
+        ordenes.push({ id: pair.match.id, orden: newOrden });
+      }
+    });
+    try {
+      const res = await apiPost(`${API_BASE}copa_reorder_matches.php`, { fase: activePhase, ordenes }).then(r => r.json());
+      if (res.success) fetchData();
+    } catch (err) {
+      Swal.fire({ toast: true, position: "top-end", icon: "error", title: "Error al reordenar", showConfirmButton: false, timer: 2000 });
+    }
+  };
 
   const handleAutoGenerate = async (fase) => {
     const phaseLabel = PHASES.find(p => p.key === fase)?.label || fase;
@@ -1359,7 +1392,7 @@ const AdminCopPresidente = () => {
                 <span style={{ fontSize: 10, color: "#334155" }}>{knockoutPairs.length} llaves</span>
               </div>
             </div>
-            {loading ? <LoadingSpinner /> : knockoutPairs.length === 0 ? <EmptyState /> : (<div>{knockoutPairs.map((pair, i) => (<KnockoutPair key={i} pair={pair} phaseLabel={activePhase} onEdit={m => { setEditingMatch(m); setShowMatchModal(true); }} onQuickFinish={handleQuickFinish} onDelete={handleDelete} onCreateVuelta={handleCreateVuelta} />))}</div>)}
+            {loading ? <LoadingSpinner /> : knockoutPairs.length === 0 ? <EmptyState /> : (<div>{knockoutPairs.map((pair, i) => (<KnockoutPair key={i} pair={pair} phaseLabel={activePhase} index={i} total={knockoutPairs.length} onMoveUp={(idx) => handleReorder(idx, "up")} onMoveDown={(idx) => handleReorder(idx, "down")} onEdit={m => { setEditingMatch(m); setShowMatchModal(true); }} onQuickFinish={handleQuickFinish} onDelete={handleDelete} onCreateVuelta={handleCreateVuelta} />))}</div>)}
           </div>)}
 
           {/* Info */}
@@ -1382,17 +1415,6 @@ const AdminCopPresidente = () => {
         @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
         @keyframes modalSlideUp{from{opacity:0;transform:translateY(24px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
         button.nav-item{background:none;border:none;color:var(--text-muted);font-family:inherit;cursor:pointer}
-        @media(max-width:768px){
-          .admin-layout{display:flex;flex-direction:row}
-          .admin-layout .sidebar{position:fixed!important;z-index:50!important;top:60px!important;height:calc(100% - 60px)!important;transform:translateX(-100%);transition:transform 0.3s ease!important}
-          .admin-layout:not(.sidebar-closed) .sidebar{transform:translateX(0)!important}
-          .admin-layout .main-content{margin-left:0!important;width:100%!important}
-        }
-        @media(max-width:480px){
-          .admin-layout .main-content{padding:16px 12px!important}
-          .content-wrapper h2{font-size:1rem}
-          .content-wrapper h3{font-size:.85rem}
-        }
       `}</style>
     </div>
   );

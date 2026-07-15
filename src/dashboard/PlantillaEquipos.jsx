@@ -920,7 +920,7 @@ const handlers = useMemo(() => ({ onStats: openStats, onEdit: openEdit, onDelete
 
 // ─── RENDER ────────────────────────────────────────────────────────────────
 return (
-  <div className={"admin-layout" + (sidebarOpen ? " sidebar-open" : "")}>
+  <div className={"admin-layout" + (sidebarOpen ? " sidebar-closed" : "")}>
     {/* SIDEBAR */}
     <aside className="sidebar">
       <div className="sidebar-header">
@@ -1413,11 +1413,7 @@ return (
 .sidebar-backdrop{display:none}
 @media(max-width:768px){
   .sidebar-backdrop{display:block;position:fixed;inset:0;z-index:49;background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
-  .admin-layout .sidebar{position:fixed!important;z-index:50!important;top:0!important;left:0!important;width:260px!important;height:100vh!important;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1)!important}
-  .admin-layout.sidebar-open .sidebar{transform:translateX(0)!important;box-shadow:4px 0 30px rgba(0,0,0,.5)}
-  .admin-layout .main-content{margin-left:0!important;width:100%!important}
 }
-@media(min-width:769px){.admin-layout.sidebar-open .sidebar{transform:translateX(0)!important}}
 .teams-dropdown{list-style:none;padding:0;margin:0;max-height:0;overflow:hidden;transition:max-height .3s cubic-bezier(.4,0,.2,1)}
 .teams-dropdown.dropdown-visible{max-height:400px}
 .nav-subitem{padding-left:52px!important;font-size:13px!important;opacity:.6;transition:opacity .15s}

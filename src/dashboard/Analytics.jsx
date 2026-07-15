@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import {
     LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings,
     LogOut, Menu, Trophy, Target, ChevronDown, MessageCircle, Eye,
-    BarChart3, TrendingUp, Globe, ShieldAlert,
+    BarChart3, TrendingUp, Globe, ShieldAlert, Monitor,
 } from "lucide-react";
 import { API_BASE } from "../config";
 import { apiFetch } from "../apiHelper";
@@ -42,6 +42,7 @@ const Analytics = () => {
     useEffect(() => { if (location.pathname.startsWith("/teams/")) setTeamsOpen(true); }, [location.pathname]);
 
     const stats = data?.stats || {};
+    const bStats = data?.browser_stats || {};
     const modos = [
         { value: "hoy", label: "Hoy" },
         { value: "ayer", label: "Ayer" },
@@ -50,9 +51,10 @@ const Analytics = () => {
         { value: "total", label: "Total" },
     ];
     const statCards = [
-        { label: modos.find(m => m.value === modo)?.label || "Visitas", value: stats.total || 0, color: "#3b82f6", icon: <TrendingUp size={20} />, border: "rgba(59,130,246,0.15)" },
-        { label: "Visitantes únicos", value: stats.unicas || 0, color: "#10b981", icon: <Globe size={20} />, border: "rgba(16,185,129,0.15)" },
-        { label: "Bots detectados", value: stats.bots || 0, color: "#f59e0b", icon: <ShieldAlert size={20} />, border: "rgba(245,158,11,0.15)" },
+        { label: "Visitas (páginas)", value: stats.total || 0, color: "#3b82f6", icon: <TrendingUp size={20} />, border: "rgba(59,130,246,0.15)" },
+        { label: "Navegadores únicos", value: bStats.total || 0, color: "#10b981", icon: <Monitor size={20} />, border: "rgba(16,185,129,0.15)" },
+        { label: "Visitas hoy", value: bStats.hoy || 0, color: "#8b5cf6", icon: <Globe size={20} />, border: "rgba(139,92,246,0.15)" },
+        { label: "Recurrentes", value: bStats.recurrentes || 0, color: "#f59e0b", icon: <ShieldAlert size={20} />, border: "rgba(245,158,11,0.15)" },
     ];
 
     const navItems = [
@@ -152,7 +154,7 @@ const Analytics = () => {
                     </div>
 
                     {/* STAT CARDS */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginBottom: "1.5rem" }}>
+                    <div className="analytics-stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
                         {statCards.map((s, i) => (
                             <div key={i} style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))", border: `1px solid ${s.border}`, borderRadius: "14px", padding: "1.2rem 1.3rem", transition: "all 0.3s ease" }}>
                                 <div style={{ width: 38, height: 38, borderRadius: "10px", background: `${s.color}15`, display: "flex", alignItems: "center", justifyContent: "center", color: s.color, marginBottom: "0.8rem" }}>{s.icon}</div>
@@ -163,7 +165,7 @@ const Analytics = () => {
                     </div>
 
                     {/* CHARTS */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.5rem" }}>
+                    <div className="analytics-chart-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.5rem" }}>
                         {/* Visitas por hora */}
                         <div className="table-container" style={{ padding: "1.2rem" }}>
                             <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "#94a3b8", margin: "0 0 1rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>Visitas por Hora (Hoy)</h3>
@@ -194,6 +196,80 @@ const Analytics = () => {
                                     </LineChart>
                                 </ResponsiveContainer>
                             ) : <p style={{ color: "#475569", textAlign: "center", padding: "2rem" }}>Sin datos an</p>}
+                        </div>
+                    </div>
+
+                    {/* BROWSER VISITS CHART */}
+                    <div className="analytics-chart-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.5rem" }}>
+                        <div className="table-container" style={{ padding: "1.2rem" }}>
+                            <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "#94a3b8", margin: "0 0 1rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>Navegadores Únicos por Día</h3>
+                            {data?.browser_por_dia?.length > 0 ? (
+                                <ResponsiveContainer width="100%" height={220}>
+                                    <LineChart data={data.browser_por_dia}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                                        <XAxis dataKey="fecha" tick={{ fill: "#64748b", fontSize: 10 }} tickFormatter={v => new Date(v).toLocaleDateString("es-SV", { day: "2-digit", month: "short" })} />
+                                        <YAxis tick={{ fill: "#64748b", fontSize: 11 }} />
+                                        <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "#fff" }} />
+                                        <Line type="monotone" dataKey="total" stroke="#8b5cf6" strokeWidth={2} dot={{ fill: "#8b5cf6", r: 4 }} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            ) : <p style={{ color: "#475569", textAlign: "center", padding: "2rem" }}>Sin datos aún</p>}
+                        </div>
+
+                        <div className="table-container" style={{ padding: "1.2rem" }}>
+                            <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "#94a3b8", margin: "0 0 1rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>Resumen de Navegadores</h3>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                                    <span style={{ color: "#94a3b8", fontSize: "0.8rem" }}>Total navegadores únicos</span>
+                                    <span style={{ color: "#10b981", fontWeight: 900, fontSize: "1.1rem", fontFamily: "monospace" }}>{bStats.total || 0}</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                                    <span style={{ color: "#94a3b8", fontSize: "0.8rem" }}>Visitas hoy</span>
+                                    <span style={{ color: "#8b5cf6", fontWeight: 900, fontSize: "1.1rem", fontFamily: "monospace" }}>{bStats.hoy || 0}</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                                    <span style={{ color: "#94a3b8", fontSize: "0.8rem" }}>Visitantes recurrentes</span>
+                                    <span style={{ color: "#f59e0b", fontWeight: 900, fontSize: "1.1rem", fontFamily: "monospace" }}>{bStats.recurrentes || 0}</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0" }}>
+                                    <span style={{ color: "#94a3b8", fontSize: "0.8rem" }}>Período seleccionado</span>
+                                    <span style={{ color: "#3b82f6", fontWeight: 900, fontSize: "1.1rem", fontFamily: "monospace" }}>{bStats.periodo || 0}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* BROWSER VISITS TABLE */}
+                    <div className="table-container" style={{ marginBottom: "1.5rem" }}>
+                        <div className="table-header">
+                            <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "#94a3b8", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>Últimas Visitas de Navegador</h3>
+                        </div>
+                        <div style={{ overflowX: "auto" }}>
+                            <table className="data-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+                                <thead>
+                                    <tr style={{ background: "rgba(255,255,255,0.02)" }}>
+                                        <th style={{ padding: "0.75rem 1rem", textAlign: "left", fontSize: "0.7rem", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>Token</th>
+                                        <th style={{ padding: "0.75rem 1rem", textAlign: "left", fontSize: "0.7rem", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>Navegador</th>
+                                        <th style={{ padding: "0.75rem 1rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>Visitas</th>
+                                        <th style={{ padding: "0.75rem 1rem", textAlign: "left", fontSize: "0.7rem", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>Última visita</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data?.browser_recientes?.map((v, i) => (
+                                        <tr key={v.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)", background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)" }}>
+                                            <td style={{ padding: "0.7rem 1rem", fontSize: "0.75rem", color: "#94a3b8", fontFamily: "monospace" }}>{v.browser_token ? v.browser_token.substring(0, 8) + '...' : '—'}</td>
+                                            <td style={{ padding: "0.7rem 1rem", fontSize: "0.75rem", color: "#64748b", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{(v.user_agent || '').substring(0, 60)}</td>
+                                            <td style={{ padding: "0.7rem 1rem", textAlign: "center" }}>
+                                                <span style={{ color: v.visit_count > 1 ? "#f59e0b" : "#10b981", fontSize: "0.8rem", fontWeight: 700, fontFamily: "monospace" }}>{v.visit_count}</span>
+                                            </td>
+                                            <td style={{ padding: "0.7rem 1rem", fontSize: "0.75rem", color: "#64748b" }}>{v.last_visit ? new Date(v.last_visit).toLocaleString("es-SV") : "—"}</td>
+                                        </tr>
+                                    ))}
+                                    {(!data?.browser_recientes || data.browser_recientes.length === 0) && (
+                                        <tr><td colSpan={4} style={{ textAlign: "center", padding: "2rem", color: "#475569" }}>Sin visitas de navegador registradas</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
@@ -237,9 +313,12 @@ const Analytics = () => {
                 @keyframes spin { to { transform: rotate(360deg); } }
                 @media (max-width: 768px) {
                     .admin-layout { grid-template-columns: 1fr !important; }
+                    .analytics-stat-grid { grid-template-columns: 1fr !important; }
+                    .analytics-chart-grid { grid-template-columns: 1fr !important; }
                 }
                 @media (max-width: 1000px) {
                     .admin-layout { grid-template-columns: 1fr !important; }
+                    .analytics-chart-grid { grid-template-columns: 1fr !important; }
                 }
             `}</style>
         </div>

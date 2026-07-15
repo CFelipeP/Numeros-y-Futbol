@@ -21,7 +21,7 @@ const DIVISIONES = [
 
 const ManageMatches = () => {
     const navigate = useNavigate();
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [teamsOpen, setTeamsOpen] = useState(false);
   const [seleccionesOpen, setSeleccionesOpen] = useState(false);
     const location = useLocation();
@@ -575,14 +575,6 @@ const ManageMatches = () => {
     @keyframes nmSpin { to { transform: rotate(360deg); } }
 
     .hide-on-mobile { display: table-cell; }
-    .admin-layout .top-bar { position: sticky !important; top: 0 !important; z-index: 60 !important; background-color: inherit; }
-
-    /* === Sidebar overlay bajo 900px === */
-    @media (max-width: 900px) {
-        .admin-layout .sidebar { position: fixed !important; z-index: 50 !important; top: 0 !important; left: 0 !important; width: 280px !important; height: 100vh !important; transform: translateX(-100%); transition: transform 0.3s ease !important; }
-        .admin-layout:not(.sidebar-closed) .sidebar { transform: translateX(0) !important; }
-        .admin-layout .main-content { margin-left: 0 !important; width: 100% !important; }
-    }
 
     /* === Ocultar columnas solo en celular === */
     @media (max-width: 640px) {

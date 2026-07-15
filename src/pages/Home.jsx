@@ -645,15 +645,19 @@ function Home() {
           .news-card-body h3 {
             font-size: 1.1rem !important;
           }
-          .news-card-body p {
+                    .news-card-body p {
             font-size: 0.85rem !important;
           }
 
-          /* Driver.js mobile fixes (El tour) */
+          /* Driver.js mobile fix */
           .driver-popover {
             max-width: 90vw !important;
           }
+
         }
+
+
+
         
         @media (max-width: 380px) {
           .hero-content h1 {
@@ -662,6 +666,37 @@ function Home() {
           .carousel-card {
             min-width: 90vw !important;
           }
+        }
+      `}</style>
+
+      {/* Estilos del tour guiado (driver.js) */}
+      <style>{`
+        .driver-popover {
+          background: #0f172a !important;
+          border: 1px solid #ff004d !important;
+          border-radius: 12px !important;
+          box-shadow: 0 0 20px rgba(255,0,77,0.2), 0 8px 32px rgba(0,0,0,0.5) !important;
+          color: #f1f5f9 !important;
+        }
+        .driver-popover .driver-popover-title {
+          color: #ff004d !important;
+          font-weight: 800 !important;
+          font-size: 1rem !important;
+          text-shadow: 0 0 8px rgba(255,0,77,0.4) !important;
+        }
+        .driver-popover .driver-popover-description {
+          color: #94a3b8 !important;
+        }
+        .driver-popover .driver-popover-footer button {
+          background: #ff004d !important;
+          border: none !important;
+          color: #fff !important;
+          border-radius: 6px !important;
+        }
+        .driver-popover .driver-popover-footer .driver-popover-prev-btn {
+          background: transparent !important;
+          border: 1px solid #ff004d !important;
+          color: #ff004d !important;
         }
       `}</style>
 

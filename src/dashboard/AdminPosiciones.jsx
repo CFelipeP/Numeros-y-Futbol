@@ -513,23 +513,6 @@ const AdminPosiciones = () => {
                     .show-on-mobile {
                         display: block !important;
                     }
-                    
-                    .admin-layout {
-                        display: flex;
-                        flex-direction: row;
-                    }
-                    .admin-layout .sidebar {
-                        position: fixed;
-                        z-index: 50;
-                        height: 100vh;
-                    }
-                    .admin-layout.sidebar-closed .sidebar {
-                        transform: translateX(-100%);
-                    }
-                    .admin-layout .main-content {
-                        margin-left: 0 !important;
-                        width: 100% !important;
-                    }
                 }
                 @media (max-width: 480px) {
                     .stats-grid { gap: 0.6rem; }

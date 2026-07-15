@@ -24,6 +24,7 @@ try {
             p.llave,
             p.grupo_copa AS grupo,
             p.jornada,
+            p.orden,
             p.penales_local,
             p.penales_visitante
         FROM partidos_copa p
@@ -31,6 +32,7 @@ try {
         JOIN equipos_copa ev ON ev.id = p.equipo_visitante_id
         ORDER BY
             FIELD(p.fase,'grupos','octavos','cuartos','semis','final'),
+            p.orden,
             p.grupo_copa,
             p.fecha,
             p.hora,
@@ -47,6 +49,7 @@ try {
         $row['goles_local']      = $row['goles_local']      !== null ? (int)$row['goles_local']      : null;
         $row['goles_visitante']  = $row['goles_visitante']  !== null ? (int)$row['goles_visitante']  : null;
         $row['llave']            = $row['llave']            !== null ? (int)$row['llave']            : null;
+        $row['orden']            = $row['orden']            !== null ? (int)$row['orden']            : null;
         $row['penales_local']    = $row['penales_local']    !== null ? (int)$row['penales_local']    : null;
         $row['penales_visitante']= $row['penales_visitante']!== null ? (int)$row['penales_visitante']: null;
     }

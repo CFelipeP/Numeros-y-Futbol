@@ -27,13 +27,14 @@ try {
                 p.fase,
                 p.llave,
                 p.jornada,
+                p.orden,
                 p.penales_local,
                 p.penales_visitante
             FROM partidos_copa p
             JOIN equipos_copa el ON el.id = p.equipo_local_id
             JOIN equipos_copa ev ON ev.id = p.equipo_visitante_id
             WHERE p.fase = ?
-            ORDER BY p.id
+            ORDER BY p.orden, p.id
         ");
         $stmt->execute([$fase]);
         $data[$fase] = $stmt->fetchAll(PDO::FETCH_ASSOC);

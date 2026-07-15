@@ -394,7 +394,6 @@ export default function SettingsPage() {
                   { icon:<Facebook size={16} style={{color:"#1877f2"}}/>, label:"Facebook URL", key:"facebook_url", ph:"https://facebook.com/..." },
                   { icon:<Twitter size={16} style={{color:"#1da1f2"}}/>, label:"Twitter/X URL", key:"twitter_url",  ph:"https://twitter.com/..." },
                   { icon:<Instagram size={16} style={{color:"#e1306c"}}/>, label:"Instagram URL",key:"instagram_url",ph:"https://instagram.com/..." },
-                  { icon:<Mail size={16} style={{color:"#10b981"}}/>, label:"Email de Contacto", key:"contact_email", ph:"contacto@numyf.com" },
                 ].map(f => (
                   <div key={f.key}>
                     <label style={{...lbl,display:"flex",alignItems:"center",gap:6}}>{f.icon} {f.label}</label>

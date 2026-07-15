@@ -128,15 +128,15 @@ const MatchCard = ({match,i}) => {
 };
 
 const groupTies = (matches, prevTies = null) => {
-  const byKey={};
+  const byKey = new Map();
   matches.forEach(m=>{
     const teamKey=[s(m.team1),s(m.team2)].sort().join("|||");
     const key=m.llave_id!=null?String(m.llave_id):(m.llave!=null?String(m.llave):teamKey);
-    if(!byKey[key])byKey[key]=[];
-    byKey[key].push(m);
+    if(!byKey.has(key))byKey.set(key,[]);
+    byKey.get(key).push(m);
   });
 
-  let ties = Object.entries(byKey).map(([key,ms])=>{
+  let ties = [...byKey.entries()].map(([key,ms])=>{
     const sorted=[...ms].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||""));
     const ida=sorted[0],vuelta=sorted[1]||null;
     const eq1=s(ida.team1)||"Por definir",eq2=s(ida.team2)||"Por definir";
@@ -146,8 +146,12 @@ const groupTies = (matches, prevTies = null) => {
     const total1=idaG1+(vtaG1??0),total2=idaG2+(vtaG2??0);
     const allFin=ms.slice(0,2).every(m=>m.estado==="Finalizado");
     const anyLive=ms.slice(0,2).some(m=>m.estado==="En Curso");
+    const orden = ida.orden != null ? Number(ida.orden) : (parseInt(key, 10) || 999);
+    const pen1 = vuelta ? n(vuelta.penales_visitante) : null;
+    const pen2 = vuelta ? n(vuelta.penales_local) : null;
+    const wonByPens = allFin && total1 === total2 && (pen1 !== null && pen2 !== null) && ((pen1 ?? 0) + (pen2 ?? 0) > 0);
 
-    return {key,eq1,eq2,logo1:ida.logo1,logo2:ida.logo2,div1:ida.division1,div2:ida.division2,idaFecha:ida.fecha,idaHora:ida.hora,vtaFecha:vuelta?.fecha,vtaHora:vuelta?.hora,idaG1,idaG2,vtaG1,vtaG2,total1,total2,idaFin:ida.estado==="Finalizado",idaLive:ida.estado==="En Curso",vtaFin:vuelta?.estado==="Finalizado",vtaLive:vuelta?.estado==="En Curso",hasVuelta:!!vuelta,allFin,anyLive};
+    return {key,orden,eq1,eq2,logo1:ida.logo1,logo2:ida.logo2,div1:ida.division1,div2:ida.division2,idaFecha:ida.fecha,idaHora:ida.hora,vtaFecha:vuelta?.fecha,vtaHora:vuelta?.hora,idaG1,idaG2,vtaG1,vtaG2,total1,total2,pen1,pen2,wonByPens,idaFin:ida.estado==="Finalizado",idaLive:ida.estado==="En Curso",vtaFin:vuelta?.estado==="Finalizado",vtaLive:vuelta?.estado==="En Curso",hasVuelta:!!vuelta,allFin,anyLive};
   });
 
   if(ties.length > 0 && prevTies && prevTies.length > 0 && isNaN(+ties[0].key)){
@@ -186,12 +190,17 @@ const groupTies = (matches, prevTies = null) => {
     ties = sorted;
   }
 
-  return ties.sort((a,b)=>a.key.localeCompare(b.key));
+  return ties.sort((a,b)=>{
+    const ao = a.orden != null ? a.orden : 999;
+    const bo = b.orden != null ? b.orden : 999;
+    if (ao !== bo) return ao - bo;
+    return a.key.localeCompare(b.key);
+  });
 };
 
 const BracketTie = ({tie,isFinal=false}) => {
-  const {eq1,eq2,logo1,logo2,div1,div2,idaG1,idaG2,vtaG1,vtaG2,total1,total2,idaFin,vtaFin,hasVuelta,allFin,anyLive}=tie;
-  const w1=allFin&&total1>total2,w2=allFin&&total2>total1,live=anyLive&&!allFin;
+  const {eq1,eq2,logo1,logo2,div1,div2,idaG1,idaG2,vtaG1,vtaG2,total1,total2,pen1,pen2,wonByPens,idaFin,vtaFin,hasVuelta,allFin,anyLive}=tie;
+  const w1=allFin&&(total1>total2||(wonByPens&&pen1>pen2)),w2=allFin&&(total2>total1||(wonByPens&&pen2>pen1)),live=anyLive&&!allFin;
   const gc=(g,opp,done)=>{if(!done)return C.faint;if(g>opp)return C.green;if(g<opp)return "#f87171";return C.muted;};
   const border=live?"rgba(255,0,77,0.4)":allFin?(isFinal?"rgba(245,158,11,0.35)":"rgba(34,197,94,0.28)"):"rgba(255,255,255,0.15)";
   const accent=isFinal?(w1||w2?C.gold:C.faint):(w1||w2?C.red:C.faint);
@@ -214,6 +223,7 @@ const BracketTie = ({tie,isFinal=false}) => {
         <div style={{textAlign:"center",fontSize:11,fontWeight:800,fontFamily:FF,color:hasVuelta&&vtaFin?gc(vtaG2,vtaG1,vtaFin):C.faint}}>{hasVuelta&&vtaFin?vtaG2:"–"}</div>
         <div style={{textAlign:"center",fontSize:12,fontWeight:900,fontFamily:FF,color:allFin&&w2?(isFinal?C.gold:C.red):C.muted,background:allFin&&w2?(isFinal?C.goldDim:C.redDim):"transparent",borderRadius:3,padding:"1px 0"}}>{allFin?total2:"–"}</div>
       </div>
+      {wonByPens&&(<div style={{padding:"3px 8px",background:"rgba(168,85,247,0.08)",borderTop:`1px solid rgba(168,85,247,0.25)`,display:"flex",justifyContent:"center",alignItems:"center",gap:5}}><span style={{fontSize:7,fontWeight:900,color:"#a855f7",fontFamily:FF,letterSpacing:"1.2px"}}>PENALES ({pen1}-{pen2})</span></div>)}
       {live&&(<div style={{padding:"3px 8px",background:C.redDim,borderTop:`1px solid ${C.redGlow}`,display:"flex",justifyContent:"center",alignItems:"center",gap:5}}><span style={{width:5,height:5,borderRadius:"50%",background:"var(--color-accent)",animation:"livePulse 1s infinite",boxShadow:`0 0 8px ${C.redGlow}`,flexShrink:0}}/><span style={{fontSize:7,fontWeight:900,color:"var(--color-accent)",fontFamily:FF,letterSpacing:"1.5px"}}>EN VIVO</span></div>)}
     </div>
   );
@@ -272,13 +282,13 @@ const TournamentBracket = ({octavos,cuartos,semis,final:finalMatches}) => {
 
   const LH = 36;
 
-  const ph = (id) => ({key:id,eq1:"Por definir",eq2:"Por definir",logo1:null,logo2:null,div1:null,div2:null,idaG1:null,idaG2:null,vtaG1:null,vtaG2:null,total1:0,total2:0,idaFin:false,vtaFin:false,hasVuelta:false,allFin:false,anyLive:false});
+  const ph = (id) => ({key:id,eq1:"Por definir",eq2:"Por definir",logo1:null,logo2:null,div1:null,div2:null,idaG1:null,idaG2:null,vtaG1:null,vtaG2:null,total1:0,total2:0,pen1:null,pen2:null,wonByPens:false,idaFin:false,vtaFin:false,hasVuelta:false,allFin:false,anyLive:false});
   const ensure = (arr,count,pfx) => arr.length>0?arr:Array.from({length:count},(_,i)=>ph(`${pfx}${i}`));
 
-  const octs = ensure([...allOct].sort((a,b)=>a.key.localeCompare(b.key)), 8, "oct");
-  const cuas = ensure([...allCua].sort((a,b)=>a.key.localeCompare(b.key)), 4, "cua");
-  const sems = ensure([...allSem].sort((a,b)=>a.key.localeCompare(b.key)), 2, "sem");
-  const fT   = ensure([...allFin].sort((a,b)=>a.key.localeCompare(b.key)), 1, "fin")[0];
+  const octs = ensure(allOct, 8, "oct");
+  const cuas = ensure(allCua, 4, "cua");
+  const sems = ensure(allSem, 2, "sem");
+  const fT   = ensure(allFin, 1, "fin")[0];
 
   const LC  = "rgba(255,0,77,0.30)";
   const LCH = "rgba(255,0,77,0.55)";

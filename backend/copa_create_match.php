@@ -100,10 +100,11 @@ try {
 
     $stmt = $pdo->prepare("
         INSERT INTO partidos_copa
-            (equipo_local_id, equipo_visitante_id, goles_local, goles_visitante, fecha, hora, estado, fase, llave, grupo_copa, jornada, penales_local, penales_visitante)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (equipo_local_id, equipo_visitante_id, goles_local, goles_visitante, fecha, hora, estado, fase, llave, grupo_copa, jornada, penales_local, penales_visitante, orden)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
-    $stmt->execute([$team1, $team2, $gLocal, $gVisit, $fecha, $hora, $estado, $fase, $llave, $grupo, $jornada, $pLocal, $pVisit]);
+    $orden = (in_array($fase, ['octavos', 'cuartos', 'semis', 'final'], true) && $llave !== null) ? $llave : 0;
+    $stmt->execute([$team1, $team2, $gLocal, $gVisit, $fecha, $hora, $estado, $fase, $llave, $grupo, $jornada, $pLocal, $pVisit, $orden]);
 
     echo json_enc(["success" => true, "id" => $pdo->lastInsertId()]);
 } catch (Exception $e) {

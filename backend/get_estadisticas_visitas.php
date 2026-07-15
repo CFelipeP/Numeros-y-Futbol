@@ -26,6 +26,7 @@ try {
             break;
     }
 
+    $filtroBrowser = str_replace('created_at', 'last_visit', $filtro);
     $total  = (int)$pdo->query("SELECT COUNT(*) FROM visitas WHERE $filtro")->fetchColumn();
     $unicas = (int)$pdo->query("SELECT COUNT(DISTINCT ip_hash) FROM visitas WHERE $filtro")->fetchColumn();
     $bots   = (int)$pdo->query("SELECT COUNT(*) FROM visitas WHERE $filtro AND es_bot = 1")->fetchColumn();
@@ -38,6 +39,17 @@ try {
 
     $recientes = $pdo->query("SELECT id, ip_hash, pagina, es_bot, created_at FROM visitas ORDER BY created_at DESC LIMIT 50")->fetchAll(PDO::FETCH_ASSOC);
 
+    // Browser visit stats
+    $browserTotal     = (int)$pdo->query("SELECT COUNT(*) FROM browser_visits")->fetchColumn();
+    $browserPeriodo   = (int)$pdo->query("SELECT COUNT(*) FROM browser_visits WHERE $filtroBrowser")->fetchColumn();
+    $browserUnicas    = (int)$pdo->query("SELECT COUNT(*) FROM browser_visits")->fetchColumn();
+    $browserHoy       = (int)$pdo->query("SELECT COUNT(*) FROM browser_visits WHERE DATE(last_visit) = CURDATE()")->fetchColumn();
+    $browserRecurrent = (int)$pdo->query("SELECT COUNT(*) FROM browser_visits WHERE visit_count > 1")->fetchColumn();
+
+    $browserPorDia = $pdo->query("SELECT DATE(last_visit) AS fecha, COUNT(*) AS total FROM browser_visits WHERE last_visit >= CURDATE() - INTERVAL 7 DAY GROUP BY DATE(last_visit) ORDER BY fecha")->fetchAll(PDO::FETCH_ASSOC);
+
+    $browserRecientes = $pdo->query("SELECT id, browser_token, user_agent, ip_hash, first_visit, last_visit, visit_count FROM browser_visits ORDER BY last_visit DESC LIMIT 50")->fetchAll(PDO::FETCH_ASSOC);
+
     echo json_enc([
         "success" => true,
         "stats" => [
@@ -45,10 +57,18 @@ try {
             "unicas" => $unicas,
             "bots"   => $bots,
         ],
+        "browser_stats" => [
+            "total"         => $browserTotal,
+            "hoy"           => $browserHoy,
+            "periodo"       => $browserPeriodo,
+            "recurrentes"   => $browserRecurrent,
+        ],
         "top_paginas" => $topPaginas,
         "por_hora"    => $porHora,
         "por_dia"     => $porDia,
+        "browser_por_dia" => $browserPorDia,
         "recientes"   => $recientes,
+        "browser_recientes" => $browserRecientes,
     ]);
 } catch (Exception $e) {
     echo json_enc(["success" => false, "error" => "Error interno del servidor"]);

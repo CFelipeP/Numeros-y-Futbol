@@ -24,12 +24,13 @@ try {
             p.llave,
             p.grupo_copa AS grupo,
             p.jornada,
+            p.orden,
             p.penales_local,
             p.penales_visitante
         FROM partidos_copa p
         JOIN equipos_copa el ON el.id = p.equipo_local_id
         JOIN equipos_copa ev ON ev.id = p.equipo_visitante_id
-        ORDER BY p.fase, p.grupo_copa, p.fecha, p.id
+        ORDER BY FIELD(p.fase,'grupos','octavos','cuartos','semis','final'), p.orden, p.grupo_copa, p.fecha, p.id
     ");
 
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
