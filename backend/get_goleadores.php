@@ -4,6 +4,11 @@ ini_set('display_errors', 0);
 require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/db.php';
 
+$year = (int)date('Y');
+$month = (int)date('n');
+$startYear = ($month >= 7) ? $year : $year - 1;
+$temporada = $startYear . '-' . ($startYear + 1);
+
 try {
     $stmt = $pdo->query("
         SELECT 
@@ -20,7 +25,7 @@ try {
         FROM estadisticas_jugadores s
         INNER JOIN jugadores j ON j.id = s.jugador_id
         INNER JOIN equipos e ON e.id = j.equipo_id
-        WHERE s.temporada = '2025-2026' AND s.goles > 0
+        WHERE s.temporada = '$temporada' AND s.goles > 0
         ORDER BY s.goles DESC
         LIMIT 15
     ");

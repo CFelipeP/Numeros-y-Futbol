@@ -8,7 +8,7 @@ import 'animate.css';
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
-    Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, Upload, Image, FileText, CheckCircle2, RotateCcw, StarOff, Filter, Zap, MessageCircle
+    Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, Upload, Image, FileText, CheckCircle2, RotateCcw, StarOff, Filter, Zap, MessageCircle, BarChart3
 } from "lucide-react";
 import { apiPost, apiPostForm } from "../apiHelper";
 import { API_BASE } from "../config";
@@ -16,7 +16,7 @@ import { API_BASE } from "../config";
 export default function ManagePublicNews() {
   const [news, setNews] = useState([]);
   const [editing, setEditing] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [teamsOpen, setTeamsOpen] = useState(false);
   const [seleccionesOpen, setSeleccionesOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -254,6 +254,7 @@ export default function ManagePublicNews() {
   );
 
   const navItems = [
+      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
       { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
       { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
       { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
@@ -261,8 +262,7 @@ export default function ManagePublicNews() {
         type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
         children: [
           { path: "/teams/primera", label: "Primera División" },
-          { path: "/teams/segunda", label: "Segunda División" },
-          { path: "/teams/tercera", label: "Tercera División" },
+          { path: "/teams/ascenso", label: "Liga de Ascenso" },
           { path: "/teams/femenina", label: "Femenina" },
         ]
       },
@@ -286,7 +286,7 @@ export default function ManagePublicNews() {
     ];
 
   return (
-    <div className={`admin-layout ${!sidebarOpen ? "sidebar-closed" : ""}`}>
+    <div className={`admin-layout ${sidebarOpen ? "sidebar-closed" : ""}`}>
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="logo-icon">

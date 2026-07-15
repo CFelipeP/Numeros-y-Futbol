@@ -71,6 +71,15 @@ try {
         ");
         $dup->execute([$fase, $jornada, $team1, $team2, $team2, $team1]);
         if ((int)$dup->fetchColumn() > 0) throw new Exception("Este partido ya existe en esta fase/jornada");
+
+        // Validar que ningún equipo esté repetido en otra llave de la misma fase
+        $teamReuse = $pdo->prepare("
+            SELECT COUNT(*) FROM partidos_copa
+            WHERE fase = ? AND llave != ?
+              AND (equipo_local_id IN (?, ?) OR equipo_visitante_id IN (?, ?))
+        ");
+        $teamReuse->execute([$fase, ($llave ?? 0), $team1, $team2, $team1, $team2]);
+        if ((int)$teamReuse->fetchColumn() > 0) throw new Exception("Uno de los equipos ya está asignado a otra llave en esta fase");
     }
 
     if ($fecha && $hora) {
@@ -81,6 +90,12 @@ try {
         ");
         $overlap->execute([$fecha, $hora, $team1, $team2, $team1, $team2]);
         if ((int)$overlap->fetchColumn() > 0) throw new Exception("Uno de los equipos ya tiene partido en esa fecha y hora");
+    }
+
+    if ($fase !== 'grupos') {
+        $teamReuse = $pdo->prepare("SELECT COUNT(*) FROM partidos_copa WHERE fase = ? AND llave != ? AND (equipo_local_id IN (?, ?) OR equipo_visitante_id IN (?, ?))");
+        $teamReuse->execute([$fase, ($llave ?? 0), $team1, $team2, $team1, $team2]);
+        if ((int)$teamReuse->fetchColumn() > 0) throw new Exception("Uno de los equipos ya está asignado a otra llave en esta fase");
     }
 
     $stmt = $pdo->prepare("

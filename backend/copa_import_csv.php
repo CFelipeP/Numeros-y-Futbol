@@ -71,8 +71,7 @@ try {
             $tabla = null;
             switch ($division) {
                 case 'Primera':  $tabla = 'equipos'; break;
-                case 'Segunda':  $tabla = 'equipos_segunda'; break;
-                case 'Tercera':  $tabla = 'equipos_tercera'; break;
+                case 'Ascenso':  $tabla = 'equipos_ascenso'; break;
             }
 
             if ($tabla) {
@@ -105,8 +104,7 @@ try {
         if (!$equipo_id) {
             $searchTables = [
                 ['table' => 'equipos',          'division' => 'Primera'],
-                ['table' => 'equipos_segunda',   'division' => 'Segunda'],
-                ['table' => 'equipos_tercera',   'division' => 'Tercera'],
+                ['table' => 'equipos_ascenso',   'division' => 'Ascenso'],
             ];
             foreach ($searchTables as $st) {
                 $stmt = $pdo->prepare("SELECT id, nombre, logo FROM `{$st['table']}` WHERE TRIM(nombre) = :nombre LIMIT 1");

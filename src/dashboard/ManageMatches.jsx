@@ -8,15 +8,14 @@ import {
     LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
     CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
     Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft,
-    Minus, ChevronUp, CheckCircle2, RotateCcw, StarOff, Filter, Zap, MessageCircle
+    Minus, ChevronUp, CheckCircle2, RotateCcw, StarOff, Filter, Zap, MessageCircle, BarChart3
 } from "lucide-react";
 import { API_BASE } from "../config";
 const API = API_BASE;
 
 const DIVISIONES = [
     { value: "primera", label: "Primera" },
-    { value: "segunda", label: "Segunda" },
-    { value: "tercera", label: "Tercera" },
+    { value: "ascenso", label: "Ascenso" },
     { value: "femenina", label: "Femenina" },
 ];
 
@@ -63,7 +62,7 @@ const ManageMatches = () => {
     }, []);
 
     const getEndpoints = () => {
-        const suffix = division === "segunda" ? "_segunda" : division === "tercera" ? "_tercera" : division === "femenina" ? "_femenina" : "";
+        const suffix = division === "ascenso" ? "_ascenso" : division === "femenina" ? "_femenina" : "";
         return {
             matches: `${API}get_matches${suffix}.php`,
             teams: `${API}get_teams${suffix}.php`,
@@ -108,7 +107,7 @@ const ManageMatches = () => {
     };
 
     const getActiveGrupo = () => {
-        if (division !== "segunda") return null;
+        if (division !== "ascenso") return null;
         if (newLocal) { const t = teamMap[newLocal]; if (t?.grupo) return t.grupo; }
         if (newVisitante) { const t = teamMap[newVisitante]; if (t?.grupo) return t.grupo; }
         return null;
@@ -119,14 +118,14 @@ const ManageMatches = () => {
 
     const handleSelectLocal = (id) => {
         setNewLocal(id);
-        if (division === "segunda" && newVisitante) {
+        if (division === "ascenso" && newVisitante) {
             const lt = teamMap[id]; const vt = teamMap[newVisitante];
             if (lt?.grupo && vt?.grupo && lt.grupo.toLowerCase() !== vt.grupo.toLowerCase()) setNewVisitante("");
         }
     };
     const handleSelectVisitante = (id) => {
         setNewVisitante(id);
-        if (division === "segunda" && newLocal) {
+        if (division === "ascenso" && newLocal) {
             const lt = teamMap[newLocal]; const vt = teamMap[id];
             if (lt?.grupo && vt?.grupo && lt.grupo.toLowerCase() !== vt.grupo.toLowerCase()) setNewLocal("");
         }
@@ -242,13 +241,13 @@ const ManageMatches = () => {
     const filteredLocal = teams.filter(t => {
         if (String(t.id) === String(newVisitante)) return false;
         if (!t.nombre.toLowerCase().includes(searchLocal.toLowerCase())) return false;
-        if (division === "segunda" && newVisitante) { const vGrupo = (teamMap[newVisitante]?.grupo || "").toLowerCase(); const tGrupo = (t.grupo || "").toLowerCase(); if (vGrupo && tGrupo && vGrupo !== tGrupo) return false; }
+        if (division === "ascenso" && newVisitante) { const vGrupo = (teamMap[newVisitante]?.grupo || "").toLowerCase(); const tGrupo = (t.grupo || "").toLowerCase(); if (vGrupo && tGrupo && vGrupo !== tGrupo) return false; }
         return true;
     });
     const filteredVisitante = teams.filter(t => {
         if (String(t.id) === String(newLocal)) return false;
         if (!t.nombre.toLowerCase().includes(searchVisitante.toLowerCase())) return false;
-        if (division === "segunda" && newLocal) { const lGrupo = (teamMap[newLocal]?.grupo || "").toLowerCase(); const tGrupo = (t.grupo || "").toLowerCase(); if (lGrupo && tGrupo && lGrupo !== tGrupo) return false; }
+        if (division === "ascenso" && newLocal) { const lGrupo = (teamMap[newLocal]?.grupo || "").toLowerCase(); const tGrupo = (t.grupo || "").toLowerCase(); if (lGrupo && tGrupo && lGrupo !== tGrupo) return false; }
         return true;
     });
 
@@ -262,6 +261,7 @@ const ManageMatches = () => {
     const currentDiv = DIVISIONES.find(d => d.value === division);
 
     const navItems = [
+      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
       { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
       { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
       { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
@@ -269,8 +269,7 @@ const ManageMatches = () => {
         type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
         children: [
           { path: "/teams/primera", label: "Primera División" },
-          { path: "/teams/segunda", label: "Segunda División" },
-          { path: "/teams/tercera", label: "Tercera División" },
+          { path: "/teams/ascenso", label: "Liga de Ascenso" },
           { path: "/teams/femenina", label: "Femenina" },
         ]
       },
@@ -306,13 +305,13 @@ const ManageMatches = () => {
     };
 
     const renderCustomSelect = (label, selectedId, searchVal, setSearchVal, isOpen, setOpen, filtered, onSelect, inputRef) => {
-        const sel = teamMap[selectedId]; const isSegunda = division === "segunda";
+        const sel = teamMap[selectedId]; const isAscenso = division === "ascenso";
         const renderOpt = (t) => (
             <div key={t.id} className={`cs-option cs-option-lg ${String(t.id) === String(selectedId) ? "cs-option-active" : ""}`} onClick={() => { onSelect(String(t.id)); setOpen(false); setSearchVal(""); }}>
                 <img src={`${API}${t.logo}`} alt="" onError={e => { e.target.src = fallbackSelect; }} className="cs-opt-logo cs-opt-logo-lg" />
                 <span className="cs-opt-name cs-opt-name-lg">{t.nombre}</span>
-                {isSegunda && <GrupoBadge grupo={t.grupo} />}
-                {!isSegunda && t.ciudad && <span className="cs-opt-city">{t.ciudad}</span>}
+                {isAscenso && <GrupoBadge grupo={t.grupo} />}
+                {!isAscenso && t.ciudad && <span className="cs-opt-city">{t.ciudad}</span>}
                 {String(t.id) === String(selectedId) && <CheckCircle2 size={16} className="cs-opt-check cs-opt-check-lg" />}
             </div>
         );
@@ -326,7 +325,7 @@ const ManageMatches = () => {
                 {other.length > 0 && other.map(renderOpt)}
             </>);
         };
-        const showGrouped = isSegunda && !selectedId && !searchVal;
+        const showGrouped = isAscenso && !selectedId && !searchVal;
         return (
             <div className="cs-wrap" ref={inputRef}>
                 <label className="cs-label">{label}</label>
@@ -335,7 +334,7 @@ const ManageMatches = () => {
                         <div className="cs-selected">
                             <img src={`${API}${sel.logo}`} alt="" onError={e => { e.target.src = fallbackSelect; }} className="cs-sel-logo cs-sel-logo-lg" />
                             <span className="cs-sel-name cs-sel-name-lg">{sel.nombre}</span>
-                            {isSegunda && <GrupoBadge grupo={sel.grupo} size="lg" />}
+                            {isAscenso && <GrupoBadge grupo={sel.grupo} size="lg" />}
                         </div>
                     ) : <span className="cs-placeholder cs-placeholder-lg">Selecciona un equipo</span>}
                     <ChevronDown size={18} className={`cs-chevron ${isOpen ? "cs-chevron-up" : ""}`} />
@@ -348,7 +347,7 @@ const ManageMatches = () => {
                         </div>
                         <div className="cs-options cs-options-lg">
                             {filtered.length === 0 ? (
-                                <div className="cs-empty cs-empty-lg">{isSegunda && activeGrupo ? `Sin equipos en Grupo ${activeGrupo === "East" ? "Este" : "Oeste"}` : "Sin resultados"}</div>
+                                <div className="cs-empty cs-empty-lg">{isAscenso && activeGrupo ? `Sin equipos en Grupo ${activeGrupo === "East" ? "Este" : "Oeste"}` : "Sin resultados"}</div>
                             ) : showGrouped ? renderGrouped() : filtered.map(renderOpt)}
                         </div>
                     </div>
@@ -358,7 +357,7 @@ const ManageMatches = () => {
     };
 
     return (
-        <div className={`admin-layout ${!sidebarOpen ? "sidebar-closed" : ""}`}>
+        <div className={`admin-layout ${sidebarOpen ? "sidebar-closed" : ""}`}>
             <aside className="sidebar">
                 <div className="sidebar-header">
                     <div className="logo-icon"><img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="Logo" /></div>
@@ -506,7 +505,7 @@ const ManageMatches = () => {
                             <button className="nm-close nm-close-lg" onClick={() => setShowNewMatch(false)}><X size={20} /></button>
                         </div>
                         <div className="nm-body nm-body-wide">
-                            {division === "segunda" && (
+                            {division === "ascenso" && (
                                 <div style={{ padding: "12px 18px", borderRadius: "12px", marginBottom: "22px", background: activeGrupo ? (activeGrupo.toLowerCase() === "east" ? "rgba(59,130,246,0.08)" : "rgba(249,115,22,0.08)") : "rgba(255,255,255,0.025)", border: `1px solid ${activeGrupo ? (activeGrupo.toLowerCase() === "east" ? "rgba(59,130,246,0.18)" : "rgba(249,115,22,0.18)") : "rgba(255,255,255,0.06)"}`, display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", fontWeight: 600, color: activeGrupo ? (activeGrupo.toLowerCase() === "east" ? "#60a5fa" : "#fb923c") : "#64748b" }}>
                                     <Shield size={16} style={{ flexShrink: 0 }} />
                                     <span>{activeGrupo ? <>Filtrado: solo equipos del <strong>Grupo {activeGrupo === "East" ? "Grupo A" : "Grupo B"}</strong></> : "Los partidos son entre equipos del mismo grupo"}</span>
@@ -519,15 +518,15 @@ const ManageMatches = () => {
                             </div>
                             <div className="nm-preview nm-preview-lg">
                                 <div className="nm-preview-side">
-                                    {localTeam ? (<><div className="nm-preview-logo-wrap nm-preview-logo-wrap-lg"><img src={`${API}${localTeam.logo}`} alt="" onError={e => { e.target.src = fallbackImg; }} className="nm-preview-logo" /></div><span className="nm-preview-name nm-preview-name-lg">{localTeam.nombre}</span>{division === "segunda" && <GrupoBadge grupo={localTeam.grupo} size="lg" />}{division !== "segunda" && localTeam.ciudad && <span className="nm-preview-city nm-preview-city-lg">{localTeam.ciudad}</span>}</>) : (<div className="nm-preview-empty"><div className="nm-preview-logo-wrap nm-preview-logo-wrap-lg nm-preview-logo-empty"><span>?</span></div><span className="nm-preview-name nm-preview-name-lg" style={{ color: "#475569" }}>Sin seleccionar</span></div>)}
+                                    {localTeam ? (<><div className="nm-preview-logo-wrap nm-preview-logo-wrap-lg"><img src={`${API}${localTeam.logo}`} alt="" onError={e => { e.target.src = fallbackImg; }} className="nm-preview-logo" /></div><span className="nm-preview-name nm-preview-name-lg">{localTeam.nombre}</span>{division === "ascenso" && <GrupoBadge grupo={localTeam.grupo} size="lg" />}{division !== "ascenso" && localTeam.ciudad && <span className="nm-preview-city nm-preview-city-lg">{localTeam.ciudad}</span>}</>) : (<div className="nm-preview-empty"><div className="nm-preview-logo-wrap nm-preview-logo-wrap-lg nm-preview-logo-empty"><span>?</span></div><span className="nm-preview-name nm-preview-name-lg" style={{ color: "#475569" }}>Sin seleccionar</span></div>)}
                                 </div>
                                 <div className="nm-preview-center nm-preview-center-lg"><div className="nm-preview-line nm-preview-line-lg" /><div className="nm-preview-vs-icon nm-preview-vs-icon-lg"><Swords size={26} /></div><div className="nm-preview-line nm-preview-line-lg" /></div>
                                 <div className="nm-preview-side">
-                                    {visitanteTeam ? (<><div className="nm-preview-logo-wrap nm-preview-logo-wrap-lg"><img src={`${API}${visitanteTeam.logo}`} alt="" onError={e => { e.target.src = fallbackImg; }} className="nm-preview-logo" /></div><span className="nm-preview-name nm-preview-name-lg">{visitanteTeam.nombre}</span>{division === "segunda" && <GrupoBadge grupo={visitanteTeam.grupo} size="lg" />}{division !== "segunda" && visitanteTeam.ciudad && <span className="nm-preview-city nm-preview-city-lg">{visitanteTeam.ciudad}</span>}</>) : (<div className="nm-preview-empty"><div className="nm-preview-logo-wrap nm-preview-logo-wrap-lg nm-preview-logo-empty"><span>?</span></div><span className="nm-preview-name nm-preview-name-lg" style={{ color: "#475569" }}>Sin seleccionar</span></div>)}
+                                    {visitanteTeam ? (<><div className="nm-preview-logo-wrap nm-preview-logo-wrap-lg"><img src={`${API}${visitanteTeam.logo}`} alt="" onError={e => { e.target.src = fallbackImg; }} className="nm-preview-logo" /></div><span className="nm-preview-name nm-preview-name-lg">{visitanteTeam.nombre}</span>{division === "ascenso" && <GrupoBadge grupo={visitanteTeam.grupo} size="lg" />}{division !== "ascenso" && visitanteTeam.ciudad && <span className="nm-preview-city nm-preview-city-lg">{visitanteTeam.ciudad}</span>}</>) : (<div className="nm-preview-empty"><div className="nm-preview-logo-wrap nm-preview-logo-wrap-lg nm-preview-logo-empty"><span>?</span></div><span className="nm-preview-name nm-preview-name-lg" style={{ color: "#475569" }}>Sin seleccionar</span></div>)}
                                 </div>
                             </div>
                             {newLocal && newVisitante && newLocal === newVisitante && <div className="nm-warning nm-warning-lg">No puedes seleccionar el mismo equipo</div>}
-                            {division === "segunda" && newLocal && newVisitante && (() => { const lg = (teamMap[newLocal]?.grupo || "").toLowerCase(); const vg = (teamMap[newVisitante]?.grupo || "").toLowerCase(); if (lg && vg && lg !== vg) return <div className="nm-warning nm-warning-lg">Los equipos deben ser del mismo grupo</div>; return null; })()}
+                            {division === "ascenso" && newLocal && newVisitante && (() => { const lg = (teamMap[newLocal]?.grupo || "").toLowerCase(); const vg = (teamMap[newVisitante]?.grupo || "").toLowerCase(); if (lg && vg && lg !== vg) return <div className="nm-warning nm-warning-lg">Los equipos deben ser del mismo grupo</div>; return null; })()}
                         </div>
                         <div className="nm-footer nm-footer-wide">
                             <button className="nm-btn-cancel nm-btn-cancel-lg" onClick={() => setShowNewMatch(false)}>Cancelar</button>

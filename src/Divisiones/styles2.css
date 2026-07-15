@@ -821,3 +821,101 @@
   width: 25px;
   height: 25px;
 }
+
+/* ============================================
+   RESPONSIVE - PUBLIC DIVISION PAGES
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Dashboard grid - sidebar below on mobile */
+  .dashboard-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.2rem !important;
+  }
+  
+  /* Glass cards */
+  .glass-card { padding: 1rem !important; border-radius: 12px !important; }
+  
+  /* Tabs */
+  .pd-tabs { border-radius: 10px !important; gap: 2px !important; }
+  .pd-tab { padding: 0.55rem 0.5rem !important; font-size: 0.72rem !important; }
+  
+  /* Title */
+  .pd-main-title { font-size: 1.3rem !important; }
+  .pd-main-sub { font-size: 0.8rem !important; padding-left: 0 !important; }
+  
+  /* Standings table - horizontal scroll */
+  .standings-table { min-width: 380px !important; font-size: 0.72rem !important; }
+  .standings-table th, .standings-table td { padding: 6px 4px !important; }
+  .team-cell img { width: 22px !important; height: 22px !important; }
+  
+  /* Featured match card */
+  .feat-card > div:last-child { padding: 1rem !important; }
+  .feat-logo { width: 40px !important; height: 40px !important; }
+  .feat-score-num { font-size: 1.2rem !important; width: 30px !important; }
+  
+  /* Match detail */
+  .md-hero { min-height: 200px !important; padding: 40px 16px 20px !important; }
+  .md-teams { flex-direction: column !important; gap: 10px !important; }
+  .md-score { font-size: 1.8rem !important; }
+  
+  /* Result rows */
+  .res-row { padding: 0.5rem !important; gap: 0.3rem !important; }
+  
+  /* Team view */
+  .pv-hero { padding: 1.5rem 1rem !important; }
+  .pv-roster-grid { grid-template-columns: 1fr !important; }
+  
+  /* Player stats table */
+  .player-stats-table { min-width: 400px !important; }
+  
+  /* Copa Presidente specific */
+  .cp-hero { min-height: 340px !important; padding: 70px 16px 30px !important; }
+  .cp-hero-title { font-size: clamp(1.8rem, 7vw, 3rem) !important; }
+  .cp-hero-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .cp-filters-row { flex-direction: column !important; gap: 8px !important; align-items: stretch !important; }
+  .cp-match-grid { grid-template-columns: 1fr !important; gap: 8px !important; }
+  .cp-group-table { overflow-x: auto !important; }
+  .cp-group-table table { min-width: 480px !important; }
+  .cp-match-teams { gap: 6px !important; }
+  .cp-team-name { max-width: 60px !important; font-size: 10px !important; }
+  .cp-score-nums { font-size: 22px !important; }
+  
+  /* Copa tabs */
+  .view-btn { padding: 6px 10px !important; font-size: 9px !important; }
+  .gf-btn { padding: 5px 8px !important; font-size: 9px !important; }
+  
+  /* Copa bracket */
+  .cp-bracket-wrap { padding: 12px 4px !important; }
+  
+  /* Copa ticker */
+  .cp-ticker-label { padding: 0 10px !important; font-size: 7px !important; }
+  .cp-ticker-item { font-size: 10px !important; }
+  
+  /* Section subtitle */
+  .section-subtitle { gap: 10px !important; }
+  .cp-section-icon { width: 30px !important; height: 30px !important; }
+  .cp-section-title { font-size: 15px !important; }
+  
+  /* Live match comments */
+  .live-comment-item { padding: 8px 10px !important; }
+  .live-comment-text { font-size: 0.8rem !important; }
+}
+
+@media (max-width: 480px) {
+  .pd-main-title { font-size: 1.1rem !important; }
+  .pd-tab { font-size: 0.68rem !important; padding: 0.45rem 0.4rem !important; }
+  .standings-table { min-width: 300px !important; }
+  .standings-table th, .standings-table td { font-size: 0.65rem !important; padding: 4px 3px !important; }
+  .team-cell img { width: 18px !important; height: 18px !important; }
+  .glass-card { padding: 0.8rem !important; }
+  .feat-card > div:last-child { padding: 0.8rem !important; }
+  .feat-logo { width: 34px !important; height: 34px !important; }
+  .cp-hero { min-height: 300px !important; padding: 60px 12px 24px !important; }
+  .cp-hero-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .cp-stat-value { font-size: 24px !important; }
+  .cp-match-teams { gap: 4px !important; }
+  .cp-team-name { max-width: 50px !important; font-size: 9px !important; }
+  .cp-score-nums { font-size: 18px !important; }
+}

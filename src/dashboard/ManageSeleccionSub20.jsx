@@ -4,17 +4,18 @@ import { createPortal } from "react-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
 import "animate.css";
-import { apiPost, apiFetch } from "../apiHelper";
+import { apiPost, apiFetch, getAuthHeaders } from "../apiHelper";
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
-  Search, MessageCircle, Upload, Download, Eye
+  Search, MessageCircle, Upload, Download, Eye, BarChart3
 } from "lucide-react";
 import { API_BASE } from "../config";
 
 const API = API_BASE;
 
 const SIDEBAR_ITEMS = [
+  { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
   { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
   { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
   { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
@@ -22,8 +23,7 @@ const SIDEBAR_ITEMS = [
     type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
     children: [
       { path: "/teams/primera", label: "Primera División" },
-      { path: "/teams/segunda", label: "Segunda División" },
-      { path: "/teams/tercera", label: "Tercera División" },
+      { path: "/teams/ascenso", label: "Liga de Ascenso" },
       { path: "/teams/femenina", label: "Femenina" },
     ]
   },
@@ -66,7 +66,7 @@ const POSICIONES = [
 
 export default function ManageSeleccionSub20() {
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [teamsOpen, setTeamsOpen] = useState(true);
   const [seleccionesOpen, setSeleccionesOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("partidos");
@@ -102,7 +102,7 @@ export default function ManageSeleccionSub20() {
   };
 
   return (
-    <div className={`admin-layout ${!sidebarOpen ? "sidebar-closed" : ""}`}>
+    <div className={`admin-layout ${sidebarOpen ? "sidebar-closed" : ""}`}>
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="logo-icon"><img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="Logo" /></div>
@@ -314,7 +314,7 @@ function JugadoresTabSub20({ jugadores, onReload }) {
     fd.append("foto", file);
     setUploading(true);
     try {
-      const res = await fetch(`${API}upload_seleccion_foto_sub20.php`, { method: "POST", body: fd });
+      const res = await fetch(`${API}upload_seleccion_foto_sub20.php`, { method: "POST", headers: getAuthHeaders(), body: fd });
       const d = await res.json();
       if (d.success) { setForm({ ...form, foto: d.url }); }
       else Swal.fire("Error", d.error, "error");
@@ -575,7 +575,7 @@ function TecnicoTabFemenina({ staff, onReload }) {
     fd.append("foto", file);
     setUploading(true);
     try {
-      const res = await fetch(`${API}upload_seleccion_foto_sub20.php`, { method: "POST", body: fd });
+      const res = await fetch(`${API}upload_seleccion_foto_sub20.php`, { method: "POST", headers: getAuthHeaders(), body: fd });
       const d = await res.json();
       if (d.success) { setForm({ ...form, foto: d.url }); }
       else Swal.fire("Error", d.error, "error");

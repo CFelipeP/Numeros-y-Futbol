@@ -13,8 +13,7 @@ const API = {
 
 const DIV = {
   Primera: { color:"var(--color-accent)", label:"1ª", bg:"rgba(255,31,31,0.15)", border:"rgba(255,31,31,0.35)" },
-  Segunda: { color:"#60a5fa", label:"2ª", bg:"rgba(96,165,250,0.15)", border:"rgba(96,165,250,0.35)" },
-  Tercera: { color:"#34d399", label:"3ª", bg:"rgba(52,211,153,0.15)", border:"rgba(52,211,153,0.35)" },
+  Ascenso: { color:"#60a5fa", label:"Asc.", bg:"rgba(96,165,250,0.15)", border:"rgba(96,165,250,0.35)" },
 };
 
 const C = {
@@ -381,7 +380,7 @@ const GroupStandings = ({group,index,activeGroup}) => {
   if(!eqs.length||!isActive)return null;
   const complete=eqs.some(e=>n(e.pj)>0)&&eqs.every(e=>n(e.pj)===3);
   return (
-    <div style={{animation:"fadeInUp .5s ease-out both",animationDelay:`${index*0.07}s`,borderRadius:10,overflow:"hidden",border:"1px solid rgba(255,255,255,0.08)",background:"var(--color-card-bg)"}}>
+    <div className="glass-card" style={{animation:"fadeInUp .5s ease-out both",animationDelay:`${index*0.07}s`,borderRadius:10,overflow:"hidden",border:"1px solid rgba(255,255,255,0.08)",background:"var(--color-card-bg)",padding:0}}>
       <button onClick={()=>setExpanded(!expanded)} className="group-header" style={{width:"100%",padding:"11px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(255,0,77,0.03)",borderBottom:"1px solid rgba(255,255,255,0.08)",border:"none",cursor:"pointer",transition:"background 0.2s",fontFamily:"inherit"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:32,height:32,borderRadius:7,background:"linear-gradient(135deg,var(--color-accent),#b91c1c)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:900,color:"#fff",fontFamily:FF,boxShadow:`0 4px 12px ${C.redGlow}`}}>{s(group.nombre)}</div>
@@ -392,7 +391,7 @@ const GroupStandings = ({group,index,activeGroup}) => {
       </button>
       {expanded&&(
         <div className="cp-group-table" style={{display:"block"}}>
-          <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <table className="standings-table">
             <thead><tr style={{background:"rgba(0,0,0,0.15)"}}>{["#","EQUIPO","DIV","PJ","G","E","P","GF","GC","DG","PTS"].map((h,hi)=>{const cls=h==="DIV"?"cp-th-div":h==="GF"?"cp-th-gf":h==="GC"?"cp-th-gc":"";return(<th key={h} className={cls} style={{padding:"7px 10px",fontSize:7,fontWeight:900,color:C.faint,letterSpacing:"1.5px",textAlign:h==="EQUIPO"?"left":"center",fontFamily:FF,borderBottom:"1px solid rgba(255,255,255,0.08)"}}>{h}</th>);})}</tr></thead>
             <tbody>{eqs.map((eq,i)=>{const dg=n(eq.gf)-n(eq.gc),q=i<2;return(<tr key={eq.id||i} style={{borderBottom:"1px solid rgba(255,255,255,0.08)",background:q?"rgba(255,0,77,0.04)":"transparent",borderLeft:q?`2px solid ${C.red}`:"2px solid transparent"}}><td style={{padding:"8px 10px",textAlign:"center",fontSize:13,fontWeight:900,color:q?"var(--color-accent)":C.faint,fontFamily:FF}}>{i+1}</td><td style={{padding:"8px 10px"}}><div style={{display:"flex",alignItems:"center",gap:8}}><Logo logo={eq.logo} name={eq.nombre} size={24}/><span className="cp-team-name" style={{fontSize:11,fontWeight:600,color:"var(--color-text-main)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:120,fontFamily:FF,letterSpacing:"0.3px"}}>{s(eq.nombre)}</span></div></td><td className="cp-td-div" style={{padding:"8px 10px",textAlign:"center"}}><DivBadge division={eq.division}/></td>{[eq.pj,eq.g,eq.e,eq.p,eq.gf,eq.gc].map((v,j)=>{const cls=j===3?"cp-td-gf":j===4?"cp-td-gc":"";return(<td key={j} className={cls} style={{padding:"8px 10px",textAlign:"center",fontSize:12,color:C.muted,fontFamily:FF}}>{n(v)}</td>);})}<td style={{padding:"8px 10px",textAlign:"center",fontSize:12,fontWeight:700,fontFamily:FF,color:dg>0?C.green:dg<0?"var(--color-accent)":C.muted}}>{dg>0?`+${dg}`:dg}</td><td style={{padding:"8px 10px",textAlign:"center",fontSize:16,fontWeight:900,color:q?"var(--color-accent)":"var(--color-text-main)",fontFamily:FF}}>{n(eq.pts)}</td></tr>);})}</tbody>
           </table>
@@ -445,7 +444,18 @@ export default function CopaPresidente() {
   const koPhase=useMemo(()=>{const m={};["octavos","cuartos","semis","final"].forEach(f=>{m[f]=matches.filter(x=>x.fase===f);});return m;},[matches]);
   const gLetters=useMemo(()=>[...new Set(gMatches.map(m=>m.grupo).filter(Boolean))].sort(),[gMatches]);
   const filtered=useMemo(()=>{let m=gMatches;if(gFilter!=="all")m=m.filter(x=>x.grupo===gFilter);return [...m].sort((a,b)=>{if(!a.fecha&&!b.fecha)return 0;if(!a.fecha)return 1;if(!b.fecha)return -1;return a.fecha.localeCompare(b.fecha)||(a.hora||"").localeCompare(b.hora||"");});},[gMatches,gFilter]);
-  const hStats=useMemo(()=>[{label:"Equipos",value:n(stats?.equipos)||24,sub:"3 divisiones",color:"var(--color-accent)"},{label:"Grupos",value:gLetters.length||6,sub:"4 por grupo",color:C.gold},{label:"Partidos",value:n(stats?.total,matches.length),sub:"total",color:"#60a5fa"},{label:"Goles",value:n(stats?.goles),sub:"anotados",color:"var(--color-success)"}],[stats,matches,gLetters]);
+  const hStats=useMemo(()=>[{label:"Equipos",value:n(stats?.equipos)||24,sub:"2 divisiones",color:"var(--color-accent)"},{label:"Grupos",value:gLetters.length||6,sub:"4 equipos c/u",color:C.gold},{label:"Partidos",value:n(stats?.total,matches.length),sub:"total",color:"#60a5fa"},{label:"Goles",value:n(stats?.goles),sub:"anotados",color:"var(--color-success)"}],[stats,matches,gLetters]);
+
+  // Calcular mejores terceros para tabla
+  const mejoresTercerosPub = useMemo(() => {
+    const terceros = [];
+    groups.forEach(g => {
+      const eqs = Array.isArray(g?.equipos) ? g.equipos : [];
+      if (eqs.length >= 3) terceros.push({ ...eqs[2], grupo: g.nombre });
+    });
+    terceros.sort((a, b) => (b.pts||0) - (a.pts||0) || ((b.gf||0)-(b.gc||0)) - ((a.gf||0)-(a.gc||0)) || (b.gf||0) - (a.gf||0));
+    return terceros;
+  }, [groups]);
 
   const hasLive=matches.some(m=>m.estado==="En Curso");
   const hasKoData=koPhase.octavos.length||koPhase.cuartos.length||koPhase.semis.length||koPhase.final.length;
@@ -453,7 +463,7 @@ export default function CopaPresidente() {
   return (
     <>
       <Header/>
-      <main style={{minHeight:"100vh",background:"var(--color-bg)"}}>
+      <section className="table-section" style={{paddingBottom:0}}>
 
         <div style={{position:"relative",minHeight:380,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",padding:"100px 24px 50px"}}>
           <HeroBg/>
@@ -466,9 +476,9 @@ export default function CopaPresidente() {
               <span style={{background:"linear-gradient(135deg,var(--color-accent),#ff6b35)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",filter:"drop-shadow(0 0 20px rgba(255,0,77,0.4))"}}>PRESIDENTE</span>
             </h1>
             <div style={{animation:"fadeIn .7s ease-out .3s both",width:60,height:2,margin:"16px auto",background:"linear-gradient(90deg,transparent,var(--color-accent),transparent)"}}/>
-            <p style={{animation:"fadeInUp .6s ease-out .3s both",color:C.muted,fontSize:13,lineHeight:1.6,maxWidth:420,margin:"0 auto"}}>Primera, Segunda y Tercera División unidas por la gloria del fútbol salvadoreño</p>
+            <p style={{animation:"fadeInUp .6s ease-out .3s both",color:C.muted,fontSize:13,lineHeight:1.6,maxWidth:420,margin:"0 auto"}}>Primera y Liga de Ascenso unidas por la gloria del fútbol salvadoreño</p>
             {hasLive&&(<div style={{animation:"fadeInUp .6s ease-out .4s both",display:"inline-flex",alignItems:"center",gap:8,marginTop:18,padding:"6px 16px",borderRadius:4,background:C.redDim,border:`1px solid ${C.redGlow}`}}><span style={{width:7,height:7,borderRadius:"50%",background:"var(--color-accent)",animation:"livePulse 1s infinite",boxShadow:`0 0 8px ${C.redGlow}`}}/><span style={{fontSize:9,fontWeight:900,color:"var(--color-accent)",letterSpacing:"2.5px",fontFamily:FF}}>PARTIDO EN VIVO</span></div>)}
-            <div style={{animation:"fadeInUp .7s ease-out .5s both",display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginTop:30}}>
+            <div className="cp-hero-stats" style={{animation:"fadeInUp .7s ease-out .5s both",display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginTop:30}}>
               {!loading?hStats.map((st,i)=><StatBox key={st.label} {...st} i={i}/>):[0,1,2,3].map(i=>(<div key={i} style={{textAlign:"center",padding:"20px 12px"}}><Sk w="55%" h={32} r={4}/><div style={{marginTop:6}}><Sk w="75%" h={9} r={3}/></div></div>))}
             </div>
           </div>
@@ -476,7 +486,7 @@ export default function CopaPresidente() {
 
         <LiveTicker matches={matches}/>
 
-        <div className="cp-content" style={{maxWidth:1100,margin:"0 auto",padding:"28px 16px 64px"}}>
+        <div className="container" style={{maxWidth:1100,padding:"28px 16px 64px"}}>
           {error&&(<div style={{textAlign:"center",padding:"70px 0"}}><div style={{fontSize:10,color:"var(--color-accent)",marginBottom:12,fontFamily:FF,letterSpacing:"2px"}}>ERROR AL CARGAR DATOS</div><button onClick={loadData} style={{padding:"9px 24px",borderRadius:5,border:"1px solid rgba(255,0,77,0.4)",background:"rgba(255,0,77,0.1)",color:"var(--color-accent)",fontSize:11,fontWeight:800,cursor:"pointer",fontFamily:FF,letterSpacing:"1.5px"}}>REINTENTAR</button></div>)}
           {!error&&(
             <div style={{animation:"fadeInUp .35s ease-out"}}>
@@ -499,7 +509,23 @@ export default function CopaPresidente() {
                   {gLetters.map(g=><button key={g} className={`gf-btn${gFilter===g?" active":""}`} onClick={()=>setGFilter(g)}>GRP {g}</button>)}
                 </div>
               </div>
-              {view==="tabla"&&(loading?<div style={{color:C.muted}}>Cargando...</div>:groups.length>0?<div style={{display:"flex",flexDirection:"column",gap:8}}>{groups.map((g,i)=><GroupStandings key={g.nombre} group={g} index={i} activeGroup={gFilter}/>)}</div>:<Empty icon={<IcnHex size={44} color={C.faint}/>} title="GRUPOS POR DEFINIR"/>)}
+              {view==="tabla"&&(loading?<div style={{color:C.muted}}>Cargando...</div>:groups.length>0?<><div style={{display:"flex",flexDirection:"column",gap:8}}>{groups.map((g,i)=><GroupStandings key={g.nombre} group={g} index={i} activeGroup={gFilter}/>)}</div>
+                {/* Tabla de mejores terceros */}
+                {gFilter==="all" && mejoresTercerosPub.length > 0 && (<div style={{marginTop:20,animation:"fadeInUp .4s ease-out both",borderRadius:10,overflow:"hidden",border:"1px solid rgba(245,158,11,0.25)",background:"var(--color-card-bg)"}}>
+                  <div style={{padding:"11px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(245,158,11,0.06)",borderBottom:"1px solid rgba(245,158,11,0.15)"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <div style={{width:28,height:28,borderRadius:7,background:"linear-gradient(135deg,#f59e0b,#d97706)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:900,color:"#fff",fontFamily:FF,boxShadow:"0 3px 10px rgba(245,158,11,0.3)"}}>3</div>
+                      <span style={{fontSize:13,fontWeight:800,color:"#f59e0b",fontFamily:FF,letterSpacing:"0.5px"}}>MEJORES TERCEROS</span>
+                    </div>
+                    <span style={{fontSize:9,color:"#64748b",fontFamily:FF}}>Top 4 clasifican a octavos</span>
+                  </div>
+                  <div style={{overflowX:"auto"}}>
+                    <table style={{width:"100%",borderCollapse:"collapse",minWidth:520}}>
+                      <thead><tr style={{background:"rgba(0,0,0,0.15)"}}>{["#","EQUIPO","GRP","PJ","G","E","P","GF","GC","DG","PTS"].map(h=><th key={h} style={{padding:"7px 8px",fontSize:"7px",fontWeight:900,color:C.faint,letterSpacing:"1px",textAlign:h==="EQUIPO"?"left":"center",fontFamily:FF,borderBottom:"1px solid rgba(255,255,255,0.08)"}}>{h}</th>)}</tr></thead>
+                      <tbody>{mejoresTercerosPub.map((eq,i)=>{const dg=n(eq.gf)-n(eq.gc),q=i<4;return(<tr key={eq.id||i} style={{borderBottom:"1px solid rgba(255,255,255,0.08)",background:q?"rgba(245,158,11,0.04)":"transparent",borderLeft:q?"2px solid #f59e0b":"2px solid transparent"}}><td style={{padding:"8px 10px",textAlign:"center",fontSize:13,fontWeight:900,color:q?"#f59e0b":C.faint,fontFamily:FF}}>{q?"◆":""}{i+1}</td><td className="team-cell" style={{padding:"8px 10px"}}><div className="team-logo"><img className="team-logo-img" src={lg(eq.logo)||""} alt="" onError={e=>{e.target.style.display="none";}}/></div><span style={{fontSize:11,fontWeight:600,color:"var(--color-text-main)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:120,fontFamily:FF}}>{s(eq.nombre)}</span></td><td style={{padding:"8px 10px",textAlign:"center",fontSize:12,fontWeight:800,color:"#f59e0b",fontFamily:FF}}>{s(eq.grupo)}</td>{[eq.pj,eq.g,eq.e,eq.p,eq.gf,eq.gc].map((v,j)=><td key={j} style={{padding:"8px 10px",textAlign:"center",fontSize:12,color:C.muted,fontFamily:FF}}>{n(v)}</td>)}<td style={{padding:"8px 10px",textAlign:"center",fontSize:12,fontWeight:700,fontFamily:FF,color:dg>0?C.green:dg<0?"var(--color-accent)":C.muted}}>{dg>0?`+${dg}`:dg}</td><td style={{padding:"8px 10px",textAlign:"center",fontSize:16,fontWeight:900,color:q?"#f59e0b":"var(--color-text-main)",fontFamily:FF}}>{n(eq.pts)}</td></tr>);})}</tbody>
+                    </table>
+                  </div>
+                </div>)}</>:<Empty icon={<IcnHex size={44} color={C.faint}/>} title="GRUPOS POR DEFINIR"/>)}
               {view==="partidos"&&(loading?<div>Cargando...</div>:filtered.length>0?<div className="cp-match-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:12}}>{filtered.map((m,i)=><MatchCard key={m.id||i} match={m} i={i}/>)}</div>:<Empty icon={<IcnFutbol size={44} color={C.faint}/>} title="SIN PARTIDOS"/>)}
 
               <div style={{height:1,background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)",margin:"48px 0 36px"}}/>
@@ -514,7 +540,7 @@ export default function CopaPresidente() {
                 </div>
                 {loading&&<div style={{color:C.muted,fontFamily:FF,letterSpacing:"1px"}}>Cargando bracket...</div>}
                 {!loading&&(
-                  <div className="cp-bracket-wrap" style={{background:"rgba(255,255,255,0.01)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:12,padding:"28px 16px 24px",overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+                  <div className="cp-bracket-wrap glass-card" style={{background:"rgba(255,255,255,0.01)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:12,padding:"28px 16px 24px",overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
                     <TournamentBracket octavos={koPhase.octavos} cuartos={koPhase.cuartos} semis={koPhase.semis} final={koPhase.final}/>
                   </div>
                 )}
@@ -524,7 +550,7 @@ export default function CopaPresidente() {
             </div>
           )}
         </div>
-      </main>
+      </section>
       <Footer/>
 
       <style>{`
@@ -560,6 +586,7 @@ export default function CopaPresidente() {
         @media(max-width:768px){
           .cp-hero{min-height:380px!important;padding:80px 16px 40px!important}
           .cp-hero-title{font-size:clamp(2.2rem,8vw,3.5rem)!important}
+          .cp-hero-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
           .cp-content{padding:20px 12px 48px!important}
           .cp-filters-row{flex-direction:column!important;gap:10px!important;align-items:stretch!important}
           .cp-match-grid{grid-template-columns:1fr!important;gap:10px!important}
@@ -578,7 +605,7 @@ export default function CopaPresidente() {
           .cp-bracket-section h2{font-size:17px!important;letter-spacing:0.5px!important}
           .cp-ticker-label{padding:0 10px!important;font-size:7px!important;letter-spacing:1.5px!important}
           .cp-ticker-match{font-size:10px!important;gap:24px!important}
-          .cp-match-card-grid{grid-template-columns:"1fr auto 1fr"!important;gap:8px!important}
+          .cp-match-card-grid{gap:8px!important}
           .cp-match-logo{width:32px!important;height:32px!important}
           .cp-match-team-name{max-width:70px!important;font-size:11px!important}
           .cp-match-score{font-size:24px!important;min-width:65px!important}

@@ -9,14 +9,13 @@ import Register from "./pages/Register";
 import Dashboard from "./dashboard/Dashboard";
 import ManageMatches from "./dashboard/ManageMatches";
 import ManageTeams from "./dashboard/ManageTeams";
-import ManageTeamsSegunda from "./dashboard/ManageTeamsSegunda";
-import ManageTeamsTercera from "./dashboard/ManageTeamsTercera";
+import ManageTeamsAscenso from "./dashboard/ManageTeamsAscenso";
 import ManageUsers from "./dashboard/ManageUsers";
 import ManageNews from "./dashboard/ManageNews";
 import Settings from "./dashboard/Settings"; // <--- NUEVO IMPORT
+import Analytics from "./dashboard/Analytics";
 import Primera from "./Divisiones/Primera";
-import Tercera from "./Divisiones/Tercera";
-import Segunda from "./Divisiones/Segunda";
+import Ascenso from "./Divisiones/Ascenso";
 import Femenina from "./Divisiones/Femenina";
 import CopaPresidente from "./Divisiones/CopaPresidente";
 import Seleccion from "./Divisiones/Seleccion";
@@ -31,6 +30,7 @@ import ManageSeleccionSub17 from "./dashboard/ManageSeleccionSub17";
 import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
 import ScrollToTop from "./components/ScrollToTop";
+import VisitTracker from "./components/VisitTracker";
 import ManagePublicNews from "./dashboard/ManagePublicNews";
 import AdminPosiciones from "./dashboard/AdminPosiciones";
 import PlantillaEquipos from "./dashboard/PlantillaEquipos";
@@ -51,31 +51,40 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <VisitTracker />
       <MaintenanceGuard>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/primera" element={<Primera />} />
-        <Route path="/tercera" element={<Tercera />} />
         <Route path="/news" element={<News />} />
         <Route path="/noticia/:id" element={<NewsDetail />} />
         <Route path="/mynews" element={<ManagePublicNews />} />
         <Route path="/posiciones" element={<AdminPosiciones />} />
         <Route path="/copa-presidente" element={<CopaPresidente />} />
         <Route path="/perfil" element={<UserProfile />} />
-        <Route path="/teams/primera" element={<ManageTeams />} />
-        <Route path="/admin/copa" element={<Admincopa />} />
-        <Route path="/teams/segunda" element={<ManageTeamsSegunda />} />
-        <Route path="/teams/tercera" element={<ManageTeamsTercera />} />
-        <Route path="/teams/femenina" element={<ManageTeamsFemenina />} />
-        <Route path="/segunda" element={<Segunda />} />
+        <Route path="/teams/primera" element={
+          <ProtectedRoute>
+            <ManageTeams />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/copa" element={
+          <ProtectedRoute>
+            <Admincopa />
+          </ProtectedRoute>
+        } />
+        <Route path="/ascenso" element={<Ascenso />} />
         <Route path="/seleccion" element={<Seleccion />} />
         <Route path="/seleccion-femenina" element={<SeleccionFemenina />} />
         <Route path="/seleccion-sub20" element={<SeleccionSub20 />} />
         <Route path="/seleccion-sub17" element={<SeleccionSub17 />} />
         <Route path="/femenina" element={<Femenina />} />
-        <Route path="/admin/plantilla" element={<PlantillaEquipos />} />
+        <Route path="/admin/plantilla" element={
+          <ProtectedRoute>
+            <PlantillaEquipos />
+          </ProtectedRoute>
+        } />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/partido/:id/:division" element={<MatchDetail />} />
         <Route path="/manage-comments" element={
@@ -86,6 +95,14 @@ function App() {
 
 
         {/* RUTAS PROTEGIDAS (ADMIN) */}
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <Analytics />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/dashboard"
           element={
@@ -140,6 +157,22 @@ function App() {
           element={
             <ProtectedRoute>
               <ManageTeams />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teams/ascenso"
+          element={
+            <ProtectedRoute>
+              <ManageTeamsAscenso />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teams/femenina"
+          element={
+            <ProtectedRoute>
+              <ManageTeamsFemenina />
             </ProtectedRoute>
           }
         />

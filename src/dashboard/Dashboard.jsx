@@ -7,7 +7,7 @@ import { apiPost } from "../apiHelper";
 
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
-  CircleDot, Target, FileText, Trophy, Zap, TrendingUp, RotateCcw, ChevronDown, MessageCircle, Eye
+  CircleDot, Target, FileText, Trophy, Zap, TrendingUp, RotateCcw, ChevronDown, MessageCircle, Eye, BarChart3
 } from "lucide-react";
 
 import GoalsChart from "../components/GoalsChart";
@@ -53,8 +53,7 @@ const deriveChartFromMatches = (matches) => {
 
 const DIVISIONES = [
   { value: "primera", label: "Primera" },
-  { value: "segunda", label: "Segunda" },
-  { value: "tercera", label: "Tercera" },
+  { value: "ascenso", label: "Ascenso" },
   { value: "femenina", label: "Femenina" },
 ];
 
@@ -149,6 +148,7 @@ const AdminDashboard = () => {
   ];
 
   const navItems = [
+      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
       { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
       { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
       { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
@@ -156,8 +156,7 @@ const AdminDashboard = () => {
         type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
         children: [
           { path: "/teams/primera", label: "Primera División" },
-          { path: "/teams/segunda", label: "Segunda División" },
-          { path: "/teams/tercera", label: "Tercera División" },
+          { path: "/teams/ascenso", label: "Liga de Ascenso" },
           { path: "/teams/femenina", label: "Femenina" },
         ]
       },

@@ -4,7 +4,10 @@ ini_set('display_errors', 0);
 require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/db.php';
 
-$temporada = isset($_GET['temporada']) ? $_GET['temporada'] : '2025-2026';
+$year = (int)date('Y');
+$month = (int)date('n');
+$startYear = ($month >= 7) ? $year : $year - 1;
+$temporada = isset($_GET['temporada']) ? $_GET['temporada'] : ($startYear . '-' . ($startYear + 1));
 $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 15;
 
 try {

@@ -17,17 +17,17 @@ import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings,
   LogOut, Menu, Target, Trophy, ChevronDown, Save, Globe, Palette,
   Bell, Lock, Upload, Image as ImageIcon, AlertTriangle, MessageCircle,
-  Eye, EyeOff, Facebook, Twitter, Instagram, Mail, Phone, Info, RefreshCw
+  Eye, EyeOff, Facebook, Twitter, Instagram, Mail, Phone, Info, RefreshCw, BarChart3
 } from "lucide-react";
 
 const SIDEBAR_ITEMS = [
+  { path:"/analytics",       icon:<BarChart3 size={20}/>,      label:"Analiticas" },
   { path:"/dashboard",       icon:<LayoutDashboard size={20}/>, label:"Dashboard" },
   { path:"/matches",         icon:<CalendarDays size={20}/>,    label:"Gestionar Partidos" },
   { path:"/mynews",          icon:<CalendarDays size={20}/>,    label:"Crear Noticias" },
   { type:"dropdown", icon:<Shield size={20}/>, label:"Equipos", children:[
     { path:"/teams/primera", label:"Primera División" },
-    { path:"/teams/segunda", label:"Segunda División" },
-    { path:"/teams/tercera", label:"Tercera División" },
+    { path:"/teams/ascenso", label:"Liga de Ascenso" },
     { path:"/teams/femenina", label:"Femenina" },
   ]},
   {
@@ -56,7 +56,7 @@ const Toggle = ({ value, onChange, color = "#22c55e" }) => (
 );
 
 export default function SettingsPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [teamsOpen, setTeamsOpen]     = useState(false);
   const [seleccionesOpen, setSeleccionesOpen] = useState(false);
   const [activeTab, setActiveTab]     = useState("site");
@@ -187,7 +187,7 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className={`admin-layout ${!sidebarOpen ? "sidebar-closed" : ""}`}>
+    <div className={`admin-layout ${sidebarOpen ? "sidebar-closed" : ""}`}>
       {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="sidebar-header">

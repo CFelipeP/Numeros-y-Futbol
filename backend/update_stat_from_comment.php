@@ -19,8 +19,7 @@ if (!$jugador_id || !$tipo) {
 
 // Tabla de stats según división
 switch ($division) {
-    case 'segunda': $tabla = 'estadisticas_jugadores_segunda'; break;
-    case 'tercera': $tabla = 'estadisticas_jugadores_tercera'; break;
+    case 'ascenso': $tabla = 'estadisticas_jugadores_ascenso'; break;
     default:        $tabla = 'estadisticas_jugadores';         break;
 }
 

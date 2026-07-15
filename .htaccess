@@ -1,8 +1,17 @@
 AddDefaultCharset UTF-8
+Options -Indexes
 
+# Bloquear archivos sensibles (.env, .bak, .sql, etc)
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+  
+  # Bloquear acceso a .env y otros archivos sensibles
+  RewriteRule \.env$ - [F,L]
+  RewriteRule \.bak$ - [F,L]
+  RewriteRule \.sql$ - [F,L]
+  RewriteRule ^backend/PHPMailer/get_oauth_token\.php$ - [F,L]
+  
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d

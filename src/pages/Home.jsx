@@ -196,28 +196,60 @@ const Carousel = () => {
           border-color: rgba(255,255,255,0.12) !important;
           background: rgba(255,255,255,0.06) !important;
         }
+        @media (max-width: 768px) {
+          .carousel-card {
+            min-width: 75vw !important;
+            padding: 12px 14px !important;
+            border-radius: 14px !important;
+          }
+          .carousel-card .card-score {
+            font-size: 22px !important;
+          }
+          .carousel-card .team-logo-wrap {
+            width: 36px !important;
+            height: 36px !important;
+          }
+          .carousel-card .team-logo-wrap img {
+            width: 24px !important;
+            height: 24px !important;
+          }
+          .carousel-card .team-name-carousel {
+            font-size: 9px !important;
+            max-width: 55px !important;
+          }
+          .carousel-fade-left, .carousel-fade-right {
+            width: 40px !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .carousel-card {
+            min-width: 85vw !important;
+            padding: 10px 12px !important;
+            border-radius: 12px !important;
+          }
+          .carousel-card .card-score {
+            font-size: 18px !important;
+            min-width: 40px !important;
+          }
+          .carousel-card .team-logo-wrap {
+            width: 32px !important;
+            height: 32px !important;
+          }
+          .carousel-card .team-logo-wrap img {
+            width: 20px !important;
+            height: 20px !important;
+          }
+          .carousel-fade-left, .carousel-fade-right {
+            width: 24px !important;
+          }
+        }
       `}</style>
 
       <div className="results-carousel-section" id="driver-carousel" style={{ overflow: "hidden", position: "relative" }}>
 
-        {/* Fade izquierdo */}
-        <div className="carousel-fade-left" style={{
-          position: "absolute", left: 0, top: 0, bottom: 0, width: 100, zIndex: 3,
-          background: "linear-gradient(90deg, var(--bg-dark, #0a0c14) 20%, transparent)",
-          pointerEvents: "none"
-        }} />
-        {/* Fade derecho */}
-        <div className="carousel-fade-right" style={{
-          position: "absolute", right: 0, top: 0, bottom: 0, width: 100, zIndex: 3,
-          background: "linear-gradient(270deg, var(--bg-dark, #0a0c14) 20%, transparent)",
-          pointerEvents: "none"
-        }} />
-
-        <div className="carousel-wrapper" style={{ overflow: "visible" }}>
-          <div style={{
+        <div className="carousel-wrapper">
+          <div className="carousel-track" style={{
             animation: `carousel-scroll ${duration}s linear infinite`,
-            willChange: "transform",
-            display: "flex",
             gap: 18,
           }}>
             {display.map((match, idx) => {
@@ -435,13 +467,9 @@ const Divisions = () => (
           <div className="division-card-banner bg-primary"><span className="division-number">1</span></div>
           <div className="division-card-body"><h3>Primera División</h3><p>La élite del fútbol salvadoreño.</p><div className="division-card-footer"><span className="team-count">12 equipos</span><a href="/primera" className="btn-ghost">Ver más <ArrowRight /></a></div></div>
         </motion.div>
-        <motion.div className="division-card" variants={itemVariants} id="segunda">
+        <motion.div className="division-card" variants={itemVariants} id="ascenso">
           <div className="division-card-banner bg-secondary"><span className="division-number">2</span></div>
-          <div className="division-card-body"><h3>Segunda División</h3><p>Camino hacia la élite.</p><div className="division-card-footer"><span className="team-count">24 equipos</span><a href="/segunda" className="btn-ghost">Ver más <ArrowRight /></a></div></div>
-        </motion.div>
-        <motion.div className="division-card" variants={itemVariants} id="tercera">
-          <div className="division-card-banner bg-dark"><span className="division-number">3</span></div>
-          <div className="division-card-body"><h3>Tercera División</h3><p>Semillero de talentos.</p><div className="division-card-footer"><span className="team-count">40+ equipos</span><a href="/tercera" className="btn-ghost">Ver más <ArrowRight /></a></div></div>
+          <div className="division-card-body"><h3>Liga de Ascenso</h3><p>El camino hacia la elite.</p><div className="division-card-footer"><span className="team-count">40+ equipos</span><a href="/ascenso" className="btn-ghost">Ver mas <ArrowRight /></a></div></div>
         </motion.div>
       </motion.div>
     </div>
@@ -532,7 +560,7 @@ function Home() {
           { element: '#driver-header',    popover: { title: 'Menú principal', description: 'Navega entre divisiones, noticias o accede a tu cuenta.',      side: 'bottom', align: 'start'  } },
           { element: '#driver-hero',      popover: { title: 'Portada',        description: 'Sección principal con lo más importante del fútbol nacional.', side: 'bottom', align: 'center' } },
           { element: '#driver-carousel',  popover: { title: 'Resultados',     description: 'Últimos marcadores de los partidos de Primera División.',      side: 'top',    align: 'center' } },
-          { element: '#driver-divisions', popover: { title: 'Divisiones',     description: 'Explora Primera, Segunda y Tercera división.',                  side: 'top',    align: 'center' } },
+          { element: '#driver-divisions', popover: { title: 'Divisiones',     description: 'Explora Primera y la Liga de Ascenso.',                  side: 'top',    align: 'center' } },
           { element: '#driver-news',      popover: { title: 'Noticias',       description: 'Las últimas novedades del fútbol salvadoreño.',                 side: 'top',    align: 'center' } },
           { element: '#driver-footer',    popover: { title: 'Información',    description: 'Enlaces útiles y redes sociales.',                              side: 'top',    align: 'center' } },
         ],

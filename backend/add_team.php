@@ -30,4 +30,8 @@ $id = $conn->lastInsertId();
 $stmt2 = $conn->prepare("INSERT INTO tabla_posiciones (equipo_id) VALUES (?)");
 $stmt2->execute([$id]);
 
+// Sincronizar a Copa Presidente automáticamente
+$stmt3 = $conn->prepare("INSERT IGNORE INTO equipos_copa (equipo_id, division, nombre, logo, activo) VALUES (?, 'Primera', ?, ?, 1)");
+$stmt3->execute([$id, $nombre, $ruta]);
+
 echo json_enc(["success" => true]);

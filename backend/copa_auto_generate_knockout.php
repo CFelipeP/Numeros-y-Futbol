@@ -251,66 +251,119 @@ function getPhaseWinners(PDO $pdo, string $fase): array {
 
 function getQualifiedForPhase(PDO $pdo, string $fase, string $prevFase): array {
     if ($fase === 'octavos') {
-        // Top 2 de cada grupo
         $stmt = $pdo->query("SELECT DISTINCT grupo FROM equipos_copa WHERE grupo IS NOT NULL AND activo = 1 ORDER BY grupo");
         $grupos = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
         $qualified = [];
+        $thirds = [];
         foreach ($grupos as $g) {
             $ranked = getGroupStandings($pdo, $g);
             for ($i = 0; $i < min(2, count($ranked)); $i++) {
-                $qualified[] = $ranked[$i];
+                $qualified[] = ['id' => $ranked[$i]['id'], 'grupo' => $g, 'pos' => $i + 1];
+            }
+            if (count($ranked) >= 3) {
+                $thirds[] = ['id' => $ranked[2]['id'], 'grupo' => $g, 'pos' => 3, 'pts' => $ranked[2]['pts'], 'dg' => $ranked[2]['dg'], 'gf' => $ranked[2]['gf']];
             }
         }
-        return array_map(function($t) { return $t['id']; }, $qualified);
+
+        // Sort 3rd place teams by pts, dg, gf
+        usort($thirds, function($a, $b) {
+            if ($b['pts'] !== $a['pts']) return $b['pts'] - $a['pts'];
+            if ($b['dg'] !== $a['dg']) return $b['dg'] - $a['dg'];
+            return $b['gf'] - $a['gf'];
+        });
+
+        // Take top 4 best 3rds
+        $bestThirds = array_slice($thirds, 0, 4);
+        foreach ($bestThirds as $t) {
+            $qualified[] = ['id' => $t['id'], 'grupo' => $t['grupo'], 'pos' => 3];
+        }
+
+        return $qualified;
     } else {
-        return getPhaseWinners($pdo, $prevFase);
+        $ids = getPhaseWinners($pdo, $prevFase);
+        return array_map(function($id) { return ['id' => $id]; }, $ids);
     }
 }
 
 function buildOctavosPairs(PDO $pdo): array {
-    $stmt = $pdo->query("SELECT DISTINCT grupo FROM equipos_copa WHERE grupo IS NOT NULL AND activo = 1 ORDER BY grupo");
-    $grupos = $stmt->fetchAll(PDO::FETCH_COLUMN);
-    $n = count($grupos);
+    $qualified = getQualifiedForPhase($pdo, 'octavos', 'grupos');
 
-    if ($n % 2 !== 0) {
-        // Número impar de grupos -> no se puede cruzar
-        return [];
+    // Separate top 2 per group vs best 3rds
+    $top2 = [];
+    $bestThirds = [];
+    foreach ($qualified as $q) {
+        if (($q['pos'] ?? 0) === 3) {
+            $bestThirds[] = $q;
+        } else {
+            $top2[] = $q;
+        }
     }
 
+    // Get standings by group for top 1 and top 2 lookups
+    $byGroup = [];
+    foreach ($top2 as $t) {
+        if (!isset($byGroup[$t['grupo']])) $byGroup[$t['grupo']] = [];
+        $byGroup[$t['grupo']][$t['pos']] = $t['id'];
+    }
+
+    $grupos = $pdo->query("SELECT DISTINCT grupo FROM equipos_copa WHERE grupo IS NOT NULL AND activo = 1 ORDER BY grupo")->fetchAll(PDO::FETCH_COLUMN);
+    $groupsSorted = array_values(array_intersect($grupos, array_keys($byGroup)));
     $pairs = [];
     $llave = 1;
 
-    for ($i = 0; $i < $n; $i += 2) {
-        $g1 = $grupos[$i];
-        $g2 = $grupos[$i + 1];
+    // 1A vs 2B, 1B vs 2A
+    if (isset($groupsSorted[0], $groupsSorted[1])) {
+        $ga = $groupsSorted[0]; $gb = $groupsSorted[1];
+        $pairs[] = ['llave' => $llave++, 'team1' => $byGroup[$ga][1], 'team2' => $byGroup[$gb][2]];
+        $pairs[] = ['llave' => $llave++, 'team1' => $byGroup[$gb][1], 'team2' => $byGroup[$ga][2]];
+    }
 
-        $ranked1 = getGroupStandings($pdo, $g1);
-        $ranked2 = getGroupStandings($pdo, $g2);
+    // 1C vs 2D, 1D vs 2C
+    if (isset($groupsSorted[2], $groupsSorted[3])) {
+        $gc = $groupsSorted[2]; $gd = $groupsSorted[3];
+        $pairs[] = ['llave' => $llave++, 'team1' => $byGroup[$gc][1], 'team2' => $byGroup[$gd][2]];
+        $pairs[] = ['llave' => $llave++, 'team1' => $byGroup[$gd][1], 'team2' => $byGroup[$gc][2]];
+    }
 
-        if (count($ranked1) < 2 || count($ranked2) < 2) continue;
+    // 1E vs best-3rd-1, 1F vs best-3rd-2
+    $thirdsSorted = $bestThirds;
+    if (isset($groupsSorted[4])) {
+        $ge = $groupsSorted[4];
+        $th1 = array_shift($thirdsSorted);
+        if ($th1) $pairs[] = ['llave' => $llave++, 'team1' => $byGroup[$ge][1], 'team2' => $th1['id']];
+    }
+    if (isset($groupsSorted[5])) {
+        $gf = $groupsSorted[5];
+        $th2 = array_shift($thirdsSorted);
+        if ($th2) $pairs[] = ['llave' => $llave++, 'team1' => $byGroup[$gf][1], 'team2' => $th2['id']];
+    }
 
-        // 1ro de g1 vs 2do de g2
-        $pairs[] = ['llave' => $llave, 'team1' => $ranked1[0]['id'], 'team2' => $ranked2[1]['id']];
-        $llave++;
-
-        // 1ro de g2 vs 2do de g1
-        $pairs[] = ['llave' => $llave, 'team1' => $ranked2[0]['id'], 'team2' => $ranked1[1]['id']];
-        $llave++;
+    // 2E vs best-3rd-3, 2F vs best-3rd-4
+    if (isset($groupsSorted[4])) {
+        $ge = $groupsSorted[4];
+        $th3 = array_shift($thirdsSorted);
+        if ($th3) $pairs[] = ['llave' => $llave++, 'team1' => $byGroup[$ge][2], 'team2' => $th3['id']];
+    }
+    if (isset($groupsSorted[5])) {
+        $gf = $groupsSorted[5];
+        $th4 = array_shift($thirdsSorted);
+        if ($th4) $pairs[] = ['llave' => $llave++, 'team1' => $byGroup[$gf][2], 'team2' => $th4['id']];
     }
 
     return $pairs;
 }
 
 function buildSequentialPairs(array $qualified): array {
+    $ids = array_map(function($q) { return (int)$q['id']; }, $qualified);
     $pairs = [];
     $llave = 1;
-    for ($i = 0; $i < count($qualified); $i += 2) {
-        if ($i + 1 >= count($qualified)) break;
+    for ($i = 0; $i < count($ids); $i += 2) {
+        if ($i + 1 >= count($ids)) break;
         $pairs[] = [
             'llave' => $llave,
-            'team1' => (int)$qualified[$i],
-            'team2' => (int)$qualified[$i + 1],
+            'team1' => $ids[$i],
+            'team2' => $ids[$i + 1],
         ];
         $llave++;
     }

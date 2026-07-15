@@ -6,3 +6,8 @@ SetEnvIf Authorization "^(.+)$" HTTP_AUTHORIZATION=$1
 RewriteEngine On
 RewriteCond %{HTTP:Authorization} ^(.+)$
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
+# Bloquear archivos sensibles
+<FilesMatch "\.(env|bak|sql)$">
+  Require all denied
+</FilesMatch>

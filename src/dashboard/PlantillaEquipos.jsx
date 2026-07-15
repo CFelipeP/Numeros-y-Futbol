@@ -9,7 +9,7 @@ import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   ChevronDown, Plus, Pencil, Trash2, Save, X,
   Search, User, Target, Trophy, Star, Eye as EyeIcon,
-  Upload, Download, ArrowLeftRight, CheckCircle2, Image as ImageIcon, RotateCcw, StarOff, Filter, Zap, MessageCircle
+  Upload, Download, ArrowLeftRight, CheckCircle2, Image as ImageIcon, RotateCcw, StarOff, Filter, Zap, MessageCircle, BarChart3
 } from "lucide-react";
 
 const API = API_BASE;
@@ -17,13 +17,12 @@ const rel = (fullUrl) => fullUrl.startsWith(API_BASE) ? fullUrl.slice(API_BASE.l
 
 const DIVISIONES = [
   { key: "primera", label: "Primera", icon: "🔴" },
-  { key: "segunda", label: "Segunda", icon: "🟢" },
-  { key: "tercera", label: "Tercera", icon: "🟡" },
+  { key: "ascenso", label: "Ascenso", icon: "🔵" },
   { key: "femenina", label: "Femenina", icon: "⚪" },
 ];
 
 const getEndpoints = (div) => {
-  const s = div === "segunda" ? "_segunda" : div === "tercera" ? "_tercera" : div === "femenina" ? "_femenina" : "";
+  const s = div === "ascenso" ? "_ascenso" : div === "femenina" ? "_femenina" : "";
   return {
     teams: API + "get_teams" + s + ".php",
     crud: API + "crud_jugadores" + s + ".php",
@@ -223,6 +222,7 @@ function autoAssign(jugadores, fKey) {
 
 // ─── Nav ──────────────────────────────────────────────────────────────────────
 const navItems = [
+      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
       { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
       { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
       { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
@@ -230,8 +230,7 @@ const navItems = [
         type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
         children: [
           { path: "/teams/primera", label: "Primera División" },
-          { path: "/teams/segunda", label: "Segunda División" },
-          { path: "/teams/tercera", label: "Tercera División" },
+          { path: "/teams/ascenso", label: "Liga de Ascenso" },
           { path: "/teams/femenina", label: "Femenina" },
         ]
       },

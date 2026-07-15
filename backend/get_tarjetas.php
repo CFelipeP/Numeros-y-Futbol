@@ -6,6 +6,11 @@ require_once __DIR__ . '/db.php';
 
 $tipo = isset($_GET['tipo']) ? $_GET['tipo'] : 'amarillas';
 
+$year = (int)date('Y');
+$month = (int)date('n');
+$startYear = ($month >= 7) ? $year : $year - 1;
+$temporada = $startYear . '-' . ($startYear + 1);
+
 try {
     if ($tipo === 'rojas') {
         $orderBy = "s.tarjetas_rojas DESC";
@@ -33,7 +38,7 @@ try {
         FROM estadisticas_jugadores s
         INNER JOIN jugadores j ON j.id = s.jugador_id
         INNER JOIN equipos e ON e.id = j.equipo_id
-        WHERE s.temporada = '2025-2026' $whereExtra
+        WHERE s.temporada = '$temporada' $whereExtra
         ORDER BY $orderBy
         LIMIT 10
     ");

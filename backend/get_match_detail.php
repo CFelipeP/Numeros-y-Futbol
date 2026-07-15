@@ -53,20 +53,10 @@ try {
             $selectFormacion = "'4-4-2' AS local_formacion, '4-4-2' AS visitante_formacion";
             $selectPosiciones = 'NULL AS pos_x, NULL AS pos_y';
             break;
-        case 'segunda':
-            $tPartidos  = 'partidos_segunda';
-            $tEquipos   = 'equipos_segunda';
-            $tJugadores = 'jugadores_segunda';
-            $colLocal   = 'local_id';
-            $colVisit   = 'visitante_id';
-            $colEstado  = 'status';
-            $selectFormacion = "'4-4-2' AS local_formacion, '4-4-2' AS visitante_formacion";
-            $selectPosiciones = 'posicion_x AS pos_x, posicion_y AS pos_y';
-            break;
-        case 'tercera':
-            $tPartidos  = 'partidos_tercera';
-            $tEquipos   = 'equipos_tercera';
-            $tJugadores = 'jugadores_tercera';
+        case 'ascenso':
+            $tPartidos  = 'partidos_ascenso';
+            $tEquipos   = 'equipos_ascenso';
+            $tJugadores = 'jugadores_ascenso';
             $colLocal   = 'local_id';
             $colVisit   = 'visitante_id';
             $colEstado  = 'status';
@@ -178,41 +168,6 @@ try {
 
     $jugadoresLocal     = obtenerJugadores($pdo, $tJugadores, $partido['local_id'] ?? 0);
     $jugadoresVisitante = obtenerJugadores($pdo, $tJugadores, $partido['visitante_id'] ?? 0);
-
-    // ── Asegurar que la tabla match_comments existe ─
-    try {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS `match_comments` (
-            `id`          INT NOT NULL AUTO_INCREMENT,
-            `partido_id`  INT NOT NULL,
-            `division`    VARCHAR(20) NOT NULL DEFAULT 'primera',
-            `minuto`      INT NOT NULL DEFAULT 0,
-            `tipo`        ENUM('gol','gol_penal','gol_cabeza','gol_tiro_libre','asistencia','tarjeta_amarilla','tarjeta_roja','cambio','comentario','inicio','descanso','fin','penal') NOT NULL DEFAULT 'comentario',
-            `descripcion` TEXT NOT NULL,
-            `equipo`      VARCHAR(150) DEFAULT NULL,
-            `jugador_id`  INT DEFAULT NULL,
-            `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (`id`),
-            KEY `idx_partido` (`partido_id`, `division`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    } catch (Exception $_) {}
-
-    // ── Asegurar columna jugador_id y tipos nuevos en match_comments ─
-    try {
-        $pdo->exec("ALTER TABLE `match_comments` ADD COLUMN `jugador_id` INT DEFAULT NULL AFTER `equipo`");
-    } catch (Exception $e) {
-        if (!str_contains($e->getMessage(), 'Duplicate column')) {
-            error_log("get_match_detail.php: " . $e->getMessage());
-        }
-    }
-
-    // Actualizar ENUM para incluir todos los tipos nuevos
-    try {
-        $pdo->exec("ALTER TABLE `match_comments` MODIFY COLUMN `tipo` ENUM(
-            'gol','gol_penal','gol_cabeza','gol_tiro_libre',
-            'asistencia','tarjeta_amarilla','tarjeta_roja',
-            'cambio','comentario','inicio','descanso','fin','penal'
-        ) NOT NULL DEFAULT 'comentario'");
-    } catch (Exception $_) {}
 
     // ── Comentarios ──────────────────────────────────────────────
     $stmtC = $pdo->prepare("

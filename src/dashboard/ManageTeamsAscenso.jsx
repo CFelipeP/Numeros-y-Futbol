@@ -5,28 +5,25 @@ import Swal from "sweetalert2";
 import 'animate.css';
 
 import {
-  LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
+  BarChart3, LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
-  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft,
-  UploadCloud,
-  ImageIcon, CheckCircle2, RotateCcw, StarOff, Filter, Zap, MessageCircle
+  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, UploadCloud, CheckCircle2, Image as ImageIcon, Upload, RotateCcw, StarOff, Filter, Zap, MessageCircle
 } from "lucide-react";
 import { apiPostForm } from "../apiHelper";
 import { API_BASE } from "../config";
 
 const API = API_BASE;
-const DIVISION_LABEL = "Tercera División";
-const GRUPOS = ["Occidente A", "Occidente B", "Oriente A", "Oriente B"];
+const DIVISION_LABEL = "Liga de Ascenso";
 
-const ManageTeamsTercera = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+const ManageTeamsAscenso = () => {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [teamsOpen, setTeamsOpen] = useState(true);
   const [seleccionesOpen, setSeleccionesOpen] = useState(false);
     const location = useLocation();
 
     const [teams, setTeams] = useState([]);
     const [search, setSearch] = useState("");
-    const [loading, setLoading] = useState(true);
+        const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -36,7 +33,7 @@ const ManageTeamsTercera = () => {
     useEffect(() => {
         setLoading(true);
         setError(null);
-        fetch(`${API}get_teams_tercera.php`)
+        fetch(`${API}get_teams_ascenso.php`)
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json();
@@ -52,11 +49,13 @@ const ManageTeamsTercera = () => {
             });
     }, []);
 
-    const filteredTeams = teams.filter(t =>
-        t.nombre?.toLowerCase().includes(search.toLowerCase()) ||
-        t.ciudad?.toLowerCase().includes(search.toLowerCase()) ||
-        t.estadio?.toLowerCase().includes(search.toLowerCase())
-    );
+    const filteredTeams = teams.filter(t => {
+        const matchSearch =
+            t.nombre?.toLowerCase().includes(search.toLowerCase()) ||
+            t.ciudad?.toLowerCase().includes(search.toLowerCase()) ||
+            t.estadio?.toLowerCase().includes(search.toLowerCase());
+        return matchSearch;
+    });
 
     const [showAdd, setShowAdd] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -67,15 +66,13 @@ const ManageTeamsTercera = () => {
     const [formNombre, setFormNombre] = useState("");
     const [formCiudad, setFormCiudad] = useState("");
     const [formEstadio, setFormEstadio] = useState("");
-    const [formGrupo, setFormGrupo] = useState("");
-    const [formLogo, setFormLogo] = useState(null);
+        const [formLogo, setFormLogo] = useState(null);
     const [logoPreview, setLogoPreview] = useState(null);
 
     const [editNombre, setEditNombre] = useState("");
     const [editCiudad, setEditCiudad] = useState("");
     const [editEstadio, setEditEstadio] = useState("");
-    const [editGrupo, setEditGrupo] = useState("");
-    const [editLogo, setEditLogo] = useState(null);
+        const [editLogo, setEditLogo] = useState(null);
     const [editLogoPreview, setEditLogoPreview] = useState(null);
 
     const handleLogout = () => {
@@ -91,7 +88,7 @@ const ManageTeamsTercera = () => {
     };
 
     const openAdd = () => {
-        setFormNombre(""); setFormCiudad(""); setFormEstadio(""); setFormGrupo("");
+        setFormNombre(""); setFormCiudad(""); setFormEstadio("");
         setFormLogo(null); setLogoPreview(null);
         setShowAdd(true);
     };
@@ -118,10 +115,9 @@ const ManageTeamsTercera = () => {
         form.append("nombre", formNombre);
         form.append("ciudad", formCiudad);
         form.append("estadio", formEstadio);
-        form.append("grupo", formGrupo);
         if (formLogo) form.append("logo", formLogo);
 
-        apiPostForm(`${API}add_team_tercera.php`, form)
+        apiPostForm(`${API}add_team_ascenso.php`, form)
             .then(res => res.json())
             .then(data => {
                 setSubmitting(false);
@@ -138,7 +134,6 @@ const ManageTeamsTercera = () => {
         setEditNombre(team.nombre || "");
         setEditCiudad(team.ciudad || "");
         setEditEstadio(team.estadio || "");
-        setEditGrupo(team.grupo || "");
         setEditLogo(null);
         setEditLogoPreview(team.logo ? `${API}${team.logo}` : null);
         setShowEdit(true);
@@ -167,10 +162,9 @@ const ManageTeamsTercera = () => {
         form.append("nombre", editNombre);
         form.append("ciudad", editCiudad);
         form.append("estadio", editEstadio);
-        form.append("grupo", editGrupo);
         if (editLogo) form.append("logo", editLogo);
 
-        apiPostForm(`${API}update_team_tercera.php`, form)
+        apiPostForm(`${API}update_team_ascenso.php`, form)
             .then(res => res.json())
             .then(data => {
                 setEditSubmitting(false);
@@ -191,7 +185,7 @@ const ManageTeamsTercera = () => {
     const deleteTeam = (id, nombre) => {
         Swal.fire({
             title: `¿Eliminar ${nombre}?`,
-            html: `<p style="color:#94a3b8;font-size:14px;margin:0">Se eliminará de <b style="color:#f59e0b">${DIVISION_LABEL}</b> y su escudo será borrado.</p>`,
+            html: `<p style="color:#94a3b8;font-size:14px;margin:0">Se eliminará de <b style="color:#22c55e">${DIVISION_LABEL}</b> y su escudo será borrado.</p>`,
             icon: "warning", showCancelButton: true,
             confirmButtonText: "Sí, eliminar", cancelButtonText: "Cancelar",
             confirmButtonColor: "#d33", background: "#0f172a", color: "#e2e8f0", iconColor: "#ef4444"
@@ -199,7 +193,7 @@ const ManageTeamsTercera = () => {
             if (result.isConfirmed) {
                 const form = new FormData();
                 form.append("id", id);
-                apiPostForm(`${API}delete_team_tercera.php`, form)
+                apiPostForm(`${API}delete_team_ascenso.php`, form)
                     .then(res => res.json())
                     .then(data => {
                         if (data.error) {
@@ -214,7 +208,9 @@ const ManageTeamsTercera = () => {
         });
     };
 
+
     const navItems = [
+      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analíticas" },
       { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
       { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
       { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
@@ -222,8 +218,7 @@ const ManageTeamsTercera = () => {
         type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
         children: [
           { path: "/teams/primera", label: "Primera División" },
-          { path: "/teams/segunda", label: "Segunda División" },
-          { path: "/teams/tercera", label: "Tercera División" },
+          { path: "/teams/ascenso", label: "Liga de Ascenso" },
           { path: "/teams/femenina", label: "Femenina" },
         ]
       },
@@ -245,7 +240,7 @@ const ManageTeamsTercera = () => {
       { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
       { path: "/", icon: <EyeIcon size={20} />, label: "Ver Sitio" },
     ];
-    
+
     const inputStyle = {
         width: '100%', padding: '12px 14px', borderRadius: '10px',
         border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)',
@@ -253,12 +248,13 @@ const ManageTeamsTercera = () => {
         boxSizing: 'border-box',
     };
 
+
     return (
-        <div className={`admin-layout ${!sidebarOpen ? "sidebar-closed" : ""}`}>
+        <div className={`admin-layout ${sidebarOpen ? "sidebar-closed" : ""}`}>
             <aside className="sidebar">
                 <div className="sidebar-header">
                     <div className="logo-icon">
-                        <img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="Logo" />
+                        <img src="/logo.png" alt="Logo" />
                     </div>
                     <h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2>
                 </div>
@@ -304,31 +300,47 @@ const ManageTeamsTercera = () => {
                 </header>
 
                 <div className="content-wrapper">
-                    <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "1.2rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "1.2rem", flexWrap: "wrap" }}>
                         <h1 className="admin-title" style={{ margin: 0 }}>Gestionar Equipos</h1>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 14px", borderRadius: "8px", background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)", color: "#f59e0b", fontSize: "13px", fontWeight: 700 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 14px", borderRadius: "8px", background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", color: "#22c55e", fontSize: "13px", fontWeight: 700 }}>
                             <Shield size={13} /> {DIVISION_LABEL}
                         </span>
                     </div>
 
+                    {/* Stats */}
+                    {!loading && !error && (
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px", marginBottom: "1.2rem" }}>
+                            <div style={{ padding: "16px 18px", borderRadius: "12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: "12px" }}>
+                                <div style={{ width: 40, height: 40, borderRadius: "10px", background: "rgba(34,197,94,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <Shield size={18} style={{ color: "#22c55e" }} />
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: "22px", fontWeight: 800, color: "#f1f5f9", lineHeight: 1 }}>{teams.length}</div>
+                                    <div style={{ fontSize: "11px", color: "#64748b", fontWeight: 600, marginTop: "2px" }}>Total</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     {error && (
                         <div style={{ padding: "16px 20px", borderRadius: "10px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", marginBottom: "1rem", color: "#f87171", fontSize: "14px" }}>
-                            <strong>Error:</strong> No se encontró <code style={{ background: "rgba(0,0,0,0.3)", padding: "2px 6px", borderRadius: "4px" }}>get_teams_tercera.php</code> en backend/. Detalle: {error}
+                            <strong>Error:</strong> No se encontró <code style={{ background: "rgba(0,0,0,0.3)", padding: "2px 6px", borderRadius: "4px" }}>get_teams_ascenso.php</code> en backend/. Detalle: {error}
                         </div>
                     )}
 
                     <div className="table-container">
-                        <div className="table-header">
-                            <h2>
+                        <div className="table-header" style={{ flexWrap: "wrap", gap: "10px" }}>
+                            <h2 style={{ flex: "1 1 auto" }}>
                                 Lista de Equipos
                                 {search && <span style={{ fontSize: '13px', fontWeight: '500', color: '#64748b', marginLeft: '10px' }}>{filteredTeams.length} resultado{filteredTeams.length !== 1 ? 's' : ''}</span>}
                             </h2>
-                            <button className="btn-add" onClick={openAdd}><Plus size={18} /> Nuevo Equipo</button>
+                            <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                                <button className="btn-add" onClick={openAdd}><Plus size={18} /> Nuevo Equipo</button>
+                            </div>
                         </div>
 
                         {loading ? (
                             <div style={{ textAlign: "center", padding: "3rem", color: "#64748b" }}>
-                                <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid rgba(255,255,255,0.08)", borderTopColor: "#f59e0b", animation: "tmSpin 0.8s linear infinite", margin: "0 auto 1rem" }} />
+                                <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid rgba(255,255,255,0.08)", borderTopColor: "#22c55e", animation: "tmSpin 0.8s linear infinite", margin: "0 auto 1rem" }} />
                                 <span style={{ fontSize: "0.85rem" }}>Cargando equipos...</span>
                             </div>
                         ) : (
@@ -345,15 +357,15 @@ const ManageTeamsTercera = () => {
                                 <tbody>
                                     {filteredTeams.map((team) => (
                                         <tr key={team.id}>
-                                                <td>
-                                                    {team.logo ? <img src={`${API}${team.logo}`} alt={team.nombre} onError={(e) => { e.target.style.display = 'none'; }} style={{ width: '38px', height: '38px', objectFit: 'contain', borderRadius: '8px', background: '#fff', padding: '2px' }} /> : <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#475569' }}>N/A</div>}
-                                                </td>
+                                            <td>
+                                                {team.logo ? <img src={`${API}${team.logo}`} alt={team.nombre} onError={(e) => { e.target.style.display = 'none'; }} style={{ width: '38px', height: '38px', objectFit: 'contain', borderRadius: '8px', background: '#fff', padding: '2px' }} /> : <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#475569' }}>N/A</div>}
+                                            </td>
                                             <td style={{ fontWeight: '700' }}>{team.nombre}</td>
                                             <td style={{ color: '#94a3b8' }}>{team.ciudad || '—'}</td>
                                             <td style={{ color: '#94a3b8' }}>{team.estadio || '—'}</td>
                                             <td>
                                                 <div style={{ display: 'flex', gap: '8px' }}>
-                                                    <button className="team-btn-edit-amber" onClick={() => openEdit(team)} title="Editar"><Save size={14} /><span>Editar</span></button>
+                                                    <button className="team-btn-edit-green" onClick={() => openEdit(team)} title="Editar"><Save size={14} /><span>Editar</span></button>
                                                     <button className="btn-delete" onClick={() => deleteTeam(team.id, team.nombre)} title="Eliminar"><Trash2 size={16} /></button>
                                                 </div>
                                             </td>
@@ -366,20 +378,27 @@ const ManageTeamsTercera = () => {
                         {!loading && filteredTeams.length === 0 && !error && (
                             <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#475569' }}>
                                 <Shield size={40} style={{ margin: '0 auto 0.75rem', display: 'block', opacity: 0.2 }} />
-                                <p style={{ fontWeight: 600, color: '#64748b' }}>{search ? 'Sin resultados para "' + search + '"' : 'No hay equipos en ' + DIVISION_LABEL}</p>
-                                <p style={{ fontSize: '13px', marginTop: '4px' }}>{search ? 'Intenta con otro término' : 'Agrega tu primer equipo'}</p>
+                                <p style={{ fontWeight: 600, color: '#64748b' }}>
+                                    {search
+                                        ? 'Sin resultados para "' + search + '"'
+                                        : 'No hay equipos en ' + DIVISION_LABEL}
+                                </p>
+                                <p style={{ fontSize: '13px', marginTop: '4px' }}>
+                                    {search ? 'Intenta con otros terminos' : 'Agrega tu primer equipo'}
+                                </p>
                             </div>
                         )}
                     </div>
                 </div>
             </main>
 
+            {/* Modal Agregar */}
             {showAdd && (
                 <div className="tm-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAdd(false); }}>
                     <div className="tm-card animate__animated animate__fadeInUp">
-                        <div className="tm-header tm-header-amber">
+                        <div className="tm-header tm-header-green">
                             <div>
-                                <h2><Plus size={18} style={{ color: '#f59e0b' }} /> Nuevo Equipo</h2>
+                                <h2><Plus size={18} style={{ color: '#22c55e' }} /> Nuevo Equipo</h2>
                                 <p className="tm-division-hint">Se agregará a <b>{DIVISION_LABEL}</b></p>
                             </div>
                             <button className="tm-close" onClick={() => setShowAdd(false)}><X size={18} /></button>
@@ -388,43 +407,36 @@ const ManageTeamsTercera = () => {
                             <div className="tm-grid">
                                 <div className="tm-fields">
                                     <div className="tm-field">
-                                        <label>Nombre del Equipo <span className="tm-required-amber">*</span></label>
-                                        <input type="text" value={formNombre} onChange={(e) => setFormNombre(e.target.value)} placeholder="Ej: C.D. Águila" style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
+                                        <label>Nombre del Equipo <span className="tm-required-green">*</span></label>
+                                        <input type="text" value={formNombre} onChange={(e) => setFormNombre(e.target.value)} placeholder="Ej: C.D. Águila" style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#22c55e'; e.target.style.boxShadow = '0 0 0 3px rgba(34,197,94,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
                                     </div>
-                                    <div className="tm-field">
+<div className="tm-field">
                                         <label>Ciudad</label>
-                                        <input type="text" value={formCiudad} onChange={(e) => setFormCiudad(e.target.value)} placeholder="Ej: San Miguel" style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
+                                        <input type="text" value={formCiudad} onChange={(e) => setFormCiudad(e.target.value)} placeholder="Ej: San Miguel" style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#22c55e'; e.target.style.boxShadow = '0 0 0 3px rgba(34,197,94,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
                                     </div>
                                     <div className="tm-field">
                                         <label>Estadio</label>
-                                        <input type="text" value={formEstadio} onChange={(e) => setFormEstadio(e.target.value)} placeholder="Ej: Estadio Juan Francisco Barraza" style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
-                                    </div>
-                                    <div className="tm-field">
-                                        <label>Grupo</label>
-                                        <select value={formGrupo} onChange={(e) => setFormGrupo(e.target.value)} style={inputStyle}>
-                                            <option value="">Seleccionar grupo</option>
-                                            {GRUPOS.map(g => <option key={g} value={g}>{g}</option>)}
-                                        </select>
+                                        <input type="text" value={formEstadio} onChange={(e) => setFormEstadio(e.target.value)} placeholder="Ej: Estadio Juan Francisco Barraza" style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#22c55e'; e.target.style.boxShadow = '0 0 0 3px rgba(34,197,94,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
                                     </div>
                                 </div>
                                 <div className="tm-logo-section">
-                                    <div className="tm-logo-preview-wrap tm-logo-preview-amber">
+                                    <div className="tm-logo-preview-wrap tm-logo-preview-green">
                                         {logoPreview ? <img src={logoPreview} alt="Preview" className="tm-logo-preview-img" /> : (
                                             <div className="tm-logo-preview-empty"><ImageIcon size={32} style={{ color: '#1e293b' }} /><span style={{ fontSize: '11px', color: '#334155', marginTop: '4px' }}>Sin escudo</span></div>
                                         )}
                                     </div>
                                     <div className="tm-upload-area">
-                                        <input type="file" id="tm-logo-input-ter" accept="image/jpeg,image/png,image/jpg,image/webp,image/svg+xml" onChange={handleFileChange} />
-                                        <label htmlFor="tm-logo-input-ter" className="tm-upload-label tm-upload-amber"><UploadCloud size={18} /><span>{formLogo ? formLogo.name : "Seleccionar escudo"}</span></label>
+                                        <input type="file" id="tm-logo-input-asc" accept="image/jpeg,image/png,image/jpg,image/webp,image/svg+xml" onChange={handleFileChange} />
+                                        <label htmlFor="tm-logo-input-asc" className="tm-upload-label tm-upload-green"><UploadCloud size={18} /><span>{formLogo ? formLogo.name : "Seleccionar escudo"}</span></label>
                                         <span className="tm-upload-hint">JPG, PNG, WEBP o SVG</span>
                                     </div>
-                                    {formLogo && <button className="tm-remove-logo tm-remove-amber" onClick={() => { setFormLogo(null); setLogoPreview(null); document.getElementById('tm-logo-input-ter').value = ''; }}>Quitar escudo</button>}
+                                    {formLogo && <button className="tm-remove-logo tm-remove-green" onClick={() => { setFormLogo(null); setLogoPreview(null); document.getElementById('tm-logo-input-asc').value = ''; }}>Quitar escudo</button>}
                                 </div>
                             </div>
                         </div>
                         <div className="tm-footer">
                             <button className="tm-btn-cancel" onClick={() => setShowAdd(false)}>Cancelar</button>
-                            <button className="tm-btn-save tm-btn-amber" onClick={addTeam} disabled={submitting || !formNombre.trim()} style={{ opacity: (!formNombre.trim() || submitting) ? 0.35 : 1, cursor: (!formNombre.trim() || submitting) ? 'not-allowed' : 'pointer' }}>
+                            <button className="tm-btn-save tm-btn-green" onClick={addTeam} disabled={submitting || !formNombre.trim()} style={{ opacity: (!formNombre.trim() || submitting) ? 0.35 : 1, cursor: (!formNombre.trim() || submitting) ? 'not-allowed' : 'pointer' }}>
                                 {submitting ? <span className="tm-spin" /> : <><CheckCircle2 size={16} /> Crear Equipo</>}
                             </button>
                         </div>
@@ -432,12 +444,13 @@ const ManageTeamsTercera = () => {
                 </div>
             )}
 
+            {/* Modal Editar */}
             {showEdit && editingTeam && (
                 <div className="tm-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowEdit(false); }}>
                     <div className="tm-card animate__animated animate__fadeInUp">
-                        <div className="tm-header tm-header-amber-light">
+                        <div className="tm-header tm-header-green-light">
                             <div>
-                                <h2><Save size={18} style={{ color: '#f59e0b' }} /> Editar Equipo</h2>
+                                <h2><Save size={18} style={{ color: '#22c55e' }} /> Editar Equipo</h2>
                                 <p className="tm-division-hint">Editando en <b>{DIVISION_LABEL}</b></p>
                             </div>
                             <button className="tm-close" onClick={() => setShowEdit(false)}><X size={18} /></button>
@@ -446,43 +459,36 @@ const ManageTeamsTercera = () => {
                             <div className="tm-grid">
                                 <div className="tm-fields">
                                     <div className="tm-field">
-                                        <label>Nombre del Equipo <span className="tm-required-amber">*</span></label>
-                                        <input type="text" value={editNombre} onChange={(e) => setEditNombre(e.target.value)} style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
+                                        <label>Nombre del Equipo <span className="tm-required-green">*</span></label>
+                                        <input type="text" value={editNombre} onChange={(e) => setEditNombre(e.target.value)} style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#22c55e'; e.target.style.boxShadow = '0 0 0 3px rgba(34,197,94,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
                                     </div>
-                                    <div className="tm-field">
+<div className="tm-field">
                                         <label>Ciudad</label>
-                                        <input type="text" value={editCiudad} onChange={(e) => setEditCiudad(e.target.value)} style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
+                                        <input type="text" value={editCiudad} onChange={(e) => setEditCiudad(e.target.value)} style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#22c55e'; e.target.style.boxShadow = '0 0 0 3px rgba(34,197,94,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
                                     </div>
                                     <div className="tm-field">
                                         <label>Estadio</label>
-                                        <input type="text" value={editEstadio} onChange={(e) => setEditEstadio(e.target.value)} style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
-                                    </div>
-                                    <div className="tm-field">
-                                        <label>Grupo</label>
-                                        <select value={editGrupo} onChange={(e) => setEditGrupo(e.target.value)} style={inputStyle}>
-                                            <option value="">Seleccionar grupo</option>
-                                            {GRUPOS.map(g => <option key={g} value={g}>{g}</option>)}
-                                        </select>
+                                        <input type="text" value={editEstadio} onChange={(e) => setEditEstadio(e.target.value)} style={inputStyle} onFocus={(e) => { e.target.style.borderColor = '#22c55e'; e.target.style.boxShadow = '0 0 0 3px rgba(34,197,94,0.1)'; }} onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
                                     </div>
                                 </div>
                                 <div className="tm-logo-section">
-                                    <div className="tm-logo-preview-wrap tm-logo-preview-amber">
+                                    <div className="tm-logo-preview-wrap tm-logo-preview-green">
                                         {editLogoPreview ? <img src={editLogoPreview} alt="Preview" className="tm-logo-preview-img" onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=EQ&background=1e293b&color=475569&size=80&bold=true"; }} /> : (
-                                            <div className="tm-logo-preview-empty"><Image size={32} style={{ color: '#1e293b' }} /><span style={{ fontSize: '11px', color: '#334155', marginTop: '4px' }}>Sin escudo</span></div>
+                                            <div className="tm-logo-preview-empty"><ImageIcon size={32} style={{ color: '#1e293b' }} /><span style={{ fontSize: '11px', color: '#334155', marginTop: '4px' }}>Sin escudo</span></div>
                                         )}
                                     </div>
                                     <div className="tm-upload-area">
-                                        <input type="file" id="tm-edit-logo-input-ter" accept="image/jpeg,image/png,image/jpg,image/webp,image/svg+xml" onChange={handleEditFileChange} />
-                                        <label htmlFor="tm-edit-logo-input-ter" className="tm-upload-label tm-upload-amber"><UploadCloud size={18} /><span>{editLogo ? editLogo.name : "Cambiar escudo"}</span></label>
+                                        <input type="file" id="tm-edit-logo-input-asc" accept="image/jpeg,image/png,image/jpg,image/webp,image/svg+xml" onChange={handleEditFileChange} />
+                                        <label htmlFor="tm-edit-logo-input-asc" className="tm-upload-label tm-upload-green"><UploadCloud size={18} /><span>{editLogo ? editLogo.name : "Cambiar escudo"}</span></label>
                                         <span className="tm-upload-hint">JPG, PNG, WEBP o SVG</span>
                                     </div>
-                                    {editLogo && <button className="tm-remove-logo tm-remove-amber" onClick={() => { setEditLogo(null); setEditLogoPreview(editingTeam.logo ? `${API}${editingTeam.logo}` : null); document.getElementById('tm-edit-logo-input-ter').value = ''; }}>Restaurar original</button>}
+                                    {editLogo && <button className="tm-remove-logo tm-remove-green" onClick={() => { setEditLogo(null); setEditLogoPreview(editingTeam.logo ? `${API}${editingTeam.logo}` : null); document.getElementById('tm-edit-logo-input-asc').value = ''; }}>Restaurar original</button>}
                                 </div>
                             </div>
                         </div>
                         <div className="tm-footer">
                             <button className="tm-btn-cancel" onClick={() => setShowEdit(false)}>Cancelar</button>
-                            <button className="tm-btn-save tm-btn-amber" onClick={saveEdit} disabled={editSubmitting || !editNombre.trim()} style={{ opacity: (!editNombre.trim() || editSubmitting) ? 0.35 : 1, cursor: (!editNombre.trim() || editSubmitting) ? 'not-allowed' : 'pointer' }}>
+                            <button className="tm-btn-save tm-btn-green" onClick={saveEdit} disabled={editSubmitting || !editNombre.trim()} style={{ opacity: (!editNombre.trim() || editSubmitting) ? 0.35 : 1, cursor: (!editNombre.trim() || editSubmitting) ? 'not-allowed' : 'pointer' }}>
                                 {editSubmitting ? <span className="tm-spin" /> : <><Save size={16} /> Guardar Cambios</>}
                             </button>
                         </div>
@@ -493,14 +499,14 @@ const ManageTeamsTercera = () => {
             <style>{`
                 .tm-division-hint { margin: 4px 0 0 0; font-size: 12px; color: #475569; font-weight: 500; }
                 .tm-division-hint b { color: #64748b; }
-                .team-btn-edit-amber { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; border: 1px solid rgba(245,158,11,0.25); background: rgba(245,158,11,0.1); color: #fbbf24; white-space: nowrap; }
-                .team-btn-edit-amber:hover { background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.4); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(245,158,11,0.2); }
+                .team-btn-edit-green { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; border: 1px solid rgba(34,197,94,0.25); background: rgba(34,197,94,0.1); color: #4ade80; white-space: nowrap; }
+                .team-btn-edit-green:hover { background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.4); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(34,197,94,0.2); }
                 .tm-overlay { position: fixed; inset: 0; background: rgba(2,6,15,0.82); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-                .tm-card { background: #0b1120; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; width: 560px; max-width: 95vw; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.7); overflow: hidden; }
+                .tm-card { background: #0b1120; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; width: 580px; max-width: 95vw; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.7); overflow: hidden; }
                 .tm-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.015); }
                 .tm-header h2 { margin: 0; font-size: 1.05rem; color: #f1f5f9; display: flex; align-items: center; gap: 8px; }
-                .tm-header-amber { border-bottom-color: rgba(245,158,11,0.12); background: rgba(245,158,11,0.03); }
-                .tm-header-amber-light { border-bottom-color: rgba(245,158,11,0.08); background: rgba(245,158,11,0.02); }
+                .tm-header-green { border-bottom-color: rgba(34,197,94,0.12); background: rgba(34,197,94,0.03); }
+                .tm-header-green-light { border-bottom-color: rgba(34,197,94,0.08); background: rgba(34,197,94,0.02); }
                 .tm-close { background: none; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; color: #64748b; transition: all 0.25s; }
                 .tm-close:hover { background: rgba(239,68,68,0.15); color: #ef4444; border-color: rgba(239,68,68,0.3); transform: rotate(90deg); }
                 .tm-body { padding: 24px; overflow-y: auto; flex: 1; }
@@ -509,29 +515,29 @@ const ManageTeamsTercera = () => {
                 .tm-grid { display: grid; grid-template-columns: 1fr 160px; gap: 24px; }
                 .tm-fields { display: grid; gap: 16px; }
                 .tm-field label { display: block; margin-bottom: 7px; font-weight: 600; color: #94a3b8; font-size: 13px; }
-                .tm-required-amber { color: #f59e0b; }
+                .tm-required-green { color: #22c55e; }
                 .tm-field input::placeholder { color: #334155; }
                 .tm-logo-section { display: flex; flex-direction: column; align-items: center; gap: 14px; }
                 .tm-logo-preview-wrap { width: 120px; height: 120px; border-radius: 14px; background: rgba(255,255,255,0.02); border: 2px dashed rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; overflow: hidden; transition: all 0.3s; }
-                .tm-logo-preview-wrap:has(img) { border-style: solid; background: rgba(245,158,11,0.04); }
-                .tm-logo-preview-wrap.tm-logo-preview-amber:has(img) { border-color: rgba(245,158,11,0.2); background: rgba(245,158,11,0.04); }
+                .tm-logo-preview-wrap:has(img) { border-style: solid; background: rgba(34,197,94,0.04); }
+                .tm-logo-preview-wrap.tm-logo-preview-green:has(img) { border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.04); }
                 .tm-logo-preview-img { width: 100%; height: 100%; object-fit: contain; padding: 12px; }
                 .tm-logo-preview-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; }
                 .tm-upload-area { width: 100%; }
                 .tm-upload-area input[type="file"] { position: absolute; opacity: 0; width: 0; height: 0; }
                 .tm-upload-label { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
                 .tm-upload-label span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #94a3b8; font-weight: 500; }
-                .tm-upload-amber { border-color: rgba(245,158,11,0.2); background: rgba(245,158,11,0.04); color: #fbbf24; }
-                .tm-upload-amber:hover { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); box-shadow: 0 0 16px rgba(245,158,11,0.1); }
+                .tm-upload-green { border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.04); color: #4ade80; }
+                .tm-upload-green:hover { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.08); box-shadow: 0 0 16px rgba(34,197,94,0.1); }
                 .tm-upload-hint { display: block; text-align: center; font-size: 11px; color: #334155; margin-top: 4px; }
                 .tm-remove-logo { padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; color: #475569; background: transparent; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: all 0.2s; }
-                .tm-remove-amber:hover { color: #fbbf24; border-color: rgba(245,158,11,0.2); background: rgba(245,158,11,0.06); }
+                .tm-remove-green:hover { color: #4ade80; border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.06); }
                 .tm-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.015); }
                 .tm-btn-cancel { padding: 10px 22px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; background: transparent; color: #64748b; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
                 .tm-btn-cancel:hover { background: rgba(255,255,255,0.04); color: #94a3b8; }
                 .tm-btn-save { display: inline-flex; align-items: center; gap: 7px; padding: 10px 24px; border-radius: 8px; border: none; color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; }
-                .tm-btn-amber { background: linear-gradient(135deg, #d97706, #b45309); box-shadow: 0 4px 16px rgba(217,119,6,0.3); }
-                .tm-btn-amber:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(217,119,6,0.4); }
+                .tm-btn-green { background: linear-gradient(135deg, #16a34a, #15803d); box-shadow: 0 4px 16px rgba(22,163,74,0.3); }
+                .tm-btn-green:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(22,163,74,0.4); }
                 .tm-spin { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: tmSpin 0.6s linear infinite; }
                 @keyframes tmSpin { to { transform: rotate(360deg); } }
                 button.nav-item { background: none; border: none; color: var(--text-muted); font-family: inherit; }
@@ -543,11 +549,11 @@ const ManageTeamsTercera = () => {
                     .tm-upload-area { flex: 1; min-width: 140px; }
                     .tm-footer { flex-direction: column-reverse; }
                     .tm-btn-cancel, .tm-btn-save { width: 100%; text-align: center; justify-content: center; }
-                    .team-btn-edit-amber span { display: none; }
+                    .team-btn-edit-green span { display: none; }
                 }
             `}</style>
         </div>
     );
 };
 
-export default ManageTeamsTercera;
+export default ManageTeamsAscenso;

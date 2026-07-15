@@ -13,8 +13,7 @@ import { API_BASE } from "../config";
 
 const DIVISIONES = [
     { value: "primera", label: "Primera" },
-    { value: "segunda", label: "Segunda" },
-    { value: "tercera", label: "Tercera" },
+    { value: "ascenso", label: "Ascenso" },
     { value: "femenina", label: "Femenina" },
 ];
 
@@ -75,7 +74,7 @@ const AdminPosiciones = () => {
     }, []);
 
     const getEndpoints = () => {
-        const s = division === "segunda" ? "_segunda" : division === "tercera" ? "_tercera" : division === "femenina" ? "_femenina" : "";
+        const s = division === "ascenso" ? "_ascenso" : division === "femenina" ? "_femenina" : "";
         return { get: `${API_BASE}get_tabla${s}.php`, reset: `${API_BASE}reset_tabla${s}.php` };
     };
 
@@ -85,18 +84,7 @@ const AdminPosiciones = () => {
         safeFetch(getEndpoints().get)
             .then((data) => {
                 const arr = (Array.isArray(data) ? data : []).map(r => normalizeRow(r, division));
-                if (division === "segunda") {
-                    arr.sort((a, b) => {
-                        const ga = (a.grupo || "").toLowerCase();
-                        const gb = (b.grupo || "").toLowerCase();
-                        if (ga !== gb) return ga === "east" ? -1 : 1;
-                        if (b.pts !== a.pts) return b.pts - a.pts;
-                        if (b.dg !== a.dg) return b.dg - a.dg;
-                        return b.gf - a.gf;
-                    });
-                } else {
-                    arr.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
-                }
+                arr.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
                 setTabla(arr);
             })
             .catch(() => {
@@ -168,73 +156,33 @@ const AdminPosiciones = () => {
             .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
     };
 
-    const isSegunda = division === "segunda";
-    const filteredTabla = isSegunda
-        ? tabla.filter(t => filterGrupo === "todos" || (t.grupo || "").toLowerCase() === filterGrupo)
-        : tabla;
+    const filteredTabla = tabla;
 
     const totalPJ = filteredTabla.reduce((a, t) => a + t.pj, 0);
     const totalGF = filteredTabla.reduce((a, t) => a + t.gf, 0);
     const totalGC = filteredTabla.reduce((a, t) => a + t.gc, 0);
-    const totalEast = tabla.filter(t => (t.grupo || "").toLowerCase() === "east").length;
-    const totalWest = tabla.filter(t => (t.grupo || "").toLowerCase() === "west").length;
 
     const getDisplayRows = () => {
-        
-            return filteredTabla.map((t, i) => ({ ...t, displayPos: i + 1, isGroupHeader: false }));
-        
-        const rows = [];
-        const east = filteredTabla.filter(t => (t.grupo || "").toLowerCase() === "east");
-        const west = filteredTabla.filter(t => (t.grupo || "").toLowerCase() === "west");
-        if (east.length > 0) {
-            rows.push({ isGroupHeader: true, label: "Grupo Este", color: "#3b82f6", borderColor: "rgba(59,130,246,0.12)", count: east.length });
-            east.forEach((t, i) => rows.push({ ...t, displayPos: i + 1, isGroupHeader: false }));
-        }
-        if (west.length > 0) {
-            rows.push({ isGroupHeader: true, label: "Grupo Oeste", color: "#f97316", borderColor: "rgba(249,115,22,0.12)", count: west.length });
-            west.forEach((t, i) => rows.push({ ...t, displayPos: i + 1, isGroupHeader: false }));
-        }
-        return rows;
+        return filteredTabla.map((t, i) => ({ ...t, displayPos: i + 1, isGroupHeader: false }));
     };
 
     const displayRows = getDisplayRows();
 
-    const getPosColor = (i) => isSegunda ? null : ["#10b981", "#3b82f6", "#f59e0b", "#d97706"][i] || null;
-    const getPosLabel = (i) => isSegunda ? null : ["Concacaf", "Clasificación", "Playoff", "Repechaje"][i] || null;
+    const getPosColor = (i) => ["#10b981", "#3b82f6", "#f59e0b", "#d97706"][i] || null;
+    const getPosLabel = (i) => ["Concacaf", "Clasificación", "Playoff", "Repechaje"][i] || null;
     const getDG = (dg) => dg > 0 ? `+${dg}` : `${dg}`;
-
-    const GrupoBadge = ({ grupo }) => {
-        if (!grupo) return null;
-        const isEast = grupo.toLowerCase() === "east";
-        return (
-            <span className="hide-on-mobile" style={{
-                display: "inline-flex", alignItems: "center", gap: "3px", padding: "1px 6px",
-                borderRadius: "4px", fontSize: "9px", fontWeight: 800,
-                background: isEast ? "rgba(59,130,246,0.12)" : "rgba(249,115,22,0.12)",
-                color: isEast ? "#60a5fa" : "#fb923c",
-                border: `1px solid ${isEast ? "rgba(59,130,246,0.2)" : "rgba(249,115,22,0.2)"}`,
-                marginLeft: "6px", flexShrink: 0,
-            }}>
-                <span style={{ width: 4, height: 4, borderRadius: "50%", background: isEast ? "#3b82f6" : "#f97316" }} />
-                {isEast ? "Este" : "Oeste"}
-            </span>
-        );
-    };
 
     const currentDiv = DIVISIONES.find(d => d.value === division);
 
     const statCards = [
         { label: "Equipos", value: filteredTabla.length, color: "#3b82f6", gradient: "linear-gradient(135deg, rgba(59,130,246,0.1), rgba(59,130,246,0.03))", border: "rgba(59,130,246,0.15)", icon: <Shield size={20} /> },
-        ...(isSegunda ? [
-            { label: "Grupo Este", value: totalEast, color: "#3b82f6", gradient: "linear-gradient(135deg, rgba(59,130,246,0.1), rgba(59,130,246,0.03))", border: "rgba(59,130,246,0.15)", icon: <span style={{ fontSize: "14px", fontWeight: 800, color: "#3b82f6" }}>E</span> },
-            { label: "Grupo Oeste", value: totalWest, color: "#f97316", gradient: "linear-gradient(135deg, rgba(249,115,22,0.1), rgba(249,115,22,0.03))", border: "rgba(249,115,22,0.15)", icon: <span style={{ fontSize: "14px", fontWeight: 800, color: "#f97316" }}>O</span> },
-        ] : []),
         { label: "Partidos Jugados", value: totalPJ, color: "#8b5cf6", gradient: "linear-gradient(135deg, rgba(139,92,246,0.1), rgba(139,92,246,0.03))", border: "rgba(139,92,246,0.15)", icon: <BarChart3 size={20} /> },
         { label: "Goles a Favor", value: totalGF, color: "#10b981", gradient: "linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.03))", border: "rgba(16,185,129,0.15)", icon: <Activity size={20} /> },
         { label: "Goles en Contra", value: totalGC, color: "#ef4444", gradient: "linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.03))", border: "rgba(239,68,68,0.15)", icon: <TrendingDown size={20} /> },
     ];
 
     const navItems = [
+      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
       { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
       { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
       { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
@@ -242,8 +190,7 @@ const AdminPosiciones = () => {
         type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
         children: [
           { path: "/teams/primera", label: "Primera División" },
-          { path: "/teams/segunda", label: "Segunda División" },
-          { path: "/teams/tercera", label: "Tercera División" },
+          { path: "/teams/ascenso", label: "Liga de Ascenso" },
           { path: "/teams/femenina", label: "Femenina" },
         ]
       },
@@ -269,7 +216,7 @@ const AdminPosiciones = () => {
     const renderTeamRow = (team, pos) => {
         const posColor = getPosColor(pos - 1);
         const posLabel = getPosLabel(pos - 1);
-        const isBottom = !isSegunda && pos >= tabla.length - 0 && tabla.length > 4;
+        const isBottom = pos >= tabla.length - 0 && tabla.length > 4;
         const winRate = team.pj > 0 ? (team.pg / team.pj) * 100 : 0;
         const drawRate = team.pj > 0 ? (team.pe / team.pj) * 100 : 0;
         const lossRate = team.pj > 0 ? (team.pp / team.pj) * 100 : 0;
@@ -300,7 +247,6 @@ const AdminPosiciones = () => {
                             <img src={logoUrl(team.logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                         </div>
                         <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#e2e8f0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{team.nombre}</span>
-                        <GrupoBadge grupo={team.grupo} />
                     </div>
                 </td>
                 <td style={{ padding: "0.85rem 0.4rem", textAlign: "center", fontSize: "0.85rem", color: "#94a3b8", fontWeight: 500 }}>{team.pj}</td>
@@ -459,28 +405,6 @@ const AdminPosiciones = () => {
 
                     {/* TABLA CON SCROLL HORIZONTAL SEGURIDAD */}
                     <div className="table-container" style={{ padding: 0, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-                        {isSegunda && (
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "1rem 1.5rem", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                                <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginRight: "4px" }}>Filtrar:</span>
-                                {[
-                                    { key: "todos", label: "Todos", color: "#94a3b8" },
-                                    { key: "east", label: "Este", color: "#60a5fa" },
-                                    { key: "west", label: "Oeste", color: "#fb923c" },
-                                ].map(f => (
-                                    <button key={f.key} onClick={() => setFilterGrupo(f.key)} style={{
-                                        padding: "6px 14px", borderRadius: "8px", border: "none", fontSize: "12px", fontWeight: 700,
-                                        cursor: "pointer", transition: "all 0.2s",
-                                        background: filterGrupo === f.key
-                                            ? f.key === "todos" ? "rgba(255,255,255,0.08)" : f.key === "east" ? "rgba(59,130,246,0.15)" : "rgba(249,115,22,0.15)"
-                                            : "transparent",
-                                        color: filterGrupo === f.key ? f.color : "#475569",
-                                    }}>
-                                        {f.label}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-
                         {loading ? (
                             <div style={{ textAlign: "center", padding: "4rem", color: "#94a3b8" }}>
                                 <div style={{ width: 40, height: 40, borderRadius: "50%", border: "3px solid rgba(59,130,246,0.2)", borderTopColor: "#3b82f6", animation: "spin 0.8s linear infinite", margin: "0 auto 1rem" }} />
@@ -537,12 +461,7 @@ const AdminPosiciones = () => {
                         {tabla.length > 0 && (
                             <div style={{ padding: "1rem 1.5rem", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
                                 <div style={{ display: "flex", gap: "1.2rem", flexWrap: "wrap" }}>
-                                    {(isSegunda
-                                        ? [
-                                            { color: "#3b82f6", label: "Grupo Este" },
-                                            { color: "#f97316", label: "Grupo Oeste" },
-                                        ]
-                                        : [
+                                    {([
                                             { color: "#10b981", label: "Concacaf" },
                                             { color: "#3b82f6", label: "Clasificación" },
                                             { color: "#f59e0b", label: "Playoff" },

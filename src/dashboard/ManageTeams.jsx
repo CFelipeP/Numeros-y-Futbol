@@ -8,7 +8,7 @@ import 'animate.css';
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
-  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, UploadCloud, CheckCircle2, Image as ImageIcon, RotateCcw, StarOff, Filter, Zap, MessageCircle
+  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, UploadCloud, CheckCircle2, Image as ImageIcon, RotateCcw, StarOff, Filter, Zap, MessageCircle, BarChart3
 } from "lucide-react";
 import { apiPostForm } from "../apiHelper";
 import { API_BASE } from "../config";
@@ -17,17 +17,16 @@ const API = API_BASE;
 
 const DIVISIONES = [
     { key: "primera", label: "Primera División" },
-    { key: "segunda", label: "Segunda División" },
-    { key: "tercera", label: "Tercera División" },
+    { key: "ascenso", label: "Liga de Ascenso" },
 ];
 
 const ManageTeams = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [teamsOpen, setTeamsOpen] = useState(true);
   const [seleccionesOpen, setSeleccionesOpen] = useState(false);
     const location = useLocation();
 
-    // Detectar división desde la URL: /teams/primera, /teams/segunda, /teams/tercera
+    // Detectar división desde la URL: /teams/primera, /teams/ascenso
     const pathParts = location.pathname.split("/");
     const currentDivision = pathParts[2] || "primera";
     const divisionLabel = DIVISIONES.find(d => d.key === currentDivision)?.label || "Primera División";
@@ -231,6 +230,7 @@ const ManageTeams = () => {
     };
 
     const navItems = [
+      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
       { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
       { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
       { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
@@ -238,8 +238,7 @@ const ManageTeams = () => {
         type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
         children: [
           { path: "/teams/primera", label: "Primera División" },
-          { path: "/teams/segunda", label: "Segunda División" },
-          { path: "/teams/tercera", label: "Tercera División" },
+          { path: "/teams/ascenso", label: "Liga de Ascenso" },
           { path: "/teams/femenina", label: "Femenina" },
         ]
       },
@@ -277,7 +276,7 @@ const ManageTeams = () => {
     };
 
     return (
-        <div className={`admin-layout ${!sidebarOpen ? "sidebar-closed" : ""}`}>
+        <div className={`admin-layout ${sidebarOpen ? "sidebar-closed" : ""}`}>
             <aside className="sidebar">
                 <div className="sidebar-header">
                     <div className="logo-icon">

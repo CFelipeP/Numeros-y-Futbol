@@ -21,6 +21,17 @@ try {
     $email = trim(strtolower($data->email));
     $password = $data->password;
 
+    // Rate limiting: max 5 registros por IP en 1 hora
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $rateCheck = $conn->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND intento > DATE_SUB(NOW(), INTERVAL 1 HOUR) AND email_apodo LIKE 'register_%'");
+    $rateCheck->execute([$ip]);
+    if ($rateCheck->fetchColumn() >= 5) {
+        http_response_code(429);
+        echo json_enc(["success" => false, "error" => "Demasiados registros. Intenta más tarde."]);
+        exit;
+    }
+    $conn->prepare("INSERT INTO login_attempts (ip, email_apodo) VALUES (?, ?)")->execute([$ip, 'register_' . $email]);
+
     // Validar campos vacíos
     if (!$nombre || !$apodo || !$email || !$password) {
         http_response_code(400);

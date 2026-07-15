@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
@@ -6,7 +6,7 @@ import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings,
   LogOut, Menu, Trophy, Target, Plus, Edit2, Trash2, Save, X,
   RefreshCw, ChevronDown, RotateCcw, Users2, Upload, AlertTriangle,
-  CheckCircle2, Clock, Swords, ArrowRight, Lock, ArrowLeftRight, Zap, MessageCircle, Eye
+  CheckCircle2, Clock, Swords, ArrowRight, Lock, ArrowLeftRight, Zap, MessageCircle, Eye, BarChart3
 } from "lucide-react";
 import { apiPost } from "../apiHelper";
 import { API_BASE } from "../config";
@@ -54,9 +54,8 @@ const statusStyle = (s) => ({
 }[s] || { bg: "rgba(255,255,255,0.05)", color: "#64748b" });
 
 const DIVISION_COLORS = {
-  Primera: { bg: "rgba(239,68,68,0.15)", color: "#ef4444", label: "1ª" },
-  Segunda: { bg: "rgba(59,130,246,0.15)", color: "#60a5fa", label: "2ª" },
-  Tercera: { bg: "rgba(16,185,129,0.15)", color: "#10b981", label: "3ª" },
+  Primera: { bg: "rgba(239,68,68,0.15)", color: "#ef4444", label: "1a" },
+  Ascenso: { bg: "rgba(59,130,246,0.15)", color: "#60a5fa", label: "AS" },
 };
 
 /* ─── Utilidades compartidas ──────────────────────────────────────────────── */
@@ -75,12 +74,17 @@ const calcGroupStats = (groupMatches, allTeams) => {
 
 const getGroupQualifiers = (allMatches, allTeams) => {
   const q = [];
+  const thirds = [];
   GROUPS.forEach(g => {
     const gm = allMatches.filter(m => m.fase === "grupos" && m.grupo === g);
     const st = calcGroupStats(gm, allTeams);
-    q.push(...st.slice(0, 2).map(t => String(t.id)));
+    q.push(...st.slice(0, 2).map(t => ({ id: String(t.id), pos: st.indexOf(t) + 1 })));
+    if (st.length >= 3) thirds.push({ ...st[2], grupo: g });
   });
-  return [...new Set(q)];
+  // Sort 3rd place teams by pts, dg, gf
+  thirds.sort((a, b) => b.pts - a.pts || (b.dg - a.dg) || (b.gf - a.gf));
+  q.push(...thirds.slice(0, 4).map(t => ({ id: String(t.id), pos: 3 })));
+  return q;
 };
 
 const getAggregate = (ida, vuelta) => {
@@ -118,13 +122,13 @@ const getPhaseWinners = (allMatches, phase) => {
   return winners;
 };
 
-const getAvailableForPhase = (phase, allMatches, allTeams) => {
+const getAvailableForPhase = (phase, allMatches, allTeams, formId, formLlave) => {
 
   let qualified = [];
 
   if (phase === "octavos") {
 
-    qualified = getGroupQualifiers(allMatches, allTeams);
+    qualified = getGroupQualifiers(allMatches, allTeams).map(q => q.id);
 
   } else if (phase === "cuartos") {
 
@@ -139,18 +143,21 @@ const getAvailableForPhase = (phase, allMatches, allTeams) => {
     qualified = getPhaseWinners(allMatches, "semis");
   }
 
-  const existing = [
-    ...new Set(
-      allMatches
-        .filter(m => m.fase === phase)
-        .flatMap(m => [
-          String(m.team1_id),
-          String(m.team2_id)
-        ])
-    )
-  ];
+  // Equipos ya usados en OTROS partidos de la misma fase y DISTINTA llave
+  const usedInOthers = new Set(
+    allMatches
+      .filter(m => {
+        if (m.fase !== phase) return false;
+        if (String(m.id) === String(formId)) return false;
+        if (formLlave != null && m.llave == formLlave) return false; // misma llave → ida/vuelta
+        if (formLlave == null && m.llave == null) return false; // ambas sin llave → no filtramos
+        return true;
+      })
+      .flatMap(m => [String(m.team1_id), String(m.team2_id)])
+  );
 
-  return [...new Set([...qualified, ...existing])];
+  // Solo disponibles los clasificados que NO están ya asignados a otra llave
+  return qualified.filter(id => !usedInOthers.has(String(id)));
 };
 
 /* Genera todas las combinaciones round-robin de un grupo */
@@ -297,7 +304,7 @@ const miniBtn = (color) => ({ width: 22, height: 22, borderRadius: 5, background
 const MatchModal = ({ match, teams, phase, allMatches, onSave, onClose }) => {
   const isIV = isIdaVueltaPhase(phase);
   const [form, setForm] = useState(() => {
-    if (match) return { ...match, team1_id: match.team1_id || "", team2_id: match.team2_id || "", llave: match.llave || "", fase: match.fase || phase, grupo: match.grupo || (phase === "grupos" ? "A" : ""), jornada: match.jornada || (isIdaVueltaPhase(match.fase) ? "ida" : ""), penales_local: match.penales_local || "", penales_visitante: match.penales_visitante || "" };
+    if (match) return { ...match, team1_id: match.team1_id || "", team2_id: match.team2_id || "", llave: match.llave || "", fase: match.fase || phase, grupo: match.grupo || (phase === "grupos" ? "A" : ""), jornada: match.jornada || (isIdaVueltaPhase(match.fase) ? "ida" : ""), penales_local: match.penales_local != null ? match.penales_local : "", penales_visitante: match.penales_visitante != null ? match.penales_visitante : "" };
     return { team1_id: "", team2_id: "", llave: "", fecha: "", hora: "", goles_local: "", goles_visitante: "", estado: "Pendiente", fase: phase, grupo: phase === "grupos" ? "A" : "", jornada: isIV ? "ida" : "", penales_local: "", penales_visitante: "" };
   });
   const [saving, setSaving] = useState(false);
@@ -309,7 +316,7 @@ const MatchModal = ({ match, teams, phase, allMatches, onSave, onClose }) => {
 
   const getAvailIds = () => {
     if (currentIsGrupos) { if (!form.grupo) return []; return teams.filter(t => t.grupo === form.grupo).map(t => String(t.id)); }
-    return getAvailableForPhase(form.fase, allMatches, teams);
+    return getAvailableForPhase(form.fase, allMatches, teams, form.id, form.llave);
   };
   const availIds = getAvailIds();
   const availableTeams = teams.filter(t => availIds.includes(String(t.id)) || String(t.id) === String(form.team1_id) || String(t.id) === String(form.team2_id));
@@ -327,11 +334,31 @@ const MatchModal = ({ match, teams, phase, allMatches, onSave, onClose }) => {
       const dup = allMatches.find(m => { if (String(m.id) === String(form.id)) return false; if (m.fase !== "grupos" || m.grupo !== form.grupo) return false; const p1 = [String(m.team1_id), String(m.team2_id)].sort().join("-"); const p2 = [String(form.team1_id), String(form.team2_id)].sort().join("-"); return p1 === p2; });
       if (dup) e.team2 = "Este enfrentamiento ya existe en el grupo";
     }
+    // Validar que equipos no estén repetidos en otra llave de knockout
+    if (!currentIsGrupos && form.team1_id && form.team2_id) {
+      const reused = allMatches.find(m => {
+        if (String(m.id) === String(form.id)) return false;
+        if (m.fase !== form.fase) return false;
+        // Misma llave → permitido (ida/vuelta)
+        if (m.llave != null && m.llave == form.llave) return false;
+        // Mismos equipos (invertidos) → ida/vuelta aunque llave sea null
+        const samePair = [String(m.team1_id), String(m.team2_id)].sort().join("-") === [String(form.team1_id), String(form.team2_id)].sort().join("-");
+        if (samePair) return false;
+        return [String(m.team1_id), String(m.team2_id)].some(id => id === String(form.team1_id) || id === String(form.team2_id));
+      });
+      if (reused) {
+        const reusedTeam = [String(reused.team1_id), String(reused.team2_id)].some(id => id === String(form.team1_id)) ? form.team1_id : form.team2_id;
+        const tn = teams.find(t => String(t.id) === String(reusedTeam))?.nombre || "Un equipo";
+        e.team2 = `${tn} ya está asignado a otra llave`;
+      }
+    }
     if (overlap) { const c = [form.team1_id, form.team2_id].find(id => [String(overlap.team1_id), String(overlap.team2_id)].includes(String(id))); const tn = teams.find(t => String(t.id) === String(c))?.nombre || "Un equipo"; e.fecha = `${tn} ya tiene partido el ${overlap.fecha} a las ${overlap.hora}`; }
     if (form.estado === "Finalizado") { if (form.goles_local === "" || form.goles_local === null) e.goles_local = "Requerido"; if (form.goles_visitante === "" || form.goles_visitante === null) e.goles_visitante = "Requerido"; }
     if (currentIsIV && !form.jornada) e.jornada = "Selecciona ida o vuelta";
-    if (!form.fecha) e.fecha_req = "Fecha requerida";
-    if (!form.hora) e.hora_req = "Hora requerida";
+    if (form.estado !== "Pendiente") {
+      if (!form.fecha) e.fecha_req = "Fecha requerida";
+      if (!form.hora) e.hora_req = "Hora requerida";
+    }
     return e;
   };
 
@@ -450,7 +477,7 @@ const MatchModal = ({ match, teams, phase, allMatches, onSave, onClose }) => {
   const isEditing = !!form.id;
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(6px)", animation: "modalFadeIn 0.2s ease" }} onClick={onClose}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(6px)", animation: "modalFadeIn 0.2s ease" }} onClick={onClose}>
       <div style={{ background: "#0d1117", border: "1px solid #1e293b", borderRadius: 16, width: "100%", maxWidth: 540, maxHeight: "94vh", overflow: "auto", boxShadow: "0 25px 60px rgba(0,0,0,0.9)", animation: "modalSlideUp 0.28s cubic-bezier(0.16,1,0.3,1)" }} onClick={e => e.stopPropagation()}>
         <div style={{ padding: "18px 22px", borderBottom: "1px solid #1e293b", display: "flex", alignItems: "center", justifyContent: "space-between", background: isEditing ? "rgba(59,130,246,0.04)" : "rgba(16,185,129,0.04)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -921,10 +948,10 @@ const GroupModal = ({ teams, existingMatches, onSave, onClose }) => {
     e.target.value = "";
   };
 
-  const downloadTemplate = () => { const csv = "Grupo,Nombre,Division\nA,Nombre del Equipo,Primera\nB,Otro Equipo,Segunda\n"; const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "plantilla_grupos_copa.csv"; a.click(); URL.revokeObjectURL(url); };
+  const downloadTemplate = () => { const csv = "Grupo,Nombre,Division\nA,Nombre del Equipo,Primera\nB,Otro Equipo,Ascenso\n"; const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "plantilla_grupos_copa.csv"; a.click(); URL.revokeObjectURL(url); };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.82)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(4px)", animation: "modalFadeIn 0.2s ease" }} onClick={onClose}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(0,0,0,0.82)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(4px)", animation: "modalFadeIn 0.2s ease" }} onClick={onClose}>
       <div style={{ background: "#0d1117", border: "1px solid #1e293b", borderRadius: 16, width: "100%", maxWidth: 760, maxHeight: "93vh", overflow: "auto", boxShadow: "0 25px 60px rgba(0,0,0,0.9)", animation: "modalSlideUp 0.28s cubic-bezier(0.16,1,0.3,1)" }} onClick={e => e.stopPropagation()}>
         <div style={{ padding: "18px 22px", borderBottom: "1px solid #1e293b", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div><h3 style={{ margin: 0, color: "#e2e8f0", fontWeight: 800, fontSize: 16 }}>Asignar Equipos a Grupos</h3><p style={{ margin: "3px 0 0", fontSize: 11, color: "#475569" }}>{total}/{teams.length} asignados</p></div>
@@ -963,7 +990,7 @@ const GroupModal = ({ teams, existingMatches, onSave, onClose }) => {
           <div>
             <h4 style={{ margin: "0 0 10px", fontSize: 10, fontWeight: 700, color: "#475569", letterSpacing: "1px" }}>EQUIPOS ({teams.length})</h4>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 280, overflowY: "auto" }}>
-              {["Primera", "Segunda", "Tercera"].map(div => {
+                {["Primera", "Ascenso"].map(div => {
                 const dt = teams.filter(t => t.division === div).sort((a, b) => a.nombre.localeCompare(b.nombre));
                 if (!dt.length) return null;
                 return (<div key={div}><div style={{ fontSize: 9, fontWeight: 800, color: "#334155", letterSpacing: "2px", padding: "8px 0 4px" }}>{div} ({dt.length})</div>{dt.map(t => { const assigned = getGroup(t.id); return (<div key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 8, marginBottom: 3, background: assigned ? "rgba(255,255,255,0.03)" : "rgba(239,68,68,0.03)", border: assigned ? "1px solid transparent" : "1px solid rgba(239,68,68,0.08)" }}><TeamBadge logo={t.logo} name={t.nombre} size={24} /><DivisionPill division={t.division} /><span style={{ flex: 1, fontSize: 12, color: "#94a3b8", fontWeight: 600 }}>{t.nombre}</span>{assigned && <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 6, background: "rgba(239,68,68,0.12)", color: "#ef4444", fontWeight: 800 }}>G{assigned}</span>}<select value={assigned} onChange={e => assign(t.id, e.target.value)} style={{ padding: "5px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: "#0f172a", border: "1px solid #1e293b", color: "#94a3b8", cursor: "pointer" }}><option value="">Sin grupo</option>{GROUPS.map(g => <option key={g} value={g}>Grupo {g}</option>)}</select></div>); })}</div>);
@@ -1008,24 +1035,28 @@ const ResetModal = ({ onClose, onDone }) => {
 };
 
 /* ─── Partidos bloqueados (grupos finalizados) ──────────────────────────── */
-const LockedMatchRow = ({ m }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 8, background: "rgba(16,185,129,0.02)", border: "1px solid rgba(16,185,129,0.08)", opacity: 0.7 }}>
+const LockedMatchRow = ({ m, onEdit }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 8, background: "rgba(16,185,129,0.02)", border: "1px solid rgba(16,185,129,0.08)", opacity: 0.85 }}>
     <TeamBadge logo={m.logo1} name={m.team1} size={20} />
     <span style={{ flex: 1, fontSize: 11, color: "#64748b", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{m.team1}</span>
     <span style={{ fontFamily: "monospace", fontSize: 13, fontWeight: 900, color: "#10b981", padding: "0 8px", minWidth: 44, textAlign: "center" }}>{`${m.goles_local ?? 0}–${m.goles_visitante ?? 0}`}</span>
     <span style={{ flex: 1, fontSize: 11, color: "#64748b", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.team2}</span>
     <TeamBadge logo={m.logo2} name={m.team2} size={20} />
-    <Lock size={11} color="#10b981" opacity={0.5} />
+    <button onClick={(e) => { e.stopPropagation(); onEdit(m); }} title="Editar resultado" style={{ padding: "4px", borderRadius: 4, border: "1px solid rgba(59,130,246,0.3)", background: "rgba(59,130,246,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <Edit2 size={11} color="#60a5fa" />
+    </button>
   </div>
 );
 
 /* ─── Tabla de grupo ─────────────────────────────────────────────────────── */
-const GroupTable = ({ groupName, teams, matches, onEdit, onQuickFinish, onDelete }) => {
+const GroupTable = ({ groupName, teams, matches, onEdit, onQuickFinish, onDelete, best3rdIds = new Set() }) => {
   const stats = {};
   teams.forEach(t => { stats[t.id] = { id: t.id, nombre: t.nombre, logo: t.logo, division: t.division, pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, pts: 0 }; });
   const groupMatches = matches.filter(m => m.grupo === groupName);
   groupMatches.filter(m => m.estado === "Finalizado").forEach(m => { const gl = parseInt(m.goles_local) || 0, gv = parseInt(m.goles_visitante) || 0; const l = String(m.team1_id), v = String(m.team2_id); if (stats[l]) { stats[l].pj++; stats[l].gf += gl; stats[l].gc += gv; if (gl > gv) { stats[l].g++; stats[l].pts += 3 } else if (gl === gv) { stats[l].e++; stats[l].pts++ } else stats[l].p++; } if (stats[v]) { stats[v].pj++; stats[v].gf += gv; stats[v].gc += gl; if (gv > gl) { stats[v].g++; stats[v].pts += 3 } else if (gl === gv) { stats[v].e++; stats[v].pts++ } else stats[v].p++; } });
   const rows = Object.values(stats).map(s => ({ ...s, dg: s.gf - s.gc })).sort((a, b) => b.pts - a.pts || (b.dg - a.dg) || (b.gf - a.gf));
+  const thirdQualifies = (i) => i === 2 && best3rdIds.has(String(rows[i]?.id));
+  const isQualified = (i) => i < 2 || thirdQualifies(i);
   if (!rows.length) return null;
   return (
     <div style={{ background: "rgba(255,255,255,0.01)", border: "1px solid #1e293b", borderRadius: 14, overflow: "hidden" }}>
@@ -1035,17 +1066,17 @@ const GroupTable = ({ groupName, teams, matches, onEdit, onQuickFinish, onDelete
       </div>
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
         <thead><tr style={{ background: "rgba(255,255,255,0.02)" }}>{["#", "Equipo", "PJ", "G", "E", "P", "GF", "GC", "DG", "PTS"].map(h => (<th key={h} style={{ padding: "7px 10px", color: "#334155", fontWeight: 700, textAlign: h === "Equipo" ? "left" : "center", fontSize: 9, letterSpacing: "0.5px" }}>{h}</th>))}</tr></thead>
-        <tbody>{rows.map((r, i) => (<tr key={r.id} style={{ borderTop: "1px solid #0f172a", transition: "background 0.12s", background: i < 2 ? "rgba(16,185,129,0.03)" : "transparent" }} onMouseEnter={e => { if (i >= 2) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }} onMouseLeave={e => { e.currentTarget.style.background = i < 2 ? "rgba(16,185,129,0.03)" : "transparent"; }}>
-          <td style={{ padding: "7px 10px", textAlign: "center", color: i < 2 ? "#10b981" : "#475569", fontWeight: 800 }}>{i < 2 ? <span style={{ marginRight: 3 }}>▲</span> : ""}{i + 1}</td>
+        <tbody>{rows.map((r, i) => { const q = isQualified(i); return (<tr key={r.id} style={{ borderTop: "1px solid #0f172a", transition: "background 0.12s", background: q ? "rgba(16,185,129,0.03)" : "transparent" }} onMouseEnter={e => { if (!q) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }} onMouseLeave={e => { e.currentTarget.style.background = q ? "rgba(16,185,129,0.03)" : "transparent"; }}>
+          <td style={{ padding: "7px 10px", textAlign: "center", color: q ? "#10b981" : "#475569", fontWeight: 800 }}>{q ? <span style={{ marginRight: 3 }}>▲</span> : ""}{i + 1}</td>
           <td style={{ padding: "7px 10px" }}><div style={{ display: "flex", alignItems: "center", gap: 8 }}><TeamBadge logo={r.logo} name={r.nombre} size={24} /><span style={{ color: "#cbd5e1", fontWeight: 600 }}>{r.nombre}</span><DivisionPill division={r.division} /></div></td>
           {[r.pj, r.g, r.e, r.p, r.gf, r.gc, r.dg >= 0 ? `+${r.dg}` : r.dg].map((v, j) => (<td key={j} style={{ padding: "7px 10px", textAlign: "center", color: "#64748b" }}>{v}</td>))}
-          <td style={{ padding: "7px 10px", textAlign: "center", fontWeight: 900, color: i < 2 ? "#10b981" : "#e2e8f0", fontSize: 13 }}>{r.pts}</td>
-        </tr>))}</tbody>
+          <td style={{ padding: "7px 10px", textAlign: "center", fontWeight: 900, color: q ? "#10b981" : "#e2e8f0", fontSize: 13 }}>{r.pts}</td>
+        </tr>); })}</tbody>
       </table>
       {groupMatches.length > 0 && (<div style={{ borderTop: "1px solid #0f172a", padding: "10px 14px", background: "rgba(0,0,0,0.15)" }}>
         <div style={{ fontSize: 9, fontWeight: 700, color: "#334155", letterSpacing: "1px", marginBottom: 8 }}>PARTIDOS</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {groupMatches.map((m, idx) => { const fin = m.estado === "Finalizado"; if (fin) return <LockedMatchRow key={m.id || idx} m={m} />; const st = statusStyle(m.estado); return (<div key={m.id || idx} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 8, background: "rgba(255,255,255,0.02)", border: "1px solid #0f172a", transition: "all 0.15s", cursor: "pointer" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#1e293b"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "#0f172a"; }} onClick={() => onEdit(m)}><TeamBadge logo={m.logo1} name={m.team1} size={20} /><span style={{ flex: 1, fontSize: 11, color: "#94a3b8", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{m.team1}</span><span style={{ fontFamily: "monospace", fontSize: 13, fontWeight: 900, color: "#1e293b", padding: "0 8px", minWidth: 44, textAlign: "center" }}>vs</span><span style={{ flex: 1, fontSize: 11, color: "#94a3b8", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.team2}</span><TeamBadge logo={m.logo2} name={m.team2} size={20} /><span style={{ display: "inline-block", padding: "2px 7px", borderRadius: 5, background: st.bg, color: st.color, fontSize: 8, fontWeight: 800 }}>{m.estado}</span><button onClick={e => { e.stopPropagation(); onQuickFinish(m); }} style={miniBtn("#10b981")}>✓</button><button onClick={e => { e.stopPropagation(); onDelete(m.id); }} style={miniBtn("#ef4444")}><Trash2 size={10} /></button></div>); })}
+          {groupMatches.map((m, idx) => { const fin = m.estado === "Finalizado"; if (fin) return <LockedMatchRow key={m.id || idx} m={m} onEdit={onEdit} />; const st = statusStyle(m.estado); return (<div key={m.id || idx} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 8, background: "rgba(255,255,255,0.02)", border: "1px solid #0f172a", transition: "all 0.15s", cursor: "pointer" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#1e293b"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "#0f172a"; }} onClick={() => onEdit(m)}><TeamBadge logo={m.logo1} name={m.team1} size={20} /><span style={{ flex: 1, fontSize: 11, color: "#94a3b8", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{m.team1}</span><span style={{ fontFamily: "monospace", fontSize: 13, fontWeight: 900, color: "#1e293b", padding: "0 8px", minWidth: 44, textAlign: "center" }}>vs</span><span style={{ flex: 1, fontSize: 11, color: "#94a3b8", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.team2}</span><TeamBadge logo={m.logo2} name={m.team2} size={20} /><span style={{ display: "inline-block", padding: "2px 7px", borderRadius: 5, background: st.bg, color: st.color, fontSize: 8, fontWeight: 800 }}>{m.estado}</span><button onClick={e => { e.stopPropagation(); onQuickFinish(m); }} style={miniBtn("#10b981")}>✓</button><button onClick={e => { e.stopPropagation(); onDelete(m.id); }} style={miniBtn("#ef4444")}><Trash2 size={10} /></button></div>); })}
         </div>
       </div>)}
     </div>
@@ -1079,6 +1110,7 @@ const Sidebar = () => {
   const location = useLocation(); const [teamsOpen, setTeamsOpen] = useState(false);
   const [seleccionesOpen, setSeleccionesOpen] = useState(false);
 const navItems = [
+      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
       { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
       { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
       { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
@@ -1086,8 +1118,7 @@ const navItems = [
         type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
         children: [
           { path: "/teams/primera", label: "Primera División" },
-          { path: "/teams/segunda", label: "Segunda División" },
-          { path: "/teams/tercera", label: "Tercera División" },
+          { path: "/teams/ascenso", label: "Liga de Ascenso" },
           { path: "/teams/femenina", label: "Femenina" },
         ]
       },
@@ -1215,6 +1246,24 @@ const AdminCopPresidente = () => {
   const filteredMatches = phaseMatches.filter(m => search === "" || (m.team1 || "").toLowerCase().includes(search.toLowerCase()) || (m.team2 || "").toLowerCase().includes(search.toLowerCase()));
   const groupsWithTeams = GROUPS.filter(g => teams.some(t => t.grupo === g));
   const knockoutPairs = isIdaVueltaPhase(activePhase) ? pairKnockoutMatches(filteredMatches) : [];
+  const best3rdIds = useMemo(() => {
+    if (activePhase !== "grupos") return new Set();
+    const q = getGroupQualifiers(matches, teams);
+    return new Set(q.filter(x => x.pos === 3).map(x => x.id));
+  }, [matches, teams, activePhase]);
+
+  const mejoresTerceros = useMemo(() => {
+    if (activePhase !== "grupos") return [];
+    const all3rds = [];
+    GROUPS.forEach(g => {
+      const gm = matches.filter(m => m.fase === "grupos" && m.grupo === g);
+      const st = calcGroupStats(gm, teams);
+      if (st.length >= 3) all3rds.push({ ...st[2], grupo: g });
+    });
+    all3rds.sort((a, b) => b.pts - a.pts || (b.dg - a.dg) || (b.gf - a.gf));
+    return all3rds;
+  }, [matches, teams, activePhase]);
+
   const phaseReview = getPhaseReview(activePhase, matches, teams);
 
   return (
@@ -1261,7 +1310,22 @@ const AdminCopPresidente = () => {
           </div>)}
 
           {/* Standings */}
-          {activePhase === "grupos" && viewMode === "standings" && (<div style={{ display: "flex", flexDirection: "column", gap: 14 }}>{(activeGroup === "all" ? GROUPS : [activeGroup]).map(g => (<GroupTable key={g} groupName={g} teams={teams.filter(t => t.grupo === g)} matches={phaseMatches} onEdit={m => { setEditingMatch(m); setShowMatchModal(true); }} onQuickFinish={handleQuickFinish} onDelete={handleDelete} />))}{groupsWithTeams.length === 0 && (<div style={{ textAlign: "center", padding: "52px 0" }}><div style={{ fontSize: 36, opacity: 0.07, marginBottom: 10 }}>🗂️</div><p style={{ color: "#475569", fontWeight: 600, margin: "0 0 4px" }}>Sin equipos asignados</p></div>)}</div>)}
+          {activePhase === "grupos" && viewMode === "standings" && (<div style={{ display: "flex", flexDirection: "column", gap: 14 }}>{(activeGroup === "all" ? GROUPS : [activeGroup]).map(g => (<GroupTable key={g} groupName={g} teams={teams.filter(t => t.grupo === g)} matches={phaseMatches} best3rdIds={best3rdIds} onEdit={m => { setEditingMatch(m); setShowMatchModal(true); }} onQuickFinish={handleQuickFinish} onDelete={handleDelete} />))}{groupsWithTeams.length === 0 && (<div style={{ textAlign: "center", padding: "52px 0" }}><div style={{ fontSize: 36, opacity: 0.07, marginBottom: 10 }}>🗂️</div><p style={{ color: "#475569", fontWeight: 600, margin: "0 0 4px" }}>Sin equipos asignados</p></div>)}
+            {/* Tabla de mejores terceros */}
+            {activeGroup === "all" && mejoresTerceros.length > 0 && (<div style={{ background: "rgba(255,255,255,0.01)", border: "1px solid #1e293b", borderRadius: 14, overflow: "hidden", marginTop: 4 }}>
+              <div style={{ padding: "12px 16px", borderBottom: "1px solid #0f172a", display: "flex", alignItems: "center", gap: 8 }}><span style={{ fontWeight: 900, fontSize: 13, color: "#f59e0b" }}>Mejores Terceros</span><span style={{ fontSize: 10, color: "#334155" }}>Top 4 clasifican a octavos</span></div>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                <thead><tr style={{ background: "rgba(255,255,255,0.02)" }}>{["#","Equipo","Grp","PJ","G","E","P","GF","GC","DG","PTS"].map(h => (<th key={h} style={{ padding: "7px 10px", color: "#334155", fontWeight: 700, textAlign: h === "Equipo" ? "left" : "center", fontSize: 9, letterSpacing: "0.5px" }}>{h}</th>))}</tr></thead>
+                <tbody>{mejoresTerceros.map((r, i) => (<tr key={r.id} style={{ borderTop: "1px solid #0f172a", transition: "background 0.12s", background: i < 4 ? "rgba(245,158,11,0.04)" : "transparent", borderLeft: i < 4 ? "2px solid #f59e0b" : "2px solid transparent" }} onMouseEnter={e => { if (i >= 4) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }} onMouseLeave={e => { e.currentTarget.style.background = i < 4 ? "rgba(245,158,11,0.04)" : "transparent"; }}>
+                  <td style={{ padding: "7px 10px", textAlign: "center", color: i < 4 ? "#f59e0b" : "#475569", fontWeight: 800 }}>{i < 4 ? "◆" : ""} {i + 1}</td>
+                  <td style={{ padding: "7px 10px" }}><div style={{ display: "flex", alignItems: "center", gap: 8 }}><TeamBadge logo={r.logo} name={r.nombre} size={24} /><span style={{ color: "#cbd5e1", fontWeight: 600 }}>{r.nombre}</span><DivisionPill division={r.division} /></div></td>
+                  <td style={{ padding: "7px 10px", textAlign: "center", fontWeight: 800, color: "#f59e0b" }}>{r.grupo}</td>
+                  {[r.pj, r.g, r.e, r.p, r.gf, r.gc, r.dg >= 0 ? `+${r.dg}` : r.dg].map((v, j) => (<td key={j} style={{ padding: "7px 10px", textAlign: "center", color: "#64748b" }}>{v}</td>))}
+                  <td style={{ padding: "7px 10px", textAlign: "center", fontWeight: 900, color: i < 4 ? "#f59e0b" : "#e2e8f0", fontSize: 13 }}>{r.pts}</td>
+                </tr>))}</tbody>
+              </table>
+            </div>)}
+          </div>)}
 
           {/* Grupos - Matches */}
           {activePhase === "grupos" && viewMode === "matches" && (<div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -1272,7 +1336,7 @@ const AdminCopPresidente = () => {
                   <div style={{ display: "flex", flexDirection: "column", gap: 2, padding: 6 }}>
                     {gMatches.map((m, idx) => {
                       const fin = m.estado === "Finalizado";
-                      if (fin) return (<div key={m.id || idx} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "rgba(16,185,129,0.02)", border: "1px solid rgba(16,185,129,0.08)", opacity: 0.75 }}><div style={{ fontSize: 9, color: "#334155", minWidth: 36 }}>{m.fecha ? m.fecha.substring(5, 10) : "-"}</div><TeamBadge logo={m.logo1} name={m.team1} size={28} /><div style={{ flex: 1, textAlign: "right" }}><div style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>{m.team1}</div>{m.division1 && <DivisionPill division={m.division1} />}</div><div style={{ textAlign: "center", minWidth: 60 }}><span style={{ fontFamily: "monospace", fontSize: 18, fontWeight: 900, color: "#10b981" }}>{`${m.goles_local ?? 0} – ${m.goles_visitante ?? 0}`}</span></div><div style={{ flex: 1 }}><div style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>{m.team2}</div>{m.division2 && <DivisionPill division={m.division2} />}</div><TeamBadge logo={m.logo2} name={m.team2} size={28} /><Lock size={13} color="#10b981" opacity={0.4} /></div>);
+                      if (fin) return (<div key={m.id || idx} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "rgba(16,185,129,0.02)", border: "1px solid rgba(16,185,129,0.08)", opacity: 0.85 }}><div style={{ fontSize: 9, color: "#334155", minWidth: 36 }}>{m.fecha ? m.fecha.substring(5, 10) : "-"}</div><TeamBadge logo={m.logo1} name={m.team1} size={28} /><div style={{ flex: 1, textAlign: "right" }}><div style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>{m.team1}</div>{m.division1 && <DivisionPill division={m.division1} />}</div><div style={{ textAlign: "center", minWidth: 60 }}><span style={{ fontFamily: "monospace", fontSize: 18, fontWeight: 900, color: "#10b981" }}>{`${m.goles_local ?? 0} – ${m.goles_visitante ?? 0}`}</span></div><div style={{ flex: 1 }}><div style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>{m.team2}</div>{m.division2 && <DivisionPill division={m.division2} />}</div><TeamBadge logo={m.logo2} name={m.team2} size={28} /><button onClick={(e) => { e.stopPropagation(); setEditingMatch(m); setShowMatchModal(true); }} title="Editar resultado" style={{ padding: "4px", borderRadius: 4, border: "1px solid rgba(59,130,246,0.3)", background: "rgba(59,130,246,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Edit2 size={11} color="#60a5fa" /></button></div>);
                       const st = statusStyle(m.estado); return (<div key={m.id || idx} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, transition: "background 0.12s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.025)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"} onClick={() => { setEditingMatch(m); setShowMatchModal(true); }}><div style={{ fontSize: 9, color: "#334155", minWidth: 36 }}>{m.fecha ? m.fecha.substring(5, 10) : "-"} {m.hora ? m.hora.substring(0, 5) : ""}</div><TeamBadge logo={m.logo1} name={m.team1} size={28} /><div style={{ flex: 1, textAlign: "right" }}><div style={{ fontSize: 12, fontWeight: 700, color: "#cbd5e1" }}>{m.team1}</div>{m.division1 && <DivisionPill division={m.division1} />}</div><div style={{ textAlign: "center", minWidth: 60 }}><span style={{ fontFamily: "monospace", fontSize: 18, fontWeight: 900, color: "#1e293b" }}>– –</span></div><div style={{ flex: 1 }}><div style={{ fontSize: 12, fontWeight: 700, color: "#cbd5e1" }}>{m.team2}</div>{m.division2 && <DivisionPill division={m.division2} />}</div><TeamBadge logo={m.logo2} name={m.team2} size={28} /><span style={{ display: "inline-block", padding: "3px 9px", borderRadius: 6, background: st.bg, color: st.color, fontSize: 9, fontWeight: 800, minWidth: 68, textAlign: "center" }}>{m.estado}</span><div style={{ display: "flex", gap: 3 }}><button onClick={e => { e.stopPropagation(); handleQuickFinish(m); }} style={miniBtn("#10b981")}>✓</button><button onClick={e => { e.stopPropagation(); handleDelete(m.id); }} style={miniBtn("#ef4444")}><Trash2 size={10} /></button></div></div>);
                     })}
                   </div>
@@ -1302,7 +1366,7 @@ const AdminCopPresidente = () => {
           <div style={{ marginTop: 20, background: "rgba(239,68,68,0.03)", border: "1px solid rgba(239,68,68,0.1)", borderRadius: 12, padding: "13px 18px" }}>
             <h4 style={{ margin: "0 0 8px", color: "#ef4444", fontSize: 10, fontWeight: 800, letterSpacing: "1px" }}>📋 FORMATO</h4>
             <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
-              {[{ i: "🗂️", t: "6 grupos de 3-4 equipos" }, { i: "🏟️", t: "2 Primera + 1 Segunda + 1 Tercera" }, { i: "📅", t: "Partidos los miércoles" }, { i: "⚽", t: "Top 2 clasifica" }, { i: "🔄", t: "Octavos/Cuartos/Semis: ida y vuelta" }, { i: "💰", t: "Premio $50,000" }, { i: "🔒", t: "Grupos: un solo partido por pareja" }, { i: "⚡", t: "Auto-genera partidos de grupo" }].map((r, i) => <span key={i} style={{ fontSize: 11, color: "#475569", display: "flex", alignItems: "center", gap: 5 }}>{r.i} {r.t}</span>)}
+              {[{ i: "🗂️", t: "6 grupos de 4 equipos" }, { i: "🏟️", t: "2 Primera + 2 Ascenso por grupo" }, { i: "📅", t: "3 jornadas, partido único en grupos" }, { i: "⚽", t: "Top 2 + 4 mejores terceros clasifican" }, { i: "🔄", t: "Octavos a Semis: ida y vuelta" }, { i: "🏆", t: "Final única" }].map((r, i) => <span key={i} style={{ fontSize: 11, color: "#475569", display: "flex", alignItems: "center", gap: 5 }}>{r.i} {r.t}</span>)}
             </div>
           </div>
         </div>
@@ -1313,6 +1377,7 @@ const AdminCopPresidente = () => {
       {showResetModal && <ResetModal onClose={() => setShowResetModal(false)} onDone={() => { setShowResetModal(false); fetchData(); }} />}
 
       <style>{`
+        .swal2-container{z-index:2100 !important}
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
         @keyframes modalSlideUp{from{opacity:0;transform:translateY(24px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}

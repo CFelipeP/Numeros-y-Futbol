@@ -16,13 +16,8 @@ if (!$entra_id || !$sale_id) {
 }
 
 switch ($division) {
-    case 'segunda':
-        $tabla = 'jugadores_segunda';
-        $colX  = 'posicion_x';
-        $colY  = 'posicion_y';
-        break;
-    case 'tercera':
-        $tabla = 'jugadores_tercera';
+    case 'ascenso':
+        $tabla = 'jugadores_ascenso';
         $colX  = 'posicion_x';
         $colY  = 'posicion_y';
         break;

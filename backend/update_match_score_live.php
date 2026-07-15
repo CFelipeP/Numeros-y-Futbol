@@ -15,13 +15,8 @@ if (!$id) { echo json_enc(["success" => false, "error" => "ID requerido"]); exit
 
 try {
     switch ($division) {
-        case 'segunda':
-            $table    = 'partidos_segunda';
-            $colLocal = 'goles_local';
-            $colVisit = 'goles_visitante';
-            break;
-        case 'tercera':
-            $table    = 'partidos_tercera';
+        case 'ascenso':
+            $table    = 'partidos_ascenso';
             $colLocal = 'goles_local';
             $colVisit = 'goles_visitante';
             break;

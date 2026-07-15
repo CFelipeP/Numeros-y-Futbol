@@ -5,6 +5,11 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
 
+$year = (int)date('Y');
+$month = (int)date('n');
+$startYear = ($month >= 7) ? $year : $year - 1;
+$temporada = $startYear . '-' . ($startYear + 1);
+
 const POSICIONES_VALIDAS = [
     'portero','lateral_izquierdo','lateral_derecho','central',
     'medio_defensivo','medio_central','medio_ofensivo',
@@ -58,11 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                COALESCE(e.vaya_invicta,0)     AS vaya_invicta,
                e.temporada
         FROM jugadores_femenina j
-        LEFT JOIN estadisticas_jugadores_femenina e ON e.jugador_id=j.id AND e.temporada='2025-2026'
-        WHERE j.equipo_id=?
+        LEFT JOIN estadisticas_jugadores_femenina e ON e.jugador_id=j.id AND e.temporada=:temporada
+        WHERE j.equipo_id=:equipo_id
         ORDER BY j.es_titular DESC, j.numero_camiseta ASC
     ");
-    $st->execute([$equipo_id]);
+    $st->execute([':equipo_id' => $equipo_id, ':temporada' => $temporada]);
     $jugadores = $st->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_enc(['success'=>true,'equipo'=>$equipo,'jugadores'=>$jugadores]);
@@ -121,8 +126,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ->execute([$equipo_id,$nombre,$posicion,$num,$edad,$nac,$foto,$es_titular]);
         $jugador_id = $conn->lastInsertId();
 
-        $conn->prepare("INSERT IGNORE INTO estadisticas_jugadores_femenina (jugador_id,temporada) VALUES (?,'2025-2026')")
-            ->execute([$jugador_id]);
+        $conn->prepare("INSERT IGNORE INTO estadisticas_jugadores_femenina (jugador_id,temporada) VALUES (?,?)")
+            ->execute([$jugador_id, $temporada]);
 
         echo json_enc(['success'=>true,'id'=>$jugador_id]);
         exit();
@@ -224,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 minutos_jugados=VALUES(minutos_jugados),goles_recibidos=VALUES(goles_recibidos),
                 vaya_invicta=VALUES(vaya_invicta)
         ")->execute([
-            $jugador_id, $data['temporada']??'2025-2026',
+            $jugador_id, $data['temporada']??$temporada,
             intval($data['pj']??0), intval($data['goles']??0), intval($data['asistencias']??0),
             intval($data['goles_cabeza']??0), intval($data['goles_tiro_libre']??0),
             intval($data['goles_penal']??0), intval($data['tarjetas_amarillas']??0),

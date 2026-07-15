@@ -11,6 +11,11 @@ if ($id <= 0) {
     exit;
 }
 
+$year = (int)date('Y');
+$month = (int)date('n');
+$startYear = ($month >= 7) ? $year : $year - 1;
+$temporada = $startYear . '-' . ($startYear + 1);
+
 try {
     $stmt = $pdo->prepare("
         SELECT e.*, 
@@ -43,7 +48,7 @@ try {
                IFNULL(s.minutos_jugados, 0) AS minutos
         FROM jugadores j
         LEFT JOIN estadisticas_jugadores s ON s.jugador_id = j.id 
-            AND s.temporada = '2025-2026'
+            AND s.temporada = '$temporada'
         WHERE j.equipo_id = ?
         ORDER BY 
             CASE j.posicion

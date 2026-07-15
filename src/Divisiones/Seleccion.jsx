@@ -10,6 +10,7 @@ const API = API_BASE;
 const logoUrl = (path) => {
   if (!path) return "";
   if (path.startsWith("http")) return path;
+  if (path.startsWith("/backend/")) return path;
   return `${API_BASE}${path}`;
 };
 

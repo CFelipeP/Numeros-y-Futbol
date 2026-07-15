@@ -52,6 +52,8 @@ if ($stmt->execute()) {
             unlink($rutaArchivo);
         }
     }
+    // Limpiar de equipos_copa
+    $conn->prepare("DELETE FROM equipos_copa WHERE equipo_id = ? AND division = 'Primera'")->execute([$id]);
     echo json_enc(["success" => true]);
 } else {
     echo json_enc(["error" => "Error interno del servidor"]);

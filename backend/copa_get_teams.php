@@ -11,7 +11,7 @@ try {
                ec.equipo_id
         FROM equipos_copa ec
         WHERE ec.activo = 1
-        ORDER BY FIELD(ec.division,'Primera','Segunda','Tercera'), ec.nombre
+        ORDER BY FIELD(ec.division,'Primera','Ascenso'), ec.nombre
     ");
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

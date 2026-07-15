@@ -20,6 +20,8 @@ if (!$equipo) {
     exit();
 }
 
+$year = (int)date('Y'); $month = (int)date('n'); $startYear = ($month >= 7) ? $year : $year - 1; $temporada = $startYear . '-' . ($startYear + 1);
+
 $stmt = $pdo->prepare("
     SELECT 
         j.*,
@@ -38,7 +40,7 @@ $stmt = $pdo->prepare("
         est.temporada
     FROM jugadores_segunda j
     LEFT JOIN estadisticas_jugadores_segunda est 
-        ON est.jugador_id = j.id AND est.temporada = '2025-2026'
+        ON est.jugador_id = j.id AND est.temporada = ?
     WHERE j.equipo_id = ?
     ORDER BY 
         CASE j.posicion
@@ -57,7 +59,7 @@ $stmt = $pdo->prepare("
         END,
         j.numero_camiseta ASC
 ");
-$stmt->execute([$id]);
+$stmt->execute([$temporada, $id]);
 $jugadores = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 echo json_enc([

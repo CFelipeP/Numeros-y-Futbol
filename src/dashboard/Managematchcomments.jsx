@@ -6,7 +6,7 @@ import { apiPost } from "../apiHelper";
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
   Target, Trophy, ChevronDown, Plus, Trash2, MessageSquare, RefreshCw,
-  Play, Square, Clock, MessageCircle, ArrowDown, Eye
+  Play, Square, Clock, MessageCircle, ArrowDown, Eye, BarChart3
 } from "lucide-react";
 import { API_BASE } from "../config";
 
@@ -97,13 +97,13 @@ const playerOptions = (jugadores, darkOptionStyle, formacion) => {
 };
 
 const SIDEBAR_ITEMS = [
+  { path:"/analytics",       icon:<BarChart3 size={20}/>,      label:"Analiticas" },
   { path:"/dashboard",       icon:<LayoutDashboard size={20}/>, label:"Dashboard" },
   { path:"/matches",         icon:<CalendarDays size={20}/>,    label:"Gestionar Partidos" },
   { path:"/mynews",          icon:<CalendarDays size={20}/>,    label:"Crear Noticias" },
   { type:"dropdown", icon:<Shield size={20}/>, label:"Equipos", children:[
     { path:"/teams/primera", label:"Primera División" },
-    { path:"/teams/segunda", label:"Segunda División" },
-    { path:"/teams/tercera", label:"Tercera División" },
+    { path:"/teams/ascenso", label:"Liga de Ascenso" },
     { path:"/teams/femenina", label:"Femenina" },
   ]},
   { type: "dropdown", icon: <Shield size={20}/>, label: "Selecciones",
@@ -144,7 +144,7 @@ const darkOptionStyle = {
 };
 
 export default function ManageMatchComments() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [teamsOpen, setTeamsOpen]     = useState(false);
   const [seleccionesOpen, setSeleccionesOpen] = useState(false);
   const location = useLocation();
@@ -247,7 +247,7 @@ export default function ManageMatchComments() {
   const fetchMatches = async () => {
     setLoadingMatches(true);
     try {
-      const suf = selectedDiv==="segunda"?"_segunda":selectedDiv==="tercera"?"_tercera":"";
+      const suf = selectedDiv==="ascenso"?"_ascenso":selectedDiv==="femenina"?"_femenina":"";
       const res  = await fetch(`${API}get_matches${suf}.php`);
       const data = await res.json();
       setMatches(Array.isArray(data) ? data : []);
@@ -484,7 +484,7 @@ export default function ManageMatchComments() {
   const getMatchStatus = m => m.estado||m.status||"Pendiente";
 
   return (
-    <div className={`admin-layout ${!sidebarOpen?"sidebar-closed":""}`}>
+    <div className={`admin-layout ${sidebarOpen?"sidebar-closed":""}`}>
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="logo-icon"><img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="Logo"/></div>
@@ -528,7 +528,7 @@ export default function ManageMatchComments() {
               <div className="table-container" style={{padding:18}}>
                 <p style={{margin:"0 0 10px",fontSize:12,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1}}>División</p>
                 <div style={{display:"flex",gap:8}}>
-                  {["primera","segunda","tercera"].map(d=>(
+                  {["primera","ascenso","femenina"].map(d=>(
                     <button key={d} onClick={()=>{setSelectedDiv(d);setSelectedPartido("");setPartido(null);setComentarios([]);setCronActivo(false);setCronSegundos(0);setSemitiem(1);}}
                       style={{flex:1,padding:"8px 4px",border:`1px solid ${selectedDiv===d?"var(--accent-red)":"var(--border)"}`,borderRadius:8,background:selectedDiv===d?"rgba(239,68,68,0.15)":"transparent",color:selectedDiv===d?"var(--accent-red)":"var(--text-muted)",fontWeight:700,fontSize:12,cursor:"pointer",textTransform:"capitalize",transition:"all .2s",fontFamily:"inherit"}}>
                       {d.charAt(0).toUpperCase()+d.slice(1)}

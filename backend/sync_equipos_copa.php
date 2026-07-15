@@ -45,45 +45,19 @@ try {
 
     /*
     =====================================================
-    INSERTAR SEGUNDA
+    INSERTAR ASCENSO
     =====================================================
     */
 
     $stmt = $pdo->query("
         SELECT id, nombre, logo
-        FROM equipos_segunda
+        FROM equipos_ascenso
     ");
 
     $insert = $pdo->prepare("
         INSERT INTO equipos_copa
         (equipo_id, division, nombre, logo, activo)
-        VALUES (?, 'Segunda', ?, ?, 1)
-    ");
-
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-
-        $insert->execute([
-            $row['id'],
-            $row['nombre'],
-            $row['logo']
-        ]);
-    }
-
-    /*
-    =====================================================
-    INSERTAR TERCERA
-    =====================================================
-    */
-
-    $stmt = $pdo->query("
-        SELECT id, nombre, logo
-        FROM equipos_tercera
-    ");
-
-    $insert = $pdo->prepare("
-        INSERT INTO equipos_copa
-        (equipo_id, division, nombre, logo, activo)
-        VALUES (?, 'Tercera', ?, ?, 1)
+        VALUES (?, 'Ascenso', ?, ?, 1)
     ");
 
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {

@@ -17,70 +17,90 @@ if (!in_array($estado, $allowed)) { echo json_enc(["success" => false, "error" =
 
 try {
     switch ($division) {
-        case 'segunda':
-            $table  = 'partidos_segunda';
-            $colEst = 'status';
-            $colLocalId = 'local_id';
-            $colVisitId = 'visitante_id';
-            $tablaPos = 'tabla_posiciones_segunda';
+        case 'ascenso':
+            $table     = 'partidos_ascenso';
+            $colEst    = 'status';
+            $colLocal  = 'local_id';
+            $colVisit  = 'visitante_id';
+            $tablaPos  = 'tabla_posiciones_ascenso';
+            $colPJ='pj'; $colG='pg'; $colE='pe'; $colP='pp';
+            $colGF='gf'; $colGC='gc'; $colDG='dg'; $colPTS='pts';
             break;
-        case 'tercera':
-            $table  = 'partidos_tercera';
-            $colEst = 'status';
-            $colLocalId = 'local_id';
-            $colVisitId = 'visitante_id';
-            $tablaPos = 'tabla_posiciones_tercera';
+        case 'femenina':
+            $table     = 'partidos_femenina';
+            $colEst    = 'estado';
+            $colLocal  = 'equipo_local';
+            $colVisit  = 'equipo_visitante';
+            $tablaPos  = 'tabla_posiciones_femenina';
+            $colPJ='partidos_jugados'; $colG='ganados'; $colE='empatados'; $colP='perdidos';
+            $colGF='goles_favor'; $colGC='goles_contra'; $colDG=null; $colPTS='puntos';
             break;
-        default:
-            $table  = 'partidos';
-            $colEst = 'estado';
-            $colLocalId = 'equipo_local';
-            $colVisitId = 'equipo_visitante';
-            $tablaPos = null;
+        default: // primera
+            $table     = 'partidos';
+            $colEst    = 'estado';
+            $colLocal  = 'equipo_local';
+            $colVisit  = 'equipo_visitante';
+            $tablaPos  = 'tabla_posiciones';
+            $colPJ='partidos_jugados'; $colG='ganados'; $colE='empatados'; $colP='perdidos';
+            $colGF='goles_favor'; $colGC='goles_contra'; $colDG=null; $colPTS='puntos';
             break;
     }
 
-    $prev = null;
-    if ($tablaPos) {
-        $s = $pdo->prepare("
-            SELECT `$colLocalId` AS local_id, `$colVisitId` AS visitante_id,
-                   COALESCE(goles_local, 0) AS goles_local,
-                   COALESCE(goles_visitante, 0) AS goles_visitante,
-                   `$colEst` AS estado
-            FROM `$table`
-            WHERE id = ?
-            LIMIT 1
-        ");
-        $s->execute([$id]);
-        $prev = $s->fetch(PDO::FETCH_ASSOC);
-    }
+    // Leer estado previo
+    $s = $pdo->prepare("
+        SELECT `$colLocal` AS local_id, `$colVisit` AS visitante_id,
+               COALESCE(goles_local, 0) AS goles_local,
+               COALESCE(goles_visitante, 0) AS goles_visitante,
+               `$colEst` AS estado
+        FROM `$table` WHERE id = ? LIMIT 1
+    ");
+    $s->execute([$id]);
+    $prev = $s->fetch(PDO::FETCH_ASSOC);
 
-    $stmt = $pdo->prepare("UPDATE `$table` SET `$colEst` = ? WHERE id = ?");
-    $stmt->execute([$estado, $id]);
+    // Actualizar estado
+    $pdo->prepare("UPDATE `$table` SET `$colEst` = ? WHERE id = ?")->execute([$estado, $id]);
 
-    if ($tablaPos && $estado === 'Finalizado' && $prev && strtolower(trim($prev['estado'] ?? '')) !== 'finalizado') {
-        $l = (int)$prev['local_id'];
-        $v = (int)$prev['visitante_id'];
+    // Actualizar tabla de posiciones si se finaliza y no estaba finalizado antes
+    if ($estado === 'Finalizado' && $prev && strtolower(trim($prev['estado'] ?? '')) !== 'finalizado') {
+        $l  = (int)$prev['local_id'];
+        $v  = (int)$prev['visitante_id'];
         $gl = (int)$prev['goles_local'];
         $gv = (int)$prev['goles_visitante'];
 
-        $pdo->prepare("UPDATE `$table` SET goles_local = ?, goles_visitante = ? WHERE id = ?")->execute([$gl, $gv, $id]);
+        $pdo->beginTransaction();
 
-        $pdo->exec("UPDATE `$tablaPos` SET pj = pj + 1 WHERE equipo_id IN ($l, $v)");
-        $pdo->exec("UPDATE `$tablaPos` SET gf = gf + $gl, gc = gc + $gv WHERE equipo_id = $l");
-        $pdo->exec("UPDATE `$tablaPos` SET gf = gf + $gv, gc = gc + $gl WHERE equipo_id = $v");
+        try {
+            // Asegurar que los goles estén guardados
+            $pdo->prepare("UPDATE `$table` SET goles_local = ?, goles_visitante = ? WHERE id = ?")->execute([$gl, $gv, $id]);
 
-        if ($gl > $gv) {
-            $pdo->exec("UPDATE `$tablaPos` SET pg = pg + 1, pts = pts + 3 WHERE equipo_id = $l");
-            $pdo->exec("UPDATE `$tablaPos` SET pp = pp + 1 WHERE equipo_id = $v");
-        } elseif ($gl < $gv) {
-            $pdo->exec("UPDATE `$tablaPos` SET pg = pg + 1, pts = pts + 3 WHERE equipo_id = $v");
-            $pdo->exec("UPDATE `$tablaPos` SET pp = pp + 1 WHERE equipo_id = $l");
-        } else {
-            $pdo->exec("UPDATE `$tablaPos` SET pe = pe + 1, pts = pts + 1 WHERE equipo_id IN ($l, $v)");
+            // PJ +1 para ambos
+            $pdo->exec("UPDATE `$tablaPos` SET $colPJ = $colPJ + 1 WHERE equipo_id IN ($l, $v)");
+
+            // GF y GC
+            $pdo->exec("UPDATE `$tablaPos` SET $colGF = $colGF + $gl, $colGC = $colGC + $gv WHERE equipo_id = $l");
+            $pdo->exec("UPDATE `$tablaPos` SET $colGF = $colGF + $gv, $colGC = $colGC + $gl WHERE equipo_id = $v");
+
+            // G, E, P, PTS
+            if ($gl > $gv) {
+                $pdo->exec("UPDATE `$tablaPos` SET $colG = $colG + 1, $colPTS = $colPTS + 3 WHERE equipo_id = $l");
+                $pdo->exec("UPDATE `$tablaPos` SET $colP = $colP + 1 WHERE equipo_id = $v");
+            } elseif ($gl < $gv) {
+                $pdo->exec("UPDATE `$tablaPos` SET $colG = $colG + 1, $colPTS = $colPTS + 3 WHERE equipo_id = $v");
+                $pdo->exec("UPDATE `$tablaPos` SET $colP = $colP + 1 WHERE equipo_id = $l");
+            } else {
+                $pdo->exec("UPDATE `$tablaPos` SET $colE = $colE + 1, $colPTS = $colPTS + 1 WHERE equipo_id IN ($l, $v)");
+            }
+
+            // DG (solo para ascenso que tiene columna dg)
+            if ($colDG) {
+                $pdo->exec("UPDATE `$tablaPos` SET $colDG = $colGF - $colGC WHERE equipo_id IN ($l, $v)");
+            }
+
+            $pdo->commit();
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            throw $e;
         }
-
-        $pdo->exec("UPDATE `$tablaPos` SET dg = gf - gc WHERE equipo_id IN ($l, $v)");
     }
 
     echo json_enc(["success" => true, "estado" => $estado]);

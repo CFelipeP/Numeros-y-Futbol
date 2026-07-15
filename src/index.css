@@ -1510,6 +1510,50 @@ img {
   }
 }
 
+/* ============================================
+   RESPONSIVE - MOBILE PHONES
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* General layout */
+  .container { padding-left: 16px !important; padding-right: 16px !important; }
+  h1 { font-size: 1.5rem !important; }
+  h2 { font-size: 1.2rem !important; }
+  
+  /* Hero */
+  .hero { min-height: 320px !important; padding: 60px 0 40px !important; }
+  .hero-content h1 { font-size: 1.8rem !important; line-height: 1.2 !important; }
+  .hero-content p { font-size: 0.85rem !important; }
+  .hero-buttons { flex-direction: column !important; gap: 10px !important; }
+  .hero-buttons .btn { width: 100% !important; text-align: center !important; }
+  
+  /* News grid */
+  .news-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+  .news-card { max-width: 100% !important; }
+  .news-card-image { height: 180px !important; }
+  
+  /* Divisions */
+  .divisions-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
+  .division-card { max-width: 100% !important; }
+  
+  /* Footer */
+  .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 20px !important; text-align: left !important; }
+  .footer-bottom { flex-direction: column !important; gap: 10px !important; text-align: center !important; }
+  
+  /* Carousel - handled inline by Home.jsx */
+  
+  /* Section headers */
+  .section-header h2 { font-size: 1.4rem !important; }
+  .section-header p { font-size: 0.8rem !important; }
+}
+
+@media (max-width: 480px) {
+  .hero-content h1 { font-size: 1.4rem !important; }
+  .hero-content p { font-size: 0.8rem !important; }
+  .footer-grid { grid-template-columns: 1fr !important; }
+  .news-card-image { height: 150px !important; }
+}
+
 /* Tarjeta de Noticia Principal (Grande) */
 .main-news-card {
   position: relative;
