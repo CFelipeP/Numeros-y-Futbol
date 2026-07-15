@@ -32,6 +32,17 @@ if (!empty($body['email'])) {
     $params[]  = trim(strtolower($body['email']));
 }
 if (!empty($body['password'])) {
+    $action = $body['action'] ?? '';
+    if ($action === 'change_password') {
+        $currentPassword = $body['current_password'] ?? '';
+        $chk = $pdo->prepare("SELECT password FROM usuarios WHERE id = ?");
+        $chk->execute([$id]);
+        $userRow = $chk->fetch(PDO::FETCH_ASSOC);
+        if (!$userRow || !password_verify($currentPassword, $userRow['password'])) {
+            echo json_enc(["success" => false, "error" => "La contraseña actual es incorrecta"]);
+            exit;
+        }
+    }
     $fields[] = "password = ?";
     $params[]  = password_hash(trim($body['password']), PASSWORD_BCRYPT);
 }

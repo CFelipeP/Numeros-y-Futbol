@@ -28,9 +28,11 @@ if ($action === "send_code") {
 
     $stmt = $conn->prepare("SELECT id FROM usuarios WHERE email=?");
     $stmt->execute([$email]);
+    $userRow = $stmt->fetch();
 
-    if (!$stmt->fetch()) {
-        echo json_enc(["success" => false, "error" => "No existe una cuenta con ese correo"]);
+    if (!$userRow) {
+        // No revelar si el email existe o no
+        echo json_enc(["success" => true, "message" => "Si el correo está registrado, recibirás un código de verificación."]);
         exit;
     }
 

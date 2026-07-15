@@ -10,6 +10,7 @@ import {
     BarChart3, Activity, ChevronDown, Target, MessageCircle, Eye
 } from "lucide-react";
 import { API_BASE } from "../config";
+import { apiPost } from "../apiHelper";
 
 const DIVISIONES = [
     { value: "primera", label: "Primera" },
@@ -120,14 +121,8 @@ const AdminPosiciones = () => {
 
             setResetting(true);
 
-            fetch(ep)
-                .then(async (res) => {
-                    const text = await res.text();
-                    if (text.trim().startsWith("<")) {
-                        throw new Error("PHP_MISSING");
-                    }
-                    return JSON.parse(text);
-                })
+            apiPost(ep)
+                .then(r => r.json())
                 .then((data) => {
                     if (data.success) {
                         Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Tabla reiniciada", showConfirmButton: false, timer: 2500 });
@@ -137,15 +132,7 @@ const AdminPosiciones = () => {
                     }
                 })
                 .catch((err) => {
-                    if (err.message === "PHP_MISSING") {
-                        Swal.fire({
-                            icon: "warning", title: "Archivo no encontrado",
-                            html: `<p style="color:#94a3b8;font-size:13px;margin:0 0 6px">No se encontró <strong style="color:#fbbf24">${fileName}</strong> en el backend.</p><p style="color:#64748b;font-size:12px;margin:0">Crea el archivo para que el reinicio funcione.</p>`,
-                            confirmButtonColor: "#334155", background: "#0f172a", color: "#e2e8f0",
-                        });
-                    } else {
-                        Swal.fire({ toast: true, position: "top-end", icon: "error", title: `Error: ${err.message || "no se pudo reiniciar"}`, showConfirmButton: false, timer: 3500 });
-                    }
+                    Swal.fire({ toast: true, position: "top-end", icon: "error", title: `Error: ${err.message || "no se pudo reiniciar"}`, showConfirmButton: false, timer: 3500 });
                 })
                 .finally(() => setResetting(false));
         });

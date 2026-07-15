@@ -62,9 +62,9 @@ const Hero = ({ settings }) => {
   const title  = settings?.hero_title  || "Noticias y numeros que <span>genera el fútbol</span>";
   const desc   = settings?.hero_description || "Cobertura completa de todas las divisiones. Noticias, resultados y análisis del mejor fútbol salvadoreño en vivo.";
   const btn1   = settings?.hero_btn1_label || "Últimas Noticias";
-  const link1  = settings?.hero_btn1_link  || "#noticias";
+  const link1  = settings?.hero_btn1_link  || "#driver-news";
   const btn2   = settings?.hero_btn2_label || "Ver Resultados";
-  const link2  = settings?.hero_btn2_link  || "#divisiones";
+  const link2  = settings?.hero_btn2_link  || "#driver-divisions";
   const banner = settings?.hero_banner_url || "";
   return (
   <section className="hero">

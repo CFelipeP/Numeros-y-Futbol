@@ -27,7 +27,9 @@ try {
         }
 
         $stmt = $conn->prepare("
-            SELECT *
+            SELECT *,
+                   COALESCE(pos_x, posicion_x) AS pos_x,
+                   COALESCE(pos_y, posicion_y) AS pos_y
             FROM jugadores
             WHERE equipo_id = ?
             ORDER BY numero_camiseta ASC
@@ -126,7 +128,7 @@ try {
             $stmt = $conn->prepare("UPDATE equipos SET formacion = ? WHERE id = ?");
             $stmt->execute([$formacion, $equipo_id]);
 
-            $conn->prepare("UPDATE jugadores SET es_titular = 0, pos_x = NULL, pos_y = NULL WHERE equipo_id = ?")
+            $conn->prepare("UPDATE jugadores SET es_titular = 0, pos_x = NULL, pos_y = NULL, posicion_x = NULL, posicion_y = NULL WHERE equipo_id = ?")
                  ->execute([$equipo_id]);
 
             foreach ($titulares as $t) {

@@ -212,9 +212,20 @@ const catCfg = {
   delantero: { color: "#ef4444", border: "rgba(239,68,68,0.2)", label: "DELANTEROS", grad: "linear-gradient(135deg,rgba(239,68,68,0.08),rgba(239,68,68,0.02))", icon: "🎯" },
 };
 const posCompat = {
-  lateral_izquierdo: ["lateral_izquierdo", "lateral_derecho"], lateral_derecho: ["lateral_derecho", "lateral_izquierdo"], medio_defensivo: ["medio_defensivo", "medio_central"],
-  medio_central: ["medio_central", "medio_defensivo", "medio_ofensivo"], medio_ofensivo: ["medio_ofensivo", "medio_central"], extremo_izquierdo: ["extremo_izquierdo", "extremo_derecho"],
-  extremo_derecho: ["extremo_derecho", "extremo_izquierdo"], centrodelantero: ["centrodelantero", "segundo_delantero"], segundo_delantero: ["segundo_delantero", "centrodelantero"],
+  portero: ["portero"],
+  defensa: ["central", "lateral_izquierdo", "lateral_derecho", "defensa"],
+  medio: ["medio_central", "medio_defensivo", "medio_ofensivo", "extremo_izquierdo", "extremo_derecho", "medio"],
+  delantero: ["centrodelantero", "segundo_delantero", "delantero"],
+  lateral_izquierdo: ["lateral_izquierdo", "lateral_derecho", "defensa"],
+  lateral_derecho: ["lateral_derecho", "lateral_izquierdo", "defensa"],
+  central: ["central", "medio_defensivo", "defensa"],
+  medio_defensivo: ["medio_defensivo", "medio_central", "central", "medio"],
+  medio_central: ["medio_central", "medio_defensivo", "medio_ofensivo", "medio"],
+  medio_ofensivo: ["medio_ofensivo", "medio_central", "segundo_delantero", "medio"],
+  extremo_izquierdo: ["extremo_izquierdo", "extremo_derecho", "delantero", "centrodelantero"],
+  extremo_derecho: ["extremo_derecho", "extremo_izquierdo", "delantero", "centrodelantero"],
+  centrodelantero: ["centrodelantero", "segundo_delantero", "delantero"],
+  segundo_delantero: ["segundo_delantero", "centrodelantero", "medio_ofensivo", "delantero"],
 };
 function getPosInfo(v) {
   const p = posiciones.find(x => x.value === v);

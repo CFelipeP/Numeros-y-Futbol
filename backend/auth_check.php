@@ -40,9 +40,14 @@ function getCurrentUser() {
 
 function requireAdmin() {
     $user = getCurrentUser();
-    if (!$user || $user['user_role'] !== 'admin') {
+    if (!$user) {
         http_response_code(401);
         echo json_enc(["success" => false, "error" => "No autorizado"]);
+        exit;
+    }
+    if ($user['user_role'] !== 'admin') {
+        http_response_code(403);
+        echo json_enc(["success" => false, "error" => "Acceso denegado. Se requiere rol de administrador"]);
         exit;
     }
     return $user;

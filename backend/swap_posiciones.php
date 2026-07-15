@@ -18,47 +18,62 @@ if (!$entra_id || !$sale_id) {
 switch ($division) {
     case 'ascenso':
         $tabla = 'jugadores_ascenso';
-        $colX  = 'posicion_x';
-        $colY  = 'posicion_y';
         break;
     case 'femenina':
         $tabla = 'jugadores_femenina';
-        $colX  = 'posicion_x';
-        $colY  = 'posicion_y';
         break;
     default:
         $tabla = 'jugadores';
-        $colX  = 'pos_x';
-        $colY  = 'pos_y';
         break;
 }
 
 try {
     $pdo->beginTransaction();
 
-    // Obtener posición del jugador que sale
-    $stmt = $pdo->prepare("SELECT $colX AS px, $colY AS py FROM $tabla WHERE id = ?");
+    // Obtener equipo_id y posición del jugador que sale
+    $stmt = $pdo->prepare("SELECT equipo_id, COALESCE(pos_x, posicion_x) AS px, COALESCE(pos_y, posicion_y) AS py FROM $tabla WHERE id = ?");
     $stmt->execute([$sale_id]);
     $sale = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$sale) {
         $pdo->rollBack();
-        echo json_enc(["success" => false, "error" => "Jugador no encontrado"]);
+        echo json_enc(["success" => false, "error" => "Jugador que sale no encontrado"]);
+        exit;
+    }
+
+    // Verificar que el jugador que entra pertenece al mismo equipo
+    $stmt = $pdo->prepare("SELECT equipo_id FROM $tabla WHERE id = ?");
+    $stmt->execute([$entra_id]);
+    $entra = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$entra) {
+        $pdo->rollBack();
+        echo json_enc(["success" => false, "error" => "Jugador que entra no encontrado"]);
+        exit;
+    }
+
+    if ((int)$sale['equipo_id'] !== (int)$entra['equipo_id']) {
+        $pdo->rollBack();
+        echo json_enc(["success" => false, "error" => "Los jugadores no pertenecen al mismo equipo"]);
         exit;
     }
 
     $px = $sale['px'];
     $py = $sale['py'];
 
+    if ($px === null || $py === null) {
+        $pdo->rollBack();
+        echo json_enc(["success" => false, "error" => "El jugador que sale no tiene posición asignada en el campo"]);
+        exit;
+    }
+
     // Limpiar posición del que sale
-    $pdo->prepare("UPDATE $tabla SET $colX = NULL, $colY = NULL, es_titular = 0 WHERE id = ?")
+    $pdo->prepare("UPDATE $tabla SET pos_x = NULL, pos_y = NULL, posicion_x = NULL, posicion_y = NULL, es_titular = 0 WHERE id = ?")
         ->execute([$sale_id]);
 
     // Asignar la posición al que entra
-    if ($px !== null && $py !== null) {
-        $pdo->prepare("UPDATE $tabla SET $colX = ?, $colY = ?, es_titular = 1 WHERE id = ?")
-            ->execute([$px, $py, $entra_id]);
-    }
+    $pdo->prepare("UPDATE $tabla SET pos_x = ?, pos_y = ?, es_titular = 1 WHERE id = ?")
+        ->execute([$px, $py, $entra_id]);
 
     $pdo->commit();
     echo json_enc(["success" => true]);

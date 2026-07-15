@@ -60,8 +60,8 @@ try {
             $colLocal   = 'local_id';
             $colVisit   = 'visitante_id';
             $colEstado  = 'status';
-            $selectFormacion = "'4-4-2' AS local_formacion, '4-4-2' AS visitante_formacion";
-            $selectPosiciones = 'posicion_x AS pos_x, posicion_y AS pos_y';
+            $selectFormacion = 'el.formacion AS local_formacion, ev.formacion AS visitante_formacion';
+            $selectPosiciones = 'COALESCE(pos_x, posicion_x) AS pos_x, COALESCE(pos_y, posicion_y) AS pos_y';
             break;
         case 'femenina':
             $tPartidos  = 'partidos_femenina';
@@ -137,8 +137,8 @@ try {
                 $selectFormacion
 
             FROM $tPartidos p
-            INNER JOIN $tEquipos el ON p.$colLocal = el.id
-            INNER JOIN $tEquipos ev ON p.$colVisit = ev.id
+            LEFT JOIN $tEquipos el ON p.$colLocal = el.id
+            LEFT JOIN $tEquipos ev ON p.$colVisit = ev.id
             WHERE p.id = ?
             LIMIT 1
         ");

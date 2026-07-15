@@ -9,9 +9,9 @@ import {
     BarChart3, TrendingUp, Globe, ShieldAlert,
 } from "lucide-react";
 import { API_BASE } from "../config";
+import { apiFetch } from "../apiHelper";
 
 const API = API_BASE;
-const f = (url) => fetch(url).then(r => r.text()).then(t => { if (t.trim().startsWith("<")) throw new Error("err"); return JSON.parse(t); });
 
 const Analytics = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -24,12 +24,12 @@ const Analytics = () => {
 
     const fetchData = () => {
         setLoading(true);
-        Promise.all([
-            f(`${API}get_estadisticas_visitas.php?modo=${modo}`),
-        ]).then(([d]) => {
-            if (d.success) setData(d);
-        }).catch(() => Swal.fire({ toast: true, position: "top-end", icon: "error", title: "Error al cargar", showConfirmButton: false, timer: 2500 }))
-          .finally(() => setLoading(false));
+        apiFetch(`${API}get_estadisticas_visitas.php?modo=${modo}`)
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) setData(d);
+            }).catch(() => Swal.fire({ toast: true, position: "top-end", icon: "error", title: "Error al cargar", showConfirmButton: false, timer: 2500 }))
+              .finally(() => setLoading(false));
     };
 
     useEffect(() => { fetchData(); }, [modo]);
@@ -94,9 +94,12 @@ const Analytics = () => {
 
     return (
         <div className={`admin-layout ${sidebarOpen ? "sidebar-closed" : ""}`}>
+            {loading && data && (
+                <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, transparent, #3b82f6, transparent)", zIndex: 9999, animation: "spin 1s linear infinite" }} />
+            )}
             <aside className="sidebar">
                 <div className="sidebar-header">
-                    <div className="logo-icon"><img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="Logo" /></div>
+                    <div className="logo-icon"><img src="/numeros-y-futbol.svg" alt="Logo" /></div>
                     <h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2>
                 </div>
                 <nav className="sidebar-nav">
@@ -234,8 +237,6 @@ const Analytics = () => {
                 @keyframes spin { to { transform: rotate(360deg); } }
                 @media (max-width: 768px) {
                     .admin-layout { grid-template-columns: 1fr !important; }
-                    .sidebar { display: none; }
-                    .sidebar-closed .sidebar { display: none; }
                 }
                 @media (max-width: 1000px) {
                     .admin-layout { grid-template-columns: 1fr !important; }

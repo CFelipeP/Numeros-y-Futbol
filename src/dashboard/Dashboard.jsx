@@ -111,7 +111,7 @@ const AdminDashboard = () => {
   const handleReset = () => {
     Swal.fire({
       title: "¿Reiniciar temporada?",
-      html: `<p style="color:#94a3b8;font-size:14px;margin-bottom:12px;">Esta acción eliminará <strong style="color:#f87171;">todos los partidos</strong> de <strong style="color:#60a5fa;">${DIVISIONES.find(d => d.value === division).label} División</strong> y reiniciará su tabla de posiciones a cero.</p><p style="color:#64748b;font-size:12px;margin:0;">Las noticias, equipos y usuarios no se verán afectados.</p>`,
+      html: `<p style="color:#94a3b8;font-size:14px;margin-bottom:12px;">Esta acción eliminará <strong style="color:#f87171;">todos los partidos</strong> de <strong style="color:#60a5fa;">${(DIVISIONES.find(d => d.value === division) || DIVISIONES[0]).label}</strong> y reiniciará su tabla de posiciones a cero.</p><p style="color:#64748b;font-size:12px;margin:0;">Las noticias, equipos y usuarios no se verán afectados.</p>`,
       icon: "warning", showCancelButton: true, confirmButtonText: "Sí, reiniciar", cancelButtonText: "Cancelar",
       confirmButtonColor: "#ef4444", cancelButtonColor: "#374151", background: "#1e293b", color: "#fff", reverseButtons: true,
     }).then((result) => {

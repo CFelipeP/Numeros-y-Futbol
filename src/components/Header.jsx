@@ -572,7 +572,7 @@ const Header = () => {
                     {/* === BRAND === */}
                     <a href="/" className="hdr-brand" id="driver-header">
                         <img
-                            src="https://z-cdn-media.chatglm.cn/files/e7a0d70d-d782-469b-b96e-f5784f834623.png?auth_key=1870909668-3553d69b915747fd9924cb2f33dc7b2f-0-b54f8e47892d52b83bab715f69eacd2b"
+                            src="/numeros-y-futbol.svg"
                             alt="Números y Fútbol"
                             className="hdr-brand-img"
                             style={{ animation: 'none', transition: 'none' }}

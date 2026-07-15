@@ -50,6 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     $st = $conn->prepare("
         SELECT j.*,
+               COALESCE(j.pos_x, j.posicion_x) AS pos_x,
+               COALESCE(j.pos_y, j.posicion_y) AS pos_y,
                COALESCE(e.partidos_jugados,0) AS pj,
                COALESCE(e.goles,0)            AS goles,
                COALESCE(e.asistencias,0)      AS asistencias,
@@ -257,10 +259,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $titulares = json_decode($data['titulares'] ?? '[]', true);
 
         $conn->prepare("UPDATE equipos_ascenso SET formacion=? WHERE id=?")->execute([$formacion, $equipo_id]);
-        $conn->prepare("UPDATE jugadores_ascenso SET es_titular=0, posicion_x=NULL, posicion_y=NULL WHERE equipo_id=?")->execute([$equipo_id]);
+        $conn->prepare("UPDATE jugadores_ascenso SET es_titular=0, posicion_x=NULL, posicion_y=NULL, pos_x=NULL, pos_y=NULL WHERE equipo_id=?")->execute([$equipo_id]);
 
         if (!empty($titulares)) {
-            $st = $conn->prepare("UPDATE jugadores_ascenso SET es_titular=1, posicion_x=?, posicion_y=? WHERE id=? AND equipo_id=?");
+            $st = $conn->prepare("UPDATE jugadores_ascenso SET es_titular=1, pos_x=?, pos_y=? WHERE id=? AND equipo_id=?");
             foreach (array_slice($titulares, 0, 11) as $t) {
                 $st->execute([$t['x']??null, $t['y']??null, intval($t['id']), $equipo_id]);
             }

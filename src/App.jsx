@@ -60,8 +60,16 @@ function App() {
         <Route path="/primera" element={<Primera />} />
         <Route path="/news" element={<News />} />
         <Route path="/noticia/:id" element={<NewsDetail />} />
-        <Route path="/mynews" element={<ManagePublicNews />} />
-        <Route path="/posiciones" element={<AdminPosiciones />} />
+        <Route path="/mynews" element={
+          <ProtectedRoute>
+            <ManagePublicNews />
+          </ProtectedRoute>
+        } />
+        <Route path="/posiciones" element={
+          <ProtectedRoute>
+            <AdminPosiciones />
+          </ProtectedRoute>
+        } />
         <Route path="/copa-presidente" element={<CopaPresidente />} />
         <Route path="/perfil" element={<UserProfile />} />
         <Route path="/teams/primera" element={

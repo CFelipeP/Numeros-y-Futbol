@@ -52,14 +52,26 @@ function getPosInfo(v) {
 const formations = {
   "4-4-2":   [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"lateral_izquierdo",sc:"defensa",x:12,y:70 },{ sp:"central",sc:"defensa",x:36,y:74 },{ sp:"central",sc:"defensa",x:64,y:74 },{ sp:"lateral_derecho",sc:"defensa",x:88,y:70 },{ sp:"extremo_izquierdo",sc:"medio",x:18,y:48 },{ sp:"medio_central",sc:"medio",x:40,y:46 },{ sp:"medio_central",sc:"medio",x:60,y:46 },{ sp:"extremo_derecho",sc:"medio",x:82,y:48 },{ sp:"centrodelantero",sc:"delantero",x:36,y:22 },{ sp:"centrodelantero",sc:"delantero",x:64,y:22 }],
   "4-3-3":   [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"lateral_izquierdo",sc:"defensa",x:12,y:70 },{ sp:"central",sc:"defensa",x:36,y:74 },{ sp:"central",sc:"defensa",x:64,y:74 },{ sp:"lateral_derecho",sc:"defensa",x:88,y:70 },{ sp:"medio_defensivo",sc:"medio",x:28,y:48 },{ sp:"medio_central",sc:"medio",x:50,y:44 },{ sp:"medio_defensivo",sc:"medio",x:72,y:48 },{ sp:"extremo_izquierdo",sc:"medio",x:18,y:22 },{ sp:"centrodelantero",sc:"delantero",x:50,y:18 },{ sp:"extremo_derecho",sc:"medio",x:82,y:22 }],
+  "3-5-2":   [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"central",sc:"defensa",x:25,y:74 },{ sp:"central",sc:"defensa",x:50,y:76 },{ sp:"central",sc:"defensa",x:75,y:74 },{ sp:"lateral_izquierdo",sc:"defensa",x:10,y:50 },{ sp:"medio_central",sc:"medio",x:30,y:48 },{ sp:"medio_central",sc:"medio",x:50,y:44 },{ sp:"medio_central",sc:"medio",x:70,y:48 },{ sp:"lateral_derecho",sc:"defensa",x:90,y:50 },{ sp:"centrodelantero",sc:"delantero",x:36,y:22 },{ sp:"centrodelantero",sc:"delantero",x:64,y:22 }],
   "4-2-3-1": [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"lateral_izquierdo",sc:"defensa",x:12,y:70 },{ sp:"central",sc:"defensa",x:36,y:74 },{ sp:"central",sc:"defensa",x:64,y:74 },{ sp:"lateral_derecho",sc:"defensa",x:88,y:70 },{ sp:"medio_defensivo",sc:"medio",x:38,y:56 },{ sp:"medio_defensivo",sc:"medio",x:62,y:56 },{ sp:"extremo_izquierdo",sc:"medio",x:20,y:38 },{ sp:"medio_ofensivo",sc:"medio",x:50,y:34 },{ sp:"extremo_derecho",sc:"medio",x:80,y:38 },{ sp:"centrodelantero",sc:"delantero",x:50,y:18 }],
+  "5-3-2":   [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"lateral_izquierdo",sc:"defensa",x:8,y:66 },{ sp:"central",sc:"defensa",x:28,y:74 },{ sp:"central",sc:"defensa",x:50,y:76 },{ sp:"central",sc:"defensa",x:72,y:74 },{ sp:"lateral_derecho",sc:"defensa",x:92,y:66 },{ sp:"medio_central",sc:"medio",x:28,y:48 },{ sp:"medio_central",sc:"medio",x:50,y:44 },{ sp:"medio_central",sc:"medio",x:72,y:48 },{ sp:"centrodelantero",sc:"delantero",x:36,y:22 },{ sp:"centrodelantero",sc:"delantero",x:64,y:22 }],
+  "3-4-3":   [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"central",sc:"defensa",x:25,y:74 },{ sp:"central",sc:"defensa",x:50,y:76 },{ sp:"central",sc:"defensa",x:75,y:74 },{ sp:"extremo_izquierdo",sc:"medio",x:12,y:50 },{ sp:"medio_central",sc:"medio",x:38,y:48 },{ sp:"medio_central",sc:"medio",x:62,y:48 },{ sp:"extremo_derecho",sc:"medio",x:88,y:50 },{ sp:"extremo_izquierdo",sc:"medio",x:18,y:22 },{ sp:"centrodelantero",sc:"delantero",x:50,y:18 },{ sp:"extremo_derecho",sc:"medio",x:82,y:22 }],
 };
 const posCompat = {
-  lateral_izquierdo: ["lateral_izquierdo","lateral_derecho","extremo_izquierdo"], lateral_derecho: ["lateral_derecho","lateral_izquierdo","extremo_derecho"],
-  medio_defensivo: ["medio_defensivo","medio_central"], medio_central: ["medio_central","medio_defensivo","medio_ofensivo"],
-  medio_ofensivo: ["medio_ofensivo","medio_central","centrodelantero"], extremo_izquierdo: ["extremo_izquierdo","lateral_izquierdo","extremo_derecho"],
-  extremo_derecho: ["extremo_derecho","lateral_derecho","extremo_izquierdo"], centrodelantero: ["centrodelantero","segundo_delantero","medio_ofensivo"],
-  segundo_delantero: ["segundo_delantero","centrodelantero","extremo_izquierdo"],
+  portero: ["portero"],
+  defensa: ["central", "lateral_izquierdo", "lateral_derecho", "defensa"],
+  medio: ["medio_central", "medio_defensivo", "medio_ofensivo", "extremo_izquierdo", "extremo_derecho", "medio"],
+  delantero: ["centrodelantero", "segundo_delantero", "delantero"],
+  lateral_izquierdo: ["lateral_izquierdo", "lateral_derecho", "defensa"],
+  lateral_derecho: ["lateral_derecho", "lateral_izquierdo", "defensa"],
+  central: ["central", "medio_defensivo", "defensa"],
+  medio_defensivo: ["medio_defensivo", "medio_central", "central", "medio"],
+  medio_central: ["medio_central", "medio_defensivo", "medio_ofensivo", "medio"],
+  medio_ofensivo: ["medio_ofensivo", "medio_central", "segundo_delantero", "medio"],
+  extremo_izquierdo: ["extremo_izquierdo", "extremo_derecho", "delantero", "centrodelantero"],
+  extremo_derecho: ["extremo_derecho", "extremo_izquierdo", "delantero", "centrodelantero"],
+  centrodelantero: ["centrodelantero", "segundo_delantero", "delantero"],
+  segundo_delantero: ["segundo_delantero", "centrodelantero", "medio_ofensivo", "delantero"],
 };
 function autoAssign(jugadores, fKey) {
   const tpl = formations[fKey] || formations["4-4-2"];
@@ -248,7 +260,7 @@ export default function ManageMatchComments() {
     setLoadingMatches(true);
     try {
       const suf = selectedDiv==="ascenso"?"_ascenso":selectedDiv==="femenina"?"_femenina":"";
-      const res  = await fetch(`${API}get_matches${suf}.php`);
+      const res  = await apiPost(`${API}get_matches${suf}.php`);
       const data = await res.json();
       setMatches(Array.isArray(data) ? data : []);
     } catch (_) { setMatches([]); }
@@ -285,7 +297,7 @@ export default function ManageMatchComments() {
       case "asistencia":     return `👟 Asistencia de ${jugNombre||"Jugador"} para el gol de ${nombreEquipoSel}.`;
       case "tarjeta_amarilla":return `🟨 Tarjeta amarilla para ${jugNombre||"Jugador"} de ${nombreEquipoSel}. Minuto ${min}.`;
       case "tarjeta_roja":   return `🟥 ¡Tarjeta ROJA! ${jugNombre||"Jugador"} queda expulsado. Minuto ${min}.`;
-      case "cambio":         return `🔄 Cambio en ${nombreEquipoSel}: Sale ${jug2Nombre||"Jugador"}, entra ${jugNombre||"Jugador"}. Minuto ${min}. [SALE:${jug2Id||""}]`;
+      case "cambio":         return `🔄 Cambio en ${nombreEquipoSel}: Sale ${jug2Nombre||"Jugador"}, entra ${jugNombre||"Jugador"}. Minuto ${min}.${jug2Id ? ` [SALE:${jug2Id}]` : ""}`;
       case "inicio":         return semitiem===1 ? "▶️ ¡Arranca el partido! Primera parte en juego." : "▶️ ¡Empieza la segunda parte!";
       case "descanso":       return `☕ Pitido final de la primera mitad. Descanso con el marcador ${partido?.goles_local??0}-${partido?.goles_visitante??0}.`;
       case "fin":            return `🏁 ¡Pitido final! Resultado definitivo: ${partido?.local_nombre} ${partido?.goles_local??0} - ${partido?.goles_visitante??0} ${partido?.visitante_nombre}.`;
@@ -298,12 +310,13 @@ export default function ManageMatchComments() {
     const jug  = jugadoresActuales.find(j=>String(j.id)===String(jugadorSel));
     const jug2 = jugadoresActuales.find(j=>String(j.id)===String(jugadorSel2));
     setDescripcion(genDescripcion(tipo, jug?.nombre, jug2?.nombre, jug2?.id));
-  }, [tipo, jugadorSel, jugadorSel2, equipoSel]);
+  }, [tipo, jugadorSel, jugadorSel2, equipoSel, jugadoresLocal, jugadoresVisitante]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedPartido) { Swal.fire({icon:"warning",title:"Selecciona un partido",toast:true,position:"top-end",showConfirmButton:false,timer:2000}); return; }
     if (!descripcion.trim()) { Swal.fire({icon:"warning",title:"Escribe la descripción",toast:true,position:"top-end",showConfirmButton:false,timer:2000}); return; }
+    if (tipo === "cambio" && (!jugadorSel || !jugadorSel2)) { Swal.fire({icon:"warning",title:"Selecciona el jugador que entra y el que sale",toast:true,position:"top-end",showConfirmButton:false,timer:2000}); return; }
 
     const tipoOpt = T(tipo);
     const minNum  = parseInt(minuto) || minutoActual;
@@ -323,12 +336,25 @@ export default function ManageMatchComments() {
       const data = await res.json();
 
       if (data.success) {
+        const commentId = data.id;
         const esGol = ["gol","gol_penal","gol_cabeza","gol_tiro_libre"].includes(tipo);
         if (esGol) {
-          const scoreRes = await apiPost(`${API}update_match_score_live.php`, { partido_id: parseInt(selectedPartido), division: selectedDiv, equipo: equipoSel, delta: 1 });
-          const scoreData = await scoreRes.json();
-          if (scoreData.success && partido) {
-            setPartido(prev => ({ ...prev, goles_local: scoreData.goles_local, goles_visitante: scoreData.goles_visitante }));
+          try {
+            const scoreRes = await apiPost(`${API}update_match_score_live.php`, { partido_id: parseInt(selectedPartido), division: selectedDiv, equipo: equipoSel, delta: 1 });
+            const scoreData = await scoreRes.json();
+            if (scoreData.success && partido) {
+              setPartido(prev => ({ ...prev, goles_local: scoreData.goles_local, goles_visitante: scoreData.goles_visitante }));
+            } else {
+              await apiPost(`${API}delete_match_comment.php`, { id: commentId });
+              Swal.fire("Error", scoreData.error || "No se pudo actualizar el marcador. Se eliminó el evento.", "error");
+              setSubmitting(false);
+              return;
+            }
+          } catch (_) {
+            await apiPost(`${API}delete_match_comment.php`, { id: commentId });
+            Swal.fire("Error", "Error de conexión al actualizar el marcador. Se eliminó el evento.", "error");
+            setSubmitting(false);
+            return;
           }
         }
 
@@ -373,6 +399,12 @@ export default function ManageMatchComments() {
         if (tipoOpt.stat && c.jugador_id) {
           await apiPost(`${API}update_stat_from_comment.php`, { jugador_id:c.jugador_id, division:selectedDiv, tipo:tipoOpt.stat, subtipo:tipoOpt.subtipo||"", deshacer:true });
         }
+        if (c.tipo === "cambio" && c.descripcion) {
+          const saleId = (c.descripcion.match(/\[SALE:(\d+)\]/) || [])[1];
+          if (saleId && c.jugador_id) {
+            await apiPost(`${API}swap_posiciones.php`, { entra_id: parseInt(saleId), sale_id: parseInt(c.jugador_id), division: selectedDiv });
+          }
+        }
         fetchDetail();
         Swal.fire({icon:"success",title:"Eliminado",toast:true,position:"top-end",showConfirmButton:false,timer:1500});
       }
@@ -403,6 +435,52 @@ export default function ManageMatchComments() {
       });
       const data = await res.json();
       if (data.success) {
+        const oldTipoOpt = T(editingComment.tipo);
+        const newTipoOpt = T(editTipo);
+        const oldTipo = editingComment.tipo;
+        const newTipo = editTipo;
+
+        // Reverse old stats if tipo or jugador changed
+        if (oldTipoOpt.stat && (oldTipo !== newTipo || String(editingComment.jugador_id) !== String(editJugadorSel))) {
+          await apiPost(`${API}update_stat_from_comment.php`, { jugador_id: parseInt(editingComment.jugador_id), division: selectedDiv, tipo: oldTipoOpt.stat, subtipo: oldTipoOpt.subtipo || "", deshacer: true });
+        }
+        // Apply new stats
+        if (newTipoOpt.stat && editJugadorSel && (oldTipo !== newTipo || String(editingComment.jugador_id) !== String(editJugadorSel))) {
+          await apiPost(`${API}update_stat_from_comment.php`, { jugador_id: parseInt(editJugadorSel), division: selectedDiv, tipo: newTipoOpt.stat, subtipo: newTipoOpt.subtipo || "", deshacer: false });
+        }
+
+        // Reverse old cambio swap
+        if (oldTipo === "cambio" && editingComment.descripcion) {
+          const m = (editingComment.descripcion.match(/\[SALE:(\d+)\]/) || []);
+          if (m[1] && editingComment.jugador_id) {
+            await apiPost(`${API}swap_posiciones.php`, { entra_id: parseInt(m[1]), sale_id: parseInt(editingComment.jugador_id), division: selectedDiv });
+          }
+        }
+        // Apply new cambio swap
+        if (newTipo === "cambio" && editJugadorSel) {
+          const nm = (editDescripcion.match(/\[SALE:(\d+)\]/) || []);
+          const saleId = nm[1];
+          if (saleId) {
+            await apiPost(`${API}swap_posiciones.php`, { entra_id: parseInt(editJugadorSel), sale_id: parseInt(saleId), division: selectedDiv });
+          }
+        }
+
+        // Update score if gol types changed
+        const oldGol = ["gol","gol_penal","gol_cabeza","gol_tiro_libre"].includes(oldTipo);
+        const newGol = ["gol","gol_penal","gol_cabeza","gol_tiro_libre"].includes(newTipo);
+        if (oldGol && !newGol) {
+          const eq = editingComment.equipo === partido?.visitante_nombre ? "visitante" : "local";
+          await apiPost(`${API}update_match_score_live.php`, { partido_id: parseInt(selectedPartido), division: selectedDiv, equipo: eq, delta: -1 });
+        } else if (!oldGol && newGol) {
+          await apiPost(`${API}update_match_score_live.php`, { partido_id: parseInt(selectedPartido), division: selectedDiv, equipo: editEquipoSel, delta: 1 });
+        } else if (oldGol && newGol) {
+          const oldEq = editingComment.equipo === partido?.visitante_nombre ? "visitante" : "local";
+          if (oldEq !== editEquipoSel) {
+            await apiPost(`${API}update_match_score_live.php`, { partido_id: parseInt(selectedPartido), division: selectedDiv, equipo: oldEq, delta: -1 });
+            await apiPost(`${API}update_match_score_live.php`, { partido_id: parseInt(selectedPartido), division: selectedDiv, equipo: editEquipoSel, delta: 1 });
+          }
+        }
+
         Swal.fire({icon:"success",title:"Evento actualizado",toast:true,position:"top-end",showConfirmButton:false,timer:1400});
         setEditingComment(null);
         fetchDetail();
@@ -529,7 +607,7 @@ export default function ManageMatchComments() {
                 <p style={{margin:"0 0 10px",fontSize:12,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1}}>División</p>
                 <div style={{display:"flex",gap:8}}>
                   {["primera","ascenso","femenina"].map(d=>(
-                    <button key={d} onClick={()=>{setSelectedDiv(d);setSelectedPartido("");setPartido(null);setComentarios([]);setCronActivo(false);setCronSegundos(0);setSemitiem(1);}}
+                    <button key={d} onClick={()=>{clearTimerData();setSelectedDiv(d);setSelectedPartido("");setPartido(null);setComentarios([]);setCronActivo(false);setCronSegundos(0);setSemitiem(1);}}
                       style={{flex:1,padding:"8px 4px",border:`1px solid ${selectedDiv===d?"var(--accent-red)":"var(--border)"}`,borderRadius:8,background:selectedDiv===d?"rgba(239,68,68,0.15)":"transparent",color:selectedDiv===d?"var(--accent-red)":"var(--text-muted)",fontWeight:700,fontSize:12,cursor:"pointer",textTransform:"capitalize",transition:"all .2s",fontFamily:"inherit"}}>
                       {d.charAt(0).toUpperCase()+d.slice(1)}
                     </button>

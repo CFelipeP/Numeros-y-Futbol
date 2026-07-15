@@ -45,6 +45,9 @@ $user = $sql->fetch(PDO::FETCH_ASSOC);
 if ($user && password_verify($password, $user['password'])) {
     $token = bin2hex(random_bytes(32));
 
+    // Invalidar tokens viejos del mismo usuario
+    $pdo->prepare("DELETE FROM auth_tokens WHERE user_id = ?")->execute([$user['id']]);
+
     $stmt = $mysqli->prepare(
         "INSERT INTO auth_tokens (token, user_id, user_role, expires_at) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))"
     );
@@ -57,7 +60,7 @@ if ($user && password_verify($password, $user['password'])) {
         "nombre" => $user['nombre'],
         "apodo"  => $user['apodo'],
         "email"  => $user['email'],
-        "rol"    => $user['rol'],
+        "rol"    => strtolower($user['rol']),
         "token"  => $token
     ]);
 } else {

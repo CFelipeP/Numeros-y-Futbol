@@ -18,7 +18,7 @@ $division = $input['division'] ?? 'primera';
 $validDivisions = [
     'primera' => ['partidos', 'tabla_posiciones', "partidos_jugados = 0, ganados = 0, empatados = 0, perdidos = 0, goles_favor = 0, goles_contra = 0, puntos = 0"],
     'segunda' => ['partidos_segunda', 'tabla_posiciones_segunda', 'pj = 0, pg = 0, pe = 0, pp = 0, gf = 0, gc = 0, dg = 0, pts = 0'],
-    'ascenso' => ['partidos_segunda', 'tabla_posiciones_segunda', 'pj = 0, pg = 0, pe = 0, pp = 0, gf = 0, gc = 0, dg = 0, pts = 0'],
+    'ascenso' => ['partidos_ascenso', 'tabla_posiciones_ascenso', 'pj = 0, pg = 0, pe = 0, pp = 0, gf = 0, gc = 0, dg = 0, pts = 0'],
     'tercera' => ['partidos_tercera', 'tabla_posiciones_tercera', 'pj = 0, pg = 0, pe = 0, pp = 0, gf = 0, gc = 0, dg = 0, pts = 0'],
     'femenina' => ['partidos_femenina', 'tabla_posiciones_femenina', 'partidos_jugados = 0, ganados = 0, empatados = 0, perdidos = 0, goles_favor = 0, goles_contra = 0, puntos = 0'],
 ];

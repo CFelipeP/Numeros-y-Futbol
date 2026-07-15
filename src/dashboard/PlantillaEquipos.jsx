@@ -40,8 +40,8 @@ const posiciones = [
   { value: "medio_defensivo", label: "Medio Defensivo", cat: "medio", color: "#10b981", abbr: "MCD" },
   { value: "medio_central", label: "Medio Central", cat: "medio", color: "#10b981", abbr: "MC" },
   { value: "medio_ofensivo", label: "Medio Ofensivo", cat: "medio", color: "#059669", abbr: "MCO" },
-  { value: "extremo_izquierdo", label: "Ext. Izquierdo", cat: "delantero", color: "#f97316", abbr: "EI" },
-  { value: "extremo_derecho", label: "Ext. Derecho", cat: "delantero", color: "#f97316", abbr: "ED" },
+  { value: "extremo_izquierdo", label: "Ext. Izquierdo", cat: "medio", color: "#6ee7b7", abbr: "EI" },
+  { value: "extremo_derecho", label: "Ext. Derecho", cat: "medio", color: "#6ee7b7", abbr: "ED" },
   { value: "centrodelantero", label: "Centrodelantero", cat: "delantero", color: "#ef4444", abbr: "DC" },
   { value: "segundo_delantero", label: "2do Delantero", cat: "delantero", color: "#f87171", abbr: "SD" },
 ];
@@ -124,8 +124,8 @@ const formations = {
     { sp: "portero", sc: "portero", x: 50, y: 90 },
     { sp: "lateral_izquierdo", sc: "defensa", x: 12, y: 70 }, { sp: "central", sc: "defensa", x: 36, y: 74 },
     { sp: "central", sc: "defensa", x: 64, y: 74 }, { sp: "lateral_derecho", sc: "defensa", x: 88, y: 70 },
-    { sp: "extremo_izquierdo", sc: "delantero", x: 18, y: 48 }, { sp: "medio_central", sc: "medio", x: 40, y: 46 },
-    { sp: "medio_central", sc: "medio", x: 60, y: 46 }, { sp: "extremo_derecho", sc: "delantero", x: 82, y: 48 },
+    { sp: "extremo_izquierdo", sc: "medio", x: 18, y: 48 }, { sp: "medio_central", sc: "medio", x: 40, y: 46 },
+    { sp: "medio_central", sc: "medio", x: 60, y: 46 }, { sp: "extremo_derecho", sc: "medio", x: 82, y: 48 },
     { sp: "centrodelantero", sc: "delantero", x: 36, y: 22 }, { sp: "centrodelantero", sc: "delantero", x: 64, y: 22 },
   ],
   "4-3-3": [
@@ -134,8 +134,8 @@ const formations = {
     { sp: "central", sc: "defensa", x: 64, y: 74 }, { sp: "lateral_derecho", sc: "defensa", x: 88, y: 70 },
     { sp: "medio_defensivo", sc: "medio", x: 28, y: 48 }, { sp: "medio_central", sc: "medio", x: 50, y: 44 },
     { sp: "medio_defensivo", sc: "medio", x: 72, y: 48 },
-    { sp: "extremo_izquierdo", sc: "delantero", x: 18, y: 22 }, { sp: "centrodelantero", sc: "delantero", x: 50, y: 18 },
-    { sp: "extremo_derecho", sc: "delantero", x: 82, y: 22 },
+    { sp: "extremo_izquierdo", sc: "medio", x: 18, y: 22 }, { sp: "centrodelantero", sc: "delantero", x: 50, y: 18 },
+    { sp: "extremo_derecho", sc: "medio", x: 82, y: 22 },
   ],
   "3-5-2": [
     { sp: "portero", sc: "portero", x: 50, y: 90 },
@@ -150,8 +150,8 @@ const formations = {
     { sp: "lateral_izquierdo", sc: "defensa", x: 12, y: 70 }, { sp: "central", sc: "defensa", x: 36, y: 74 },
     { sp: "central", sc: "defensa", x: 64, y: 74 }, { sp: "lateral_derecho", sc: "defensa", x: 88, y: 70 },
     { sp: "medio_defensivo", sc: "medio", x: 38, y: 56 }, { sp: "medio_defensivo", sc: "medio", x: 62, y: 56 },
-    { sp: "extremo_izquierdo", sc: "delantero", x: 20, y: 38 }, { sp: "medio_ofensivo", sc: "medio", x: 50, y: 34 },
-    { sp: "extremo_derecho", sc: "delantero", x: 80, y: 38 },
+    { sp: "extremo_izquierdo", sc: "medio", x: 20, y: 38 }, { sp: "medio_ofensivo", sc: "medio", x: 50, y: 34 },
+    { sp: "extremo_derecho", sc: "medio", x: 80, y: 38 },
     { sp: "centrodelantero", sc: "delantero", x: 50, y: 18 },
   ],
   "5-3-2": [
@@ -166,20 +166,21 @@ const formations = {
   "3-4-3": [
     { sp: "portero", sc: "portero", x: 50, y: 90 },
     { sp: "central", sc: "defensa", x: 25, y: 74 }, { sp: "central", sc: "defensa", x: 50, y: 76 }, { sp: "central", sc: "defensa", x: 75, y: 74 },
-    { sp: "extremo_izquierdo", sc: "delantero", x: 12, y: 50 }, { sp: "medio_central", sc: "medio", x: 38, y: 48 },
-    { sp: "medio_central", sc: "medio", x: 62, y: 48 }, { sp: "extremo_derecho", sc: "delantero", x: 88, y: 50 },
-    { sp: "extremo_izquierdo", sc: "delantero", x: 18, y: 22 }, { sp: "centrodelantero", sc: "delantero", x: 50, y: 18 },
-    { sp: "extremo_derecho", sc: "delantero", x: 82, y: 22 },
+    { sp: "extremo_izquierdo", sc: "medio", x: 12, y: 50 }, { sp: "medio_central", sc: "medio", x: 38, y: 48 },
+    { sp: "medio_central", sc: "medio", x: 62, y: 48 }, { sp: "extremo_derecho", sc: "medio", x: 88, y: 50 },
+    { sp: "extremo_izquierdo", sc: "medio", x: 18, y: 22 }, { sp: "centrodelantero", sc: "delantero", x: 50, y: 18 },
+    { sp: "extremo_derecho", sc: "medio", x: 82, y: 22 },
   ],
 };
 
-// ─── autoAssign: asigna jugadores a slots SIN depender de es_titular ─────────
+// ─── autoAssign: asigna jugadores a slots ─────────────────────────────────────
 function autoAssign(jugadores, fKey) {
   const tpl = formations[fKey];
   if (!tpl || !jugadores?.length) return { starters: [], subs: [...jugadores] };
 
   const sorted = [...jugadores].sort((a, b) => {
-    // Ordenar por posición compatible primero, luego por nombre
+    if (b.es_titular == 1 && a.es_titular != 1) return 1;
+    if (a.es_titular == 1 && b.es_titular != 1) return -1;
     const posA = normalizarPosicion(a.posicion);
     const posB = normalizarPosicion(b.posicion);
     return posA.localeCompare(posB);
@@ -378,6 +379,7 @@ export default function PlantillaAdmin() {
   const [editStats, setEditStats] = useState(null);
   const [saving, setSaving] = useState(false);
   const [slots, setSlots] = useState([]);
+  const slotsRef = useRef(slots);
   // Form SIN es_titular
   const [form, setForm] = useState({
     nombre: "", posicion: "centrodelantero", numero_camiseta: "",
@@ -404,6 +406,7 @@ export default function PlantillaAdmin() {
 
   useEffect(() => { localStorage.setItem("admin_division", division); }, [division]);
   useEffect(() => { if (window.innerWidth > 768) setSidebarOpen(true); }, []);
+  useEffect(() => { slotsRef.current = slots; }, [slots]);
   useEffect(() => {
     const h = e => { if (divRef.current && !divRef.current.contains(e.target)) setDivDD(false); };
     document.addEventListener("mousedown", h);
@@ -574,12 +577,13 @@ export default function PlantillaAdmin() {
     setSwapModal(true);
   }, [slotIds]);
 
-  // ─── Ejecutar el cambio (solo UI, sin backend) ───────────────────────────
+  // ─── Ejecutar el cambio y persistir ──────────────────────────────────────
   const executeSwap = useCallback(async (otro) => {
     setSwapModal(false);
-    if (!swapPlayer || !otro || swapPlayer.id === otro.id) return;
+    const sp = swapPlayer;
+    if (!sp || !otro || sp.id === otro.id) return;
 
-    const posA = normalizarPosicion(swapPlayer.posicion);
+    const posA = normalizarPosicion(sp.posicion);
     const posB = normalizarPosicion(otro.posicion);
 
     if (posA !== posB) {
@@ -596,35 +600,32 @@ export default function PlantillaAdmin() {
       if (!confirm.isConfirmed) return;
     }
 
-    setSlots(prev => {
-      return prev.map(slot => {
-        // CASO 1: swapPlayer está en cancha → sale
-        if (slot.jugador.id === swapPlayer.id) {
-          return { ...slot, jugador: otro };
-        }
-
-        // CASO 2: otro está en cancha → sale
-        if (slot.jugador.id === otro.id) {
-          return { ...slot, jugador: swapPlayer };
-        }
-
-        return slot;
-      });
+    const prev = slotsRef.current;
+    const newSlots = prev.map(slot => {
+      if (slot.jugador.id === sp.id) return { ...slot, jugador: otro };
+      if (slot.jugador.id === otro.id) return { ...slot, jugador: sp };
+      return slot;
     });
+    setSlots(newSlots);
+
+    try {
+      const ep = getEndpoints(division);
+      await api.post(rel(ep.crud), {
+        action: "save_formation",
+        equipo_id: equipoId,
+        formacion,
+        titulares: JSON.stringify(newSlots.map(s => ({ id: s.jugador.id, x: s.x, y: s.y })))
+      }, { headers: getAuthHeaders() });
+    } catch (_) {}
 
     Swal.fire({
-      toast: true,
-      position: "top-end",
-      icon: "success",
-      title: "Cambio realizado",
-      showConfirmButton: false,
-      timer: 1200,
-      background: "#1e293b",
-      color: "#fff"
+      toast: true, position: "top-end", icon: "success",
+      title: "Cambio realizado", showConfirmButton: false,
+      timer: 1200, background: "#1e293b", color: "#fff"
     });
 
-    setSwapPlayer(null);
-  }, [swapPlayer]);
+    setSwapPlayer(prev => prev?.id === sp.id ? null : prev);
+  }, [swapPlayer, equipoId, formacion, division]);
 
 
   const closeSwap = useCallback(() => {
@@ -767,6 +768,19 @@ export default function PlantillaAdmin() {
       });
       return;
     }
+
+    const confirm = await Swal.fire({
+      background: "#1e293b",
+      color: "#fff",
+      icon: "warning",
+      title: "¿Guardar formación?",
+      text: "Se restablecerán las posiciones de TODOS los jugadores del equipo. Si este equipo tiene partidos en curso con cambios tácticos, esas posiciones se perderán.",
+      showCancelButton: true,
+      confirmButtonText: "Guardar",
+      confirmButtonColor: "#ef4444",
+      cancelButtonText: "Cancelar"
+    });
+    if (!confirm.isConfirmed) return;
 
     setSaving(true);
     const ep = getEndpoints(division);

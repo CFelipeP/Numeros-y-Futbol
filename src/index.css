@@ -294,7 +294,7 @@ img {
   width: 100%;
   height: 100%;
   /* NUEVA IMAGEN DEL BANNER AQUI */
-  background-image: url('https://z-cdn-media.chatglm.cn/files/5838caa0-1db5-471c-a0b7-615971e5c6a9.png?auth_key=1874475322-63d59502a9bd4eccb11f4451b8b598a8-0-73a0c525630ab96d6c6d289fa8ba3645');
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   background-size: cover;
   background-position: center;
   z-index: 1;
@@ -443,7 +443,7 @@ img {
   font-weight: 600;
   color: var(--color-text-muted);
   white-space: nowrap;
-  overflow: var(--shadow-neon);
+  overflow: hidden;
   text-overflow: ellipsis;
   max-width: 90px;
 }

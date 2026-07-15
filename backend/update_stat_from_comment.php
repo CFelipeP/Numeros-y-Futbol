@@ -19,8 +19,9 @@ if (!$jugador_id || !$tipo) {
 
 // Tabla de stats según división
 switch ($division) {
-    case 'ascenso': $tabla = 'estadisticas_jugadores_ascenso'; break;
-    default:        $tabla = 'estadisticas_jugadores';         break;
+    case 'ascenso':  $tabla = 'estadisticas_jugadores_ascenso';  break;
+    case 'femenina': $tabla = 'estadisticas_jugadores_femenina'; break;
+    default:         $tabla = 'estadisticas_jugadores';          break;
 }
 
 $delta = $deshacer ? -1 : 1;

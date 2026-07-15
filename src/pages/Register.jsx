@@ -104,10 +104,11 @@ export default function Register() {
 
         } catch (error) {
             setLoading(false);
+            const mensaje = error.response?.data?.error || "Error de conexión. Intenta de nuevo.";
             Swal.fire({
                 icon: "error",
                 title: "Error",
-                text: "Error de conexión. Intenta de nuevo.",
+                text: mensaje,
                 confirmButtonText: "Entendido"
             });
         }

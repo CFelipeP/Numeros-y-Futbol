@@ -13,24 +13,31 @@ import {
 import { apiFetch } from "../apiHelper";
 import { API_BASE } from "../config";
 
+const API = API_BASE;
+
 const ManageUsers = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [teamsOpen, setTeamsOpen] = useState(false);
   const [seleccionesOpen, setSeleccionesOpen] = useState(false);
   const location = useLocation();
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     if (location.pathname.startsWith("/teams/")) setTeamsOpen(true);
   }, [location.pathname]);
 
-  useEffect(() => {
-    apiFetch(`${API_BASE}get_users.php`)
-      .then(res => res.json())
-      .then(data => { if (Array.isArray(data)) setUsers(data); else setUsers([]); })
-      .catch(() => setUsers([]));
-  }, []);
+  const fetchUsers = async () => {
+    try {
+      const res = await apiFetch(`${API}crud_usuarios.php`);
+      const data = await res.json();
+      setUsers(data.users || []);
+    } catch (_) { setUsers([]); }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchUsers(); }, []);
 
   const handleLogout = () => {
     Swal.fire({
@@ -48,52 +55,127 @@ const ManageUsers = () => {
     Swal.fire({
       title: "Agregar Nuevo Usuario",
       html:
-        '<input id="swal-name" class="swal2-input" placeholder="Nombre completo">' +
-        '<input id="swal-email" type="email" class="swal2-input" placeholder="Correo electrónico">' +
+        '<input id="swal-name" class="swal2-input" placeholder="Nombre completo" required>' +
+        '<input id="swal-apodo" class="swal2-input" placeholder="Nombre de usuario" required>' +
+        '<input id="swal-email" type="email" class="swal2-input" placeholder="Correo electrónico" required>' +
+        '<input id="swal-password" type="password" class="swal2-input" placeholder="Contraseña (mín. 6 caracteres)" required>' +
         '<select id="swal-role" class="swal2-select" style="width: 100%; margin-top: 1rem; padding: 0.8rem; background: #0b1120; color: white; border-radius: 8px; border: 1px solid #374151;">' +
-        '<option value="Usuario">Usuario</option>' +
-        '<option value="Editor">Editor</option>' +
-        '<option value="Administrador">Administrador</option>' +
+        '<option value="usuario">Usuario</option>' +
+        '<option value="editor">Editor</option>' +
+        '<option value="admin">Administrador</option>' +
         '</select>',
       showCancelButton: true,
       confirmButtonText: "Agregar",
       preConfirm: () => {
-        const name = document.getElementById("swal-name").value;
-        const email = document.getElementById("swal-email").value;
-        const role = document.getElementById("swal-role").value;
+        const nombre = document.getElementById("swal-name").value.trim();
+        const apodo = document.getElementById("swal-apodo").value.trim();
+        const email = document.getElementById("swal-email").value.trim();
+        const password = document.getElementById("swal-password").value.trim();
+        const rol = document.getElementById("swal-role").value;
 
-        if (!name || !email) {
-          Swal.showValidationMessage("Nombre y email son obligatorios");
+        if (!nombre || !apodo || !email || !password) {
+          Swal.showValidationMessage("Todos los campos son obligatorios");
           return false;
         }
-        return { name, email, role };
+        if (password.length < 6) {
+          Swal.showValidationMessage("La contraseña debe tener al menos 6 caracteres");
+          return false;
+        }
+        return { nombre, apodo, email, password, rol };
       }
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.value) {
-        const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(result.value.name)}&background=random&color=fff`;
-        const newUser = { id: Date.now(), ...result.value, avatar: avatarUrl, status: "Activo" };
-        setUsers([...users, newUser]);
-        Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Usuario creado", showConfirmButton: false, timer: 1500 });
+        try {
+          const res = await apiFetch(`${API}crud_usuarios.php`, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'create', ...result.value })
+          });
+          const data = await res.json();
+          if (data.success) {
+            Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Usuario creado", showConfirmButton: false, timer: 1500 });
+            fetchUsers();
+          } else {
+            Swal.fire("Error", data.error || "No se pudo crear", "error");
+          }
+        } catch (_) { Swal.fire("Error", "Error de conexión", "error"); }
       }
     });
   };
 
-  const deleteUser = (id, name) => {
-    if (currentUser?.id === id) {
+  const editUser = (u) => {
+    Swal.fire({
+      title: "Editar Usuario",
+      html:
+        `<input id="swal-name" class="swal2-input" placeholder="Nombre completo" value="${u.nombre || ''}">` +
+        `<input id="swal-apodo" class="swal2-input" placeholder="Nombre de usuario" value="${u.apodo || ''}">` +
+        `<input id="swal-email" type="email" class="swal2-input" placeholder="Correo electrónico" value="${u.email || ''}">` +
+        `<input id="swal-password" type="password" class="swal2-input" placeholder="Nueva contraseña (dejar vacío para no cambiar)">` +
+        `<select id="swal-role" class="swal2-select" style="width: 100%; margin-top: 1rem; padding: 0.8rem; background: #0b1120; color: white; border-radius: 8px; border: 1px solid #374151;">` +
+        `<option value="usuario" ${u.rol === 'usuario' ? 'selected' : ''}>Usuario</option>` +
+        `<option value="editor" ${u.rol === 'editor' ? 'selected' : ''}>Editor</option>` +
+        `<option value="admin" ${u.rol === 'admin' ? 'selected' : ''}>Administrador</option>` +
+        '</select>',
+      showCancelButton: true,
+      confirmButtonText: "Guardar",
+      preConfirm: () => {
+        const nombre = document.getElementById("swal-name").value.trim();
+        const apodo = document.getElementById("swal-apodo").value.trim();
+        const email = document.getElementById("swal-email").value.trim();
+        const password = document.getElementById("swal-password").value.trim();
+        const rol = document.getElementById("swal-role").value;
+
+        if (!nombre || !apodo || !email) {
+          Swal.showValidationMessage("Nombre, apodo y email son obligatorios");
+          return false;
+        }
+        return { nombre, apodo, email, rol, password };
+      }
+    }).then(async (result) => {
+      if (result.value) {
+        try {
+          const res = await apiFetch(`${API}crud_usuarios.php`, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'update', id: u.id, ...result.value })
+          });
+          const data = await res.json();
+          if (data.success) {
+            Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Usuario actualizado", showConfirmButton: false, timer: 1500 });
+            fetchUsers();
+          } else {
+            Swal.fire("Error", data.error || "No se pudo actualizar", "error");
+          }
+        } catch (_) { Swal.fire("Error", "Error de conexión", "error"); }
+      }
+    });
+  };
+
+  const deleteUser = (user) => {
+    if (currentUser?.id === user.id) {
       Swal.fire("No puedes eliminarte a ti mismo");
       return;
     }
     Swal.fire({
-      title: `¿Eliminar a ${name}?`,
+      title: `¿Eliminar a ${user.nombre}?`,
       text: "Esta acción no se puede deshacer.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Eliminar",
       confirmButtonColor: "#d33"
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        setUsers(users.filter((u) => u.id !== id));
-        Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Usuario eliminado", showConfirmButton: false, timer: 1500 });
+        try {
+          const res = await apiFetch(`${API}crud_usuarios.php`, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'delete', id: user.id })
+          });
+          const data = await res.json();
+          if (data.success) {
+            Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Usuario eliminado", showConfirmButton: false, timer: 1500 });
+            fetchUsers();
+          } else {
+            Swal.fire("Error", data.error || "No se pudo eliminar", "error");
+          }
+        } catch (_) { Swal.fire("Error", "Error de conexión", "error"); }
       }
     });
   };
@@ -117,7 +199,7 @@ const ManageUsers = () => {
           { path: "/manage-seleccion", label: "Masculina" },
           { path: "/manage-seleccion-femenina", label: "Femenina" },
           { path: "/manage-seleccion-sub20", label: "Sub-20" },
-            { path: "/manage-seleccion-sub17", label: "Sub-17" },
+          { path: "/manage-seleccion-sub17", label: "Sub-17" },
         ]
       },
       { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
@@ -135,10 +217,7 @@ const ManageUsers = () => {
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="logo-icon">
-            <img
-              src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a"
-              alt="Logo Números y Fútbol"
-            />
+            <img src="/numeros-y-futbol.svg" alt="Logo Números y Fútbol" />
           </div>
           <h2 className="sidebar-title">
             Números y Fútbol <span className="accent-text">Admin</span>
@@ -225,67 +304,58 @@ const ManageUsers = () => {
               </button>
             </div>
 
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '50px' }}>Avatar</th>
-                  <th>Nombre</th>
-                  <th>Email</th>
-                  <th>Rol</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td>
-                      <img
-                        src={user.avatar} alt={user.name}
-                        style={{ width: '35px', height: '35px', borderRadius: '50%', objectFit: 'cover' }}
-                      />
-                    </td>
-                    <td style={{ fontWeight: '600', display: 'flex', alignItems: 'center', gap: '10px', border: 'none' }}>
-                      {user.name}
-                    </td>
-                    <td>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-muted)' }}>
-                        <Mail size={14} /> {user.email}
-                      </span>
-                    </td>
-                    <td>
-                      <span style={{
-                        padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600',
-                        background: user.role === 'Administrador' ? 'rgba(255, 0, 77, 0.15)' : 'rgba(59, 130, 246, 0.15)',
-                        color: user.role === 'Administrador' ? '#ff004d' : '#3b82f6'
-                      }}>
-                        {user.role}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`status ${user.status === 'Activo' ? 'done' : 'pending'}`}>
-                        {user.status}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="btn-edit" style={{ background: '#2563eb', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          className="btn-delete"
-                          onClick={() => deleteUser(user.id, user.name)}
-                          disabled={currentUser?.id === user.id}
-                          style={{ opacity: currentUser?.id === user.id ? 0.4 : 1, cursor: currentUser?.id === user.id ? "not-allowed" : "pointer" }}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>Cargando usuarios...</div>
+            ) : (
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {users.length === 0 ? (
+                    <tr><td colSpan={5} style={{ textAlign: 'center', color: '#64748b', padding: 30 }}>No hay usuarios registrados</td></tr>
+                  ) : users.map((u) => (
+                    <tr key={u.id}>
+                      <td style={{ fontWeight: '600' }}>{u.nombre}</td>
+                      <td style={{ color: 'var(--text-muted)' }}>@{u.apodo}</td>
+                      <td>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-muted)' }}>
+                          <Mail size={14} /> {u.email}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{
+                          padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600',
+                          background: u.rol === 'admin' ? 'rgba(255, 0, 77, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                          color: u.rol === 'admin' ? '#ff004d' : '#3b82f6'
+                        }}>
+                          {u.rol === 'admin' ? 'Administrador' : u.rol === 'editor' ? 'Editor' : 'Usuario'}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button className="btn-edit" onClick={() => editUser(u)}
+                            style={{ background: '#2563eb', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+                            <Pencil size={16} />
+                          </button>
+                          <button className="btn-delete" onClick={() => deleteUser(u)}
+                            disabled={currentUser?.id === u.id}
+                            style={{ opacity: currentUser?.id === u.id ? 0.4 : 1, cursor: currentUser?.id === u.id ? "not-allowed" : "pointer" }}>
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </main>

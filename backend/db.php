@@ -388,6 +388,8 @@ $mysqli->query("CREATE TABLE IF NOT EXISTS `jugadores_ascenso` (
     `nacionalidad`    VARCHAR(100) DEFAULT NULL,
     `posicion_x`      DECIMAL(5,2) DEFAULT NULL,
     `posicion_y`      DECIMAL(5,2) DEFAULT NULL,
+    `pos_x`           FLOAT DEFAULT NULL,
+    `pos_y`           FLOAT DEFAULT NULL,
     `es_titular`      TINYINT(1) DEFAULT 0,
     PRIMARY KEY (`id`),
     KEY `equipo_id` (`equipo_id`)
@@ -581,6 +583,8 @@ $mysqli->query("CREATE TABLE IF NOT EXISTS `jugadores` (
     `nacionalidad`    VARCHAR(100) DEFAULT NULL,
     `posicion_x`      DECIMAL(5,2) DEFAULT NULL,
     `posicion_y`      DECIMAL(5,2) DEFAULT NULL,
+    `pos_x`           FLOAT DEFAULT NULL,
+    `pos_y`           FLOAT DEFAULT NULL,
     `es_titular`      TINYINT(1) DEFAULT 0,
     PRIMARY KEY (`id`),
     KEY `equipo_id` (`equipo_id`)
@@ -704,7 +708,20 @@ try { $mysqli->query("ALTER TABLE estadisticas_jugadores_femenina ADD UNIQUE KEY
 try { $mysqli->query("DELETE t1 FROM estadisticas_jugadores_ascenso t1 INNER JOIN estadisticas_jugadores_ascenso t2 WHERE t1.id > t2.id AND t1.jugador_id = t2.jugador_id AND t1.temporada = t2.temporada"); } catch (Exception $e) {}
 try { $mysqli->query("DELETE t1 FROM estadisticas_jugadores_femenina t1 INNER JOIN estadisticas_jugadores_femenina t2 WHERE t1.id > t2.id AND t1.jugador_id = t2.jugador_id AND t1.temporada = t1.temporada"); } catch (Exception $e) {}
 
-// --- Admin por defecto ---
+// --- Tabla reset_tokens (recuperación de contraseña) ---
+$mysqli->query("CREATE TABLE IF NOT EXISTS `reset_tokens` (
+    `id`         INT NOT NULL AUTO_INCREMENT,
+    `email`      VARCHAR(255) NOT NULL,
+    `token`      VARCHAR(255) NOT NULL,
+    `codigo`     VARCHAR(6) NOT NULL,
+    `usado`      TINYINT(1) NOT NULL DEFAULT 0,
+    `expira_en`  DATETIME NOT NULL,
+    `creado_en`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+// --- Admin por defecto (solo si la tabla está vacía) ---
 try {
     $check = $mysqli->query("SELECT COUNT(*) FROM usuarios WHERE email = 'admin@numerosyfutbol.com'");
     if ((int)$check->fetch_row()[0] === 0) {

@@ -78,14 +78,26 @@ function getPosInfo(v) {
 const formations = {
   "4-4-2":   [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"lateral_izquierdo",sc:"defensa",x:12,y:70 },{ sp:"central",sc:"defensa",x:36,y:74 },{ sp:"central",sc:"defensa",x:64,y:74 },{ sp:"lateral_derecho",sc:"defensa",x:88,y:70 },{ sp:"extremo_izquierdo",sc:"medio",x:18,y:48 },{ sp:"medio_central",sc:"medio",x:40,y:46 },{ sp:"medio_central",sc:"medio",x:60,y:46 },{ sp:"extremo_derecho",sc:"medio",x:82,y:48 },{ sp:"centrodelantero",sc:"delantero",x:36,y:22 },{ sp:"centrodelantero",sc:"delantero",x:64,y:22 }],
   "4-3-3":   [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"lateral_izquierdo",sc:"defensa",x:12,y:70 },{ sp:"central",sc:"defensa",x:36,y:74 },{ sp:"central",sc:"defensa",x:64,y:74 },{ sp:"lateral_derecho",sc:"defensa",x:88,y:70 },{ sp:"medio_defensivo",sc:"medio",x:28,y:48 },{ sp:"medio_central",sc:"medio",x:50,y:44 },{ sp:"medio_defensivo",sc:"medio",x:72,y:48 },{ sp:"extremo_izquierdo",sc:"medio",x:18,y:22 },{ sp:"centrodelantero",sc:"delantero",x:50,y:18 },{ sp:"extremo_derecho",sc:"medio",x:82,y:22 }],
+  "3-5-2":   [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"central",sc:"defensa",x:25,y:74 },{ sp:"central",sc:"defensa",x:50,y:76 },{ sp:"central",sc:"defensa",x:75,y:74 },{ sp:"lateral_izquierdo",sc:"defensa",x:10,y:50 },{ sp:"medio_central",sc:"medio",x:30,y:48 },{ sp:"medio_central",sc:"medio",x:50,y:44 },{ sp:"medio_central",sc:"medio",x:70,y:48 },{ sp:"lateral_derecho",sc:"defensa",x:90,y:50 },{ sp:"centrodelantero",sc:"delantero",x:36,y:22 },{ sp:"centrodelantero",sc:"delantero",x:64,y:22 }],
   "4-2-3-1": [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"lateral_izquierdo",sc:"defensa",x:12,y:70 },{ sp:"central",sc:"defensa",x:36,y:74 },{ sp:"central",sc:"defensa",x:64,y:74 },{ sp:"lateral_derecho",sc:"defensa",x:88,y:70 },{ sp:"medio_defensivo",sc:"medio",x:38,y:56 },{ sp:"medio_defensivo",sc:"medio",x:62,y:56 },{ sp:"extremo_izquierdo",sc:"medio",x:20,y:38 },{ sp:"medio_ofensivo",sc:"medio",x:50,y:34 },{ sp:"extremo_derecho",sc:"medio",x:80,y:38 },{ sp:"centrodelantero",sc:"delantero",x:50,y:18 }],
+  "5-3-2":   [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"lateral_izquierdo",sc:"defensa",x:8,y:66 },{ sp:"central",sc:"defensa",x:28,y:74 },{ sp:"central",sc:"defensa",x:50,y:76 },{ sp:"central",sc:"defensa",x:72,y:74 },{ sp:"lateral_derecho",sc:"defensa",x:92,y:66 },{ sp:"medio_central",sc:"medio",x:28,y:48 },{ sp:"medio_central",sc:"medio",x:50,y:44 },{ sp:"medio_central",sc:"medio",x:72,y:48 },{ sp:"centrodelantero",sc:"delantero",x:36,y:22 },{ sp:"centrodelantero",sc:"delantero",x:64,y:22 }],
+  "3-4-3":   [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"central",sc:"defensa",x:25,y:74 },{ sp:"central",sc:"defensa",x:50,y:76 },{ sp:"central",sc:"defensa",x:75,y:74 },{ sp:"extremo_izquierdo",sc:"medio",x:12,y:50 },{ sp:"medio_central",sc:"medio",x:38,y:48 },{ sp:"medio_central",sc:"medio",x:62,y:48 },{ sp:"extremo_derecho",sc:"medio",x:88,y:50 },{ sp:"extremo_izquierdo",sc:"medio",x:18,y:22 },{ sp:"centrodelantero",sc:"delantero",x:50,y:18 },{ sp:"extremo_derecho",sc:"medio",x:82,y:22 }],
 };
 const posCompat = {
-  lateral_izquierdo: ["lateral_izquierdo", "lateral_derecho", "extremo_izquierdo"], lateral_derecho: ["lateral_derecho", "lateral_izquierdo", "extremo_derecho"],
-  medio_defensivo: ["medio_defensivo", "medio_central"], medio_central: ["medio_central", "medio_defensivo", "medio_ofensivo"],
-  medio_ofensivo: ["medio_ofensivo", "medio_central", "centrodelantero"], extremo_izquierdo: ["extremo_izquierdo", "lateral_izquierdo", "extremo_derecho"],
-  extremo_derecho: ["extremo_derecho", "lateral_derecho", "extremo_izquierdo"], centrodelantero: ["centrodelantero", "segundo_delantero", "medio_ofensivo"],
-  segundo_delantero: ["segundo_delantero", "centrodelantero", "extremo_izquierdo"],
+  portero: ["portero"],
+  defensa: ["central", "lateral_izquierdo", "lateral_derecho", "defensa"],
+  medio: ["medio_central", "medio_defensivo", "medio_ofensivo", "extremo_izquierdo", "extremo_derecho", "medio"],
+  delantero: ["centrodelantero", "segundo_delantero", "delantero"],
+  lateral_izquierdo: ["lateral_izquierdo", "lateral_derecho", "defensa"],
+  lateral_derecho: ["lateral_derecho", "lateral_izquierdo", "defensa"],
+  central: ["central", "medio_defensivo", "defensa"],
+  medio_defensivo: ["medio_defensivo", "medio_central", "central", "medio"],
+  medio_central: ["medio_central", "medio_defensivo", "medio_ofensivo", "medio"],
+  medio_ofensivo: ["medio_ofensivo", "medio_central", "segundo_delantero", "medio"],
+  extremo_izquierdo: ["extremo_izquierdo", "extremo_derecho", "delantero", "centrodelantero"],
+  extremo_derecho: ["extremo_derecho", "extremo_izquierdo", "delantero", "centrodelantero"],
+  centrodelantero: ["centrodelantero", "segundo_delantero", "delantero"],
+  segundo_delantero: ["segundo_delantero", "centrodelantero", "medio_ofensivo", "delantero"],
 };
 
 function autoAssign(jugadores, fKey) {
@@ -654,6 +666,9 @@ export default function MatchDetail() {
   const statusColor = isLive ? "#22c55e" : isPending ? "#f97316" : "#64748b";
   const statusText  = isLive ? "EN VIVO" : isPending ? "PRÓXIMO" : "FINALIZADO";
 
+  const cambiosLocal     = (comentarios || []).filter(c => c.tipo === "cambio" && c.equipo === partido.local_nombre).length;
+  const cambiosVisitante = (comentarios || []).filter(c => c.tipo === "cambio" && c.equipo === partido.visitante_nombre).length;
+
   return (
     <>
       <Header />
@@ -827,11 +842,11 @@ export default function MatchDetail() {
               <div className="md-card-title"><IconFormation /> Alineaciones</div>
               <div className="md-grid-2">
                 <div>
-                  <div style={{ fontSize:12, fontWeight:700, textAlign:"center", marginBottom:8, color:"#ef4444", letterSpacing:1, textTransform:"uppercase" }}>{partido.local_nombre} ({partido.local_formacion || "4-4-2"})</div>
+                  <div style={{ fontSize:12, fontWeight:700, textAlign:"center", marginBottom:8, color:"#ef4444", letterSpacing:1, textTransform:"uppercase" }}>{partido.local_nombre} ({partido.local_formacion || "4-4-2"}{cambiosLocal > 0 ? ` → ${cambiosLocal} cambio${cambiosLocal>1?"s":""}` : ""})</div>
                   <FootballField jugadores={jugadores_local} formacion={partido.local_formacion} flipped={false} comentarios={comentarios} />
                 </div>
                 <div>
-                  <div style={{ fontSize:12, fontWeight:700, textAlign:"center", marginBottom:8, color:"#3b82f6", letterSpacing:1, textTransform:"uppercase" }}>{partido.visitante_nombre} ({partido.visitante_formacion || "4-4-2"})</div>
+                  <div style={{ fontSize:12, fontWeight:700, textAlign:"center", marginBottom:8, color:"#3b82f6", letterSpacing:1, textTransform:"uppercase" }}>{partido.visitante_nombre} ({partido.visitante_formacion || "4-4-2"}{cambiosVisitante > 0 ? ` → ${cambiosVisitante} cambio${cambiosVisitante>1?"s":""}` : ""})</div>
                   <FootballField jugadores={jugadores_visitante} formacion={partido.visitante_formacion} flipped={true} comentarios={comentarios} />
                 </div>
               </div>

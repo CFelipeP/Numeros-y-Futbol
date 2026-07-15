@@ -18,6 +18,12 @@ if (!$id || !$descripcion) {
     exit;
 }
 
+$tiposValidos = ['gol','gol_penal','gol_cabeza','gol_tiro_libre','asistencia','tarjeta_amarilla','tarjeta_roja','cambio','comentario','inicio','descanso','fin','penal'];
+if (!in_array($tipo, $tiposValidos, true)) {
+    echo json_enc(["success" => false, "error" => "Tipo de evento no válido: " . $tipo]);
+    exit;
+}
+
 try {
     $stmt = $pdo->prepare("
         UPDATE match_comments

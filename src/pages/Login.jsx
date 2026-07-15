@@ -48,7 +48,6 @@ export default function Login() {
             });
 
         } catch (error) {
-            setLoading(false);
             const mensaje = error.response?.data?.error || "Credenciales incorrectas.";
             Swal.fire({
                 icon: "error",
@@ -56,6 +55,8 @@ export default function Login() {
                 text: mensaje,
                 confirmButtonText: "Entendido"
             });
+        } finally {
+            setLoading(false);
         }
     };
 
