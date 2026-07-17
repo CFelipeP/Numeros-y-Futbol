@@ -514,7 +514,7 @@ const NewsSection = () => {
                     <div className="play-overlay">▶</div>
                   </div>
                 ) : isVideo ? (
-                  <video src={fixUrl(n.imagen)} className="news-card-video" muted autoPlay loop />
+                  <video src={fixUrl(n.imagen)} className="news-card-video" muted autoPlay loop playsInline />
                 ) : (
                   <div className="news-card-image" style={{ backgroundImage: `url(${fixUrl(n.imagen) || "https://via.placeholder.com/400x250"})` }} />
                 )}
