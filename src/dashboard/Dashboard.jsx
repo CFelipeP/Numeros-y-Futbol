@@ -4,6 +4,8 @@ import "../admin.css";
 import Swal from "sweetalert2";
 import "animate.css";
 import { apiPost } from "../apiHelper";
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
 
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
@@ -108,6 +110,28 @@ const AdminDashboard = () => {
   useEffect(() => { fetchData(); }, [division]);
   useEffect(() => { if (location.pathname.startsWith("/teams/")) setTeamsOpen(true); }, [location.pathname]);
 
+  useEffect(() => {
+    if (sessionStorage.getItem("adminTourDashboard")) return;
+    const timer = setTimeout(() => {
+      const d = driver({
+        showProgress: true, allowClose: true,
+        nextBtnText: "Siguiente", prevBtnText: "Atrás", doneBtnText: "Entendido",
+        steps: [
+          { element: "#driver-admin-sidebar", popover: { title: "Panel de Navegación", description: "Desde aquí accedes a todas las secciones: partidos, equipos, noticias, usuarios y más.", side: "right", align: "start" } },
+          { element: "#driver-admin-division", popover: { title: "Selector de División", description: "Cambia entre Primera, Ascenso y Femenina para ver estadísticas de cada una.", side: "bottom", align: "start" } },
+          { element: "#driver-admin-stats", popover: { title: "Estadísticas Rápidas", description: "Resumen de partidos pendientes, jugados, goles, noticias y equipos registrados.", side: "bottom", align: "center" } },
+          { element: "#driver-admin-chart", popover: { title: "Gráfica de Goles", description: "Visualiza los goles por jornada para analizar tendencias de cada división.", side: "top", align: "center" } },
+          { element: "#driver-admin-matches", popover: { title: "Últimos Partidos", description: "Revisa los resultados recientes y accede a la gestión completa de partidos.", side: "top", align: "center" } },
+          { element: "#driver-admin-reset", popover: { title: "Reiniciar Temporada", description: "Borra todos los partidos y reinicia la tabla de posiciones. Úsalo con cuidado.", side: "left", align: "center" } },
+          { element: "#driver-admin-toggle", popover: { title: "Menú Hamburguesa", description: "En dispositivos móviles, usá este botón para mostrar u ocultar la navegación lateral.", side: "bottom", align: "center" } },
+        ],
+      });
+      d.drive();
+      sessionStorage.setItem("adminTourDashboard", "true");
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleReset = () => {
     Swal.fire({
       title: "¿Reiniciar temporada?",
@@ -190,7 +214,7 @@ const AdminDashboard = () => {
 
   return (
    <div className={`admin-layout ${sidebarOpen ? "sidebar-closed" : ""}`}>
-            <aside className="sidebar">
+            <aside className="sidebar" id="driver-admin-sidebar">
                 <div className="sidebar-header">
                     <div className="logo-icon"><img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="Logo" /></div>
                     <h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2>
@@ -222,7 +246,7 @@ const AdminDashboard = () => {
 
       <main className="main-content">
         <header className="top-bar">
-          <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)} title="Toggle Sidebar"><Menu size={24} /></button>
+          <button className="toggle-btn" id="driver-admin-toggle" onClick={() => setSidebarOpen(!sidebarOpen)} title="Toggle Sidebar"><Menu size={24} /></button>
           <div className="search-bar">
             <input type="text" placeholder="Buscar equipo..." value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
@@ -232,7 +256,7 @@ const AdminDashboard = () => {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.2rem", flexWrap: "wrap", gap: "0.75rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
               <h1 className="admin-title" style={{ margin: 0 }}>Dashboard</h1>
-              <div ref={dropdownRef} style={{ position: "relative" }}>
+              <div ref={dropdownRef} style={{ position: "relative" }} id="driver-admin-division">
                 <button onClick={() => setDropdownOpen(!dropdownOpen)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", color: "#60a5fa", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", letterSpacing: "0.3px" }}>
                   <Trophy size={14} />{currentDiv?.label} División
                   <ChevronDown size={15} style={{ transition: "transform 0.25s ease", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.7 }} />
@@ -249,7 +273,7 @@ const AdminDashboard = () => {
                 )}
               </div>
             </div>
-            <button onClick={handleReset} disabled={resetting || loading} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "9px 18px", borderRadius: "10px", background: resetting ? "rgba(239,68,68,0.15)" : "linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.08))", border: "1px solid rgba(239,68,68,0.25)", color: resetting ? "#f87171" : "#fca5a5", fontSize: "13px", fontWeight: 600, cursor: resetting || loading ? "not-allowed" : "pointer", transition: "all 0.25s ease", opacity: resetting || loading ? 0.6 : 1 }}>
+            <button onClick={handleReset} disabled={resetting || loading} id="driver-admin-reset" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "9px 18px", borderRadius: "10px", background: resetting ? "rgba(239,68,68,0.15)" : "linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.08))", border: "1px solid rgba(239,68,68,0.25)", color: resetting ? "#f87171" : "#fca5a5", fontSize: "13px", fontWeight: 600, cursor: resetting || loading ? "not-allowed" : "pointer", transition: "all 0.25s ease", opacity: resetting || loading ? 0.6 : 1 }}>
               <RotateCcw size={15} style={resetting ? { animation: "spin 0.8s linear infinite" } : {}} />
               {resetting ? "Reiniciando..." : "Reiniciar Temporada"}
             </button>
@@ -260,7 +284,7 @@ const AdminDashboard = () => {
               {[...Array(6)].map((_, i) => (<div key={i} style={{ background: "rgba(255,255,255,0.02)", borderRadius: "14px", padding: "1.5rem", border: "1px solid rgba(255,255,255,0.04)" }}><div style={{ width: 28, height: 28, borderRadius: "8px", background: "rgba(255,255,255,0.05)", animation: "pulse 1.5s ease-in-out infinite" }} /></div>))}
             </div>
           ) : (
-            <div className="dash-stats-grid">
+            <div className="dash-stats-grid" id="driver-admin-stats">
               {statCards.map((s) => (
                 <div key={s.key} style={{ background: s.gradient, border: `1px solid ${s.border}`, borderRadius: "14px", padding: "1.3rem 1.2rem", transition: "all 0.3s ease", cursor: "default" }}
                   onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = `0 8px 25px ${s.border}`; }}
@@ -274,7 +298,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          <div className="chart-container" style={{ width: "100%", minWidth: 0 }}>
+          <div className="chart-container" style={{ width: "100%", minWidth: 0 }} id="driver-admin-chart">
             <div className="table-header" style={{ flexWrap: "wrap", gap: "10px" }}>
               <h2>Estadísticas de goles</h2>
               <span style={{ fontSize: "11px", color: "#64748b", background: "rgba(255,255,255,0.04)", padding: "4px 10px", borderRadius: "6px" }}>
@@ -284,7 +308,7 @@ const AdminDashboard = () => {
             <GoalsChart data={chartData} />
           </div>
 
-          <div className="table-container" style={{ overflowX: 'auto' }}>
+          <div className="table-container" style={{ overflowX: 'auto' }} id="driver-admin-matches">
             <div className="table-header" style={{ flexWrap: "wrap", gap: "10px" }}>
               <h2>Últimos Partidos</h2>
               <Link to="/matches" style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 16px", borderRadius: "8px", background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "#fff", fontSize: "13px", fontWeight: 600, textDecoration: "none", transition: "all 0.2s" }}
@@ -370,6 +394,24 @@ const AdminDashboard = () => {
         }
         @media (max-width: 480px) {
             .dash-stats-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        }
+
+        .driver-popover {
+          background: #0f172a !important; border: 1px solid #ef4444 !important;
+          border-radius: 12px !important; box-shadow: 0 0 20px rgba(239,68,68,0.2), 0 8px 32px rgba(0,0,0,0.5) !important;
+          color: #f1f5f9 !important;
+        }
+        .driver-popover .driver-popover-title {
+          color: #ef4444 !important; font-weight: 800 !important;
+        }
+        .driver-popover .driver-popover-description { color: #94a3b8 !important; }
+        .driver-popover .driver-popover-footer button {
+          background: #ef4444 !important; border: none !important;
+          color: #fff !important; border-radius: 6px !important;
+        }
+        .driver-popover .driver-popover-footer .driver-popover-prev-btn {
+          background: transparent !important; border: 1px solid #ef4444 !important;
+          color: #ef4444 !important;
         }
       `}</style>
     </div>

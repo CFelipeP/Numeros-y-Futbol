@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings,
   LogOut, Menu, Trophy, Target, Plus, Edit2, Trash2, Save, X,
@@ -1174,6 +1176,26 @@ const AdminCopPresidente = () => {
   const fetchData = useCallback(() => { setLoading(true); Promise.allSettled([safeFetch(`${API_BASE}copa_get_all_matches.php`), safeFetch(`${API_BASE}copa_get_teams.php`), safeFetch(`${API_BASE}copa_get_stats.php`)]).then(([rM, rT, rS]) => { if (rM.status === "fulfilled") setMatches(rM.value?.data || []); if (rT.status === "fulfilled") setTeams(rT.value?.data || []); if (rS.status === "fulfilled") setStats(rS.value?.data || {}); }).finally(() => setLoading(false)); }, []);
   useEffect(() => { void Promise.resolve().then(fetchData); }, [fetchData]);
 
+  useEffect(() => {
+    if (sessionStorage.getItem("adminTourCopa")) return;
+    const timer = setTimeout(() => {
+      const d = driver({
+        showProgress: true, allowClose: true,
+        nextBtnText: "Siguiente", prevBtnText: "Atrás", doneBtnText: "Entendido",
+        steps: [
+          { element: "#driver-copa-phases", popover: { title: "Fases del Torneo", description: "Navega entre Grupos, Octavos, Cuartos, Semis y Final. Cada pestaña muestra sus partidos.", side: "bottom", align: "start" } },
+          { element: "#driver-copa-new", popover: { title: "Nuevo Partido", description: "Creá partidos manualmente seleccionando equipos, fecha, hora y fase.", side: "bottom", align: "center" } },
+          { element: "#driver-copa-groups", popover: { title: "Asignar Grupos", description: "Organiza los equipos en grupos A-F para la fase de grupos.", side: "bottom", align: "center" } },
+          { element: "#driver-copa-autogen", popover: { title: "Auto-Generar", description: "Genera automáticamente las llaves de eliminación basado en los resultados de la fase anterior.", side: "bottom", align: "center" } },
+          { element: "#driver-copa-stats", popover: { title: "Estadísticas", description: "Resumen rápido: partidos totales, finalizados, pendientes, goles y equipos.", side: "bottom", align: "center" } },
+        ],
+      });
+      d.drive();
+      sessionStorage.setItem("adminTourCopa", "true");
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
   const openNewMatch = () => { setBtnAnim("new"); setTimeout(() => setBtnAnim(null), 300); setEditingMatch(null); setTimeout(() => setShowMatchModal(true), 150); };
   const handleCreateVuelta = (idaMatch) => {
 
@@ -1315,20 +1337,20 @@ const AdminCopPresidente = () => {
               <div><h1 style={{ margin: 0, color: "#f1f5f9", fontWeight: 900, fontSize: "1.35rem" }}>Copa Presidente</h1><p style={{ margin: 0, fontSize: 11, color: "#475569" }}>{teams.length} equipos · {matches.length} partidos</p></div>
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button onClick={openNewMatch} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, background: "linear-gradient(135deg,#dc2626,#ef4444)", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "all 0.2s", transform: btnAnim === "new" ? "scale(0.94)" : "scale(1)", boxShadow: btnAnim === "new" ? "0 0 0 4px rgba(239,68,68,0.2)" : "0 4px 15px rgba(220,38,38,0.25)" }}><Plus size={14} /> Nuevo Partido</button>
-              <button onClick={() => setShowGroupModal(true)} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 14px", borderRadius: 10, background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.25)", color: "#60a5fa", fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }}><Users2 size={14} /> Grupos</button>
+              <button onClick={openNewMatch} id="driver-copa-new" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, background: "linear-gradient(135deg,#dc2626,#ef4444)", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "all 0.2s", transform: btnAnim === "new" ? "scale(0.94)" : "scale(1)", boxShadow: btnAnim === "new" ? "0 0 0 4px rgba(239,68,68,0.2)" : "0 4px 15px rgba(220,38,38,0.25)" }}><Plus size={14} /> Nuevo Partido</button>
+              <button onClick={() => setShowGroupModal(true)} id="driver-copa-groups" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 14px", borderRadius: 10, background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.25)", color: "#60a5fa", fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }}><Users2 size={14} /> Grupos</button>
               <button onClick={() => setShowResetModal(true)} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 14px", borderRadius: 10, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)", color: "#f59e0b", fontSize: 12, fontWeight: 700, cursor: "pointer" }}><RotateCcw size={14} /> Reset</button>
               <button onClick={fetchData} style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 38, height: 38, borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid #1e293b", color: "#64748b", cursor: "pointer", transition: "all 0.3s", transform: loading ? "rotate(360deg)" : "rotate(0deg)" }}><RefreshCw size={14} /></button>
             </div>
           </div>
 
           {/* Stats */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(125px,1fr))", gap: 8, marginBottom: "1.4rem" }}>
+          <div id="driver-copa-stats" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(125px,1fr))", gap: 8, marginBottom: "1.4rem" }}>
             {[{ label: "Partidos", value: stats.total || 0, color: "#3b82f6", icon: "⚽" }, { label: "Finalizados", value: stats.finalizados || 0, color: "#10b981", icon: "✅" }, { label: "Pendientes", value: stats.pendientes || 0, color: "#f59e0b", icon: "⏳" }, { label: "En Curso", value: stats.en_curso || 0, color: "#ef4444", icon: "🔴" }, { label: "Goles", value: stats.goles || 0, color: "#8b5cf6", icon: "🎯" }, { label: "Equipos", value: stats.equipos || 0, color: "#06b6d4", icon: "🛡️" }].map(s => (<div key={s.label} style={{ background: `linear-gradient(135deg,${s.color}10,${s.color}04)`, border: `1px solid ${s.color}20`, borderRadius: 12, padding: "12px 14px", transition: "transform 0.2s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}><div style={{ fontSize: 17, marginBottom: 3 }}>{s.icon}</div><div style={{ fontSize: 22, fontWeight: 900, color: "#f1f5f9", fontFamily: "monospace" }}>{loading ? "—" : s.value}</div><div style={{ fontSize: 10, color: "#64748b", fontWeight: 600 }}>{s.label}</div></div>))}
           </div>
 
           {/* Phase tabs */}
-          <div style={{ display: "flex", gap: 6, marginBottom: "1rem", overflowX: "auto", paddingBottom: 4 }}>
+          <div id="driver-copa-phases" style={{ display: "flex", gap: 6, marginBottom: "1rem", overflowX: "auto", paddingBottom: 4 }}>
             {PHASES.map(p => { const count = matches.filter(m => m.fase === p.key).length; const active = activePhase === p.key; return (<button key={p.key} onClick={() => { setActivePhase(p.key); if (p.key !== "grupos") setViewMode("matches"); }} style={{ padding: "9px 16px", borderRadius: 10, cursor: "pointer", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", transition: "all 0.2s", background: active ? "rgba(239,68,68,0.12)" : "rgba(255,255,255,0.03)", border: active ? "1px solid rgba(239,68,68,0.3)" : "1px solid #1e293b", color: active ? "#ef4444" : "#64748b", transform: active ? "scale(1.02)" : "scale(1)" }}>{p.icon} {p.label}{p.idaVuelta && <span style={{ fontSize: 8, marginLeft: 4, opacity: 0.5 }}>IDA/V</span>}<span style={{ marginLeft: 5, fontSize: 9, padding: "1px 6px", borderRadius: 8, background: active ? "rgba(239,68,68,0.2)" : "rgba(255,255,255,0.05)", color: active ? "#ef4444" : "#334155" }}>{count}</span></button>); })}
           </div>
 
@@ -1388,7 +1410,7 @@ const AdminCopPresidente = () => {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "0 2px" }}>
               <h3 style={{ margin: 0, color: "#94a3b8", fontSize: 13, fontWeight: 700 }}>{PHASES.find(p => p.key === activePhase)?.icon} {PHASES.find(p => p.key === activePhase)?.label}<span style={{ marginLeft: 6, padding: "2px 8px", borderRadius: 5, background: "rgba(168,85,247,0.1)", color: "#a855f7", fontSize: 9, fontWeight: 800 }}>IDA Y VUELTA</span></h3>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <button onClick={() => handleAutoGenerate(activePhase)} disabled={autoGenerating} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: autoGenerating ? "rgba(168,85,247,0.08)" : "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", color: "#fff", fontSize: 11, fontWeight: 700, cursor: autoGenerating ? "not-allowed" : "pointer", opacity: autoGenerating ? 0.5 : 1, transition: "all 0.2s" }}><Zap size={13} /> {autoGenerating ? "Generando..." : "Auto-generar"}</button>
+                <button onClick={() => handleAutoGenerate(activePhase)} disabled={autoGenerating} id="driver-copa-autogen" style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: autoGenerating ? "rgba(168,85,247,0.08)" : "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", color: "#fff", fontSize: 11, fontWeight: 700, cursor: autoGenerating ? "not-allowed" : "pointer", opacity: autoGenerating ? 0.5 : 1, transition: "all 0.2s" }}><Zap size={13} /> {autoGenerating ? "Generando..." : "Auto-generar"}</button>
                 <span style={{ fontSize: 10, color: "#334155" }}>{knockoutPairs.length} llaves</span>
               </div>
             </div>
@@ -1415,6 +1437,11 @@ const AdminCopPresidente = () => {
         @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
         @keyframes modalSlideUp{from{opacity:0;transform:translateY(24px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
         button.nav-item{background:none;border:none;color:var(--text-muted);font-family:inherit;cursor:pointer}
+        .driver-popover{background:#0f172a!important;border:1px solid #ef4444!important;border-radius:12px!important;box-shadow:0 0 20px rgba(239,68,68,0.2),0 8px 32px rgba(0,0,0,0.5)!important;color:#f1f5f9!important}
+        .driver-popover .driver-popover-title{color:#ef4444!important;font-weight:800!important}
+        .driver-popover .driver-popover-description{color:#94a3b8!important}
+        .driver-popover .driver-popover-footer button{background:#ef4444!important;border:none!important;color:#fff!important;border-radius:6px!important}
+        .driver-popover .driver-popover-footer .driver-popover-prev-btn{background:transparent!important;border:1px solid #ef4444!important;color:#ef4444!important}
       `}</style>
     </div>
   );

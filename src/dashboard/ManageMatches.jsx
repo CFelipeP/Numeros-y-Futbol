@@ -4,6 +4,8 @@ import "../admin.css";
 import Swal from "sweetalert2";
 import "animate.css";
 import { apiPostForm } from "../apiHelper";
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
 import {
     LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
     CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
@@ -84,6 +86,25 @@ const ManageMatches = () => {
     };
 
     useEffect(() => { loadMatches(); }, [division]);
+
+    useEffect(() => {
+      if (sessionStorage.getItem("adminTourMatches")) return;
+      const timer = setTimeout(() => {
+        const d = driver({
+          showProgress: true, allowClose: true,
+          nextBtnText: "Siguiente", prevBtnText: "Atrás", doneBtnText: "Entendido",
+          steps: [
+            { element: "#driver-mm-create", popover: { title: "Crear Partido", description: "Selecciona equipo local y visitante, luego click en Crear Partido para agregarlo.", side: "bottom", align: "start" } },
+            { element: "#driver-mm-division", popover: { title: "Selector de División", description: "Cambia entre Primera, Ascenso y Femenina para gestionar partidos de cada una.", side: "bottom", align: "start" } },
+            { element: "#driver-mm-table", popover: { title: "Lista de Partidos", description: "Acá ves todos los partidos. Podes editar resultados, ver detalles o eliminar.", side: "top", align: "center" } },
+            { element: "#driver-mm-actions", popover: { title: "Acciones", description: "Edita el marcador, marca como destacado o elimina el partido con estos botones.", side: "left", align: "center" } },
+          ],
+        });
+        d.drive();
+        sessionStorage.setItem("adminTourMatches", "true");
+      }, 1500);
+      return () => clearTimeout(timer);
+    }, []);
 
     const getEscudo = (idOrName) => { const t = teamMap[idOrName]; return t?.logo ? `${API}${t.logo}` : null; };
     const fallbackImg = "https://ui-avatars.com/api/?name=EQ&background=0f172a&color=334155&size=40&bold=true";
@@ -397,7 +418,7 @@ const ManageMatches = () => {
                 <div className="content-wrapper">
                     <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "1.2rem", flexWrap: "wrap" }}>
                         <h1 className="admin-title" style={{ margin: 0 }}>Gestionar Partidos</h1>
-                        <div ref={dropdownRef} style={{ position: "relative" }}>
+                        <div ref={dropdownRef} style={{ position: "relative" }} id="driver-mm-division">
                             <button onClick={() => setDropdownOpen(!dropdownOpen)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", color: "#60a5fa", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", letterSpacing: "0.3px" }}>
                                 <Trophy size={14} />{currentDiv?.label} División<ChevronDown size={15} style={{ transition: "transform 0.25s ease", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.7 }} />
                             </button>
@@ -409,7 +430,7 @@ const ManageMatches = () => {
                         </div>
                     </div>
 
-                    <div className="table-container">
+                    <div className="table-container" id="driver-mm-table">
                         <div className="table-header" style={{ flexWrap: "wrap", gap: "12px" }}>
                             <h2 style={{ margin: 0 }}>Lista de Partidos</h2>
                             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
@@ -419,7 +440,7 @@ const ManageMatches = () => {
                                     <button className={`mm-tab ${activeTab === "played" ? "mm-tab-active mm-tab-played" : ""}`} onClick={() => setActiveTab("played")}>Jugados <span className="mm-tab-count">{counts.played}</span></button>
                                 </div>
                                 {counts.played > 0 && <button className="mm-reset-all-btn" onClick={resetAllMatches}><RotateCcw size={14} /> <span>Resetear todo</span></button>}
-                                <button className="btn-add" onClick={openNewMatch}><Plus size={18} /> Nuevo Partido</button>
+                                <button className="btn-add" id="driver-mm-create" onClick={openNewMatch}><Plus size={18} /> Nuevo Partido</button>
                             </div>
                         </div>
 
@@ -466,7 +487,7 @@ const ManageMatches = () => {
                                                             {isFeat ? <Star size={14} fill="#e2b340" /> : <StarOff size={14} />}
                                                             <span>{isFeat ? "Destacado" : "Destacar"}</span>
                                                         </button>
-                                                        <button className={`result-action-btn ${isFin ? "result-edit" : "result-new"}`} onClick={() => openResult(match)} title={isFin ? "Editar resultado" : "Ingresar resultado"}>
+                                                        <button className={`result-action-btn ${isFin ? "result-edit" : "result-new"}`} id="driver-mm-actions" onClick={() => openResult(match)} title={isFin ? "Editar resultado" : "Ingresar resultado"}>
                                                             <Trophy size={14} /><span>{isFin ? "Editar" : "Resultado"}</span>
                                                         </button>
                                                         <button className="mm-narrar-btn" onClick={() => navigate(`/manage-comments?partido=${match.id}&division=${division}`)} title="Narrar partido">
@@ -797,6 +818,11 @@ const ManageMatches = () => {
         .mm-score-num { width: 44px; height: 44px; font-size: 24px; }
         .mm-score-btn { width: 34px; height: 34px; }
     }
+    .driver-popover{background:#0f172a!important;border:1px solid #ef4444!important;border-radius:12px!important;box-shadow:0 0 20px rgba(239,68,68,0.2),0 8px 32px rgba(0,0,0,0.5)!important;color:#f1f5f9!important}
+    .driver-popover .driver-popover-title{color:#ef4444!important;font-weight:800!important}
+    .driver-popover .driver-popover-description{color:#94a3b8!important}
+    .driver-popover .driver-popover-footer button{background:#ef4444!important;border:none!important;color:#fff!important;border-radius:6px!important}
+    .driver-popover .driver-popover-footer .driver-popover-prev-btn{background:transparent!important;border:1px solid #ef4444!important;color:#ef4444!important}
 `}</style>
         </div>
     );
