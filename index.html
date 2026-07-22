@@ -3,11 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/numeros-y-futbol.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>numeros-y-futbol</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Números y Fútbol</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      (function(){
+        if (window.top !== window.self) return;
+        document.addEventListener('click', function(e){
+          if (window.innerWidth > 1024) return;
+          const layout = document.querySelector('.admin-layout.sidebar-closed');
+          if (!layout) return;
+          if (e.target.closest('.sidebar') || e.target.closest('.toggle-btn')) return;
+          const btn = document.querySelector('.toggle-btn');
+          if (btn) btn.click();
+        });
+        document.addEventListener('touchstart', function(e){
+          if (window.innerWidth > 1024) return;
+          const layout = document.querySelector('.admin-layout.sidebar-closed');
+          if (!layout) return;
+          if (e.target.closest('.sidebar') || e.target.closest('.toggle-btn')) return;
+        }, {passive: true});
+      })();
+    </script>
   </body>
 </html>

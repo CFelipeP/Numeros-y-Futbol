@@ -413,139 +413,203 @@ body {
    Rangos: laptop ≤1280 · tablet ≤1024 · móvil ≤768 · chico ≤480 · tiny ≤360
    ============================================================ */
 
-/* ===== LAPTOP (≤1280px): sidebar más angosto, contenido algo más compacto ===== */
+/* ===== LAPTOP (≤1280px): sidebar más angosto ===== */
 @media (max-width: 1280px) {
     .admin-layout { grid-template-columns: 240px 1fr; }
     .content-wrapper { padding: 28px 32px; }
     .search-bar { max-width: 360px; }
 }
 
-/* ===== TABLET (≤1024px): sidebar se vuelve slide-in (mismo patrón que móvil) ===== */
+/* ===== TABLET + MÓVIL (≤1024px): sidebar slide-in con overlay ===== */
 @media (max-width: 1024px) {
     .admin-layout { grid-template-columns: 1fr !important; }
 
+    /* Sidebar overlay backdrop */
     .admin-layout .sidebar {
         position: fixed !important;
-        z-index: 50 !important;
+        z-index: 2000 !important;
         top: 0 !important;
         left: 0 !important;
         height: 100vh !important;
+        height: 100dvh !important;
         width: 280px !important;
+        max-width: 85vw !important;
         transform: translateX(-100%);
         transition: transform 0.3s ease !important;
         box-shadow: none;
         padding-top: 20px;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
     }
     .admin-layout.sidebar-closed .sidebar {
         transform: translateX(0) !important;
-        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.6);
+        box-shadow: 8px 0 30px rgba(0, 0, 0, 0.7);
         opacity: 1 !important;
         width: 280px !important;
+        max-width: 85vw !important;
         padding: 24px 16px !important;
         border-right: 1px solid var(--border) !important;
-        overflow-y: auto !important;
     }
+
+    /* Backdrop overlay cuando sidebar está abierto */
+    .admin-layout.sidebar-closed::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 1999;
+        backdrop-filter: blur(2px);
+        animation: fadeIn 0.2s ease;
+    }
+
     .admin-layout .main-content { width: 100% !important; margin-left: 0 !important; }
 
-    .content-wrapper { padding: 24px 24px; }
-    .top-bar { padding: 16px 20px; }
-    .search-bar { max-width: 260px; margin: 0 16px; }
+    .content-wrapper { padding: 24px 20px; }
+    .top-bar { padding: 14px 16px; }
+    .search-bar { max-width: 240px; margin: 0 12px; }
 
-    /* Stats grid: 2 columnas en tablet */
+    /* Stats grid: 2 columnas */
     .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
 
-    /* Header de tabla: apilar en tablet angosto */
     .table-header { flex-wrap: wrap; gap: 12px; }
 }
 
 /* ===== MÓVIL (≤768px) ===== */
 @media (max-width: 768px) {
-    .admin-layout .sidebar { width: 260px !important; }
-    .admin-layout.sidebar-closed .sidebar { width: 260px !important; padding: 24px 16px !important; }
+    .admin-layout .sidebar { width: 280px !important; max-width: 85vw !important; }
+    .admin-layout.sidebar-closed .sidebar { width: 280px !important; max-width: 85vw !important; padding: 20px 12px !important; }
 
     .top-bar {
-        padding: 12px 16px;
+        padding: 10px 14px;
         z-index: 1100;
         position: sticky;
-        flex-wrap: wrap;
-        gap: 12px;
+        gap: 10px;
     }
-    .search-bar { max-width: 180px !important; margin: 0 8px; flex-grow: 1; }
-    .search-bar input { font-size: 13px; padding: 9px 14px; }
+    .search-bar { max-width: 160px !important; margin: 0 6px; flex-grow: 1; min-width: 100px; }
+    .search-bar input { font-size: 13px; padding: 8px 12px; }
 
-    .content-wrapper { padding: 18px 16px; }
+    .content-wrapper { padding: 16px 12px; }
 
-    .admin-title { font-size: 22px; margin-bottom: 20px; letter-spacing: -0.3px; }
+    .admin-title { font-size: 21px; margin-bottom: 16px; letter-spacing: -0.3px; }
 
-    /* Stats: 2 columnas en móvil grande */
+    /* Stats: 2 columnas */
     .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
-    /* Tablas: scroll horizontal sóolo si hace falta (contenedor lo permite) */
-    .table-container { padding: 16px; overflow-x: auto; }
-    .data-table { min-width: 0; font-size: 13px; }
-    .data-table th, .data-table td { padding: 12px 10px; font-size: 13px; }
+    /* Tablas: scroll horizontal */
+    .table-container { padding: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .data-table { min-width: 0; font-size: 12px; white-space: nowrap; }
+    .data-table th, .data-table td { padding: 10px 8px; font-size: 12px; }
 
     .table-header {
         flex-direction: column;
         align-items: stretch;
-        gap: 12px;
+        gap: 10px;
     }
-    .table-header h2 { font-size: 16px; }
-    .table-header button { width: 100%; }
+    .table-header h2 { font-size: 15px; }
 
-    /* Botones más chicos */
+    /* Botones */
     .btn-add, .btn-save { padding: 10px 16px; font-size: 13px; }
-    .btn-delete { padding: 7px 10px; font-size: 12px; }
-    .btn-icon { width: 32px; height: 32px; }
+    .btn-delete { padding: 7px 9px; font-size: 12px; }
+    .btn-icon { width: 36px; height: 36px; }
 
-    /* Inputs y formularios */
-    .mod-input { font-size: 13px; padding: 9px 12px; }
+    /* Formularios */
+    .mod-input { font-size: 14px; padding: 10px 12px; }
     .form-grid { grid-template-columns: 1fr !important; gap: 10px; }
 
-    /* Modales genéricos que usan .modal-content */
-    .modal-content { max-width: 95vw !important; max-height: 90vh !important; padding: 1rem !important; }
-
-    /* Sidebar en móvil: logout al final, navegación con más aire */
+    /* Sidebar: ocultar logo en móvil para ahorrar espacio */
     .sidebar-header { display: none; }
-    .sidebar-nav { margin-top: 12px; }
-    .nav-item { padding: 12px 14px; font-size: 13px; }
+    .sidebar-nav { margin-top: 8px; }
+    .nav-item { padding: 13px 12px; font-size: 14px; gap: 12px; }
 
-    /* Badges / estados */
+    /* Status */
     .status { padding: 5px 10px; font-size: 11px; }
     .status-badge { font-size: 10px; padding: 3px 8px; }
+
+    /* Ajustar toggles/selects en móvil */
+    select { font-size: 14px !important; }
 }
 
 /* ===== MÓVIL CHICO (≤480px) ===== */
 @media (max-width: 480px) {
-    .top-bar { padding: 10px 12px; gap: 8px; }
-    .search-bar { max-width: 140px !important; margin: 0 6px; }
-    .search-bar input { font-size: 12px; padding: 8px 12px; }
+    .admin-layout .sidebar { width: 260px !important; max-width: 88vw !important; }
+    .admin-layout.sidebar-closed .sidebar { width: 260px !important; max-width: 88vw !important; }
 
-    .content-wrapper { padding: 14px 12px; }
-    .admin-title { font-size: 20px; margin-bottom: 16px; }
+    .top-bar { padding: 8px 10px; gap: 6px; }
+    .toggle-btn { width: 40px; height: 40px; padding: 8px; }
+    .search-bar { max-width: 120px !important; margin: 0 4px; min-width: 80px; }
+    .search-bar input { font-size: 12px; padding: 7px 10px; }
+
+    .content-wrapper { padding: 12px 10px; }
+    .admin-title { font-size: 19px; margin-bottom: 12px; }
 
     /* Stats: 1 columna */
-    .stats-grid { grid-template-columns: 1fr; gap: 12px; }
+    .stats-grid { grid-template-columns: 1fr; gap: 10px; }
 
-    .table-container { padding: 12px; border-radius: 12px; }
-    .data-table { font-size: 12px; }
-    .data-table th, .data-table td { padding: 10px 6px; font-size: 12px; }
+    .table-container { padding: 10px; border-radius: 12px; }
+    .data-table { font-size: 11px; }
+    .data-table th, .data-table td { padding: 8px 5px; font-size: 11px; }
 
-    .btn-add, .btn-save { padding: 9px 14px; font-size: 12px; gap: 6px; }
+    .btn-add, .btn-save { padding: 8px 12px; font-size: 12px; gap: 5px; width: 100%; justify-content: center; }
     .btn-add svg, .btn-save svg { width: 14px; height: 14px; }
 
-    /* En móvil angosto, ocultar breadcrumb/búsqueda si se seteó .hide-sm */
+    .table-header button { width: 100%; justify-content: center; }
+
+    /* Ocultar elementos no esenciales */
     .hide-sm { display: none !important; }
+
+    /* Nav items más compactos */
+    .nav-item { padding: 12px 10px; font-size: 13px; gap: 10px; }
 }
 
-/* ===== TINY (≤360px): extremos tipo iPhone SE ===== */
-@media (max-width: 360px) {
-    .top-bar { padding: 8px 10px; }
-    .search-bar { max-width: 110px !important; }
-    .content-wrapper { padding: 12px 10px; }
-    .admin-title { font-size: 19px; }
-    .nav-item { padding: 11px 12px; font-size: 12px; gap: 10px; }
-    .data-table th, .data-table td { padding: 8px 4px; font-size: 11px; }
+/* ===== TINY (≤375px): iPhone SE ===== */
+@media (max-width: 375px) {
+    .top-bar { padding: 6px 8px; }
+    .search-bar { max-width: 100px !important; min-width: 60px; }
+    .content-wrapper { padding: 10px 8px; }
+    .admin-title { font-size: 18px; }
+    .nav-item { padding: 10px 10px; font-size: 12px; gap: 8px; }
+    .data-table th, .data-table td { padding: 7px 4px; font-size: 10px; }
+    .btn-add, .btn-save { font-size: 11px; padding: 7px 10px; }
+}
+
+/* ===== REGLAS GLOBALES RESPONSIVE (blanket) =====
+   Grids inline: colapsar a 1 columna en móvil, excepto:
+   - Grids con minmax/auto-fill (ya colapsan naturalmente)
+   - Sidebar panels internos (anidados bajo nav-item o sidebar)
+   - Selectores de equipos (nm-selects-row)
+*/
+@media (max-width: 768px) {
+    [style*="grid-template-columns"]:not(.nm-selects-row):not(.nm-selects-row-lg):not(.nm-date-row) {
+        grid-template-columns: 1fr !important;
+    }
+    [style*="gridTemplateColumns"]:not(.nm-selects-row):not(.nm-selects-row-lg):not(.nm-date-row) {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Modales: fullscreen en móvil chico */
+@media (max-width: 540px) {
+    [style*="position: fixed"][style*="inset: 0"] > div,
+    [style*="position:fixed"][style*="inset:0"] > div,
+    [style*="position: fixed"][style*="inset: 0px"] > div {
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+        max-height: 100dvh !important;
+        width: 100% !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+    }
+}
+
+/* Touch improvements globale */
+@media (hover: none) and (pointer: coarse) {
+    .nav-item, .btn-add, .btn-save, .btn-delete, .btn-cancel, .btn-icon {
+        min-height: 44px;
+    }
+    .toggle-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
 }
 
 /* ===== ANIMACIONES ===== */
