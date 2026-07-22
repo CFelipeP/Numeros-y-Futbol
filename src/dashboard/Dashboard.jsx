@@ -163,12 +163,12 @@ const AdminDashboard = () => {
   const currentDiv = DIVISIONES.find((d) => d.value === division);
 
   const statCards = [
-    { key: "pendientes", title: "Partidos Pendientes", value: stats.pendientes ?? 0, icon: <CircleDot size={22} />, color: "#3b82f6", gradient: "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(59,130,246,0.04))", border: "rgba(59,130,246,0.18)" },
-    { key: "jugados", title: "Partidos Jugados", value: stats.jugados ?? 0, icon: <TrendingUp size={22} />, color: "#8b5cf6", gradient: "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04))", border: "rgba(139,92,246,0.18)" },
-    { key: "goles", title: "Goles Temporada", value: stats.goles ?? 0, icon: <Target size={22} />, color: "#10b981", gradient: "linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04))", border: "rgba(16,185,129,0.18)" },
-    { key: "noticias", title: "Noticias Activas", value: stats.noticias ?? 0, icon: <FileText size={22} />, color: "#f59e0b", gradient: "linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.04))", border: "rgba(245,158,11,0.18)" },
-    { key: "equipos", title: "Equipos", value: stats.equipos ?? 0, icon: <Shield size={22} />, color: "#06b6d4", gradient: "linear-gradient(135deg, rgba(6,182,212,0.12), rgba(6,182,212,0.04))", border: "rgba(6,182,212,0.18)" },
-    { key: "usuarios", title: "Usuarios", value: stats.usuarios ?? 0, icon: <Users size={22} />, color: "#f97316", gradient: "linear-gradient(135deg, rgba(249,115,22,0.12), rgba(249,115,22,0.04))", border: "rgba(249,115,22,0.18)" },
+    { key: "pendientes", title: "Partidos Pendientes", value: stats.pendientes ?? 0, icon: <CircleDot size={22} strokeWidth={1.8} />, color: "#4f8fff", gradient: "linear-gradient(135deg, rgba(79,143,255,0.1), rgba(79,143,255,0.03))", border: "rgba(79,143,255,0.15)", glow: "rgba(79,143,255,0.3)" },
+    { key: "jugados", title: "Partidos Jugados", value: stats.jugados ?? 0, icon: <TrendingUp size={22} strokeWidth={1.8} />, color: "#8b5cf6", gradient: "linear-gradient(135deg, rgba(139,92,246,0.1), rgba(139,92,246,0.03))", border: "rgba(139,92,246,0.15)", glow: "rgba(139,92,246,0.3)" },
+    { key: "goles", title: "Goles Temporada", value: stats.goles ?? 0, icon: <Target size={22} strokeWidth={1.8} />, color: "#22d68a", gradient: "linear-gradient(135deg, rgba(34,214,138,0.1), rgba(34,214,138,0.03))", border: "rgba(34,214,138,0.15)", glow: "rgba(34,214,138,0.3)" },
+    { key: "noticias", title: "Noticias Activas", value: stats.noticias ?? 0, icon: <FileText size={22} strokeWidth={1.8} />, color: "#f5a623", gradient: "linear-gradient(135deg, rgba(245,166,35,0.1), rgba(245,166,35,0.03))", border: "rgba(245,166,35,0.15)", glow: "rgba(245,166,35,0.3)" },
+    { key: "equipos", title: "Equipos", value: stats.equipos ?? 0, icon: <Shield size={22} strokeWidth={1.8} />, color: "#06b6d4", gradient: "linear-gradient(135deg, rgba(6,182,212,0.1), rgba(6,182,212,0.03))", border: "rgba(6,182,212,0.15)", glow: "rgba(6,182,212,0.3)" },
+    { key: "usuarios", title: "Usuarios", value: stats.usuarios ?? 0, icon: <Users size={22} strokeWidth={1.8} />, color: "#f97316", gradient: "linear-gradient(135deg, rgba(249,115,22,0.1), rgba(249,115,22,0.03))", border: "rgba(249,115,22,0.15)", glow: "rgba(249,115,22,0.3)" },
   ];
 
   const navItems = [
@@ -252,7 +252,7 @@ const AdminDashboard = () => {
           </div>
         </header>
 
-        <div className="content-wrapper" style={{ padding: '1rem' }}>
+        <div className="content-wrapper">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.2rem", flexWrap: "wrap", gap: "0.75rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
               <h1 className="admin-title" style={{ margin: 0 }}>Dashboard</h1>
@@ -286,13 +286,18 @@ const AdminDashboard = () => {
           ) : (
             <div className="dash-stats-grid" id="driver-admin-stats">
               {statCards.map((s) => (
-                <div key={s.key} style={{ background: s.gradient, border: `1px solid ${s.border}`, borderRadius: "14px", padding: "1.3rem 1.2rem", transition: "all 0.3s ease", cursor: "default" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = `0 8px 25px ${s.border}`; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
+                <div key={s.key} style={{ background: s.gradient, border: `1px solid ${s.border}`, borderRadius: "16px", padding: "1.2rem 1.1rem", transition: "all 0.3s cubic-bezier(0.4,0,0.2,1)", cursor: "default", position: "relative", overflow: "hidden" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = `0 12px 30px ${s.glow}`; e.currentTarget.style.borderColor = s.color + "40"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = s.border; }}
                 >
-                  <div style={{ width: 40, height: 40, borderRadius: "10px", background: `${s.color}18`, display: "flex", alignItems: "center", justifyContent: "center", color: s.color, marginBottom: "0.8rem" }}>{s.icon}</div>
-                  <div style={{ fontSize: "1.7rem", fontWeight: 900, color: "#f1f5f9", fontFamily: "monospace", lineHeight: 1 }}>{s.value}</div>
-                  <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "0.25rem", fontWeight: 500 }}>{s.title}</div>
+                  <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: `${s.color}08`, filter: "blur(20px)", pointerEvents: "none" }} />
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.6rem" }}>
+                    <div style={{ width: 42, height: 42, borderRadius: "12px", background: `${s.color}14`, border: `1px solid ${s.color}25`, display: "flex", alignItems: "center", justifyContent: "center", color: s.color }}>
+                      {s.icon}
+                    </div>
+                    <div style={{ fontSize: "1.65rem", fontWeight: 900, color: "#f1f5f9", fontFamily: "'Inter',system-ui,sans-serif", lineHeight: 1, letterSpacing: "-0.5px" }}>{s.value}</div>
+                  </div>
+                  <div style={{ fontSize: "0.72rem", color: "#8896ac", fontWeight: 500, letterSpacing: "0.2px" }}>{s.title}</div>
                 </div>
               ))}
             </div>
@@ -394,6 +399,9 @@ const AdminDashboard = () => {
         }
         @media (max-width: 480px) {
             .dash-stats-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        }
+        @media (max-width: 375px) {
+            .dash-stats-grid { grid-template-columns: 1fr; gap: 0.4rem; }
         }
 
         .driver-popover {
