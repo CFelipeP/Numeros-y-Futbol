@@ -394,112 +394,158 @@ body {
     color: #fca5a5 !important;
 }
 
-/* ===== SIDEBAR TOGGLE FUNCTIONALITY (ESCRITORIO) ===== */
-.admin-layout.sidebar-closed {
-    grid-template-columns: 0px 1fr;
-}
-
-.admin-layout.sidebar-closed .sidebar {
-    width: 0;
-    padding: 0;
-    overflow: hidden;
-    border: none;
-    opacity: 0;
-}
-
-/* ===== RESPONSIVE (MÓVIL) - SIDEBAR UNIFICADO ===== */
-@media (max-width: 768px) {
-    .admin-layout {
-        grid-template-columns: 1fr !important;
+/* ===== SIDEBAR TOGGLE FUNCTIONALITY (ESCRITORIO ≥1025px) ===== */
+@media (min-width: 1025px) {
+    .admin-layout.sidebar-closed {
+        grid-template-columns: 0px 1fr;
     }
+    .admin-layout.sidebar-closed .sidebar {
+        width: 0;
+        padding: 0;
+        overflow: hidden;
+        border: none;
+        opacity: 0;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE — Breakpoints consolidados
+   Rangos: laptop ≤1280 · tablet ≤1024 · móvil ≤768 · chico ≤480 · tiny ≤360
+   ============================================================ */
+
+/* ===== LAPTOP (≤1280px): sidebar más angosto, contenido algo más compacto ===== */
+@media (max-width: 1280px) {
+    .admin-layout { grid-template-columns: 240px 1fr; }
+    .content-wrapper { padding: 28px 32px; }
+    .search-bar { max-width: 360px; }
+}
+
+/* ===== TABLET (≤1024px): sidebar se vuelve slide-in (mismo patrón que móvil) ===== */
+@media (max-width: 1024px) {
+    .admin-layout { grid-template-columns: 1fr !important; }
 
     .admin-layout .sidebar {
         position: fixed !important;
         z-index: 50 !important;
-        top: 60px !important;
-        height: calc(100% - 60px) !important;
+        top: 0 !important;
         left: 0 !important;
+        height: 100vh !important;
         width: 280px !important;
         transform: translateX(-100%);
         transition: transform 0.3s ease !important;
         box-shadow: none;
+        padding-top: 20px;
     }
-
     .admin-layout.sidebar-closed .sidebar {
         transform: translateX(0) !important;
-        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.6);
+        opacity: 1 !important;
+        width: 280px !important;
+        padding: 24px 16px !important;
+        border-right: 1px solid var(--border) !important;
+        overflow-y: auto !important;
     }
+    .admin-layout .main-content { width: 100% !important; margin-left: 0 !important; }
 
-    .admin-layout .main-content {
-        margin-left: 0 !important;
-        width: 100% !important;
-    }
+    .content-wrapper { padding: 24px 24px; }
+    .top-bar { padding: 16px 20px; }
+    .search-bar { max-width: 260px; margin: 0 16px; }
 
-    .sidebar-header { display: none; }
-    .sidebar-nav { margin-top: 20px; }
+    /* Stats grid: 2 columnas en tablet */
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+    /* Header de tabla: apilar en tablet angosto */
+    .table-header { flex-wrap: wrap; gap: 12px; }
+}
+
+/* ===== MÓVIL (≤768px) ===== */
+@media (max-width: 768px) {
+    .admin-layout .sidebar { width: 260px !important; }
+    .admin-layout.sidebar-closed .sidebar { width: 260px !important; padding: 24px 16px !important; }
 
     .top-bar {
-        padding: 16px 20px;
+        padding: 12px 16px;
         z-index: 1100;
         position: sticky;
+        flex-wrap: wrap;
+        gap: 12px;
     }
+    .search-bar { max-width: 180px !important; margin: 0 8px; flex-grow: 1; }
+    .search-bar input { font-size: 13px; padding: 9px 14px; }
 
-    .content-wrapper { padding: 20px; }
+    .content-wrapper { padding: 18px 16px; }
+
+    .admin-title { font-size: 22px; margin-bottom: 20px; letter-spacing: -0.3px; }
+
+    /* Stats: 2 columnas en móvil grande */
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+    /* Tablas: scroll horizontal sóolo si hace falta (contenedor lo permite) */
+    .table-container { padding: 16px; overflow-x: auto; }
+    .data-table { min-width: 0; font-size: 13px; }
+    .data-table th, .data-table td { padding: 12px 10px; font-size: 13px; }
 
     .table-header {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+        align-items: stretch;
+        gap: 12px;
     }
+    .table-header h2 { font-size: 16px; }
     .table-header button { width: 100%; }
+
+    /* Botones más chicos */
+    .btn-add, .btn-save { padding: 10px 16px; font-size: 13px; }
+    .btn-delete { padding: 7px 10px; font-size: 12px; }
+    .btn-icon { width: 32px; height: 32px; }
+
+    /* Inputs y formularios */
+    .mod-input { font-size: 13px; padding: 9px 12px; }
+    .form-grid { grid-template-columns: 1fr !important; gap: 10px; }
+
+    /* Modales genéricos que usan .modal-content */
+    .modal-content { max-width: 95vw !important; max-height: 90vh !important; padding: 1rem !important; }
+
+    /* Sidebar en móvil: logout al final, navegación con más aire */
+    .sidebar-header { display: none; }
+    .sidebar-nav { margin-top: 12px; }
+    .nav-item { padding: 12px 14px; font-size: 13px; }
+
+    /* Badges / estados */
+    .status { padding: 5px 10px; font-size: 11px; }
+    .status-badge { font-size: 10px; padding: 3px 8px; }
 }
 
-/* ===== RESPONSIVE EXTRA (480px) ===== */
+/* ===== MÓVIL CHICO (≤480px) ===== */
 @media (max-width: 480px) {
-  .top-bar {
-    padding: 12px 16px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .admin-layout .sidebar { width: 260px !important; }
-  .content-wrapper { padding: 16px; }
-  .admin-title { font-size: 22px; margin-bottom: 24px; }
+    .top-bar { padding: 10px 12px; gap: 8px; }
+    .search-bar { max-width: 140px !important; margin: 0 6px; }
+    .search-bar input { font-size: 12px; padding: 8px 12px; }
 
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
+    .content-wrapper { padding: 14px 12px; }
+    .admin-title { font-size: 20px; margin-bottom: 16px; }
 
-  .table-container {
-    padding: 16px;
-    overflow-x: auto;
-  }
+    /* Stats: 1 columna */
+    .stats-grid { grid-template-columns: 1fr; gap: 12px; }
 
-  .table-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
+    .table-container { padding: 12px; border-radius: 12px; }
+    .data-table { font-size: 12px; }
+    .data-table th, .data-table td { padding: 10px 6px; font-size: 12px; }
 
-  .table-header button {
-    width: 100%;
-  }
+    .btn-add, .btn-save { padding: 9px 14px; font-size: 12px; gap: 6px; }
+    .btn-add svg, .btn-save svg { width: 14px; height: 14px; }
 
-  .data-table th,
-  .data-table td {
-    padding: 12px 10px;
-    font-size: 13px;
-  }
+    /* En móvil angosto, ocultar breadcrumb/búsqueda si se seteó .hide-sm */
+    .hide-sm { display: none !important; }
+}
 
-  .search-bar {
-    max-width: 100%;
-    margin: 0;
-  }
-
-  .search-bar input {
-    padding: 10px 16px;
-    font-size: 13px;
-  }
+/* ===== TINY (≤360px): extremos tipo iPhone SE ===== */
+@media (max-width: 360px) {
+    .top-bar { padding: 8px 10px; }
+    .search-bar { max-width: 110px !important; }
+    .content-wrapper { padding: 12px 10px; }
+    .admin-title { font-size: 19px; }
+    .nav-item { padding: 11px 12px; font-size: 12px; gap: 10px; }
+    .data-table th, .data-table td { padding: 8px 4px; font-size: 11px; }
 }
 
 /* ===== ANIMACIONES ===== */
@@ -700,56 +746,3 @@ select.mod-input option { background: #1e293b; color: #e2e8f0; }
   border-color: rgba(34,197,94,0.2);
 }
 
-/* ============================================
-   RESPONSIVE - ADMIN MOBILE
-   ============================================ */
-
-@media (max-width: 768px) {
-  /* Admin layout - sidebar handled by existing slide-in rules above */
-  .main-content { padding: 0 !important; }
-  
-  /* Top bar */
-  .top-bar { padding: 10px 14px !important; }
-  .search-bar { max-width: 180px !important; }
-  .search-bar input { font-size: 0.85rem !important; padding: 8px 12px !important; }
-  
-  /* Content wrapper */
-  .content-wrapper { padding: 1rem !important; }
-  
-  /* Admin title */
-  .admin-title { font-size: 1.2rem !important; }
-  
-  /* Stats grid */
-  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
-  
-  /* Tables */
-  .table-container { padding: 0.8rem !important; border-radius: 10px !important; }
-  .data-table { min-width: 500px !important; font-size: 0.75rem !important; }
-  .data-table th, .data-table td { padding: 6px 8px !important; font-size: 0.7rem !important; }
-  
-  /* Buttons */
-  .btn-add, .btn-save, .btn-delete { padding: 8px 12px !important; font-size: 0.75rem !important; }
-  
-  /* Modals */
-  .modal-content { max-width: 95vw !important; max-height: 90vh !important; padding: 1rem !important; }
-  .mod-input { font-size: 0.85rem !important; padding: 8px 12px !important; }
-  
-  /* Forms */
-  .form-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
-  
-  /* Match cards in admin */
-  .nm-preview { flex-direction: column !important; gap: 12px !important; }
-  .nm-preview-team { width: 100% !important; }
-  
-  /* Copa admin phase buttons */
-  .phase-tabs { overflow-x: auto !important; gap: 4px !important; padding-bottom: 4px !important; }
-  .phase-btn { padding: 6px 10px !important; font-size: 10px !important; white-space: nowrap !important; }
-}
-
-@media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr !important; }
-  .data-table { min-width: 380px !important; }
-  .modal-content { max-width: 98vw !important; padding: 0.8rem !important; }
-  .top-bar { padding: 8px 10px !important; }
-  .search-bar { max-width: 130px !important; }
-}

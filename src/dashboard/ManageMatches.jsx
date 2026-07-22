@@ -638,16 +638,22 @@ const ManageMatches = () => {
                                 </div>
                                 <div className="nm-date-field">
                                     <label className="nm-date-label">HORA</label>
-                                    <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-                                        <select value={to12h(newHora).h} onChange={e => setNewHora(from12h(e.target.value, to12h(newHora).m, to12h(newHora).ampm))} className="nm-date-input" style={{ width: "70px", padding: "12px 6px", textAlign: "center" }}>
-                                            {["01","02","03","04","05","06","07","08","09","10","11","12"].map(h => <option key={h} value={h}>{h}</option>)}
-                                        </select>
-                                        <span style={{ color: "#475569", fontWeight: 800, fontSize: "14px" }}>:</span>
-                                        <select value={to12h(newHora).m} onChange={e => setNewHora(from12h(to12h(newHora).h, e.target.value, to12h(newHora).ampm))} className="nm-date-input" style={{ width: "70px", padding: "12px 6px", textAlign: "center" }}>
-                                            {["00","15","30","45"].map(m => <option key={m} value={m}>{m}</option>)}
-                                        </select>
-                                        <button type="button" onClick={() => setNewHora(from12h(to12h(newHora).h, to12h(newHora).m, "AM"))} className="nm-date-input" style={{ padding: "12px 8px", cursor: "pointer", fontWeight: 800, fontSize: "13px", background: to12h(newHora).ampm === "AM" ? "rgba(226,179,64,0.12)" : undefined, borderColor: to12h(newHora).ampm === "AM" ? "#e2b340" : undefined, color: to12h(newHora).ampm === "AM" ? "#e2b340" : undefined }}>AM</button>
-                                        <button type="button" onClick={() => setNewHora(from12h(to12h(newHora).h, to12h(newHora).m, "PM"))} className="nm-date-input" style={{ padding: "12px 8px", cursor: "pointer", fontWeight: 800, fontSize: "13px", background: to12h(newHora).ampm === "PM" ? "rgba(226,179,64,0.12)" : undefined, borderColor: to12h(newHora).ampm === "PM" ? "#e2b340" : undefined, color: to12h(newHora).ampm === "PM" ? "#e2b340" : undefined }}>PM</button>
+                                    <div className="mm-hora-row">
+                                        <span className="mm-jornada-wrap mm-hora-wrap">
+                                            <select value={to12h(newHora).h} onChange={e => setNewHora(from12h(e.target.value, to12h(newHora).m, to12h(newHora).ampm))} className="mm-hora-seg">
+                                                {["01","02","03","04","05","06","07","08","09","10","11","12"].map(h => <option key={h} value={h}>{h}</option>)}
+                                            </select>
+                                            <ChevronDown size={13} className="mm-jornada-chevron" />
+                                        </span>
+                                        <span className="mm-hora-colon">:</span>
+                                        <span className="mm-jornada-wrap mm-hora-wrap">
+                                            <select value={to12h(newHora).m} onChange={e => setNewHora(from12h(to12h(newHora).h, e.target.value, to12h(newHora).ampm))} className="mm-hora-seg">
+                                                {["00","05","10","15","20","25","30","35","40","45","50","55"].map(m => <option key={m} value={m}>{m}</option>)}
+                                            </select>
+                                            <ChevronDown size={13} className="mm-jornada-chevron" />
+                                        </span>
+                                        <button type="button" onClick={() => setNewHora(from12h(to12h(newHora).h, to12h(newHora).m, "AM"))} className={`mm-ampm-btn ${to12h(newHora).ampm === "AM" ? "mm-ampm-active" : ""}`}>AM</button>
+                                        <button type="button" onClick={() => setNewHora(from12h(to12h(newHora).h, to12h(newHora).m, "PM"))} className={`mm-ampm-btn ${to12h(newHora).ampm === "PM" ? "mm-ampm-active" : ""}`}>PM</button>
                                     </div>
                                 </div>
                             </div>
@@ -702,16 +708,22 @@ const ManageMatches = () => {
                                 </div>
                                 <div className="nm-date-field">
                                     <label className="nm-date-label">HORA</label>
-                                    <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-                                        <select value={to12h(editHora).h} onChange={e => setEditHora(from12h(e.target.value, to12h(editHora).m, to12h(editHora).ampm))} className="nm-date-input" style={{ width: "70px", padding: "12px 6px", textAlign: "center" }}>
-                                            {["01","02","03","04","05","06","07","08","09","10","11","12"].map(h => <option key={h} value={h}>{h}</option>)}
-                                        </select>
-                                        <span style={{ color: "#475569", fontWeight: 800, fontSize: "14px" }}>:</span>
-                                        <select value={to12h(editHora).m} onChange={e => setEditHora(from12h(to12h(editHora).h, e.target.value, to12h(editHora).ampm))} className="nm-date-input" style={{ width: "70px", padding: "12px 6px", textAlign: "center" }}>
-                                            {["00","15","30","45"].map(m => <option key={m} value={m}>{m}</option>)}
-                                        </select>
-                                        <button type="button" onClick={() => setEditHora(from12h(to12h(editHora).h, to12h(editHora).m, "AM"))} className="nm-date-input" style={{ padding: "12px 8px", cursor: "pointer", fontWeight: 800, fontSize: "13px", background: to12h(editHora).ampm === "AM" ? "rgba(226,179,64,0.12)" : undefined, borderColor: to12h(editHora).ampm === "AM" ? "#e2b340" : undefined, color: to12h(editHora).ampm === "AM" ? "#e2b340" : undefined }}>AM</button>
-                                        <button type="button" onClick={() => setEditHora(from12h(to12h(editHora).h, to12h(editHora).m, "PM"))} className="nm-date-input" style={{ padding: "12px 8px", cursor: "pointer", fontWeight: 800, fontSize: "13px", background: to12h(editHora).ampm === "PM" ? "rgba(226,179,64,0.12)" : undefined, borderColor: to12h(editHora).ampm === "PM" ? "#e2b340" : undefined, color: to12h(editHora).ampm === "PM" ? "#e2b340" : undefined }}>PM</button>
+                                    <div className="mm-hora-row">
+                                        <span className="mm-jornada-wrap mm-hora-wrap">
+                                            <select value={to12h(editHora).h} onChange={e => setEditHora(from12h(e.target.value, to12h(editHora).m, to12h(editHora).ampm))} className="mm-hora-seg">
+                                                {["01","02","03","04","05","06","07","08","09","10","11","12"].map(h => <option key={h} value={h}>{h}</option>)}
+                                            </select>
+                                            <ChevronDown size={13} className="mm-jornada-chevron" />
+                                        </span>
+                                        <span className="mm-hora-colon">:</span>
+                                        <span className="mm-jornada-wrap mm-hora-wrap">
+                                            <select value={to12h(editHora).m} onChange={e => setEditHora(from12h(to12h(editHora).h, e.target.value, to12h(editHora).ampm))} className="mm-hora-seg">
+                                                {["00","05","10","15","20","25","30","35","40","45","50","55"].map(m => <option key={m} value={m}>{m}</option>)}
+                                            </select>
+                                            <ChevronDown size={13} className="mm-jornada-chevron" />
+                                        </span>
+                                        <button type="button" onClick={() => setEditHora(from12h(to12h(editHora).h, to12h(editHora).m, "AM"))} className={`mm-ampm-btn ${to12h(editHora).ampm === "AM" ? "mm-ampm-active" : ""}`}>AM</button>
+                                        <button type="button" onClick={() => setEditHora(from12h(to12h(editHora).h, to12h(editHora).m, "PM"))} className={`mm-ampm-btn ${to12h(editHora).ampm === "PM" ? "mm-ampm-active" : ""}`}>PM</button>
                                     </div>
                                 </div>
                             </div>
@@ -794,6 +806,35 @@ const ManageMatches = () => {
     /* Variante para modales (JORNADA sin asignar) — respeta .nm-date-input */
     .mm-jornada-wrap-modal { width: 100%; box-sizing: border-box; }
     .mm-jornada-filter-modal { width: 100%; box-sizing: border-box; padding-right: 38px; font-size: 14px; }
+
+    /* === Selector de HORA (HH : MM AM/PM) — consistente con JORNADA === */
+    .mm-hora-row { display: flex; gap: 5px; align-items: center; }
+    .mm-hora-wrap { width: auto; }
+    .mm-hora-seg {
+        appearance: none; -webkit-appearance: none; -moz-appearance: none;
+        width: 64px; padding: 12px 22px 12px 8px;
+        text-align: center;
+        border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.03);
+        color: #e2e8f0; font-size: 14px; font-weight: 700;
+        font-family: inherit; cursor: pointer; outline: none;
+        transition: all 0.2s; box-sizing: border-box;
+    }
+    .mm-hora-seg:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); }
+    .mm-hora-seg:focus { border-color: #e2b340; box-shadow: 0 0 0 3px rgba(226,179,64,0.08); background: rgba(255,255,255,0.05); }
+    .mm-hora-seg option { background: #0f172a; color: #e2e8f0; font-weight: 600; }
+    .mm-hora-colon { color: #475569; font-weight: 800; font-size: 14px; user-select: none; }
+    .mm-ampm-btn {
+        padding: 12px 10px; border-radius: 12px;
+        border: 1.5px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.03);
+        color: #94a3b8; font-size: 13px; font-weight: 800;
+        font-family: inherit; cursor: pointer; outline: none;
+        transition: all 0.2s; box-sizing: border-box;
+    }
+    .mm-ampm-btn:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #cbd5e1; }
+    .mm-ampm-btn:focus { border-color: #e2b340; box-shadow: 0 0 0 3px rgba(226,179,64,0.08); }
+    .mm-ampm-active { background: rgba(226,179,64,0.12) !important; border-color: #e2b340 !important; color: #e2b340 !important; box-shadow: 0 0 12px rgba(226,179,64,0.12); }
 
     /* === Tabs y botones === */
     .mm-tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 3px; flex-wrap: wrap; }
@@ -960,7 +1001,7 @@ const ManageMatches = () => {
        RESPONSIVE — 3 breakpoints claros
        ============================================== */
 
-    /* Tablet: modales fullscreen */
+    /* Tablet: modales fullscreen + header de tabla ordenado */
     @media (max-width: 860px) {
         .nm-card-wide { width: 100%; max-width: 100vw; max-height: 100vh; border-radius: 0; }
         .nm-selects-row-lg { grid-template-columns: 1fr; gap: 12px; }
@@ -972,6 +1013,17 @@ const ManageMatches = () => {
         .nm-preview-line-lg { width: 40px; height: 1px; }
         .nm-footer-wide { flex-direction: column-reverse; }
         .nm-btn-cancel-lg, .nm-btn-ok-lg { width: 100%; text-align: center; justify-content: center !important; }
+
+        /* Header de tabla: apilar título y controles verticalmente */
+        .table-header { flex-direction: column; align-items: stretch !important; gap: 14px !important; }
+        .table-header h2 { font-size: 16px; }
+        /* Grupo de tabs + filtros + botón: ocupar todo el ancho, wrap natural */
+        .table-header > div { width: 100%; justify-content: flex-start; }
+        .mm-tabs { width: 100%; }
+        .mm-tab { flex: 1; justify-content: center; }
+        .mm-jornada-filter { flex: 1; min-width: 0; }
+        .mm-reset-all-btn { flex: 1; justify-content: center; }
+        .btn-add { width: 100%; justify-content: center; }
     }
 
     /* ✅ Celular: tabla fluida sin scroll horizontal */
@@ -1005,6 +1057,17 @@ const ManageMatches = () => {
         .mm-score-team-name { font-size: 10px; }
         .mm-score-num { width: 44px; height: 44px; font-size: 24px; }
         .mm-score-btn { width: 34px; height: 34px; }
+
+        /* Selector de HORA: wraps ocupan ancho completo en móvil */
+        .nm-date-row { grid-template-columns: 1fr !important; gap: 14px !important; }
+        .mm-hora-row { justify-content: flex-start; }
+        .mm-hora-seg { width: 56px !important; padding: 10px 18px 10px 6px !important; font-size: 13px !important; }
+        .mm-ampm-btn { padding: 10px 8px !important; font-size: 12px !important; }
+        .mm-jornada-filter-modal { font-size: 13px !important; padding-right: 34px !important; }
+
+        /* Tabs: texto más chico en móvil */
+        .mm-tab { font-size: 11px !important; padding: 6px 8px !important; }
+        .mm-tab-count { min-width: 16px; height: 14px; font-size: 9px; }
     }
     .driver-popover{background:#0f172a!important;border:1px solid #ef4444!important;border-radius:12px!important;box-shadow:0 0 20px rgba(239,68,68,0.2),0 8px 32px rgba(0,0,0,0.5)!important;color:#f1f5f9!important}
     .driver-popover .driver-popover-title{color:#ef4444!important;font-weight:800!important}

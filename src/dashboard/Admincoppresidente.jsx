@@ -552,7 +552,7 @@ const MatchModal = ({ match, teams, phase, allMatches, onSave, onClose }) => {
               </select>
               <span style={{ color: "#475569", fontWeight: 800, fontSize: 14 }}>:</span>
               <select value={to12h(form.hora).m} onChange={e => { set("hora", from12h(to12h(form.hora).h, e.target.value, to12h(form.hora).ampm)); touch("hora"); }} style={{ ...inp(touched.hora && errors.hora_req), width: 62, padding: "10px 6px", textAlign: "center" }}>
-                {["00","15","30","45"].map(m => <option key={m} value={m}>{m}</option>)}
+                {["00","05","10","15","20","25","30","35","40","45","50","55"].map(m => <option key={m} value={m}>{m}</option>)}
               </select>
               <button type="button" onClick={() => { set("hora", from12h(to12h(form.hora).h, to12h(form.hora).m, "AM")); touch("hora"); }} style={{ ...inp(), padding: "10px 6px", cursor: "pointer", fontWeight: 800, fontSize: 12, background: to12h(form.hora).ampm === "AM" ? "rgba(226,179,64,0.12)" : "", borderColor: to12h(form.hora).ampm === "AM" ? "#e2b340" : "", color: to12h(form.hora).ampm === "AM" ? "#e2b340" : "" }}>AM</button>
               <button type="button" onClick={() => { set("hora", from12h(to12h(form.hora).h, to12h(form.hora).m, "PM")); touch("hora"); }} style={{ ...inp(), padding: "10px 6px", cursor: "pointer", fontWeight: 800, fontSize: 12, background: to12h(form.hora).ampm === "PM" ? "rgba(226,179,64,0.12)" : "", borderColor: to12h(form.hora).ampm === "PM" ? "#e2b340" : "", color: to12h(form.hora).ampm === "PM" ? "#e2b340" : "" }}>PM</button>

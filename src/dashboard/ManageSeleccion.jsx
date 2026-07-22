@@ -238,7 +238,7 @@ function PartidosTab({ partidos, onReload }) {
               </select>
               <span style={{ color: "#475569", fontWeight: 800 }}>:</span>
               <select className="mod-input" style={{ width: 58, padding: "12px 4px", textAlign: "center" }} value={to12h(form.hora).m} onChange={e => setForm({ ...form, hora: from12h(to12h(form.hora).h, e.target.value, to12h(form.hora).ampm) })}>
-                {["00","15","30","45"].map(m => <option key={m} value={m}>{m}</option>)}
+                {["00","05","10","15","20","25","30","35","40","45","50","55"].map(m => <option key={m} value={m}>{m}</option>)}
               </select>
               <button type="button" onClick={() => setForm({ ...form, hora: from12h(to12h(form.hora).h, to12h(form.hora).m, "AM") })} className="mod-input" style={{ padding: "12px 6px", cursor: "pointer", fontWeight: 800, fontSize: 12, background: to12h(form.hora).ampm === "AM" ? "rgba(226,179,64,0.12)" : "", borderColor: to12h(form.hora).ampm === "AM" ? "#e2b340" : "", color: to12h(form.hora).ampm === "AM" ? "#e2b340" : "" }}>AM</button>
               <button type="button" onClick={() => setForm({ ...form, hora: from12h(to12h(form.hora).h, to12h(form.hora).m, "PM") })} className="mod-input" style={{ padding: "12px 6px", cursor: "pointer", fontWeight: 800, fontSize: 12, background: to12h(form.hora).ampm === "PM" ? "rgba(226,179,64,0.12)" : "", borderColor: to12h(form.hora).ampm === "PM" ? "#e2b340" : "", color: to12h(form.hora).ampm === "PM" ? "#e2b340" : "" }}>PM</button>
