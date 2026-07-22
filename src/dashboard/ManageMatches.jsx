@@ -273,14 +273,28 @@ const ManageMatches = () => {
     const localTeam = teamMap[newLocal];
     const visitanteTeam = teamMap[newVisitante];
 
+    const usedTeamsInJornada = (() => {
+        if (!newJornada) return new Set();
+        const used = new Set();
+        matches.forEach(m => {
+            if (String(m.jornada) === String(newJornada)) {
+                if (m.local_id) used.add(String(m.local_id));
+                if (m.visitante_id) used.add(String(m.visitante_id));
+            }
+        });
+        return used;
+    })();
+
     const filteredLocal = teams.filter(t => {
         if (String(t.id) === String(newVisitante)) return false;
+        if (newJornada && usedTeamsInJornada.has(String(t.id)) && String(t.id) !== String(newLocal)) return false;
         if (!t.nombre.toLowerCase().includes(searchLocal.toLowerCase())) return false;
         if (division === "ascenso" && newVisitante) { const vGrupo = (teamMap[newVisitante]?.grupo || "").toLowerCase(); const tGrupo = (t.grupo || "").toLowerCase(); if (vGrupo && tGrupo && vGrupo !== tGrupo) return false; }
         return true;
     });
     const filteredVisitante = teams.filter(t => {
         if (String(t.id) === String(newLocal)) return false;
+        if (newJornada && usedTeamsInJornada.has(String(t.id)) && String(t.id) !== String(newVisitante)) return false;
         if (!t.nombre.toLowerCase().includes(searchVisitante.toLowerCase())) return false;
         if (division === "ascenso" && newLocal) { const lGrupo = (teamMap[newLocal]?.grupo || "").toLowerCase(); const tGrupo = (t.grupo || "").toLowerCase(); if (lGrupo && tGrupo && lGrupo !== tGrupo) return false; }
         return true;
@@ -468,13 +482,16 @@ const ManageMatches = () => {
                                     <button className={`mm-tab ${activeTab === "pending" ? "mm-tab-active mm-tab-pending" : ""}`} onClick={() => setActiveTab("pending")}>Pendientes <span className="mm-tab-count">{counts.pending}</span></button>
                                     <button className={`mm-tab ${activeTab === "played" ? "mm-tab-active mm-tab-played" : ""}`} onClick={() => setActiveTab("played")}>Jugados <span className="mm-tab-count">{counts.played}</span></button>
                                 </div>
-                                <select className="mm-jornada-filter" value={filterJornada} onChange={e => setFilterJornada(e.target.value)} style={{ padding: "7px 12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)", color: "#94a3b8", fontSize: "12px", fontWeight: 600, cursor: "pointer", outline: "none" }}>
-                                    <option value="all">Todas las jornadas</option>
-                                    {(() => {
-                                        const jset = new Set(); matches.forEach(m => { if (m.jornada != null) jset.add(m.jornada); });
-                                        return [...jset].sort((a,b)=>a-b).map(j => <option key={j} value={j}>Jornada {j}</option>);
-                                    })()}
-                                </select>
+                                <span className="mm-jornada-wrap">
+                                    <select className="mm-jornada-filter" value={filterJornada} onChange={e => setFilterJornada(e.target.value)}>
+                                        <option value="all">Todas las jornadas</option>
+                                        {(() => {
+                                            const jset = new Set(); matches.forEach(m => { if (m.jornada != null) jset.add(m.jornada); });
+                                            return [...jset].sort((a,b)=>a-b).map(j => <option key={j} value={j}>Jornada {j}</option>);
+                                        })()}
+                                    </select>
+                                    <ChevronDown size={14} className="mm-jornada-chevron" />
+                                </span>
                                 {counts.played > 0 && <button className="mm-reset-all-btn" onClick={resetAllMatches}><RotateCcw size={14} /> <span>Resetear todo</span></button>}
                                 <button className="btn-add" id="driver-mm-create" onClick={openNewMatch}><Plus size={18} /> Nuevo Partido</button>
                             </div>
@@ -611,10 +628,13 @@ const ManageMatches = () => {
                             <div className="nm-date-row" style={{ marginTop: 8 }}>
                                 <div className="nm-date-field">
                                     <label className="nm-date-label">JORNADA</label>
-                                    <select value={newJornada} onChange={e => setNewJornada(e.target.value)} className="nm-date-input" style={{ cursor: "pointer" }}>
-                                        <option value="">Sin asignar</option>
-                                        {[...Array(22)].map((_, i) => <option key={i+1} value={i+1}>Jornada {i+1}</option>)}
-                                    </select>
+                                    <span className="mm-jornada-wrap mm-jornada-wrap-modal">
+                                        <select value={newJornada} onChange={e => setNewJornada(e.target.value)} className="nm-date-input mm-jornada-filter mm-jornada-filter-modal">
+                                            <option value="">Sin asignar</option>
+                                            {[...Array(22)].map((_, i) => <option key={i+1} value={i+1}>Jornada {i+1}</option>)}
+                                        </select>
+                                        <ChevronDown size={16} className="mm-jornada-chevron" />
+                                    </span>
                                 </div>
                             </div>
                             <div className="nm-preview nm-preview-lg">
@@ -662,10 +682,13 @@ const ManageMatches = () => {
                             <div className="nm-date-row" style={{ marginTop: 0, marginBottom: 20 }}>
                                 <div className="nm-date-field">
                                     <label className="nm-date-label">JORNADA</label>
-                                    <select value={editJornada} onChange={e => setEditJornada(e.target.value)} className="nm-date-input" style={{ cursor: "pointer" }}>
-                                        <option value="">Sin asignar</option>
-                                        {[...Array(22)].map((_, i) => <option key={i+1} value={i+1}>Jornada {i+1}</option>)}
-                                    </select>
+                                    <span className="mm-jornada-wrap mm-jornada-wrap-modal">
+                                        <select value={editJornada} onChange={e => setEditJornada(e.target.value)} className="nm-date-input mm-jornada-filter mm-jornada-filter-modal">
+                                            <option value="">Sin asignar</option>
+                                            {[...Array(22)].map((_, i) => <option key={i+1} value={i+1}>Jornada {i+1}</option>)}
+                                        </select>
+                                        <ChevronDown size={16} className="mm-jornada-chevron" />
+                                    </span>
                                 </div>
                             </div>
                             <div className="mm-scoreboard">
@@ -713,6 +736,28 @@ const ManageMatches = () => {
     .td-team-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
     .td-actions { display: flex; gap: 6px; flex-wrap: wrap; }
     .th-actions { white-space: nowrap; }
+
+    /* === Filtro de Jornada (select nativo estilado) === */
+    .mm-jornada-wrap { position: relative; display: inline-flex; align-items: center; }
+    .mm-jornada-filter {
+        appearance: none; -webkit-appearance: none; -moz-appearance: none;
+        padding: 7px 30px 7px 12px; border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(255,255,255,0.03);
+        color: #94a3b8; font-size: 12px; font-weight: 600;
+        font-family: inherit; cursor: pointer; outline: none;
+        transition: all 0.2s;
+    }
+    .mm-jornada-filter:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #cbd5e1; }
+    .mm-jornada-filter:focus { border-color: #e2b340; box-shadow: 0 0 0 3px rgba(226,179,64,0.08); background: rgba(255,255,255,0.05); color: #e2e8f0; }
+    .mm-jornada-filter option { background: #0f172a; color: #e2e8f0; font-weight: 500; }
+    .mm-jornada-chevron { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #64748b; transition: all 0.2s; }
+    .mm-jornada-wrap:hover .mm-jornada-chevron { color: #e2b340; }
+    .mm-jornada-filter:focus + .mm-jornada-chevron { transform: translateY(-50%) rotate(180deg); color: #e2b340; }
+
+    /* Variante para modales (JORNADA sin asignar) — respeta .nm-date-input */
+    .mm-jornada-wrap-modal { width: 100%; box-sizing: border-box; }
+    .mm-jornada-filter-modal { width: 100%; box-sizing: border-box; padding-right: 38px; font-size: 14px; }
 
     /* === Tabs y botones === */
     .mm-tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 3px; flex-wrap: wrap; }

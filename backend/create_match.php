@@ -30,8 +30,13 @@ if ($fecha && $hora) {
     $fecha_hora = date('Y-m-d H:i:s');
 }
 
-$stmt = $conn->prepare("INSERT INTO partidos (equipo_local, equipo_visitante, fecha, jornada, goles_local, goles_visitante, estado) VALUES (?, ?, ?, ?, 0, 0, 'Pendiente')");
-$stmt->bind_param("iisii", $local, $visitante, $fecha_hora, $jornada);
+if ($jornada !== null && $jornada !== '') {
+    $stmt = $conn->prepare("INSERT INTO partidos (equipo_local, equipo_visitante, fecha, jornada, goles_local, goles_visitante, estado) VALUES (?, ?, ?, ?, 0, 0, 'Pendiente')");
+    $stmt->bind_param("iisi", $local, $visitante, $fecha_hora, $jornada);
+} else {
+    $stmt = $conn->prepare("INSERT INTO partidos (equipo_local, equipo_visitante, fecha, goles_local, goles_visitante, estado) VALUES (?, ?, ?, 0, 0, 'Pendiente')");
+    $stmt->bind_param("iis", $local, $visitante, $fecha_hora);
+}
 
 if (!$stmt->execute()) {
     echo json_enc(["error" => "Error interno del servidor"]);
