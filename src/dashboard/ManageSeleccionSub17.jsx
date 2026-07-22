@@ -185,6 +185,8 @@ function PartidosTabFemenina({ partidos, onReload }) {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState({ rival_nombre: "", rival_logo: "", goles_favor: "", goles_contra: "", fecha: "", hora: "", estado: "Pendiente", competicion: "", lugar: "Neutral" });
+  const to12h = (h24) => { if (!h24) return { h: "12", m: "00", ampm: "AM" }; const [hh, mm] = h24.split(":"); let h = parseInt(hh) || 0; const ampm = h >= 12 ? "PM" : "AM"; h = h % 12 || 12; return { h: String(h).padStart(2, '0'), m: mm || "00", ampm }; };
+  const from12h = (h12, m12, ampm) => { if (!h12 || h12 === "") return ""; let hh = parseInt(h12); if (ampm === "PM" && hh !== 12) hh += 12; if (ampm === "AM" && hh === 12) hh = 0; return String(hh).padStart(2, '0') + ":" + (m12 || "00"); };
 
   const openCreate = () => {
     setEditId(null);
@@ -229,7 +231,17 @@ function PartidosTabFemenina({ partidos, onReload }) {
             <input className="mod-input" type="number" placeholder="Goles a favor" value={form.goles_favor} onChange={e => setForm({ ...form, goles_favor: e.target.value === "" ? "" : Number(e.target.value) })} />
             <input className="mod-input" type="number" placeholder="Goles en contra" value={form.goles_contra} onChange={e => setForm({ ...form, goles_contra: e.target.value === "" ? "" : Number(e.target.value) })} />
             <input className="mod-input" type="date" value={form.fecha} onChange={e => setForm({ ...form, fecha: e.target.value })} />
-            <input className="mod-input" type="time" value={form.hora} onChange={e => setForm({ ...form, hora: e.target.value })} />
+            <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+              <select className="mod-input" style={{ width: 62, padding: "12px 6px", textAlign: "center" }} value={to12h(form.hora).h} onChange={e => setForm({ ...form, hora: from12h(e.target.value, to12h(form.hora).m, to12h(form.hora).ampm) })}>
+                {["01","02","03","04","05","06","07","08","09","10","11","12"].map(h => <option key={h} value={h}>{h}</option>)}
+              </select>
+              <span style={{ color: "#475569", fontWeight: 800 }}>:</span>
+              <select className="mod-input" style={{ width: 58, padding: "12px 4px", textAlign: "center" }} value={to12h(form.hora).m} onChange={e => setForm({ ...form, hora: from12h(to12h(form.hora).h, e.target.value, to12h(form.hora).ampm) })}>
+                {["00","15","30","45"].map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+              <button type="button" onClick={() => setForm({ ...form, hora: from12h(to12h(form.hora).h, to12h(form.hora).m, "AM") })} className="mod-input" style={{ padding: "12px 6px", cursor: "pointer", fontWeight: 800, fontSize: 12, background: to12h(form.hora).ampm === "AM" ? "rgba(226,179,64,0.12)" : "", borderColor: to12h(form.hora).ampm === "AM" ? "#e2b340" : "", color: to12h(form.hora).ampm === "AM" ? "#e2b340" : "" }}>AM</button>
+              <button type="button" onClick={() => setForm({ ...form, hora: from12h(to12h(form.hora).h, to12h(form.hora).m, "PM") })} className="mod-input" style={{ padding: "12px 6px", cursor: "pointer", fontWeight: 800, fontSize: 12, background: to12h(form.hora).ampm === "PM" ? "rgba(226,179,64,0.12)" : "", borderColor: to12h(form.hora).ampm === "PM" ? "#e2b340" : "", color: to12h(form.hora).ampm === "PM" ? "#e2b340" : "" }}>PM</button>
+            </div>
             <select className="mod-input" value={form.estado} onChange={e => setForm({ ...form, estado: e.target.value })}>
               <option value="Pendiente">Pendiente</option><option value="En Curso">En Curso</option><option value="Finalizado">Finalizado</option>
             </select>

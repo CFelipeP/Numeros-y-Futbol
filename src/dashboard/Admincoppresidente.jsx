@@ -305,6 +305,8 @@ const miniBtn = (color) => ({ width: 22, height: 22, borderRadius: 5, background
 /* ─── Modal Partido ──────────────────────────────────────────────────────── */
 const MatchModal = ({ match, teams, phase, allMatches, onSave, onClose }) => {
   const isIV = isIdaVueltaPhase(phase);
+  const to12h = (h24) => { if (!h24) return { h: "12", m: "00", ampm: "AM" }; const [hh, mm] = h24.split(":"); let h = parseInt(hh) || 0; const ampm = h >= 12 ? "PM" : "AM"; h = h % 12 || 12; return { h: String(h).padStart(2, '0'), m: mm || "00", ampm }; };
+  const from12h = (h12, m12, ampm) => { if (!h12 || h12 === "") return ""; let hh = parseInt(h12); if (ampm === "PM" && hh !== 12) hh += 12; if (ampm === "AM" && hh === 12) hh = 0; return String(hh).padStart(2, '0') + ":" + (m12 || "00"); };
   const [form, setForm] = useState(() => {
     if (match) return { ...match, team1_id: match.team1_id || "", team2_id: match.team2_id || "", llave: match.llave || "", fase: match.fase || phase, grupo: match.grupo || (phase === "grupos" ? "A" : ""), jornada: match.jornada || (isIdaVueltaPhase(match.fase) ? "ida" : ""), penales_local: match.penales_local != null ? match.penales_local : "", penales_visitante: match.penales_visitante != null ? match.penales_visitante : "" };
     return { team1_id: "", team2_id: "", llave: "", fecha: "", hora: "", goles_local: "", goles_visitante: "", estado: "Pendiente", fase: phase, grupo: phase === "grupos" ? "A" : "", jornada: isIV ? "ida" : "", penales_local: "", penales_visitante: "" };
@@ -543,7 +545,19 @@ const MatchModal = ({ match, teams, phase, allMatches, onSave, onClose }) => {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div><label style={lbl}>FECHA</label><input type="date" value={form.fecha || ""} onChange={e => { set("fecha", e.target.value); touch("fecha"); }} style={inp(touched.fecha && (errors.fecha || errors.fecha_req))} />{touched.fecha && errors.fecha_req && <FieldError msg={errors.fecha_req} />}{touched.fecha && errors.fecha && <FieldError msg={errors.fecha} />}</div>
-            <div><label style={lbl}>HORA</label><input type="time" value={form.hora || ""} onChange={e => { set("hora", e.target.value); touch("hora"); }} style={inp(touched.hora && errors.hora_req)} />{touched.hora && errors.hora_req && <FieldError msg={errors.hora_req} />}</div>
+            <div><label style={lbl}>HORA</label>
+            <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+              <select value={to12h(form.hora).h} onChange={e => { set("hora", from12h(e.target.value, to12h(form.hora).m, to12h(form.hora).ampm)); touch("hora"); }} style={{ ...inp(touched.hora && errors.hora_req), width: 62, padding: "10px 6px", textAlign: "center" }}>
+                {["01","02","03","04","05","06","07","08","09","10","11","12"].map(h => <option key={h} value={h}>{h}</option>)}
+              </select>
+              <span style={{ color: "#475569", fontWeight: 800, fontSize: 14 }}>:</span>
+              <select value={to12h(form.hora).m} onChange={e => { set("hora", from12h(to12h(form.hora).h, e.target.value, to12h(form.hora).ampm)); touch("hora"); }} style={{ ...inp(touched.hora && errors.hora_req), width: 62, padding: "10px 6px", textAlign: "center" }}>
+                {["00","15","30","45"].map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+              <button type="button" onClick={() => { set("hora", from12h(to12h(form.hora).h, to12h(form.hora).m, "AM")); touch("hora"); }} style={{ ...inp(), padding: "10px 6px", cursor: "pointer", fontWeight: 800, fontSize: 12, background: to12h(form.hora).ampm === "AM" ? "rgba(226,179,64,0.12)" : "", borderColor: to12h(form.hora).ampm === "AM" ? "#e2b340" : "", color: to12h(form.hora).ampm === "AM" ? "#e2b340" : "" }}>AM</button>
+              <button type="button" onClick={() => { set("hora", from12h(to12h(form.hora).h, to12h(form.hora).m, "PM")); touch("hora"); }} style={{ ...inp(), padding: "10px 6px", cursor: "pointer", fontWeight: 800, fontSize: 12, background: to12h(form.hora).ampm === "PM" ? "rgba(226,179,64,0.12)" : "", borderColor: to12h(form.hora).ampm === "PM" ? "#e2b340" : "", color: to12h(form.hora).ampm === "PM" ? "#e2b340" : "" }}>PM</button>
+            </div>
+            {touched.hora && errors.hora_req && <FieldError msg={errors.hora_req} />}</div>
           </div>
           <div>
             <label style={lbl}>MARCADOR {form.estado === "Finalizado" && <span style={{ color: "#ef4444" }}>*</span>}</label>

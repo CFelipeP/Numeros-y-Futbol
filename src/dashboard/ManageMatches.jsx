@@ -113,6 +113,22 @@ const ManageMatches = () => {
       return () => clearTimeout(timer);
     }, []);
 
+    const to12h = (h24) => {
+        if (!h24) return { h: "12", m: "00", ampm: "AM" };
+        const [hh, mm] = h24.split(":");
+        let h = parseInt(hh) || 0;
+        const ampm = h >= 12 ? "PM" : "AM";
+        h = h % 12 || 12;
+        return { h: String(h).padStart(2, '0'), m: mm || "00", ampm };
+    };
+    const from12h = (h12, m12, ampm) => {
+        if (!h12 || h12 === "") return "";
+        let hh = parseInt(h12);
+        if (ampm === "PM" && hh !== 12) hh += 12;
+        if (ampm === "AM" && hh === 12) hh = 0;
+        return String(hh).padStart(2, '0') + ":" + (m12 || "00");
+    };
+
     const getEscudo = (idOrName) => { const t = teamMap[idOrName]; return t?.logo ? `${API}${t.logo}` : null; };
     const fallbackImg = "https://ui-avatars.com/api/?name=EQ&background=0f172a&color=334155&size=40&bold=true";
     const fallbackSelect = "https://ui-avatars.com/api/?name=EQ&background=1e293b&color=475569&size=36&bold=true";
@@ -622,7 +638,17 @@ const ManageMatches = () => {
                                 </div>
                                 <div className="nm-date-field">
                                     <label className="nm-date-label">HORA</label>
-                                    <input type="time" value={newHora} onChange={e => setNewHora(e.target.value)} className="nm-date-input" />
+                                    <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                                        <select value={to12h(newHora).h} onChange={e => setNewHora(from12h(e.target.value, to12h(newHora).m, to12h(newHora).ampm))} className="nm-date-input" style={{ width: "70px", padding: "12px 6px", textAlign: "center" }}>
+                                            {["01","02","03","04","05","06","07","08","09","10","11","12"].map(h => <option key={h} value={h}>{h}</option>)}
+                                        </select>
+                                        <span style={{ color: "#475569", fontWeight: 800, fontSize: "14px" }}>:</span>
+                                        <select value={to12h(newHora).m} onChange={e => setNewHora(from12h(to12h(newHora).h, e.target.value, to12h(newHora).ampm))} className="nm-date-input" style={{ width: "70px", padding: "12px 6px", textAlign: "center" }}>
+                                            {["00","15","30","45"].map(m => <option key={m} value={m}>{m}</option>)}
+                                        </select>
+                                        <button type="button" onClick={() => setNewHora(from12h(to12h(newHora).h, to12h(newHora).m, "AM"))} className="nm-date-input" style={{ padding: "12px 8px", cursor: "pointer", fontWeight: 800, fontSize: "13px", background: to12h(newHora).ampm === "AM" ? "rgba(226,179,64,0.12)" : undefined, borderColor: to12h(newHora).ampm === "AM" ? "#e2b340" : undefined, color: to12h(newHora).ampm === "AM" ? "#e2b340" : undefined }}>AM</button>
+                                        <button type="button" onClick={() => setNewHora(from12h(to12h(newHora).h, to12h(newHora).m, "PM"))} className="nm-date-input" style={{ padding: "12px 8px", cursor: "pointer", fontWeight: 800, fontSize: "13px", background: to12h(newHora).ampm === "PM" ? "rgba(226,179,64,0.12)" : undefined, borderColor: to12h(newHora).ampm === "PM" ? "#e2b340" : undefined, color: to12h(newHora).ampm === "PM" ? "#e2b340" : undefined }}>PM</button>
+                                    </div>
                                 </div>
                             </div>
                             <div className="nm-date-row" style={{ marginTop: 8 }}>
@@ -676,7 +702,17 @@ const ManageMatches = () => {
                                 </div>
                                 <div className="nm-date-field">
                                     <label className="nm-date-label">HORA</label>
-                                    <input type="time" value={editHora} onChange={e => setEditHora(e.target.value)} className="nm-date-input" />
+                                    <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                                        <select value={to12h(editHora).h} onChange={e => setEditHora(from12h(e.target.value, to12h(editHora).m, to12h(editHora).ampm))} className="nm-date-input" style={{ width: "70px", padding: "12px 6px", textAlign: "center" }}>
+                                            {["01","02","03","04","05","06","07","08","09","10","11","12"].map(h => <option key={h} value={h}>{h}</option>)}
+                                        </select>
+                                        <span style={{ color: "#475569", fontWeight: 800, fontSize: "14px" }}>:</span>
+                                        <select value={to12h(editHora).m} onChange={e => setEditHora(from12h(to12h(editHora).h, e.target.value, to12h(editHora).ampm))} className="nm-date-input" style={{ width: "70px", padding: "12px 6px", textAlign: "center" }}>
+                                            {["00","15","30","45"].map(m => <option key={m} value={m}>{m}</option>)}
+                                        </select>
+                                        <button type="button" onClick={() => setEditHora(from12h(to12h(editHora).h, to12h(editHora).m, "AM"))} className="nm-date-input" style={{ padding: "12px 8px", cursor: "pointer", fontWeight: 800, fontSize: "13px", background: to12h(editHora).ampm === "AM" ? "rgba(226,179,64,0.12)" : undefined, borderColor: to12h(editHora).ampm === "AM" ? "#e2b340" : undefined, color: to12h(editHora).ampm === "AM" ? "#e2b340" : undefined }}>AM</button>
+                                        <button type="button" onClick={() => setEditHora(from12h(to12h(editHora).h, to12h(editHora).m, "PM"))} className="nm-date-input" style={{ padding: "12px 8px", cursor: "pointer", fontWeight: 800, fontSize: "13px", background: to12h(editHora).ampm === "PM" ? "rgba(226,179,64,0.12)" : undefined, borderColor: to12h(editHora).ampm === "PM" ? "#e2b340" : undefined, color: to12h(editHora).ampm === "PM" ? "#e2b340" : undefined }}>PM</button>
+                                    </div>
                                 </div>
                             </div>
                             <div className="nm-date-row" style={{ marginTop: 0, marginBottom: 20 }}>
