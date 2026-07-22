@@ -50,7 +50,10 @@ try {
                 WHEN p.estado='Finalizado' AND p.equipo_local_id=ec.id AND p.goles_local>p.goles_visitante THEN 3
                 WHEN p.estado='Finalizado' AND p.equipo_visitante_id=ec.id AND p.goles_visitante>p.goles_local THEN 3
                 WHEN p.estado='Finalizado' AND (p.equipo_local_id=ec.id OR p.equipo_visitante_id=ec.id) AND p.goles_local=p.goles_visitante THEN 1
-                ELSE 0 END)) DESC
+                ELSE 0 END)) DESC,
+            (SUM(CASE WHEN p.estado='Finalizado' AND p.equipo_local_id=ec.id THEN p.goles_local WHEN p.estado='Finalizado' AND p.equipo_visitante_id=ec.id THEN p.goles_visitante ELSE 0 END) -
+             SUM(CASE WHEN p.estado='Finalizado' AND p.equipo_local_id=ec.id THEN p.goles_visitante WHEN p.estado='Finalizado' AND p.equipo_visitante_id=ec.id THEN p.goles_local ELSE 0 END)) DESC,
+            SUM(CASE WHEN p.estado='Finalizado' AND p.equipo_local_id=ec.id THEN p.goles_local WHEN p.estado='Finalizado' AND p.equipo_visitante_id=ec.id THEN p.goles_visitante ELSE 0 END) DESC
         ";
 
         $stmt = $pdo->prepare($sql);

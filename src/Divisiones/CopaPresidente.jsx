@@ -156,7 +156,7 @@ const groupTies = (matches, prevTies = null) => {
 
   if(ties.length > 0 && prevTies && prevTies.length > 0 && isNaN(+ties[0].key)){
     const getWinner = (t) => {
-      if (!t.allFin) return null;
+      if (!t || !t.allFin) return null;
       return t.total1 > t.total2 ? t.eq1 : t.total2 > t.total1 ? t.eq2 : null;
     };
 
@@ -199,6 +199,7 @@ const groupTies = (matches, prevTies = null) => {
 };
 
 const BracketTie = ({tie,isFinal=false}) => {
+  if (!tie) return null;
   const {eq1,eq2,logo1,logo2,div1,div2,idaG1,idaG2,vtaG1,vtaG2,total1,total2,pen1,pen2,wonByPens,idaFin,vtaFin,hasVuelta,allFin,anyLive}=tie;
   const w1=allFin&&(total1>total2||(wonByPens&&pen1>pen2)),w2=allFin&&(total2>total1||(wonByPens&&pen2>pen1)),live=anyLive&&!allFin;
   const gc=(g,opp,done)=>{if(!done)return C.faint;if(g>opp)return C.green;if(g<opp)return "#f87171";return C.muted;};
@@ -283,7 +284,11 @@ const TournamentBracket = ({octavos,cuartos,semis,final:finalMatches}) => {
   const LH = 36;
 
   const ph = (id) => ({key:id,eq1:"Por definir",eq2:"Por definir",logo1:null,logo2:null,div1:null,div2:null,idaG1:null,idaG2:null,vtaG1:null,vtaG2:null,total1:0,total2:0,pen1:null,pen2:null,wonByPens:false,idaFin:false,vtaFin:false,hasVuelta:false,allFin:false,anyLive:false});
-  const ensure = (arr,count,pfx) => arr.length>0?arr:Array.from({length:count},(_,i)=>ph(`${pfx}${i}`));
+  const ensure = (arr, count, pfx) => {
+    const padded = arr.length > 0 ? [...arr] : [];
+    while (padded.length < count) padded.push(ph(`${pfx}${padded.length}`));
+    return padded;
+  };
 
   const octs = ensure(allOct, 8, "oct");
   const cuas = ensure(allCua, 4, "cua");
