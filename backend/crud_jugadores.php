@@ -26,16 +26,33 @@ try {
             exit;
         }
 
+        $year = (int)date('Y');
+        $month = (int)date('n');
+        $startYear = ($month >= 7) ? $year : $year - 1;
+        $temporada = $startYear . '-' . ($startYear + 1);
+
         $stmt = $conn->prepare("
-            SELECT *,
-                   COALESCE(pos_x, posicion_x) AS pos_x,
-                   COALESCE(pos_y, posicion_y) AS pos_y
-            FROM jugadores
-            WHERE equipo_id = ?
-            ORDER BY numero_camiseta ASC
+            SELECT j.*,
+                   COALESCE(j.pos_x, j.posicion_x) AS pos_x,
+                   COALESCE(j.pos_y, j.posicion_y) AS pos_y,
+                   IFNULL(s.partidos_jugados, 0) AS pj,
+                   IFNULL(s.goles, 0) AS goles,
+                   IFNULL(s.asistencias, 0) AS asistencias,
+                   IFNULL(s.tarjetas_amarillas, 0) AS amarillas,
+                   IFNULL(s.tarjetas_rojas, 0) AS rojas,
+                   IFNULL(s.goles_cabeza, 0) AS goles_cabeza,
+                   IFNULL(s.goles_tiro_libre, 0) AS goles_tiro_libre,
+                   IFNULL(s.goles_penal, 0) AS goles_penal,
+                   IFNULL(s.goles_recibidos, 0) AS goles_recibidos,
+                   IFNULL(s.vaya_invicta, 0) AS vaya_invicta,
+                   IFNULL(s.minutos_jugados, 0) AS minutos
+            FROM jugadores j
+            LEFT JOIN estadisticas_jugadores s ON s.jugador_id = j.id AND s.temporada = ?
+            WHERE j.equipo_id = ?
+            ORDER BY j.numero_camiseta ASC
         ");
 
-        $stmt->execute([$equipo_id]);
+        $stmt->execute([$temporada, $equipo_id]);
 
         echo json_enc([
             "success"=>true,
