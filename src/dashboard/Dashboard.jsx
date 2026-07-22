@@ -360,16 +360,6 @@ const AdminDashboard = () => {
         button.nav-item { background: none; border: none; color: var(--text-muted); font-family: inherit; }
 
         /* =========================================
-           1. TOPBAR
-           ========================================= */
-        .admin-layout .top-bar {
-            position: sticky !important; 
-            top: 0 !important;
-            z-index: 60 !important; 
-            background-color: inherit; 
-        }
-
-        /* =========================================
            2. GRID RESPONSIVO TARJETAS
            ========================================= */
         .dash-stats-grid {

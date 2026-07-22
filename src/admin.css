@@ -184,8 +184,7 @@ body {
     backdrop-filter: blur(10px);
     position: sticky;
     top: 0;
-    /* Z-INDEX MÁS ALTO QUE SIDEBAR PARA QUE EL BOTÓN SIEMPRE FUNCIONE */
-    z-index: 1100;
+    z-index: 100;
 }
 
 .toggle-btn {
@@ -459,7 +458,7 @@ body {
     .admin-layout .sidebar { width: 260px !important; max-width: 85vw !important; }
     .admin-layout.sidebar-closed .sidebar { width: 260px !important; max-width: 85vw !important; padding: 16px 12px var(--safe-bottom) 12px !important; }
 
-    .top-bar { padding: 8px 10px; gap: 8px; z-index: 1100; position: sticky; }
+    .top-bar { padding: 8px 10px; gap: 8px; z-index: 100; position: sticky; }
     .search-bar { max-width: 140px !important; margin: 0 6px; flex-grow: 1; min-width: 80px; }
     .search-bar input { font-size: 12px; padding: 7px 10px; }
 
