@@ -1451,6 +1451,23 @@ const AdminCopPresidente = () => {
         @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
         @keyframes modalSlideUp{from{opacity:0;transform:translateY(24px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
         button.nav-item{background:none;border:none;color:var(--text-muted);font-family:inherit;cursor:pointer}
+        @media (max-width: 768px) {
+            [style*="grid-template-columns: minmax(220px"],
+            [style*="grid-template-columns:minmax(220px"],
+            [style*="grid-template-columns: 1fr 1fr"],
+            [style*="grid-template-columns:1fr 1fr"],
+            [style*="grid-template-columns: 1fr 24px 1fr"],
+            [style*="grid-template-columns:1fr 24px 1fr"],
+            [style*="grid-template-columns: repeat(3, 1fr)"],
+            [style*="grid-template-columns:repeat(3, 1fr)"] { grid-template-columns: 1fr !important; }
+            [style*="position: fixed"][style*="inset: 0"] > div,
+            [style*="position:fixed"][style*="inset:0"] > div { max-width: 100vw !important; width: 100% !important; max-height: 100dvh !important; border-radius: 0 !important; }
+        }
+        @media (max-width: 480px) {
+            [style*="max-width: 440px"], [style*="max-width:440px"],
+            [style*="max-width: 540px"], [style*="max-width:540px"],
+            [style*="max-width: 760px"], [style*="max-width:760px"] { max-width: 100vw !important; width: 100% !important; border-radius: 0 !important; }
+        }
         .driver-popover{background:#0f172a!important;border:1px solid #ef4444!important;border-radius:12px!important;box-shadow:0 0 20px rgba(239,68,68,0.2),0 8px 32px rgba(0,0,0,0.5)!important;color:#f1f5f9!important}
         .driver-popover .driver-popover-title{color:#ef4444!important;font-weight:800!important}
         .driver-popover .driver-popover-description{color:#94a3b8!important}

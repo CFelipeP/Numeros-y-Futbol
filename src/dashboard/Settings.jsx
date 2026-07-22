@@ -464,6 +464,10 @@ export default function SettingsPage() {
         button.nav-item { background:none; border:none; color:var(--text-muted); font-family:inherit; }
         @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.2)} }
         input:focus, textarea:focus { border-color: rgba(255,31,31,0.4) !important; box-shadow: 0 0 0 3px rgba(255,31,31,0.1); }
+        @media (max-width: 768px) {
+            [style*="grid-template-columns: 1fr 1fr"],
+            [style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+        }
       `}</style>
     </div>
   );

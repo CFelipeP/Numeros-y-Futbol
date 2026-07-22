@@ -312,8 +312,8 @@ const ManageUsers = () => {
                   <tr>
                     <th>Nombre</th>
                     <th>Usuario</th>
-                    <th>Email</th>
-                    <th>Rol</th>
+                    <th class="hide-on-mobile">Email</th>
+                    <th class="hide-on-mobile">Rol</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -324,12 +324,12 @@ const ManageUsers = () => {
                     <tr key={u.id}>
                       <td style={{ fontWeight: '600' }}>{u.nombre}</td>
                       <td style={{ color: 'var(--text-muted)' }}>@{u.apodo}</td>
-                      <td>
+                      <td class="hide-on-mobile">
                         <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-muted)' }}>
                           <Mail size={14} /> {u.email}
                         </span>
                       </td>
-                      <td>
+                      <td class="hide-on-mobile">
                         <span style={{
                           padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600',
                           background: u.rol === 'admin' ? 'rgba(255, 0, 77, 0.15)' : 'rgba(59, 130, 246, 0.15)',

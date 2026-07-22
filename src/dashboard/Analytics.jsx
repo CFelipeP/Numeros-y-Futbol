@@ -141,7 +141,7 @@ const Analytics = () => {
                 <div className="content-wrapper" style={{ padding: "1.5rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", flexWrap: "wrap", gap: "1rem" }}>
                         <h1 className="admin-title" style={{ margin: 0 }}>Analíticas de Visitas</h1>
-                        <div style={{ display: "flex", gap: "6px", background: "rgba(255,255,255,0.03)", borderRadius: "10px", padding: "4px" }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", background: "rgba(255,255,255,0.03)", borderRadius: "10px", padding: "4px" }}>
                             {modos.map(m => (
                                 <button key={m.value} onClick={() => setModo(m.value)} style={{
                                     padding: "6px 14px", borderRadius: "8px", border: "none", fontSize: "12px", fontWeight: 700,

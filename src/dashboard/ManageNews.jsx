@@ -705,12 +705,15 @@ export default function ManagePublicNews() {
           font-family: inherit;
         }
 
-        @media (max-width: 640px) {
-          .modal-edit-card { width: 100%; max-width: 100vw; max-height: 100vh; border-radius: 0; }
+        @media (max-width: 768px) {
+          .modal-edit-card { width: 100%; max-width: 100vw; max-height: 100dvh; border-radius: 0; }
           .modal-edit-grid { grid-template-columns: 1fr; }
           .modal-edit-preview { height: 140px; }
           .modal-edit-footer { flex-direction: column-reverse; }
           .modal-cancel-btn, .modal-save-btn { width: 100%; text-align: center; justify-content: center !important; }
+        }
+        @media (max-width: 480px) {
+          .admin-actions { position: static !important; display: flex; justify-content: center; padding: 6px 0; }
         }
       `}</style>
     </div>

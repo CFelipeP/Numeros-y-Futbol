@@ -1637,6 +1637,14 @@ button.nav-item{background:none;border:none;color:#94a3b8;font-family:inherit;wi
 .pl-stat-field label{display:block;margin-bottom:6px;font-size:11px;font-weight:700;color:#475569;letter-spacing:.03em;text-transform:uppercase}
 .pl-stat-input{width:100%;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.015);color:#e2e8f0;font-size:14px;font-weight:700;outline:none;box-sizing:border-box;text-align:center;transition:all .25s}
 .pl-stat-input:focus{border-color:rgba(34,211,238,.25);background:rgba(255,255,255,.025)}
+@media(max-width:768px){
+  .pl-header{flex-wrap:wrap;gap:10px}
+  .pl-toolbar{flex-wrap:wrap;gap:8px}
+  .pl-row2{grid-template-columns:1fr;gap:0}
+  .pl-subs-grid{grid-template-columns:1fr}
+  .pl-tabs{width:100%}
+  .pl-tab{flex:1;justify-content:center}
+}
 @media(max-width:640px){
   .pl-page{padding:16px 14px}
   .pl-header{flex-direction:column;align-items:stretch;gap:12px}

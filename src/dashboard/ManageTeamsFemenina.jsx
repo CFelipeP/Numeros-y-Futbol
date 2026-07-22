@@ -719,8 +719,8 @@ const ManageTeamsFemenina = () => {
                     color: var(--text-muted);
                     font-family: inherit;
                 }
-                @media (max-width: 640px) {
-                    .tm-card { width: 100%; max-width: 100vw; max-height: 100vh; border-radius: 0; }
+                @media (max-width: 768px) {
+                    .tm-card { width: 100%; max-width: 100vw; max-height: 100dvh; border-radius: 0; }
                     .tm-grid { grid-template-columns: 1fr; }
                     .tm-logo-section { flex-direction: row; flex-wrap: wrap; justify-content: center; }
                     .tm-logo-preview-wrap { width: 100px; height: 100px; }

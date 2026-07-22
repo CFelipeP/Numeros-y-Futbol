@@ -1003,7 +1003,7 @@ const ManageMatches = () => {
 
     /* Tablet: modales fullscreen + header de tabla ordenado */
     @media (max-width: 860px) {
-        .nm-card-wide { width: 100%; max-width: 100vw; max-height: 100vh; border-radius: 0; }
+        .nm-card-wide { width: 100%; max-width: 100vw; max-height: 100dvh; border-radius: 0; }
         .nm-selects-row-lg { grid-template-columns: 1fr; gap: 12px; }
         .nm-vs-badge-lg { padding-top: 0; }
         .nm-preview-lg { padding: 24px 16px; flex-direction: column; gap: 16px; min-height: 180px; justify-content: center; }
@@ -1043,7 +1043,7 @@ const ManageMatches = () => {
         .mm-star-btn, .result-action-btn, .mm-reset-single-btn { padding: 6px 7px; }
         .btn-delete { padding: 6px; }
 
-        .nm-card, .nm-score-card { width: 100%; max-width: 100vw; max-height: 100vh; border-radius: 0; }
+        .nm-card, .nm-score-card { width: 100%; max-width: 100vw; max-height: 100dvh; border-radius: 0; }
         .nm-selects-row { grid-template-columns: 1fr; gap: 8px; }
         .nm-vs-badge { padding-top: 0; }
         .nm-preview-logo-wrap { width: 50px; height: 50px; }
@@ -1068,6 +1068,28 @@ const ManageMatches = () => {
         /* Tabs: texto más chico en móvil */
         .mm-tab { font-size: 11px !important; padding: 6px 8px !important; }
         .mm-tab-count { min-width: 16px; height: 14px; font-size: 9px; }
+    }
+
+    /* === iPhone SE (≤375px): padding modal reducido para maximizar espacio === */
+    @media (max-width: 375px) {
+        .nm-header { padding: 14px 16px; }
+        .nm-header h2 { font-size: 0.95rem; }
+        .nm-body { padding: 16px; }
+        .nm-body-wide { padding: 16px; }
+        .nm-score-body { padding: 14px 16px 18px; }
+        .nm-footer { padding: 12px 16px; }
+        .nm-footer-wide { padding: 14px 16px; }
+        .nm-date-row { gap: 10px !important; margin-top: 14px !important; }
+        .nm-date-input { padding: 10px 12px; font-size: 13px; }
+        .mm-hora-seg { width: 52px !important; padding: 10px 16px 10px 6px !important; }
+        .mm-ampm-btn { padding: 10px 7px !important; }
+        .mm-scoreboard { padding: 14px 6px; gap: 4px; }
+        .mm-score-team { width: 62px; }
+        .mm-score-num { width: 40px; height: 40px; font-size: 22px; }
+        .mm-score-btn { width: 30px; height: 30px; }
+        .mm-preview { padding: 16px 10px; }
+        .nm-preview-logo-wrap { width: 56px; height: 56px; }
+        .nm-preview-name { font-size: 13px; }
     }
     .driver-popover{background:#0f172a!important;border:1px solid #ef4444!important;border-radius:12px!important;box-shadow:0 0 20px rgba(239,68,68,0.2),0 8px 32px rgba(0,0,0,0.5)!important;color:#f1f5f9!important}
     .driver-popover .driver-popover-title{color:#ef4444!important;font-weight:800!important}

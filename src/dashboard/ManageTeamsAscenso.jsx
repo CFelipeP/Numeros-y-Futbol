@@ -541,8 +541,8 @@ const ManageTeamsAscenso = () => {
                 .tm-spin { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: tmSpin 0.6s linear infinite; }
                 @keyframes tmSpin { to { transform: rotate(360deg); } }
                 button.nav-item { background: none; border: none; color: var(--text-muted); font-family: inherit; }
-                @media (max-width: 640px) {
-                    .tm-card { width: 100%; max-width: 100vw; max-height: 100vh; border-radius: 0; }
+@media (max-width: 768px) {
+                    .tm-card { width: 100%; max-width: 100vw; max-height: 100dvh; border-radius: 0; }
                     .tm-grid { grid-template-columns: 1fr; }
                     .tm-logo-section { flex-direction: row; flex-wrap: wrap; justify-content: center; }
                     .tm-logo-preview-wrap { width: 100px; height: 100px; }

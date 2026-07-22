@@ -177,6 +177,13 @@ export default function ManageSeleccion() {
       </main>
       <style>{`
         button.nav-item { background: none; border: none; color: var(--text-muted); font-family: inherit; }
+        @media (max-width: 768px) {
+            [style*="grid-template-columns: 1fr 1fr"],
+            [style*="grid-template-columns:1fr 1fr"],
+            [style*="grid-template-columns: 1fr 1fr 1fr"],
+            [style*="grid-template-columns:1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
+            [style*="display: flex"][style*="gap: 6px"] select { width: 56px !important; padding: "10px 4px" !important; }
+        }
       `}</style>
     </div>
   );
