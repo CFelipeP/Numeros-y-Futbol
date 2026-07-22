@@ -6,6 +6,11 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
 
+$year = (int)date('Y');
+$month = (int)date('n');
+$startYear = ($month >= 7) ? $year : $year - 1;
+$temporada = $startYear . '-' . ($startYear + 1);
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 function getInput() {
@@ -125,6 +130,36 @@ try {
             $stmt->execute([$data['id']]);
 
             echo json_enc(["success"=>true]);
+            exit;
+        }
+
+        if ($action === 'update_stats') {
+            $jugador_id = intval($data['jugador_id'] ?? 0);
+            if (!$jugador_id) { echo json_enc(['success'=>false,'error'=>'Falta jugador_id']); exit; }
+
+            $conn->prepare("
+                INSERT INTO estadisticas_jugadores
+                    (jugador_id,temporada,partidos_jugados,goles,asistencias,goles_cabeza,
+                     goles_tiro_libre,goles_penal,tarjetas_amarillas,tarjetas_rojas,
+                     minutos_jugados,goles_recibidos,vaya_invicta)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ON DUPLICATE KEY UPDATE
+                    partidos_jugados=VALUES(partidos_jugados),goles=VALUES(goles),
+                    asistencias=VALUES(asistencias),goles_cabeza=VALUES(goles_cabeza),
+                    goles_tiro_libre=VALUES(goles_tiro_libre),goles_penal=VALUES(goles_penal),
+                    tarjetas_amarillas=VALUES(tarjetas_amarillas),tarjetas_rojas=VALUES(tarjetas_rojas),
+                    minutos_jugados=VALUES(minutos_jugados),goles_recibidos=VALUES(goles_recibidos),
+                    vaya_invicta=VALUES(vaya_invicta)
+            ")->execute([
+                $jugador_id, $data['temporada'] ?? $temporada,
+                intval($data['pj'] ?? 0), intval($data['goles'] ?? 0), intval($data['asistencias'] ?? 0),
+                intval($data['goles_cabeza'] ?? 0), intval($data['goles_tiro_libre'] ?? 0),
+                intval($data['goles_penal'] ?? 0), intval($data['tarjetas_amarillas'] ?? 0),
+                intval($data['tarjetas_rojas'] ?? 0), intval($data['minutos_jugados'] ?? 0),
+                intval($data['goles_recibidos'] ?? 0), intval($data['vaya_invicta'] ?? 0),
+            ]);
+
+            echo json_enc(['success'=>true]);
             exit;
         }
 
