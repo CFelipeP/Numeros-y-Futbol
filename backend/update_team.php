@@ -31,7 +31,7 @@ if (empty($nombre)) {
 $logoPath = null;
 
 if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
-    $archivo = $_FILES['logo'];
+    $archivo = $_FILES['logo'] ?? [];
     $nombreArchivo = $archivo['name'];
     $tmpName = $archivo['tmp_name'];
     $tamano = $archivo['size'];

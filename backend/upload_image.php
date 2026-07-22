@@ -17,10 +17,10 @@ if (!isset($_FILES['file'])) {
     exit;
 }
 
-$file = $_FILES['file'];
+$file = $_FILES['file'] ?? [];
 
 $allowed = ["jpg", "jpeg", "png", "mp4"];
-$ext = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
+$ext = strtolower(pathinfo($file["name"] ?? '', PATHINFO_EXTENSION));
 
 if (!in_array($ext, $allowed)) {
     echo json_enc(["success" => false, "error" => "Formato inválido"]);
@@ -29,7 +29,7 @@ if (!in_array($ext, $allowed)) {
 
 // MIME type validation
 $finfo = finfo_open(FILEINFO_MIME_TYPE);
-$mime = finfo_file($finfo, $_FILES['file']['tmp_name']);
+$mime = finfo_file($finfo, $file['tmp_name'] ?? '');
 finfo_close($finfo);
 $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4'];
 if (!in_array($mime, $allowedMimes)) {

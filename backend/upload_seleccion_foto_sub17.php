@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_FILES['foto'])) {
     exit;
 }
 
-$archivo = $_FILES['foto'];
+$archivo = $_FILES['foto'] ?? [];
 $nombreOriginal = $archivo['name'];
 $extension = strtolower(pathinfo($nombreOriginal, PATHINFO_EXTENSION));
 $tiposPermitidos = ['jpg', 'jpeg', 'png', 'gif', 'webp'];

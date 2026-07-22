@@ -18,7 +18,7 @@ if (!isset($_POST['id'])) {
     exit();
 }
 
-$id = intval($_POST['id']);
+$id = intval($_POST['id'] ?? 0);
 
 $check = $conn->prepare("SELECT id FROM partidos WHERE id = ?");
 if (!$check) {

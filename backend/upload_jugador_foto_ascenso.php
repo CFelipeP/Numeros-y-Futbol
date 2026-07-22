@@ -15,7 +15,7 @@ if (!isset($_FILES["foto"]) || $_FILES["foto"]["error"] !== UPLOAD_ERR_OK) {
     exit;
 }
 
-$archivo = $_FILES["foto"];
+$archivo = $_FILES["foto"] ?? [];
 $extension = strtolower(pathinfo($archivo["name"], PATHINFO_EXTENSION));
 $permitidas = ["jpg", "jpeg", "png", "webp", "gif"];
 

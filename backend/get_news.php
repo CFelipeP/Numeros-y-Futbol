@@ -8,7 +8,7 @@ try {
 
     // 🔥 SI VIENE ID → UNA NOTICIA
     if (isset($_GET['id'])) {
-        $id = intval($_GET['id']);
+        $id = intval($_GET['id'] ?? 0);
         $sql = $conn->prepare("SELECT * FROM noticias WHERE id = :id");
         $sql->bindParam(":id", $id, PDO::PARAM_INT);
         $sql->execute();

@@ -17,7 +17,7 @@ if (empty($nombre)) {
 
 $ruta = '';
 if (!empty($_FILES['logo']['name'])) {
-    $archivo = $_FILES['logo'];
+    $archivo = $_FILES['logo'] ?? [];
     $nombreArchivo = time() . "_" . basename($archivo['name']);
     $ruta = "uploads/" . $nombreArchivo;
     move_uploaded_file($archivo['tmp_name'], $ruta);
