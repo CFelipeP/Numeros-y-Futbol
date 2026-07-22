@@ -13,6 +13,7 @@ $g1 = $_POST['goles_local'] ?? null;
 $g2 = $_POST['goles_visitante'] ?? null;
 $fecha = $_POST['fecha'] ?? null;
 $hora = $_POST['hora'] ?? null;
+$jornada = $_POST['jornada'] ?? null;
 
 if (!$id) {
     echo json_enc(["error" => "ID requerido"]);
@@ -124,6 +125,12 @@ if ($fecha && $hora) {
     $fecha_hora = $fecha . ' ' . $hora . ':00';
     $stmt = $conn->prepare("UPDATE partidos SET fecha=? WHERE id=?");
     $stmt->bind_param("si", $fecha_hora, $id); $stmt->execute(); $stmt->close();
+}
+
+if ($jornada !== null && $jornada !== '') {
+    $jornadaInt = (int)$jornada;
+    $stmt = $conn->prepare("UPDATE partidos SET jornada=? WHERE id=?");
+    $stmt->bind_param("ii", $jornadaInt, $id); $stmt->execute(); $stmt->close();
 }
 
 $stmt = $conn->prepare("UPDATE tabla_posiciones SET partidos_jugados = partidos_jugados + 1 WHERE equipo_id IN (?, ?)");

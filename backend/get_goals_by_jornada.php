@@ -21,10 +21,10 @@ if ($division === 'primera') {
 }
 
 $res = $conn->query("
-    SELECT goles_local, goles_visitante, fecha
+    SELECT goles_local, goles_visitante, fecha, jornada
     FROM $tablaPartidos
-    WHERE $colEstado = 'Finalizado'
-    ORDER BY fecha ASC, id ASC
+    WHERE $colEstado = 'Finalizado' AND jornada IS NOT NULL
+    ORDER BY jornada ASC, fecha ASC, id ASC
 ");
 
 if (!$res) {
@@ -38,29 +38,29 @@ while ($row = $res->fetch_assoc()) {
 }
 
 $data = [];
-$jornada = 1;
-$total = count($rows);
+$jornadas = [];
 
-for ($i = 0; $i < $total; $i += 6) {
-    $bloque = array_slice($rows, $i, 6);
-    $goles = 0;
-    $fechaInicio = "";
-    $fechaFin = "";
-
-    foreach ($bloque as $partido) {
-        $goles += (int)$partido['goles_local'] + (int)$partido['goles_visitante'];
-        $fi = substr($partido['fecha'], 0, 10);
-        if ($fechaInicio === "") $fechaInicio = $fi;
-        $fechaFin = $fi;
+foreach ($rows as $partido) {
+    $j = (int)$partido['jornada'];
+    if (!isset($jornadas[$j])) {
+        $jornadas[$j] = ['goles' => 0, 'fechaInicio' => '', 'fechaFin' => '', 'partidos' => 0];
     }
+    $jornadas[$j]['goles'] += (int)$partido['goles_local'] + (int)$partido['goles_visitante'];
+    $fi = substr($partido['fecha'], 0, 10);
+    if ($jornadas[$j]['fechaInicio'] === '') $jornadas[$j]['fechaInicio'] = $fi;
+    $jornadas[$j]['fechaFin'] = $fi;
+    $jornadas[$j]['partidos']++;
+}
 
+ksort($jornadas);
+
+foreach ($jornadas as $num => $info) {
     $data[] = [
-        'name'     => "Jornada " . $jornada,
-        'goles'    => $goles,
-        'fecha'    => $fechaInicio . " → " . $fechaFin,
-        'partidos' => count($bloque),
+        'name'     => "Jornada " . $num,
+        'goles'    => $info['goles'],
+        'fecha'    => $info['fechaInicio'] . " → " . $info['fechaFin'],
+        'partidos' => $info['partidos'],
     ];
-    $jornada++;
 }
 
 echo json_enc($data);

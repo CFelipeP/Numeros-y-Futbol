@@ -7,6 +7,7 @@ require_once __DIR__ . '/db.php';
 $conn = $mysqli;
 
 $division = $_GET['division'] ?? 'primera';
+$jornadaFilter = isset($_GET['jornada']) && $_GET['jornada'] !== '' ? (int)$_GET['jornada'] : null;
 
 if ($division === 'primera') {
     $tablaPartidos = 'partidos';
@@ -31,17 +32,23 @@ if ($division === 'primera') {
 
 $recent = [];
 try {
-    $res = $conn->query("
-        SELECT p.id, p.fecha, p.goles_local, p.goles_visitante, p.$colEstado AS status,
+    $sql = "
+        SELECT p.id, p.fecha, p.jornada, p.goles_local, p.goles_visitante, p.$colEstado AS status,
                e1.nombre AS home_name, e1.logo AS home_logo,
                e2.nombre AS away_name, e2.logo AS away_logo
         FROM $tablaPartidos p
         LEFT JOIN $tablaEquipos e1 ON p.$colLocal = e1.id
         LEFT JOIN $tablaEquipos e2 ON p.$colVisitante = e2.id
         WHERE p.$colEstado = 'Finalizado'
-        ORDER BY p.fecha DESC, p.id DESC
-        LIMIT 5
-    ");
+    ";
+    if ($jornadaFilter !== null && $division === 'primera') {
+        $sql .= " AND p.jornada = $jornadaFilter";
+    }
+    $sql .= " ORDER BY p.fecha DESC, p.id DESC";
+    if (!$jornadaFilter) {
+        $sql .= " LIMIT 5";
+    }
+    $res = $conn->query($sql);
     while ($row = $res->fetch_assoc()) {
         $recent[] = $row;
     }

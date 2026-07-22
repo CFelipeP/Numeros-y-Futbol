@@ -553,6 +553,7 @@ $mysqli->query("CREATE TABLE IF NOT EXISTS `partidos` (
     `goles_visitante` INT DEFAULT 0,
     `fecha`           DATE DEFAULT NULL,
     `hora`            TIME DEFAULT NULL,
+    `jornada`         INT DEFAULT NULL,
     `estado`          VARCHAR(20) DEFAULT 'Pendiente',
     `featured`        TINYINT(1) NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`)

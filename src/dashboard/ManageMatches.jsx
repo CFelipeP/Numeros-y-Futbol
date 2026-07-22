@@ -45,6 +45,7 @@ const ManageMatches = () => {
     const [newVisitante, setNewVisitante] = useState("");
     const [newFecha, setNewFecha] = useState("");
     const [newHora, setNewHora] = useState("");
+    const [newJornada, setNewJornada] = useState("");
     const [searchLocal, setSearchLocal] = useState("");
     const [searchVisitante, setSearchVisitante] = useState("");
     const [openSelectLocal, setOpenSelectLocal] = useState(false);
@@ -55,6 +56,8 @@ const ManageMatches = () => {
     const [golesVisitante, setGolesVisitante] = useState(0);
     const [editFecha, setEditFecha] = useState("");
     const [editHora, setEditHora] = useState("");
+    const [editJornada, setEditJornada] = useState("");
+    const [filterJornada, setFilterJornada] = useState("all");
 
     useEffect(() => { if (location.pathname.startsWith("/teams/")) setTeamsOpen(true); }, [location.pathname]);
     useEffect(() => {
@@ -139,7 +142,7 @@ const ManageMatches = () => {
     };
     const activeGrupo = getActiveGrupo();
 
-    const openNewMatch = () => { setNewLocal(""); setNewVisitante(""); setNewFecha(""); setNewHora(""); setSearchLocal(""); setSearchVisitante(""); setOpenSelectLocal(false); setOpenSelectVisitante(false); setShowNewMatch(true); };
+    const openNewMatch = () => { setNewLocal(""); setNewVisitante(""); setNewFecha(""); setNewHora(""); setNewJornada(""); setSearchLocal(""); setSearchVisitante(""); setOpenSelectLocal(false); setOpenSelectVisitante(false); setShowNewMatch(true); };
 
     const handleSelectLocal = (id) => {
         setNewLocal(id);
@@ -162,6 +165,7 @@ const ManageMatches = () => {
         setSubmitting(true);
         const form = new FormData(); form.append("local", newLocal); form.append("visitante", newVisitante);
         if (newFecha) form.append("fecha", newFecha); if (newHora) form.append("hora", newHora);
+        if (newJornada) form.append("jornada", newJornada);
         apiPostForm(getEndpoints().create, form).then(safeJson).then(data => {
             setSubmitting(false);
             if (data.error || !data.success) { Swal.fire("Error", data.error || "Error al crear partido", "error"); return; }
@@ -177,6 +181,7 @@ const ManageMatches = () => {
         else { setGolesLocal(0); setGolesVisitante(0); }
         if (match.fecha) { setEditFecha(match.fecha.substring(0, 10)); setEditHora(match.fecha.substring(11, 16)); }
         else { setEditFecha(""); setEditHora(""); }
+        setEditJornada(match.jornada != null ? String(match.jornada) : "");
         setShowResult(true);
     };
 
@@ -184,6 +189,7 @@ const ManageMatches = () => {
         setSubmitting(true);
         const form = new FormData(); form.append("match_id", selectedMatch.id); form.append("goles_local", golesLocal); form.append("goles_visitante", golesVisitante);
         if (editFecha) form.append("fecha", editFecha); if (editHora) form.append("hora", editHora);
+        if (editJornada) form.append("jornada", editJornada);
         apiPostForm(getEndpoints().update, form).then(safeJson).then(data => {
             setSubmitting(false);
             if (data.error || !data.success) { Swal.fire("Error", data.error || "Error al guardar resultado", "error"); return; }
@@ -283,10 +289,25 @@ const ManageMatches = () => {
     const filteredMatches = matches.filter(m => {
         if (activeTab === "pending" && m.status === "Finalizado") return false;
         if (activeTab === "played" && m.status !== "Finalizado") return false;
+        if (filterJornada !== "all" && String(m.jornada) !== filterJornada) return false;
         if (searchMatch.trim()) { const q = searchMatch.toLowerCase(); return (m.local_nombre || "").toLowerCase().includes(q) || (m.visitante_nombre || "").toLowerCase().includes(q); }
         return true;
     });
     const counts = { all: matches.length, pending: matches.filter(m => m.status !== "Finalizado").length, played: matches.filter(m => m.status === "Finalizado").length };
+    const jornadaStats = (() => {
+        const map = {};
+        matches.forEach(m => {
+            if (m.jornada == null) return;
+            const j = m.jornada;
+            if (!map[j]) map[j] = { total: 0, finalizados: 0, pending: 0 };
+            map[j].total++;
+            if (m.status === "Finalizado") map[j].finalizados++;
+            else map[j].pending++;
+        });
+        return map;
+    })();
+    const jornadaCompletadaActual = Object.entries(jornadaStats).find(([,s]) => s.total === 6 && s.finalizados === 6);
+    const nextJornada = jornadaCompletadaActual ? parseInt(jornadaCompletadaActual[0]) + 1 : null;
     const currentDiv = DIVISIONES.find(d => d.value === division);
 
     const navItems = [
@@ -447,10 +468,40 @@ const ManageMatches = () => {
                                     <button className={`mm-tab ${activeTab === "pending" ? "mm-tab-active mm-tab-pending" : ""}`} onClick={() => setActiveTab("pending")}>Pendientes <span className="mm-tab-count">{counts.pending}</span></button>
                                     <button className={`mm-tab ${activeTab === "played" ? "mm-tab-active mm-tab-played" : ""}`} onClick={() => setActiveTab("played")}>Jugados <span className="mm-tab-count">{counts.played}</span></button>
                                 </div>
+                                <select className="mm-jornada-filter" value={filterJornada} onChange={e => setFilterJornada(e.target.value)} style={{ padding: "7px 12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)", color: "#94a3b8", fontSize: "12px", fontWeight: 600, cursor: "pointer", outline: "none" }}>
+                                    <option value="all">Todas las jornadas</option>
+                                    {(() => {
+                                        const jset = new Set(); matches.forEach(m => { if (m.jornada != null) jset.add(m.jornada); });
+                                        return [...jset].sort((a,b)=>a-b).map(j => <option key={j} value={j}>Jornada {j}</option>);
+                                    })()}
+                                </select>
                                 {counts.played > 0 && <button className="mm-reset-all-btn" onClick={resetAllMatches}><RotateCcw size={14} /> <span>Resetear todo</span></button>}
                                 <button className="btn-add" id="driver-mm-create" onClick={openNewMatch}><Plus size={18} /> Nuevo Partido</button>
                             </div>
                         </div>
+
+                        {jornadaCompletadaActual && (
+                            <div className="mm-jornada-complete" style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 16px", borderRadius: "10px", background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", marginBottom: "16px", fontSize: "13px", fontWeight: 600, color: "#34d399" }}>
+                                <CheckCircle2 size={18} />
+                                <span>Jornada {jornadaCompletadaActual[0]} completada ({jornadaCompletadaActual[1].finalizados}/6 partidos finalizados)</span>
+                                {nextJornada && <button className="btn-add" style={{ marginLeft: "auto", padding: "5px 14px", fontSize: "12px", borderRadius: "6px" }} onClick={() => { setFilterJornada(String(nextJornada)); setNewJornada(String(nextJornada)); }}>Ir a Jornada {nextJornada} →</button>}
+                            </div>
+                        )}
+
+                        {!loading && (() => {
+                            const jEntries = Object.entries(jornadaStats).sort((a,b) => a[0]-b[0]);
+                            const todasJConPendientes = jEntries.filter(([,s]) => s.pending > 0);
+                            if (todasJConPendientes.length > 0) {
+                                const jConMasPendientes = todasJConPendientes.sort((a,b) => b[1].pending - a[1].pending)[0];
+                                return filterJornada === "all" ? (
+                                    <div className="mm-jornada-hint" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 14px", borderRadius: "8px", background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)", marginBottom: "16px", fontSize: "12px", fontWeight: 500, color: "#60a5fa" }}>
+                                        <Zap size={14} />
+                                        <span>Jornada {jConMasPendientes[0]} en curso: {jConMasPendientes[1].finalizados}/{jConMasPendientes[1].total} finalizados</span>
+                                    </div>
+                                ) : null;
+                            }
+                            return null;
+                        })()}
 
                         {loading ? (
                             <div style={{ textAlign: "center", padding: "3rem", color: "#64748b" }}>
@@ -463,6 +514,7 @@ const ManageMatches = () => {
                                 <thead>
                                     <tr>
                                         <th className="hide-on-mobile">Fecha</th>
+                                        <th className="hide-on-mobile">Jor.</th>
                                         <th>Local</th>
                                         <th style={{ textAlign: "center" }}>Marcador</th>
                                         <th>Visitante</th>
@@ -482,6 +534,7 @@ const ManageMatches = () => {
                                         return (
                                             <tr key={match.id}>
                                                 <td className="hide-on-mobile" style={{ whiteSpace: "nowrap", color: "#94a3b8", fontSize: "13px" }}>{match.date || "—"}</td>
+                                                <td className="hide-on-mobile" style={{ whiteSpace: "nowrap", color: match.jornada ? "#60a5fa" : "#475569", fontSize: "13px", fontWeight: 700, textAlign: "center" }}>{match.jornada != null ? `J${match.jornada}` : "—"}</td>
                                                 <td><div className="td-team"><img src={escLocal || fallbackImg} alt="" onError={e => { e.target.src = fallbackImg; }} className="td-team-img" /><span className="td-team-name">{match.local_nombre || "—"}</span></div></td>
                                                 <td style={{ textAlign: "center" }}>
                                                     <span style={{ fontWeight: "800", fontSize: "15px", color: isFin ? "#e2b340" : isLive ? "#22c55e" : "#64748b", letterSpacing: "2px" }}>{score}</span>
@@ -555,6 +608,15 @@ const ManageMatches = () => {
                                     <input type="time" value={newHora} onChange={e => setNewHora(e.target.value)} className="nm-date-input" />
                                 </div>
                             </div>
+                            <div className="nm-date-row" style={{ marginTop: 8 }}>
+                                <div className="nm-date-field">
+                                    <label className="nm-date-label">JORNADA</label>
+                                    <select value={newJornada} onChange={e => setNewJornada(e.target.value)} className="nm-date-input" style={{ cursor: "pointer" }}>
+                                        <option value="">Sin asignar</option>
+                                        {[...Array(22)].map((_, i) => <option key={i+1} value={i+1}>Jornada {i+1}</option>)}
+                                    </select>
+                                </div>
+                            </div>
                             <div className="nm-preview nm-preview-lg">
                                 <div className="nm-preview-side">
                                     {localTeam ? (<><div className="nm-preview-logo-wrap nm-preview-logo-wrap-lg"><img src={`${API}${localTeam.logo}`} alt="" onError={e => { e.target.src = fallbackImg; }} className="nm-preview-logo" /></div><span className="nm-preview-name nm-preview-name-lg">{localTeam.nombre}</span>{division === "ascenso" && <GrupoBadge grupo={localTeam.grupo} size="lg" />}{division !== "ascenso" && localTeam.ciudad && <span className="nm-preview-city nm-preview-city-lg">{localTeam.ciudad}</span>}</>) : (<div className="nm-preview-empty"><div className="nm-preview-logo-wrap nm-preview-logo-wrap-lg nm-preview-logo-empty"><span>?</span></div><span className="nm-preview-name nm-preview-name-lg" style={{ color: "#475569" }}>Sin seleccionar</span></div>)}
@@ -595,6 +657,15 @@ const ManageMatches = () => {
                                 <div className="nm-date-field">
                                     <label className="nm-date-label">HORA</label>
                                     <input type="time" value={editHora} onChange={e => setEditHora(e.target.value)} className="nm-date-input" />
+                                </div>
+                            </div>
+                            <div className="nm-date-row" style={{ marginTop: 0, marginBottom: 20 }}>
+                                <div className="nm-date-field">
+                                    <label className="nm-date-label">JORNADA</label>
+                                    <select value={editJornada} onChange={e => setEditJornada(e.target.value)} className="nm-date-input" style={{ cursor: "pointer" }}>
+                                        <option value="">Sin asignar</option>
+                                        {[...Array(22)].map((_, i) => <option key={i+1} value={i+1}>Jornada {i+1}</option>)}
+                                    </select>
                                 </div>
                             </div>
                             <div className="mm-scoreboard">

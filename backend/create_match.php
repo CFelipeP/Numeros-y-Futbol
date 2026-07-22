@@ -12,6 +12,7 @@ $local = $_POST['local'] ?? null;
 $visitante = $_POST['visitante'] ?? null;
 $fecha = $_POST['fecha'] ?? null;
 $hora = $_POST['hora'] ?? null;
+$jornada = $_POST['jornada'] ?? null;
 
 if (!$local || !$visitante || $local == $visitante) {
     http_response_code(400);
@@ -21,6 +22,7 @@ if (!$local || !$visitante || $local == $visitante) {
 
 $local = (int)$local;
 $visitante = (int)$visitante;
+$jornada = $jornada !== null && $jornada !== '' ? (int)$jornada : null;
 
 if ($fecha && $hora) {
     $fecha_hora = $fecha . ' ' . $hora . ':00';
@@ -28,8 +30,8 @@ if ($fecha && $hora) {
     $fecha_hora = date('Y-m-d H:i:s');
 }
 
-$stmt = $conn->prepare("INSERT INTO partidos (equipo_local, equipo_visitante, fecha, goles_local, goles_visitante, estado) VALUES (?, ?, ?, 0, 0, 'Pendiente')");
-$stmt->bind_param("iis", $local, $visitante, $fecha_hora);
+$stmt = $conn->prepare("INSERT INTO partidos (equipo_local, equipo_visitante, fecha, jornada, goles_local, goles_visitante, estado) VALUES (?, ?, ?, ?, 0, 0, 'Pendiente')");
+$stmt->bind_param("iisii", $local, $visitante, $fecha_hora, $jornada);
 
 if (!$stmt->execute()) {
     echo json_enc(["error" => "Error interno del servidor"]);

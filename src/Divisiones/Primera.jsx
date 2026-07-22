@@ -406,6 +406,8 @@ export default function PrimeraDivision() {
   const [expandedTeam, setExpandedTeam] = useState(null);
   const [expandedViewTab, setExpandedViewTab] = useState("plantilla");
   const [sidebar, setSidebar] = useState({ next: null, recent: [] });
+  const [jornadaFilter, setJornadaFilter] = useState("all");
+  const [jornadas, setJornadas] = useState([]);
 
   const teamMap = useMemo(() => {
     const tm = {};
@@ -441,13 +443,17 @@ export default function PrimeraDivision() {
 
   useEffect(() => {
     setLoading(true); setError(null);
-    Promise.allSettled([safeFetch(`${API_BASE}get_tabla.php`), safeFetch(`${API_BASE}get_featured_match.php?t=${Date.now()}`), safeFetch(`${API_BASE}get_teams.php`), safeFetch(`${API_BASE}get_sidebar_matches.php`)]).then(r => {
+    Promise.allSettled([safeFetch(`${API_BASE}get_tabla.php`), safeFetch(`${API_BASE}get_featured_match.php?t=${Date.now()}`), safeFetch(`${API_BASE}get_teams.php`), safeFetch(`${API_BASE}get_sidebar_matches.php${jornadaFilter !== "all" ? `?jornada=${jornadaFilter}` : ""}`), safeFetch(`${API_BASE}get_matches.php`)]).then(r => {
       const tD = r[0].status === "fulfilled" ? r[0].value : [];
       const mD = r[1].status === "fulfilled" ? r[1].value : null;
       const eD = r[2].status === "fulfilled" ? r[2].value : [];
       const sD = r[3].status === "fulfilled" ? r[3].value : null;
+      const allM = r[4].status === "fulfilled" ? r[4].value : [];
       const tA = Array.isArray(tD) ? tD : [], eA = Array.isArray(eD) ? eD : [];
+      const matchesArr = Array.isArray(allM) ? allM : [];
       setTabla(tA); setEquipos(eA); setSidebar(sD && typeof sD === "object" ? sD : { next: null, recent: [] });
+      const jset = new Set(); matchesArr.forEach(m => { if (m.jornada != null) jset.add(m.jornada); });
+      setJornadas([...jset].sort((a,b)=>a-b));
       const tm = {}; eA.forEach(t => { tm[String(t.id)] = t; if (t.nombre) tm[t.nombre] = t; });
       let feat = null;
       if (mD && !Array.isArray(mD) && Object.keys(mD).length > 0) feat = normalizeMatch(mD, tm);
@@ -456,7 +462,14 @@ export default function PrimeraDivision() {
       setMatch(feat);
       if (!feat || !feat.home_name) { safeFetch(`${API_BASE}get_matches.php`).then(am => { const a = Array.isArray(am) ? am : []; const f = a.find(m => m.featured == 1 || m.destacado == 1); if (f) setMatch(normalizeMatch(f, tm)); }).catch(() => {}); }
     }).catch(err => { setError(err.message); }).finally(() => setLoading(false));
-  }, []);
+  }, [jornadaFilter]);
+
+  useEffect(() => {
+    if (jornadaFilter === "all") return;
+    safeFetch(`${API_BASE}get_sidebar_matches.php?jornada=${jornadaFilter}`).then(sD => {
+      if (sD && typeof sD === "object") setSidebar(sD);
+    }).catch(() => {});
+  }, [jornadaFilter]);
 
   const getTeamStats = (id) => tabla.find(t => t.equipo_id === id);
 
@@ -494,7 +507,16 @@ export default function PrimeraDivision() {
               </div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📅</div><p style={{ fontSize: "0.85rem", margin: 0, fontWeight: 600 }}>No hay partidos pendientes</p></div>)}</div>
 
               {/* ÚLTIMOS RESULTADOS */}
-              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981", display: "inline-block" }} />Últimos Resultados de la jornada</div>{sidebar.recent && sidebar.recent.length > 0 ? (<div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>{sidebar.recent.map(m => { const nm = normalizeMatch(m, teamMap); return (<div key={m.id}><ResultRow m={nm} onVerMas={openMatchDetail} />{m.fecha && <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", paddingLeft: "0.8rem", paddingTop: "0.15rem", paddingBottom: "0.3rem", fontSize: "0.65rem", color: "rgba(255,255,255,0.25)" }}><IconClock /> {m.fecha}</div>}</div>); })}</div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📋</div><p style={{ fontSize: "0.85rem", margin: 0 }}>No hay resultados aún</p></div>)}</div>
+              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981", display: "inline-block" }} />Últimos Resultados de la jornada</div>
+                {jornadas.length > 0 && (
+                  <div style={{ marginBottom: "1rem" }}>
+                    <select value={jornadaFilter} onChange={e => setJornadaFilter(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "#94a3b8", fontSize: "12px", fontWeight: 600, cursor: "pointer", outline: "none" }}>
+                      <option value="all">Todas las jornadas</option>
+                      {jornadas.map(j => <option key={j} value={j}>Jornada {j}</option>)}
+                    </select>
+                  </div>
+                )}
+                {sidebar.recent && sidebar.recent.length > 0 ? (<div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>{sidebar.recent.map(m => { const nm = normalizeMatch(m, teamMap); return (<div key={m.id}><ResultRow m={nm} onVerMas={openMatchDetail} />{m.fecha && <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", paddingLeft: "0.8rem", paddingTop: "0.15rem", paddingBottom: "0.3rem", fontSize: "0.65rem", color: "rgba(255,255,255,0.25)" }}><IconClock /> {m.fecha}{m.jornada && <span style={{ marginLeft: "0.5rem", color: "#60a5fa", fontWeight: 700 }}>J{m.jornada}</span>}</div>}</div>); })}</div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📋</div><p style={{ fontSize: "0.85rem", margin: 0 }}>No hay resultados aún</p></div>)}</div>
 
               {/* LEYENDA */}
               <div className="glass-card" style={{ padding: "1.5rem" }}><div className="section-subtitle" style={{ marginTop: 0, fontSize: "0.85rem" }}>Leyenda</div><div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>{[{ color: "#10b981", label: "Clasificación a Liga Concacaf" }, { color: "#f59e0b", label: "Playoffs / Repechaje" }, { color: "#ef4444", label: "Descenso directo" }].map((item, i) => (<div key={i} style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}><span style={{ width: 10, height: 10, borderRadius: 2, background: item.color, flexShrink: 0, boxShadow: `0 0 6px ${item.color}40` }} /><span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>{item.label}</span></div>))}<div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}><span style={{ fontSize: "0.7rem", fontWeight: 800, color: "var(--color-text-muted)", width: 18, textAlign: "center", flexShrink: 0 }}>DG</span><span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>Diferencia de goles</span></div></div></div>
