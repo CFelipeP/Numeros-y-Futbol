@@ -43,6 +43,8 @@ const ManageMatches = () => {
     const [submitting, setSubmitting] = useState(false);
     const [newLocal, setNewLocal] = useState("");
     const [newVisitante, setNewVisitante] = useState("");
+    const [newFecha, setNewFecha] = useState("");
+    const [newHora, setNewHora] = useState("");
     const [searchLocal, setSearchLocal] = useState("");
     const [searchVisitante, setSearchVisitante] = useState("");
     const [openSelectLocal, setOpenSelectLocal] = useState(false);
@@ -51,6 +53,8 @@ const ManageMatches = () => {
     const visitanteRef = useRef(null);
     const [golesLocal, setGolesLocal] = useState(0);
     const [golesVisitante, setGolesVisitante] = useState(0);
+    const [editFecha, setEditFecha] = useState("");
+    const [editHora, setEditHora] = useState("");
 
     useEffect(() => { if (location.pathname.startsWith("/teams/")) setTeamsOpen(true); }, [location.pathname]);
     useEffect(() => {
@@ -135,7 +139,7 @@ const ManageMatches = () => {
     };
     const activeGrupo = getActiveGrupo();
 
-    const openNewMatch = () => { setNewLocal(""); setNewVisitante(""); setSearchLocal(""); setSearchVisitante(""); setOpenSelectLocal(false); setOpenSelectVisitante(false); setShowNewMatch(true); };
+    const openNewMatch = () => { setNewLocal(""); setNewVisitante(""); setNewFecha(""); setNewHora(""); setSearchLocal(""); setSearchVisitante(""); setOpenSelectLocal(false); setOpenSelectVisitante(false); setShowNewMatch(true); };
 
     const handleSelectLocal = (id) => {
         setNewLocal(id);
@@ -157,6 +161,7 @@ const ManageMatches = () => {
         if (newLocal === newVisitante) { Swal.fire({ icon: "info", title: "No pueden ser el mismo equipo", toast: true, position: "top-end", timer: 2000, showConfirmButton: false }); return; }
         setSubmitting(true);
         const form = new FormData(); form.append("local", newLocal); form.append("visitante", newVisitante);
+        if (newFecha) form.append("fecha", newFecha); if (newHora) form.append("hora", newHora);
         apiPostForm(getEndpoints().create, form).then(safeJson).then(data => {
             setSubmitting(false);
             if (data.error || !data.success) { Swal.fire("Error", data.error || "Error al crear partido", "error"); return; }
@@ -170,12 +175,15 @@ const ManageMatches = () => {
         const score = getScore(match);
         if (score !== "-") { const p = String(score).split(" - "); setGolesLocal(parseInt(p[0]) || 0); setGolesVisitante(parseInt(p[1]) || 0); }
         else { setGolesLocal(0); setGolesVisitante(0); }
+        if (match.fecha) { setEditFecha(match.fecha.substring(0, 10)); setEditHora(match.fecha.substring(11, 16)); }
+        else { setEditFecha(""); setEditHora(""); }
         setShowResult(true);
     };
 
     const saveResult = () => {
         setSubmitting(true);
         const form = new FormData(); form.append("match_id", selectedMatch.id); form.append("goles_local", golesLocal); form.append("goles_visitante", golesVisitante);
+        if (editFecha) form.append("fecha", editFecha); if (editHora) form.append("hora", editHora);
         apiPostForm(getEndpoints().update, form).then(safeJson).then(data => {
             setSubmitting(false);
             if (data.error || !data.success) { Swal.fire("Error", data.error || "Error al guardar resultado", "error"); return; }
@@ -537,6 +545,16 @@ const ManageMatches = () => {
                                 <div className="nm-vs-badge nm-vs-badge-lg"><span>VS</span></div>
                                 {renderCustomSelect("Equipo Visitante", newVisitante, searchVisitante, setSearchVisitante, openSelectVisitante, (v) => { setOpenSelectVisitante(v); if (v) setOpenSelectLocal(false); }, filteredVisitante, handleSelectVisitante, visitanteRef)}
                             </div>
+                            <div className="nm-date-row">
+                                <div className="nm-date-field">
+                                    <label className="nm-date-label">FECHA</label>
+                                    <input type="date" value={newFecha} onChange={e => setNewFecha(e.target.value)} className="nm-date-input" />
+                                </div>
+                                <div className="nm-date-field">
+                                    <label className="nm-date-label">HORA</label>
+                                    <input type="time" value={newHora} onChange={e => setNewHora(e.target.value)} className="nm-date-input" />
+                                </div>
+                            </div>
                             <div className="nm-preview nm-preview-lg">
                                 <div className="nm-preview-side">
                                     {localTeam ? (<><div className="nm-preview-logo-wrap nm-preview-logo-wrap-lg"><img src={`${API}${localTeam.logo}`} alt="" onError={e => { e.target.src = fallbackImg; }} className="nm-preview-logo" /></div><span className="nm-preview-name nm-preview-name-lg">{localTeam.nombre}</span>{division === "ascenso" && <GrupoBadge grupo={localTeam.grupo} size="lg" />}{division !== "ascenso" && localTeam.ciudad && <span className="nm-preview-city nm-preview-city-lg">{localTeam.ciudad}</span>}</>) : (<div className="nm-preview-empty"><div className="nm-preview-logo-wrap nm-preview-logo-wrap-lg nm-preview-logo-empty"><span>?</span></div><span className="nm-preview-name nm-preview-name-lg" style={{ color: "#475569" }}>Sin seleccionar</span></div>)}
@@ -569,6 +587,16 @@ const ManageMatches = () => {
                         </div>
                         <div className="nm-body nm-score-body">
                             <div className="mm-match-info"><span>{selectedMatch.date}</span><span className={`status ${selectedMatch.status === "Finalizado" ? "done" : "pending"}`} style={{ fontSize: "11px", padding: "3px 10px" }}>{selectedMatch.status || "Pendiente"}</span></div>
+                            <div className="nm-date-row" style={{ marginTop: 0, marginBottom: 20 }}>
+                                <div className="nm-date-field">
+                                    <label className="nm-date-label">FECHA</label>
+                                    <input type="date" value={editFecha} onChange={e => setEditFecha(e.target.value)} className="nm-date-input" />
+                                </div>
+                                <div className="nm-date-field">
+                                    <label className="nm-date-label">HORA</label>
+                                    <input type="time" value={editHora} onChange={e => setEditHora(e.target.value)} className="nm-date-input" />
+                                </div>
+                            </div>
                             <div className="mm-scoreboard">
                                 <div className="mm-score-team"><img src={getEscudo(selectedMatch.local_id) || getEscudo(selectedMatch.local_nombre) || fallbackImg} alt="" onError={e => { e.target.src = fallbackImg; }} className="mm-score-logo" /><span className="mm-score-team-name">{selectedMatch.local_nombre}</span></div>
                                 <div className="mm-score-controls"><button className="mm-score-btn mm-score-down" onClick={() => setGolesLocal(p => Math.max(0, p - 1))} disabled={golesLocal === 0}><Minus size={20} /></button><div className={`mm-score-num ${golesLocal > golesVisitante ? "winning" : ""}`}>{golesLocal}</div><button className="mm-score-btn mm-score-up" onClick={() => setGolesLocal(p => p + 1)}><ChevronUp size={20} /></button></div>
@@ -724,6 +752,14 @@ const ManageMatches = () => {
     .cs-opt-name-lg { font-size: 14px; font-weight: 700; }
     .cs-opt-check-lg { width: 18px; height: 18px; }
     .cs-empty-lg { padding: 24px; font-size: 14px; }
+
+    /* === Date/time inputs === */
+    .nm-date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+    .nm-date-field { display: flex; flex-direction: column; gap: 6px; }
+    .nm-date-label { font-weight: 600; color: #94a3b8; font-size: 13px; }
+    .nm-date-input { padding: 12px 16px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #e2e8f0; font-size: 14px; font-weight: 600; font-family: inherit; transition: all 0.2s; outline: none; width: 100%; box-sizing: border-box; }
+    .nm-date-input:focus { border-color: #e2b340; box-shadow: 0 0 0 3px rgba(226,179,64,0.08); background: rgba(255,255,255,0.05); }
+    .nm-date-input::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
 
     /* === Preview modal === */
     .nm-preview { margin-top: 20px; padding: 24px 16px; background: linear-gradient(135deg, rgba(255,255,255,0.015), rgba(255,255,255,0.005)); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; display: flex; align-items: center; justify-content: center; }

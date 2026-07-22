@@ -10,6 +10,7 @@ $sql = "SELECT
     p.id,
     p.equipo_local AS local_id,
     p.equipo_visitante AS visitante_id,
+    p.fecha,
     DATE_FORMAT(p.fecha, '%d/%m/%Y %H:%i') AS date,
     e1.nombre AS local_nombre,
     e2.nombre AS visitante_nombre,

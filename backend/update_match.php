@@ -11,6 +11,8 @@ $conn = $mysqli;
 $id = (int)($_POST['match_id'] ?? 0);
 $g1 = $_POST['goles_local'] ?? null;
 $g2 = $_POST['goles_visitante'] ?? null;
+$fecha = $_POST['fecha'] ?? null;
+$hora = $_POST['hora'] ?? null;
 
 if (!$id) {
     echo json_enc(["error" => "ID requerido"]);
@@ -117,6 +119,12 @@ if ($wasFinal && $old_gl !== null) {
 
 $stmt = $conn->prepare("UPDATE partidos SET goles_local=?, goles_visitante=?, estado='Finalizado' WHERE id=?");
 $stmt->bind_param("iii", $g1, $g2, $id); $stmt->execute(); $stmt->close();
+
+if ($fecha && $hora) {
+    $fecha_hora = $fecha . ' ' . $hora . ':00';
+    $stmt = $conn->prepare("UPDATE partidos SET fecha=? WHERE id=?");
+    $stmt->bind_param("si", $fecha_hora, $id); $stmt->execute(); $stmt->close();
+}
 
 $stmt = $conn->prepare("UPDATE tabla_posiciones SET partidos_jugados = partidos_jugados + 1 WHERE equipo_id IN (?, ?)");
 $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();

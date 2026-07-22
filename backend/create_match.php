@@ -10,6 +10,8 @@ $conn = $mysqli;
 
 $local = $_POST['local'] ?? null;
 $visitante = $_POST['visitante'] ?? null;
+$fecha = $_POST['fecha'] ?? null;
+$hora = $_POST['hora'] ?? null;
 
 if (!$local || !$visitante || $local == $visitante) {
     http_response_code(400);
@@ -20,8 +22,14 @@ if (!$local || !$visitante || $local == $visitante) {
 $local = (int)$local;
 $visitante = (int)$visitante;
 
-$stmt = $conn->prepare("INSERT INTO partidos (equipo_local, equipo_visitante, fecha, goles_local, goles_visitante, estado) VALUES (?, ?, NOW(), 0, 0, 'Pendiente')");
-$stmt->bind_param("ii", $local, $visitante);
+if ($fecha && $hora) {
+    $fecha_hora = $fecha . ' ' . $hora . ':00';
+} else {
+    $fecha_hora = date('Y-m-d H:i:s');
+}
+
+$stmt = $conn->prepare("INSERT INTO partidos (equipo_local, equipo_visitante, fecha, goles_local, goles_visitante, estado) VALUES (?, ?, ?, 0, 0, 'Pendiente')");
+$stmt->bind_param("iis", $local, $visitante, $fecha_hora);
 
 if (!$stmt->execute()) {
     echo json_enc(["error" => "Error interno del servidor"]);
