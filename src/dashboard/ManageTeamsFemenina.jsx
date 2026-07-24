@@ -29,6 +29,13 @@ const ManageTeamsFemenina = () => {
     }, [location.pathname]);
 
     useEffect(() => {
+        if (window.innerWidth <= 1024) {
+            document.body.classList.toggle("sidebar-open-lock", sidebarOpen);
+        }
+        return () => document.body.classList.remove("sidebar-open-lock");
+    }, [sidebarOpen]);
+
+    useEffect(() => {
         setLoading(true);
         fetch(`${API}get_teams_femenina.php`)
             .then(res => res.json())
@@ -332,7 +339,7 @@ const ManageTeamsFemenina = () => {
                 </header>
 
                 <div className="content-wrapper">
-                    <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "1.2rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "1.2rem", flexWrap: "wrap" }}>
                         <h1 className="admin-title" style={{ margin: 0 }}>Gestionar Equipos</h1>
                         <span style={{
                             display: "inline-flex", alignItems: "center", gap: "6px",
@@ -370,8 +377,8 @@ const ManageTeamsFemenina = () => {
                                     <tr>
                                         <th style={{ width: '60px' }}>Escudo</th>
                                         <th>Nombre</th>
-                                        <th>Ciudad</th>
-                                        <th>Estadio</th>
+                                        <th className="hide-on-mobile">Ciudad</th>
+                                        <th className="hide-on-mobile">Estadio</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
@@ -387,8 +394,8 @@ const ManageTeamsFemenina = () => {
                                                 /> : <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#475569' }}>N/A</div>}
                                             </td>
                                             <td style={{ fontWeight: '700' }}>{team.nombre}</td>
-                                            <td style={{ color: '#94a3b8' }}>{team.ciudad || '—'}</td>
-                                            <td style={{ color: '#94a3b8' }}>{team.estadio || '—'}</td>
+                                            <td className="hide-on-mobile" style={{ color: '#94a3b8' }}>{team.ciudad || '—'}</td>
+                                            <td className="hide-on-mobile" style={{ color: '#94a3b8' }}>{team.estadio || '—'}</td>
                                             <td>
                                                 <div style={{ display: 'flex', gap: '8px' }}>
                                                     <button className="team-btn-edit" onClick={() => openEdit(team)} title="Editar equipo">
@@ -719,7 +726,9 @@ const ManageTeamsFemenina = () => {
                     color: var(--text-muted);
                     font-family: inherit;
                 }
+                .hide-on-mobile { display: table-cell; }
                 @media (max-width: 768px) {
+                    .hide-on-mobile { display: none !important; }
                     .tm-card { width: 100%; max-width: 100vw; max-height: 100dvh; border-radius: 0; }
                     .tm-grid { grid-template-columns: 1fr; }
                     .tm-logo-section { flex-direction: row; flex-wrap: wrap; justify-content: center; }
@@ -728,6 +737,24 @@ const ManageTeamsFemenina = () => {
                     .tm-footer { flex-direction: column-reverse; }
                     .tm-btn-cancel, .tm-btn-save { width: 100%; text-align: center; justify-content: center; }
                     .team-btn-edit span { display: none; }
+                }
+                @media (max-width: 480px) {
+                    .tm-body { padding: 16px; }
+                    .tm-header { padding: 14px 16px; }
+                    .tm-header h2 { font-size: 0.95rem; }
+                    .tm-footer { padding: 12px 16px; }
+                    .tm-logo-preview-wrap { width: 80px; height: 80px; }
+                    .tm-field label { font-size: 12px; }
+                    .data-table { min-width: 350px !important; }
+                    .data-table th, .data-table td { padding: 8px 6px; font-size: 12px; }
+                }
+                @media (max-width: 375px) {
+                    .tm-body { padding: 14px 12px; }
+                    .tm-header { padding: 12px 14px; }
+                    .tm-logo-preview-wrap { width: 70px; height: 70px; }
+                    .tm-logo-preview-img { padding: 8px; }
+                    .tm-upload-label { padding: 8px 10px; font-size: 11px; }
+                    .data-table { min-width: 320px !important; }
                 }
             `}</style>
         </div>

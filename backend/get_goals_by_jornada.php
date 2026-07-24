@@ -15,7 +15,7 @@ if ($division === 'primera') {
     $tablaPartidos = 'partidos_femenina';
     $colEstado = 'estado';
 } else {
-    $sufijo = $division === 'segunda' || $division === 'ascenso' ? '_segunda' : '_tercera';
+    $sufijo = ($division === 'segunda' || $division === 'ascenso') ? '_segunda' : '_tercera';
     $tablaPartidos = 'partidos' . $sufijo;
     $colEstado = 'status';
 }
@@ -28,7 +28,7 @@ $res = $conn->query("
 ");
 
 if (!$res) {
-    echo json_enc([]);
+        echo json_encode([]);
     exit;
 }
 
@@ -63,5 +63,5 @@ foreach ($jornadas as $num => $info) {
     ];
 }
 
-echo json_enc($data);
+echo json_encode($data);
 $conn->close();

@@ -18,6 +18,13 @@ const ManagePublicNews = () => {
   const [file, setFile]             = useState(null);
   const [uploading, setUploading]   = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (window.innerWidth <= 1024) {
+      document.body.classList.toggle("sidebar-open-lock", sidebarOpen);
+    }
+    return () => document.body.classList.remove("sidebar-open-lock");
+  }, [sidebarOpen]);
   const [teamsOpen, setTeamsOpen]   = useState(false);
   const [seleccionesOpen, setSeleccionesOpen] = useState(false);
   const [lastNews, setLastNews]     = useState(null);  // ← última noticia añadida
@@ -225,177 +232,163 @@ const ManagePublicNews = () => {
         <div className="content-wrapper">
           <h1 className="admin-title">Crear Nueva Noticia</h1>
 
-          {/* ── GRID: Formulario + Última noticia ── */}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 380px", gap:24, alignItems:"start" }}>
+          <div className="news-grid">
 
-            {/* ── Formulario ── */}
-            <div className="table-container">
+            {/* FORMULARIO */}
+            <div className="table-container news-form-card">
               <div className="table-header">
-                <h2>Detalle de la Publicación</h2>
-                <div style={{ display:"flex", alignItems:"center", gap:10, color:"#64748b", fontSize:14 }}>
-                  <ImageIcon size={16} /> Formatos: JPG, PNG, MP4
+                <h2>Detalle de la Publicacion</h2>
+                <div className="news-formats-badge">
+                  <ImageIcon size={14} /> Formatos: JPG, PNG, MP4
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} style={{ padding:20 }}>
-                <div style={{ display:"grid", gap:20 }}>
-                  {/* Título */}
-                  <div>
-                    <label style={{ display:"block", marginBottom:8, fontWeight:600, color:"#334155", fontSize:14 }}>Título de la Noticia *</label>
-                    <input name="title" placeholder="Ej: El Águila golea 3-0..." value={form.title} onChange={handleChange} required
-                      style={{ width:"100%", padding:12, borderRadius:8, border:"1px solid #e2e8f0", fontSize:15, background:"#f8fafc" }} />
+              <form onSubmit={handleSubmit} className="news-form">
+                <div className="news-form-fields">
+                  <div className="news-field-group">
+                    <label className="news-field-label">
+                      <Tag size={14} /> Titulo de la Noticia <span className="news-required">*</span>
+                    </label>
+                    <input name="title" className="mod-input news-input" placeholder="Ej: El Aguila golea 3-0..." value={form.title} onChange={handleChange} required />
                   </div>
 
-                  {/* Autor + Categoría */}
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20 }}>
-                    <div>
-                      <label style={{ display:"block", marginBottom:8, fontWeight:600, color:"#334155", fontSize:14 }}>Autor *</label>
-                      <input name="author" placeholder="Nombre del autor" value={form.author} onChange={handleChange} required
-                        style={{ width:"100%", padding:12, borderRadius:8, border:"1px solid #e2e8f0", fontSize:15, background:"#f8fafc" }} />
+                  <div className="news-field-row">
+                    <div className="news-field-group">
+                      <label className="news-field-label">
+                        <User size={14} /> Autor <span className="news-required">*</span>
+                      </label>
+                      <input name="author" className="mod-input news-input" placeholder="Nombre del autor" value={form.author} onChange={handleChange} required />
                     </div>
-                    <div>
-                      <label style={{ display:"block", marginBottom:8, fontWeight:600, color:"#334155", fontSize:14 }}>Categoría</label>
-                      <input name="category" placeholder="Ej: Liga Mayor, Selección" value={form.category} onChange={handleChange}
-                        style={{ width:"100%", padding:12, borderRadius:8, border:"1px solid #e2e8f0", fontSize:15, background:"#f8fafc" }} />
+                    <div className="news-field-group">
+                      <label className="news-field-label">
+                        <Tag size={14} /> Categoria
+                      </label>
+                      <input name="category" className="mod-input news-input" placeholder="Ej: Liga Mayor, Seleccion" value={form.category} onChange={handleChange} />
                     </div>
                   </div>
 
-                  {/* Contenido */}
-                  <div>
-                    <label style={{ display:"block", marginBottom:8, fontWeight:600, color:"#334155", fontSize:14 }}>Contenido</label>
-                    <textarea name="content" placeholder="Redacta la noticia aquí..." value={form.content} onChange={handleChange} rows="6"
-                      style={{ width:"100%", padding:12, borderRadius:8, border:"1px solid #e2e8f0", fontSize:15, background:"#f8fafc", resize:"vertical" }} />
+                  <div className="news-field-group">
+                    <label className="news-field-label">
+                      <Newspaper size={14} /> Contenido
+                    </label>
+                    <textarea name="content" className="mod-input news-textarea" placeholder="Redacta la noticia aqui..." value={form.content} onChange={handleChange} rows="6" />
                   </div>
 
-                  {/* Archivo + Preview */}
-                  <div style={{ display:"grid", gridTemplateColumns: previewUrl ? "1fr 1fr" : "1fr", gap:20, alignItems:"start" }}>
-                    <div>
-                      <label style={{ display:"block", marginBottom:8, fontWeight:600, color:"#334155", fontSize:14 }}>Imagen / Video</label>
-                      <input id="file-input" type="file" accept="image/png,image/jpeg,video/mp4" onChange={handleFileChange}
-                        style={{ width:"100%", padding:10, borderRadius:8, border:"1px dashed #cbd5e1", background:"#f8fafc", cursor:"pointer" }} />
-                      {file && <p style={{ marginTop:8, fontSize:13, color:"#10b981", fontWeight:500 }}>✓ {file.name}</p>}
+                  <div className="news-field-group">
+                    <label className="news-field-label">
+                      <ImageIcon size={14} /> Imagen / Video
+                    </label>
+                    <div className="news-upload-area">
+                      <input id="file-input" type="file" accept="image/png,image/jpeg,video/mp4" onChange={handleFileChange} className="news-file-input" />
+                      <div className="news-upload-placeholder">
+                        <ImageIcon size={20} />
+                        <span>Haz clic o arrastra un archivo aqui</span>
+                        <span className="news-upload-hint">JPG, PNG o MP4 (max 10MB)</span>
+                      </div>
                     </div>
-                    {previewUrl && (
-                      <div>
-                        <label style={{ display:"block", marginBottom:8, fontWeight:600, color:"#334155", fontSize:14 }}>Vista previa</label>
-                        <img src={previewUrl} alt="preview" style={{ width:"100%", maxHeight:140, objectFit:"cover", borderRadius:8, border:"1px solid #e2e8f0" }} />
+                    {file && (
+                      <div className="news-file-selected">
+                        <span className="news-file-check">&#10003;</span> {file.name}
+                        <button type="button" className="news-file-remove" onClick={() => { setFile(null); setPreviewUrl(null); const fi = document.getElementById('file-input'); if (fi) fi.value = ''; }}>
+                          &#10005;
+                        </button>
                       </div>
                     )}
                   </div>
+
+                  {previewUrl && (
+                    <div className="news-field-group">
+                      <label className="news-field-label">
+                        <Eye size={14} /> Vista previa
+                      </label>
+                      <div className="news-preview-wrap">
+                        <img src={previewUrl} alt="preview" className="news-preview-img" />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div style={{ marginTop:30, borderTop:"1px solid #f1f5f9", paddingTop:20, display:"flex", justifyContent:"flex-end" }}>
-                  <button type="submit" className="btn-add" disabled={uploading} style={{ minWidth:200, justifyContent:"center" }}>
-                    {uploading ? "Subiendo..." : <><Send size={18} /> Publicar Noticia</>}
+                <div className="news-form-footer">
+                  <button type="submit" className="news-submit-btn" disabled={uploading}>
+                    {uploading ? (
+                      <span className="news-submit-spinner" />
+                    ) : (
+                      <><Send size={18} /> Publicar Noticia</>
+                    )}
                   </button>
                 </div>
               </form>
             </div>
 
-            {/* ── Panel lateral: Última noticia ── */}
-            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-              {/* Card última noticia */}
-              <div style={{ background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:16, overflow:"hidden", boxShadow:"var(--shadow-card)" }}>
-                <div style={{ padding:"16px 20px", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                    <span style={{ width:8, height:8, borderRadius:"50%", background:"#10b981", boxShadow:"0 0 8px #10b981", display:"inline-block" }} />
-                    <span style={{ fontWeight:700, fontSize:14, color:"var(--text-main)" }}>Última Noticia Publicada</span>
+            {/* PANEL LATERAL */}
+            <div className="news-sidebar-panel">
+              <div className="news-last-card">
+                <div className="news-last-header">
+                  <div className="news-last-header-left">
+                    <span className="news-last-dot" />
+                    <span className="news-last-title">Ultima Noticia Publicada</span>
                   </div>
                   {lastNews && (
-                    <button
-                      onClick={() => navigate("/manage-news")}
-                      style={{ display:"flex", alignItems:"center", gap:5, background:"rgba(59,130,246,0.12)", border:"1px solid rgba(59,130,246,0.25)", borderRadius:8, padding:"5px 10px", color:"#3b82f6", cursor:"pointer", fontSize:12, fontWeight:700, transition:"all 0.2s" }}
-                      onMouseEnter={e => e.currentTarget.style.background="rgba(59,130,246,0.22)"}
-                      onMouseLeave={e => e.currentTarget.style.background="rgba(59,130,246,0.12)"}>
+                    <button className="news-last-viewall" onClick={() => navigate("/manage-news")}>
                       <Eye size={13} /> Ver todas
                     </button>
                   )}
                 </div>
 
                 {lastNews ? (
-                  <div
-                    onClick={() => navigate("/manage-news")}
-                    style={{ cursor:"pointer", transition:"all 0.2s" }}
-                    onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.03)"}
-                    onMouseLeave={e => e.currentTarget.style.background="transparent"}>
-
-                    {/* Imagen */}
+                  <div className="news-last-body" onClick={() => navigate("/manage-news")}>
                     {lastNews.imagen && !isVideo && (
-                      <div style={{ position:"relative", overflow:"hidden" }}>
-                        <img src={lastNews.imagen} alt={lastNews.titulo}
-                          style={{ width:"100%", height:160, objectFit:"cover", display:"block" }}
-                          onError={e => e.target.style.display="none"} />
-                        <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(0,0,0,0.6),transparent)" }} />
+                      <div className="news-last-img-wrap">
+                        <img src={lastNews.imagen} alt={lastNews.titulo} className="news-last-img" onError={e => e.target.style.display="none"} />
+                        <div className="news-last-img-overlay" />
                         {lastNews.categoria && (
-                          <span style={{ position:"absolute", top:10, left:10, background:"var(--accent-red)", color:"#fff", fontSize:10, fontWeight:800, letterSpacing:1, padding:"3px 10px", borderRadius:20, textTransform:"uppercase" }}>
-                            {lastNews.categoria}
-                          </span>
+                          <span className="news-last-category">{lastNews.categoria}</span>
                         )}
                       </div>
                     )}
 
-                    <div style={{ padding:16 }}>
-                      {/* Título */}
-                      <h3 style={{ fontSize:14, fontWeight:700, color:"var(--text-main)", lineHeight:1.4, margin:"0 0 10px", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
-                        {lastNews.titulo}
-                      </h3>
+                    <div className="news-last-content">
+                      <h3 className="news-last-titulo">{lastNews.titulo}</h3>
 
-                      {/* Extracto */}
                       {lastNews.contenido && (
-                        <p style={{ fontSize:12, color:"var(--text-muted)", lineHeight:1.5, margin:"0 0 12px", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
-                          {lastNews.contenido}
-                        </p>
+                        <p className="news-last-extracto">{lastNews.contenido}</p>
                       )}
 
-                      {/* Meta */}
-                      <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:12 }}>
+                      <div className="news-last-meta">
                         {lastNews.autor && (
-                          <span style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, color:"#64748b" }}>
-                            <User size={11} /> {lastNews.autor}
-                          </span>
+                          <span className="news-last-meta-item"><User size={11} /> {lastNews.autor}</span>
                         )}
                         {lastNews.fecha && (
-                          <span style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, color:"#64748b" }}>
-                            <Clock size={11} /> {fmtDate(lastNews.fecha)}
-                          </span>
+                          <span className="news-last-meta-item"><Clock size={11} /> {fmtDate(lastNews.fecha)}</span>
                         )}
                       </div>
 
-                      {/* CTA */}
-                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", paddingTop:10, borderTop:"1px solid var(--border)" }}>
-                        <span style={{ fontSize:11, color:"#475569" }}>Click para gestionar noticias</span>
-                        <span style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, color:"var(--accent-blue)", fontWeight:700 }}>
-                          Gestionar <ArrowRight size={13} />
-                        </span>
+                      <div className="news-last-cta">
+                        <span>Click para gestionar noticias</span>
+                        <span className="news-last-cta-link">Gestionar <ArrowRight size={13} /></span>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div style={{ padding:"32px 20px", textAlign:"center" }}>
-                    <div style={{ fontSize:28, marginBottom:10, opacity:0.3 }}>📰</div>
-                    <p style={{ color:"var(--text-muted)", fontSize:13, margin:0, fontWeight:500 }}>No hay noticias publicadas aún</p>
-                    <p style={{ color:"#334155", fontSize:12, margin:"4px 0 0" }}>La última noticia aparecerá aquí</p>
+                  <div className="news-last-empty">
+                    <Newspaper size={32} className="news-last-empty-icon" />
+                    <p className="news-last-empty-text">No hay noticias publicadas aun</p>
+                    <p className="news-last-empty-sub">La ultima noticia aparecera aqui</p>
                   </div>
                 )}
               </div>
 
-              {/* Acceso rápido a ManageNews */}
-              <button
-                onClick={() => navigate("/manage-news")}
-                style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"14px 20px", background:"linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05))", border:"1px solid rgba(239,68,68,0.25)", borderRadius:12, color:"var(--accent-red)", fontWeight:700, fontSize:14, cursor:"pointer", transition:"all 0.2s", fontFamily:"inherit" }}
-                onMouseEnter={e => { e.currentTarget.style.background="linear-gradient(135deg,rgba(239,68,68,0.25),rgba(239,68,68,0.1))"; e.currentTarget.style.transform="translateY(-2px)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background="linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05))"; e.currentTarget.style.transform="translateY(0)"; }}>
+              <button className="news-manage-btn" onClick={() => navigate("/manage-news")}>
                 <Newspaper size={18} /> Gestionar todas las noticias <ArrowRight size={16} />
               </button>
 
-              {/* Tips */}
-              <div style={{ background:"rgba(59,130,246,0.06)", border:"1px solid rgba(59,130,246,0.15)", borderRadius:12, padding:16 }}>
-                <p style={{ fontSize:12, fontWeight:700, color:"#3b82f6", margin:"0 0 8px", textTransform:"uppercase", letterSpacing:1 }}>💡 Consejos</p>
-                <ul style={{ margin:0, paddingLeft:16, fontSize:12, color:"var(--text-muted)", lineHeight:1.8, listStyle:"disc" }}>
-                  <li>Usa un título claro y atractivo</li>
+              <div className="news-tips-card">
+                <p className="news-tips-title">Consejos</p>
+                <ul className="news-tips-list">
+                  <li>Usa un titulo claro y atractivo</li>
                   <li>Agrega imagen para mayor visibilidad</li>
-                  <li>Especifica la categoría correctamente</li>
-                  <li>El contenido aparece en la página de noticias</li>
+                  <li>Especifica la categoria correctamente</li>
+                  <li>El contenido aparece en la pagina de noticias</li>
                 </ul>
               </div>
             </div>
@@ -405,16 +398,324 @@ const ManagePublicNews = () => {
 
       <style>{`
         button.nav-item { background:none; border:none; color:var(--text-muted); font-family:inherit; }
+
+        .news-grid {
+          display: grid;
+          grid-template-columns: 1fr 380px;
+          gap: 24px;
+          align-items: start;
+        }
+
+        .news-form-card { overflow: hidden; }
+
+        .news-formats-badge {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 600;
+          background: rgba(255,255,255,0.04);
+          padding: 6px 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .news-form { padding: 24px; }
+        .news-form-fields { display: flex; flex-direction: column; gap: 20px; }
+
+        .news-field-group { display: flex; flex-direction: column; gap: 8px; }
+        .news-field-label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #94a3b8;
+        }
+        .news-field-label svg { opacity: 0.6; }
+        .news-required { color: #ef4444; font-weight: 800; }
+        .news-input { font-size: 14px; }
+        .news-textarea { resize: vertical; min-height: 120px; font-family: inherit; line-height: 1.6; }
+
+        .news-field-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+        }
+
+        .news-upload-area {
+          position: relative;
+          border: 2px dashed rgba(255,255,255,0.1);
+          border-radius: 12px;
+          background: rgba(255,255,255,0.02);
+          transition: all 0.25s ease;
+          cursor: pointer;
+          overflow: hidden;
+        }
+        .news-upload-area:hover {
+          border-color: rgba(59,130,246,0.3);
+          background: rgba(59,130,246,0.04);
+        }
+        .news-file-input {
+          position: absolute;
+          inset: 0;
+          opacity: 0;
+          cursor: pointer;
+          z-index: 2;
+        }
+        .news-upload-placeholder {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 28px 16px;
+          color: #475569;
+          font-size: 13px;
+          font-weight: 500;
+          pointer-events: none;
+        }
+        .news-upload-placeholder svg { color: #334155; }
+        .news-upload-hint { font-size: 11px; color: #334155; }
+
+        .news-file-selected {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 8px;
+          padding: 8px 14px;
+          border-radius: 8px;
+          background: rgba(16,185,129,0.08);
+          border: 1px solid rgba(16,185,129,0.2);
+          color: #34d399;
+          font-size: 13px;
+          font-weight: 600;
+        }
+        .news-file-check { font-weight: 800; }
+        .news-file-remove {
+          margin-left: auto;
+          background: rgba(239,68,68,0.15);
+          border: 1px solid rgba(239,68,68,0.25);
+          color: #f87171;
+          width: 22px;
+          height: 22px;
+          border-radius: 6px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 11px;
+          font-weight: 800;
+          transition: all 0.2s;
+        }
+        .news-file-remove:hover { background: rgba(239,68,68,0.3); }
+
+        .news-preview-wrap {
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid rgba(255,255,255,0.06);
+        }
+        .news-preview-img {
+          width: 100%;
+          max-height: 200px;
+          object-fit: cover;
+          display: block;
+        }
+
+        .news-form-footer {
+          margin-top: 28px;
+          padding-top: 20px;
+          border-top: 1px solid rgba(255,255,255,0.06);
+          display: flex;
+          justify-content: flex-end;
+        }
+        .news-submit-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          min-width: 200px;
+          justify-content: center;
+          padding: 12px 28px;
+          border-radius: 12px;
+          border: none;
+          background: linear-gradient(135deg, #3b82f6, #2563eb);
+          color: white;
+          font-weight: 700;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.25s ease;
+          font-family: inherit;
+        }
+        .news-submit-btn:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px rgba(59,130,246,0.35);
+        }
+        .news-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .news-submit-spinner {
+          display: inline-block;
+          width: 18px;
+          height: 18px;
+          border: 2px solid rgba(255,255,255,0.2);
+          border-top-color: #fff;
+          border-radius: 50%;
+          animation: newsSpin 0.6s linear infinite;
+        }
+
+        /* PANEL LATERAL */
+        .news-sidebar-panel { display: flex; flex-direction: column; gap: 16px; }
+
+        .news-last-card {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: var(--shadow-card);
+        }
+        .news-last-header {
+          padding: 16px 20px;
+          border-bottom: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .news-last-header-left { display: flex; align-items: center; gap: 8px; }
+        .news-last-dot {
+          width: 8px; height: 8px;
+          border-radius: 50%;
+          background: #10b981;
+          box-shadow: 0 0 8px #10b981;
+          display: inline-block;
+        }
+        .news-last-title { font-weight: 700; font-size: 14px; color: var(--text-main); }
+        .news-last-viewall {
+          display: flex; align-items: center; gap: 5px;
+          background: rgba(59,130,246,0.12);
+          border: 1px solid rgba(59,130,246,0.25);
+          border-radius: 8px;
+          padding: 5px 10px;
+          color: #3b82f6;
+          cursor: pointer;
+          font-size: 12px;
+          font-weight: 700;
+          transition: all 0.2s;
+          font-family: inherit;
+        }
+        .news-last-viewall:hover { background: rgba(59,130,246,0.22); }
+
+        .news-last-body {
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .news-last-body:hover { background: rgba(255,255,255,0.03); }
+
+        .news-last-img-wrap { position: relative; overflow: hidden; }
+        .news-last-img { width: 100%; height: 160px; object-fit: cover; display: block; }
+        .news-last-img-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); }
+        .news-last-category {
+          position: absolute; top: 10px; left: 10px;
+          background: var(--accent-red);
+          color: #fff;
+          font-size: 10px; font-weight: 800;
+          letter-spacing: 1px;
+          padding: 3px 10px;
+          border-radius: 20px;
+          text-transform: uppercase;
+        }
+
+        .news-last-content { padding: 16px; }
+        .news-last-titulo {
+          font-size: 14px; font-weight: 700;
+          color: var(--text-main);
+          line-height: 1.4;
+          margin: 0 0 10px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .news-last-extracto {
+          font-size: 12px; color: var(--text-muted);
+          line-height: 1.5;
+          margin: 0 0 12px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .news-last-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .news-last-meta-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #64748b; }
+        .news-last-cta {
+          display: flex; align-items: center; justify-content: space-between;
+          padding-top: 10px;
+          border-top: 1px solid var(--border);
+        }
+        .news-last-cta > span:first-child { font-size: 11px; color: #475569; }
+        .news-last-cta-link { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--accent-blue); font-weight: 700; }
+
+        .news-last-empty { padding: 32px 20px; text-align: center; }
+        .news-last-empty-icon { color: #334155; margin-bottom: 10px; opacity: 0.4; }
+        .news-last-empty-text { color: var(--text-muted); font-size: 13px; margin: 0; font-weight: 500; }
+        .news-last-empty-sub { color: #334155; font-size: 12px; margin: 4px 0 0; }
+
+        .news-manage-btn {
+          width: 100%;
+          display: flex; align-items: center; justify-content: center; gap: 10px;
+          padding: 14px 20px;
+          background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05));
+          border: 1px solid rgba(239,68,68,0.25);
+          border-radius: 12px;
+          color: var(--accent-red);
+          font-weight: 700; font-size: 14px;
+          cursor: pointer;
+          transition: all 0.2s;
+          font-family: inherit;
+        }
+        .news-manage-btn:hover {
+          background: linear-gradient(135deg, rgba(239,68,68,0.25), rgba(239,68,68,0.1));
+          transform: translateY(-2px);
+        }
+
+        .news-tips-card {
+          background: rgba(59,130,246,0.06);
+          border: 1px solid rgba(59,130,246,0.15);
+          border-radius: 12px;
+          padding: 16px;
+        }
+        .news-tips-title {
+          font-size: 12px; font-weight: 700;
+          color: #3b82f6;
+          margin: 0 0 8px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        .news-tips-list {
+          margin: 0; padding-left: 16px;
+          font-size: 12px; color: var(--text-muted);
+          line-height: 1.8; list-style: disc;
+        }
+
+        @keyframes newsSpin { to { transform: rotate(360deg); } }
+
+        /* RESPONSIVE */
         @media (max-width: 1100px) {
-          .content-wrapper > div[style*="grid-template-columns"] {
-            grid-template-columns: 1fr !important;
-          }
+          .news-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
-          .content-wrapper > div[style*="grid-template-columns"] { gap: 16px; }
+          .news-grid { gap: 16px; }
+          .news-field-row { grid-template-columns: 1fr; gap: 0; }
+          .news-form { padding: 16px; }
+          .news-form-fields { gap: 16px; }
+          .news-submit-btn { width: 100%; }
+          .news-form-footer { justify-content: stretch; }
         }
         @media (max-width: 480px) {
-          .content-wrapper { padding: 16px 12px !important; }
+          .content-wrapper { padding: 12px 8px !important; }
+          .news-form { padding: 14px 12px; }
+          .news-upload-placeholder { padding: 20px 12px; }
+          .news-last-header { padding: 12px 14px; flex-direction: column; gap: 8px; align-items: flex-start; }
+          .news-last-content { padding: 12px 14px; }
+          .news-manage-btn { padding: 12px 16px; font-size: 13px; }
         }
       `}</style>
     </div>

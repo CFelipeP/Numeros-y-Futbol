@@ -111,6 +111,13 @@ const AdminDashboard = () => {
   useEffect(() => { if (location.pathname.startsWith("/teams/")) setTeamsOpen(true); }, [location.pathname]);
 
   useEffect(() => {
+    if (window.innerWidth <= 1024) {
+      document.body.classList.toggle("sidebar-open-lock", sidebarOpen);
+    }
+    return () => document.body.classList.remove("sidebar-open-lock");
+  }, [sidebarOpen]);
+
+  useEffect(() => {
     if (sessionStorage.getItem("adminTourDashboard")) return;
     const timer = setTimeout(() => {
       const d = driver({
@@ -253,8 +260,8 @@ const AdminDashboard = () => {
         </header>
 
         <div className="content-wrapper" style={{ padding: '1rem' }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.2rem", flexWrap: "wrap", gap: "0.75rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
+          <div className="dash-header-row">
+            <div className="dash-header-left">
               <h1 className="admin-title" style={{ margin: 0 }}>Dashboard</h1>
               <div ref={dropdownRef} style={{ position: "relative" }} id="driver-admin-division">
                 <button onClick={() => setDropdownOpen(!dropdownOpen)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", color: "#60a5fa", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", letterSpacing: "0.3px" }}>
@@ -273,7 +280,7 @@ const AdminDashboard = () => {
                 )}
               </div>
             </div>
-            <button onClick={handleReset} disabled={resetting || loading} id="driver-admin-reset" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "9px 18px", borderRadius: "10px", background: resetting ? "rgba(239,68,68,0.15)" : "linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.08))", border: "1px solid rgba(239,68,68,0.25)", color: resetting ? "#f87171" : "#fca5a5", fontSize: "13px", fontWeight: 600, cursor: resetting || loading ? "not-allowed" : "pointer", transition: "all 0.25s ease", opacity: resetting || loading ? 0.6 : 1 }}>
+            <button className="dash-reset-btn" onClick={handleReset} disabled={resetting || loading} id="driver-admin-reset" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "9px 18px", borderRadius: "10px", background: resetting ? "rgba(239,68,68,0.15)" : "linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.08))", border: "1px solid rgba(239,68,68,0.25)", color: resetting ? "#f87171" : "#fca5a5", fontSize: "13px", fontWeight: 600, cursor: resetting || loading ? "not-allowed" : "pointer", transition: "all 0.25s ease", opacity: resetting || loading ? 0.6 : 1 }}>
               <RotateCcw size={15} style={resetting ? { animation: "spin 0.8s linear infinite" } : {}} />
               {resetting ? "Reiniciando..." : "Reiniciar Temporada"}
             </button>
@@ -321,7 +328,7 @@ const AdminDashboard = () => {
             ) : filteredMatches.length === 0 ? (
               <div style={{ textAlign: "center", padding: "3rem 1rem", color: "#475569" }}><Trophy size={36} style={{ margin: "0 auto 0.75rem", display: "block", opacity: 0.15 }} /><p style={{ fontWeight: 600, color: "#64748b", margin: "0 0 0.3rem" }}>{search ? "Sin resultados para la búsqueda" : "No hay partidos registrados"}</p><p style={{ fontSize: "13px", margin: 0, opacity: 0.5 }}>{search ? "Intenta con otro nombre" : "Crea partidos desde Gestionar Partidos"}</p></div>
             ) : (
-              <table className="data-table" style={{ width: "100%", borderCollapse: "collapse", minWidth: '500px' }}>
+              <table className="data-table dash-matches-table" style={{ width: "100%", borderCollapse: "collapse", minWidth: '500px' }}>
                 <thead><tr>
                   <th className="hide-on-mobile">Fecha</th>
                   <th>Local</th>
@@ -382,8 +389,141 @@ const AdminDashboard = () => {
         @media (max-width: 768px) {
             .hide-on-mobile { display: none !important; }
         }
+
+        /* =========================================
+           4. DASHBOARD HEADER RESPONSIVE
+           ========================================= */
+        .dash-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .dash-header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .dash-header-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.6rem;
+                margin-bottom: 1rem;
+            }
+            .dash-header-left {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+            .dash-header-left .admin-title {
+                font-size: 20px;
+            }
+            .dash-header-left > div {
+                width: 100%;
+            }
+            .dash-header-left > div > button {
+                width: 100%;
+                justify-content: center;
+            }
+            .dash-header-left > div > div {
+                width: 100% !important;
+            }
+            .dash-header-left > div > div > button {
+                width: 100% !important;
+            }
+            .dash-reset-btn {
+                width: 100% !important;
+                justify-content: center !important;
+            }
+        }
+
         @media (max-width: 480px) {
             .dash-stats-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+            .dash-stats-grid > div {
+                padding: 1rem 0.9rem !important;
+            }
+            .dash-stats-grid > div > div:first-child {
+                width: 34px !important;
+                height: 34px !important;
+                margin-bottom: 0.5rem !important;
+            }
+            .dash-stats-grid > div > div:first-child svg {
+                width: 18px !important;
+                height: 18px !important;
+            }
+            .dash-stats-grid > div > div:nth-child(2) {
+                font-size: 1.3rem !important;
+            }
+            .dash-stats-grid > div > div:last-child {
+                font-size: 0.65rem !important;
+            }
+
+            .chart-container {
+                border-radius: 10px !important;
+            }
+            .chart-container .table-header {
+                padding: 10px 12px;
+            }
+            .chart-container .table-header h2 {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .dash-stats-grid { gap: 0.35rem; }
+            .dash-stats-grid > div {
+                padding: 0.8rem 0.7rem !important;
+                border-radius: 10px !important;
+            }
+            .dash-stats-grid > div > div:first-child {
+                width: 30px !important;
+                height: 30px !important;
+                border-radius: 8px !important;
+                margin-bottom: 0.4rem !important;
+            }
+            .dash-stats-grid > div > div:nth-child(2) {
+                font-size: 1.1rem !important;
+            }
+        }
+
+        /* =========================================
+           5. TABLA DE PARTIDOS MEJORADA EN MOVIL
+           ========================================= */
+        @media (max-width: 768px) {
+            .dash-matches-table {
+                min-width: 400px !important;
+            }
+            .dash-matches-table td img {
+                width: 24px !important;
+                height: 24px !important;
+            }
+            .dash-matches-table td span {
+                font-size: 12px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dash-matches-table {
+                min-width: 340px !important;
+            }
+            .dash-matches-table td {
+                padding: 8px 6px !important;
+            }
+            .dash-matches-table td img {
+                width: 22px !important;
+                height: 22px !important;
+            }
+            .dash-matches-table td span {
+                font-size: 11px !important;
+            }
+            .dash-matches-table td > div {
+                gap: 6px !important;
+            }
         }
 
         .driver-popover {

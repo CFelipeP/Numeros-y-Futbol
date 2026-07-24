@@ -31,6 +31,13 @@ const ManageTeamsAscenso = () => {
     }, [location.pathname]);
 
     useEffect(() => {
+        if (window.innerWidth <= 1024) {
+            document.body.classList.toggle("sidebar-open-lock", sidebarOpen);
+        }
+        return () => document.body.classList.remove("sidebar-open-lock");
+    }, [sidebarOpen]);
+
+    useEffect(() => {
         setLoading(true);
         setError(null);
         fetch(`${API}get_teams_ascenso.php`)
@@ -349,8 +356,8 @@ const ManageTeamsAscenso = () => {
                                     <tr>
                                         <th style={{ width: '60px' }}>Escudo</th>
                                         <th>Nombre</th>
-                                        <th>Ciudad</th>
-                                        <th>Estadio</th>
+                                        <th className="hide-on-mobile">Ciudad</th>
+                                        <th className="hide-on-mobile">Estadio</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
@@ -361,8 +368,8 @@ const ManageTeamsAscenso = () => {
                                                 {team.logo ? <img src={`${API}${team.logo}`} alt={team.nombre} onError={(e) => { e.target.style.display = 'none'; }} style={{ width: '38px', height: '38px', objectFit: 'contain', borderRadius: '8px', background: '#fff', padding: '2px' }} /> : <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#475569' }}>N/A</div>}
                                             </td>
                                             <td style={{ fontWeight: '700' }}>{team.nombre}</td>
-                                            <td style={{ color: '#94a3b8' }}>{team.ciudad || '—'}</td>
-                                            <td style={{ color: '#94a3b8' }}>{team.estadio || '—'}</td>
+                                            <td className="hide-on-mobile" style={{ color: '#94a3b8' }}>{team.ciudad || '—'}</td>
+                                            <td className="hide-on-mobile" style={{ color: '#94a3b8' }}>{team.estadio || '—'}</td>
                                             <td>
                                                 <div style={{ display: 'flex', gap: '8px' }}>
                                                     <button className="team-btn-edit-green" onClick={() => openEdit(team)} title="Editar"><Save size={14} /><span>Editar</span></button>
@@ -541,7 +548,9 @@ const ManageTeamsAscenso = () => {
                 .tm-spin { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: tmSpin 0.6s linear infinite; }
                 @keyframes tmSpin { to { transform: rotate(360deg); } }
                 button.nav-item { background: none; border: none; color: var(--text-muted); font-family: inherit; }
-@media (max-width: 768px) {
+                .hide-on-mobile { display: table-cell; }
+                @media (max-width: 768px) {
+                    .hide-on-mobile { display: none !important; }
                     .tm-card { width: 100%; max-width: 100vw; max-height: 100dvh; border-radius: 0; }
                     .tm-grid { grid-template-columns: 1fr; }
                     .tm-logo-section { flex-direction: row; flex-wrap: wrap; justify-content: center; }
@@ -550,6 +559,24 @@ const ManageTeamsAscenso = () => {
                     .tm-footer { flex-direction: column-reverse; }
                     .tm-btn-cancel, .tm-btn-save { width: 100%; text-align: center; justify-content: center; }
                     .team-btn-edit-green span { display: none; }
+                }
+                @media (max-width: 480px) {
+                    .tm-body { padding: 16px; }
+                    .tm-header { padding: 14px 16px; }
+                    .tm-header h2 { font-size: 0.95rem; }
+                    .tm-footer { padding: 12px 16px; }
+                    .tm-logo-preview-wrap { width: 80px; height: 80px; }
+                    .tm-field label { font-size: 12px; }
+                    .data-table { min-width: 350px !important; }
+                    .data-table th, .data-table td { padding: 8px 6px; font-size: 12px; }
+                }
+                @media (max-width: 375px) {
+                    .tm-body { padding: 14px 12px; }
+                    .tm-header { padding: 12px 14px; }
+                    .tm-logo-preview-wrap { width: 70px; height: 70px; }
+                    .tm-logo-preview-img { padding: 8px; }
+                    .tm-upload-label { padding: 8px 10px; font-size: 11px; }
+                    .data-table { min-width: 320px !important; }
                 }
             `}</style>
         </div>

@@ -103,26 +103,101 @@ const ManageUsers = () => {
   };
 
   const editUser = (u) => {
+    const initials = (u.nombre || 'U').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    const rolColors = {
+      admin: { bg: 'rgba(255, 0, 77, 0.15)', color: '#ff004d', border: 'rgba(255, 0, 77, 0.3)' },
+      editor: { bg: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: 'rgba(245, 158, 11, 0.3)' },
+      usuario: { bg: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', border: 'rgba(59, 130, 246, 0.3)' },
+    };
+    const rc = rolColors[u.rol] || rolColors.usuario;
+
     Swal.fire({
-      title: "Editar Usuario",
-      html:
-        `<input id="swal-name" class="swal2-input" placeholder="Nombre completo" value="${u.nombre || ''}">` +
-        `<input id="swal-apodo" class="swal2-input" placeholder="Nombre de usuario" value="${u.apodo || ''}">` +
-        `<input id="swal-email" type="email" class="swal2-input" placeholder="Correo electrónico" value="${u.email || ''}">` +
-        `<input id="swal-password" type="password" class="swal2-input" placeholder="Nueva contraseña (dejar vacío para no cambiar)">` +
-        `<select id="swal-role" class="swal2-select" style="width: 100%; margin-top: 1rem; padding: 0.8rem; background: #0b1120; color: white; border-radius: 8px; border: 1px solid #374151;">` +
-        `<option value="usuario" ${u.rol === 'usuario' ? 'selected' : ''}>Usuario</option>` +
-        `<option value="editor" ${u.rol === 'editor' ? 'selected' : ''}>Editor</option>` +
-        `<option value="admin" ${u.rol === 'admin' ? 'selected' : ''}>Administrador</option>` +
-        '</select>',
+      title: '',
+      html: `
+        <div class="edit-user-modal">
+          <div class="edit-user-header">
+            <div class="edit-user-avatar" style="background: ${rc.bg}; border: 2px solid ${rc.border}; color: ${rc.color};">
+              ${initials}
+            </div>
+            <div class="edit-user-header-info">
+              <h3 class="edit-user-name">${u.nombre || 'Usuario'}</h3>
+              <span class="edit-user-role-badge" style="background: ${rc.bg}; color: ${rc.color}; border: 1px solid ${rc.border};">
+                ${u.rol === 'admin' ? 'Administrador' : u.rol === 'editor' ? 'Editor' : 'Usuario'}
+              </span>
+            </div>
+          </div>
+          <div class="edit-user-divider"></div>
+          <div class="edit-user-fields">
+            <div class="edit-field-group">
+              <label class="edit-field-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Nombre completo
+              </label>
+              <input id="swal-name" class="edit-field-input" placeholder="Nombre completo" value="${u.nombre || ''}">
+            </div>
+            <div class="edit-field-group">
+              <label class="edit-field-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>
+                Nombre de usuario
+              </label>
+              <input id="swal-apodo" class="edit-field-input" placeholder="Nombre de usuario" value="${u.apodo || ''}">
+            </div>
+            <div class="edit-field-group">
+              <label class="edit-field-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                Correo electrónico
+              </label>
+              <input id="swal-email" type="email" class="edit-field-input" placeholder="Correo electrónico" value="${u.email || ''}">
+            </div>
+            <div class="edit-field-group">
+              <label class="edit-field-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Nueva contraseña
+              </label>
+              <input id="swal-password" type="password" class="edit-field-input" placeholder="Dejar vacío para no cambiar">
+            </div>
+            <div class="edit-field-group">
+              <label class="edit-field-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+                Rol
+              </label>
+              <div class="edit-role-selector">
+                <label class="edit-role-option ${u.rol === 'usuario' ? 'selected' : ''}">
+                  <input type="radio" name="swal-role" value="usuario" ${u.rol === 'usuario' ? 'checked' : ''}>
+                  <span class="edit-role-dot" style="--dot-color: #3b82f6;"></span>
+                  Usuario
+                </label>
+                <label class="edit-role-option ${u.rol === 'editor' ? 'selected' : ''}">
+                  <input type="radio" name="swal-role" value="editor" ${u.rol === 'editor' ? 'checked' : ''}>
+                  <span class="edit-role-dot" style="--dot-color: #f59e0b;"></span>
+                  Editor
+                </label>
+                <label class="edit-role-option ${u.rol === 'admin' ? 'selected' : ''}">
+                  <input type="radio" name="swal-role" value="admin" ${u.rol === 'admin' ? 'checked' : ''}>
+                  <span class="edit-role-dot" style="--dot-color: #ff004d;"></span>
+                  Administrador
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
       showCancelButton: true,
-      confirmButtonText: "Guardar",
+      confirmButtonText: "Guardar Cambios",
+      cancelButtonText: "Cancelar",
+      customClass: {
+        popup: 'edit-user-popup',
+        confirmButton: 'edit-user-btn-save',
+        cancelButton: 'edit-user-btn-cancel',
+        actions: 'edit-user-actions'
+      },
       preConfirm: () => {
         const nombre = document.getElementById("swal-name").value.trim();
         const apodo = document.getElementById("swal-apodo").value.trim();
         const email = document.getElementById("swal-email").value.trim();
         const password = document.getElementById("swal-password").value.trim();
-        const rol = document.getElementById("swal-role").value;
+        const rolEl = document.querySelector('input[name="swal-role"]:checked');
+        const rol = rolEl ? rolEl.value : 'usuario';
 
         if (!nombre || !apodo || !email) {
           Swal.showValidationMessage("Nombre, apodo y email son obligatorios");

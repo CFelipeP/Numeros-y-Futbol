@@ -60,6 +60,13 @@ const ManageMatches = () => {
     const [filterJornada, setFilterJornada] = useState("all");
 
     useEffect(() => { if (location.pathname.startsWith("/teams/")) setTeamsOpen(true); }, [location.pathname]);
+
+    useEffect(() => {
+        if (window.innerWidth <= 1024) {
+            document.body.classList.toggle("sidebar-open-lock", sidebarOpen);
+        }
+        return () => document.body.classList.remove("sidebar-open-lock");
+    }, [sidebarOpen]);
     useEffect(() => {
         const handler = (e) => {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setDropdownOpen(false);
@@ -475,9 +482,10 @@ const ManageMatches = () => {
                 </header>
 
                 <div className="content-wrapper">
-                    <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "1.2rem", flexWrap: "wrap" }}>
-                        <h1 className="admin-title" style={{ margin: 0 }}>Gestionar Partidos</h1>
-                        <div ref={dropdownRef} style={{ position: "relative" }} id="driver-mm-division">
+                    <div className="mm-header-row">
+                        <div className="mm-header-left">
+                            <h1 className="admin-title" style={{ margin: 0 }}>Gestionar Partidos</h1>
+                            <div ref={dropdownRef} style={{ position: "relative" }} id="driver-mm-division">
                             <button onClick={() => setDropdownOpen(!dropdownOpen)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", color: "#60a5fa", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", letterSpacing: "0.3px" }}>
                                 <Trophy size={14} />{currentDiv?.label} División<ChevronDown size={15} style={{ transition: "transform 0.25s ease", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.7 }} />
                             </button>
@@ -510,8 +518,9 @@ const ManageMatches = () => {
                                 </span>
                                 {counts.played > 0 && <button className="mm-reset-all-btn" onClick={resetAllMatches}><RotateCcw size={14} /> <span>Resetear todo</span></button>}
                                 <button className="btn-add" id="driver-mm-create" onClick={openNewMatch}><Plus size={18} /> Nuevo Partido</button>
-                            </div>
                         </div>
+                    </div>
+                    </div>
 
                         {jornadaCompletadaActual && (
                             <div className="mm-jornada-complete" style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 16px", borderRadius: "10px", background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", marginBottom: "16px", fontSize: "13px", fontWeight: 600, color: "#34d399" }}>
@@ -997,6 +1006,70 @@ const ManageMatches = () => {
     .mm-reset-btn:hover { color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.06); }
     button.nav-item { background: none; border: none; color: var(--text-muted); font-family: inherit; }
 
+    /* === Header responsive === */
+    .mm-header-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 1.2rem;
+        flex-wrap: wrap;
+    }
+    .mm-header-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+        .mm-header-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+        .mm-header-left {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+        .mm-header-left > div {
+            width: 100%;
+        }
+        .mm-header-left > div > button {
+            width: 100%;
+            justify-content: center;
+        }
+        .mm-header-left > div > div {
+            width: 100% !important;
+        }
+        .mm-header-left > div > div > button {
+            width: 100% !important;
+        }
+    }
+
+    /* === Jornada banners responsive === */
+    @media (max-width: 640px) {
+        .mm-jornada-complete {
+            flex-direction: column !important;
+            text-align: center;
+            gap: 8px !important;
+            padding: 12px !important;
+            font-size: 12px !important;
+        }
+        .mm-jornada-complete .btn-add {
+            margin-left: 0 !important;
+            width: 100%;
+        }
+        .mm-jornada-hint {
+            flex-direction: column !important;
+            text-align: center;
+            gap: 6px !important;
+            padding: 10px 12px !important;
+            font-size: 11px !important;
+        }
+    }
+
     /* ==============================================
        RESPONSIVE — 3 breakpoints claros
        ============================================== */
@@ -1026,22 +1099,93 @@ const ManageMatches = () => {
         .btn-add { width: 100%; justify-content: center; }
     }
 
-    /* ✅ Celular: tabla fluida sin scroll horizontal */
+    /* ✅ Celular: tabla → cards de partido */
     @media (max-width: 640px) {
-        .data-table { min-width: 0 !important; width: 100%; table-layout: fixed; }
-        .data-table th, .data-table td { padding: 10px 4px; font-size: 11px; }
-        .td-team-img { width: 24px; height: 24px; }
-        .td-team { gap: 5px; }
-        .td-team-right { gap: 5px; }
-        .td-team-name { max-width: 70px; font-size: 11px; }
-        .td-actions { gap: 3px; justify-content: center; flex-wrap: nowrap; }
-        /* Botones: solo iconos en celular */
+        .data-table { min-width: 0 !important; width: 100%; }
+        .data-table thead { display: none; }
+        .data-table tbody { display: flex; flex-direction: column; gap: 10px; }
+        .data-table tr {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 14px 12px;
+            margin: 0;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            gap: 0;
+            transition: background 0.2s;
+        }
+        .data-table td {
+            padding: 0 !important;
+            border: none !important;
+            font-size: 12px !important;
+        }
+        .data-table td:nth-child(3) { flex: 1; min-width: 0; }
+        .data-table td:nth-child(4) {
+            flex: 0 0 auto;
+            padding: 0 10px !important;
+            text-align: center;
+        }
+        .data-table td:nth-child(4) span { font-size: 18px !important; letter-spacing: 3px !important; }
+        .data-table td:nth-child(5) { flex: 1; min-width: 0; }
+        .data-table td:nth-child(7) {
+            width: 100%;
+            flex-basis: 100%;
+            margin-top: 10px;
+            padding-top: 10px !important;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .td-team-img { width: 28px !important; height: 28px !important; border-radius: 7px !important; }
+        .td-team { gap: 8px; }
+        .td-team-right { gap: 8px; }
+        .td-team-name { max-width: none !important; font-size: 13px !important; font-weight: 700 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .td-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+        .mm-star-btn {
+            flex: 1;
+            min-width: 0;
+            justify-content: center;
+            padding: 9px 8px !important;
+            border-radius: 8px !important;
+            font-size: 12px !important;
+        }
+        .result-action-btn {
+            flex: 1;
+            min-width: 0;
+            justify-content: center;
+            padding: 9px 10px !important;
+            border-radius: 8px !important;
+            font-size: 12px !important;
+        }
+        .mm-narrar-btn {
+            flex: 1;
+            min-width: 0;
+            justify-content: center;
+            padding: 9px 10px !important;
+            border-radius: 8px !important;
+            font-size: 12px !important;
+        }
+        .mm-reset-single-btn {
+            flex: 1;
+            min-width: 0;
+            justify-content: center;
+            padding: 9px 10px !important;
+            border-radius: 8px !important;
+            font-size: 12px !important;
+        }
+        .btn-delete {
+            padding: 9px 12px !important;
+            border-radius: 8px !important;
+        }
         .result-action-btn span,
         .mm-reset-single-btn span,
-        .mm-reset-all-btn span,
-        .mm-star-btn span { display: none; }
-        .mm-star-btn, .result-action-btn, .mm-reset-single-btn { padding: 6px 7px; }
-        .btn-delete { padding: 6px; }
+        .mm-star-btn span { display: inline !important; }
+        .mm-narrar-btn span { display: inline !important; }
 
         .nm-card, .nm-score-card { width: 100%; max-width: 100vw; max-height: 100dvh; border-radius: 0; }
         .nm-selects-row { grid-template-columns: 1fr; gap: 8px; }
@@ -1051,21 +1195,36 @@ const ManageMatches = () => {
         .nm-preview-center { padding: 0 12px; }
         .nm-footer { flex-direction: column-reverse; }
         .nm-btn-cancel, .nm-btn-ok { width: 100%; text-align: center; justify-content: center !important; }
-        .mm-scoreboard { gap: 6px; flex-wrap: wrap; padding: 18px 8px; }
-        .mm-score-team { width: 70px; }
-        .mm-score-logo { width: 36px; height: 36px; }
-        .mm-score-team-name { font-size: 10px; }
-        .mm-score-num { width: 44px; height: 44px; font-size: 24px; }
-        .mm-score-btn { width: 34px; height: 34px; }
+        .mm-scoreboard {
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 24px 16px;
+        }
+        .mm-score-team {
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: auto;
+        }
+        .mm-score-logo { width: 48px; height: 48px; border-radius: 12px; }
+        .mm-score-team-name { font-size: 14px; font-weight: 800; text-align: center; white-space: normal; max-width: 160px; }
+        .mm-score-controls { gap: 8px; }
+        .mm-score-num { width: 52px; height: 52px; font-size: 28px; border-radius: 14px; }
+        .mm-score-btn { width: 42px; height: 42px; border-radius: 12px; }
+        .mm-score-dash-wrap { width: 60px; padding: 0; }
+        .mm-score-dash { width: 100%; height: 2px; }
+        .mm-winner-badge, .mm-draw-badge { font-size: 13px; padding: 8px 16px; }
 
-        /* Selector de HORA: wraps ocupan ancho completo en móvil */
+        .nm-score-body { padding: 16px 14px 20px !important; }
         .nm-date-row { grid-template-columns: 1fr !important; gap: 14px !important; }
-        .mm-hora-row { justify-content: flex-start; }
-        .mm-hora-seg { width: 56px !important; padding: 10px 18px 10px 6px !important; font-size: 13px !important; }
-        .mm-ampm-btn { padding: 10px 8px !important; font-size: 12px !important; }
-        .mm-jornada-filter-modal { font-size: 13px !important; padding-right: 34px !important; }
+        .mm-hora-row { justify-content: center; gap: 8px; flex-wrap: wrap; }
+        .mm-hora-seg { width: 60px !important; padding: 10px 20px 10px 8px !important; font-size: 14px !important; border-radius: 10px !important; }
+        .mm-hora-colon { font-size: 16px !important; }
+        .mm-ampm-btn { padding: 10px 12px !important; font-size: 13px !important; border-radius: 10px !important; }
+        .mm-jornada-filter-modal { font-size: 14px !important; padding-right: 36px !important; }
+        .mm-match-info { flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 16px; }
 
-        /* Tabs: texto más chico en móvil */
         .mm-tab { font-size: 11px !important; padding: 6px 8px !important; }
         .mm-tab-count { min-width: 16px; height: 14px; font-size: 9px; }
     }
@@ -1083,13 +1242,28 @@ const ManageMatches = () => {
         .nm-date-input { padding: 10px 12px; font-size: 13px; }
         .mm-hora-seg { width: 52px !important; padding: 10px 16px 10px 6px !important; }
         .mm-ampm-btn { padding: 10px 7px !important; }
-        .mm-scoreboard { padding: 14px 6px; gap: 4px; }
-        .mm-score-team { width: 62px; }
-        .mm-score-num { width: 40px; height: 40px; font-size: 22px; }
-        .mm-score-btn { width: 30px; height: 30px; }
+        .mm-scoreboard { padding: 20px 10px; gap: 12px; }
+        .mm-score-logo { width: 42px !important; height: 42px !important; }
+        .mm-score-team-name { font-size: 13px !important; max-width: 140px; }
+        .mm-score-num { width: 46px !important; height: 46px !important; font-size: 24px !important; }
+        .mm-score-btn { width: 38px !important; height: 38px !important; }
+        .mm-score-controls { gap: 6px; }
+        .mm-score-dash-wrap { width: 50px; }
         .mm-preview { padding: 16px 10px; }
         .nm-preview-logo-wrap { width: 56px; height: 56px; }
         .nm-preview-name { font-size: 13px; }
+
+        .data-table tr { padding: 12px 10px; border-radius: 12px; }
+        .data-table td:nth-child(4) { padding: 0 6px !important; }
+        .data-table td:nth-child(4) span { font-size: 16px !important; }
+        .td-team-img { width: 24px !important; height: 24px !important; }
+        .td-team-name { font-size: 12px !important; }
+        .td-actions { gap: 4px; }
+        .mm-star-btn, .result-action-btn, .mm-narrar-btn, .mm-reset-single-btn {
+            padding: 8px 6px !important;
+            font-size: 11px !important;
+        }
+        .btn-delete { padding: 8px !important; }
     }
     .driver-popover{background:#0f172a!important;border:1px solid #ef4444!important;border-radius:12px!important;box-shadow:0 0 20px rgba(239,68,68,0.2),0 8px 32px rgba(0,0,0,0.5)!important;color:#f1f5f9!important}
     .driver-popover .driver-popover-title{color:#ef4444!important;font-weight:800!important}

@@ -58,12 +58,12 @@ const Analytics = () => {
     ];
 
     const navItems = [
-        { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analíticas" },
+        { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
         { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
         { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
         { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
         { type: "dropdown", icon: <Shield size={20} />, label: "Equipos", children: [
-            { path: "/teams/primera", label: "Primera Divisin" },
+            { path: "/teams/primera", label: "Primera División" },
             { path: "/teams/ascenso", label: "Liga de Ascenso" },
             { path: "/teams/femenina", label: "Femenina" },
         ]},
@@ -79,7 +79,7 @@ const Analytics = () => {
         { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
         { path: "/manage-comments", icon: <MessageCircle size={20} />, label: "Gestionar Comentarios" },
         { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
-        { path: "/settings", icon: <Settings size={20} />, label: "Configuracin" },
+        { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
         { path: "/", icon: <Eye size={20} />, label: "Ver Sitio" },
     ];
 
@@ -310,6 +310,7 @@ const Analytics = () => {
             </main>
 
             <style>{`
+                button.nav-item { background: none; border: none; color: var(--text-muted); font-family: inherit; }
                 @keyframes spin { to { transform: rotate(360deg); } }
                 @media (max-width: 768px) {
                     .analytics-stat-grid { grid-template-columns: 1fr !important; }
