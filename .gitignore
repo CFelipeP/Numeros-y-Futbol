@@ -33,3 +33,6 @@ backend/.env
 backup.sql
 uploads_tmp/
 
+# Uploads (se excluyen del repo - se sincronizan por SCP)
+backend/uploads/
+
