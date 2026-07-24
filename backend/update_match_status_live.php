@@ -35,6 +35,15 @@ try {
             $colPJ='partidos_jugados'; $colG='ganados'; $colE='empatados'; $colP='perdidos';
             $colGF='goles_favor'; $colGC='goles_contra'; $colDG=null; $colPTS='puntos';
             break;
+        case 'reservas':
+            $table     = 'partidos_reservas';
+            $colEst    = 'estado';
+            $colLocal  = 'equipo_local';
+            $colVisit  = 'equipo_visitante';
+            $tablaPos  = 'tabla_posiciones_reservas';
+            $colPJ='partidos_jugados'; $colG='ganados'; $colE='empatados'; $colP='perdidos';
+            $colGF='goles_favor'; $colGC='goles_contra'; $colDG=null; $colPTS='puntos';
+            break;
         default: // primera
             $table     = 'partidos';
             $colEst    = 'estado';

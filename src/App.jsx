@@ -22,8 +22,10 @@ import Seleccion from "./Divisiones/Seleccion";
 import SeleccionFemenina from "./Divisiones/SeleccionFemenina";
 import SeleccionSub20 from "./Divisiones/SeleccionSub20";
 import SeleccionSub17 from "./Divisiones/SeleccionSub17";
+import Fedecredito from "./Divisiones/Fedecredito";
 import ManageSeleccion from "./dashboard/ManageSeleccion";
 import ManageTeamsFemenina from "./dashboard/ManageTeamsFemenina";
+import ManageTeamsReservas from "./dashboard/ManageTeamsReservas";
 import ManageSeleccionFemenina from "./dashboard/ManageSeleccionFemenina";
 import ManageSeleccionSub20 from "./dashboard/ManageSeleccionSub20";
 import ManageSeleccionSub17 from "./dashboard/ManageSeleccionSub17";
@@ -46,12 +48,14 @@ import UserProfile from "./pages/UserProfile";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import MaintenanceGuard from "./components/MaintenanceGuard";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
       <VisitTracker />
+      <ErrorBoundary>
       <MaintenanceGuard>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -88,6 +92,7 @@ function App() {
         <Route path="/seleccion-sub20" element={<SeleccionSub20 />} />
         <Route path="/seleccion-sub17" element={<SeleccionSub17 />} />
         <Route path="/femenina" element={<Femenina />} />
+        <Route path="/reservas" element={<Fedecredito />} />
         <Route path="/admin/plantilla" element={
           <ProtectedRoute>
             <PlantillaEquipos />
@@ -184,6 +189,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/teams/reservas"
+          element={
+            <ProtectedRoute>
+              <ManageTeamsReservas />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/users"
@@ -215,6 +228,7 @@ function App() {
 
       </Routes>
       </MaintenanceGuard>
+      </ErrorBoundary>
 
       {/* ==================== SONNER TOASTER ==================== */}
       <Toaster

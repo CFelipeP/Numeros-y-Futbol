@@ -12,6 +12,11 @@ services:
       - DB_NAME=numeros-y-futbol
       - DB_USER=numeros
       - DB_PASS=Info2026/*-
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=alejo.sotomayor0411@gmail.com
+      - SMTP_PASS=edwckmhhfljuzkcj
+      - SMTP_FROM_NAME=Números y Fútbol
     volumes:
       - uploads:/var/www/html/backend/uploads
     restart: unless-stopped
@@ -19,6 +24,7 @@ services:
   db:
     image: mariadb:10.11
     environment:
+      - TZ=America/El_Salvador
       - MARIADB_ROOT_PASSWORD=root2026
       - MARIADB_DATABASE=numeros-y-futbol
       - MARIADB_USER=numeros

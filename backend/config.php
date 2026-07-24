@@ -3,6 +3,7 @@
 mb_internal_encoding('UTF-8');
 mb_http_output('UTF-8');
 ini_set('default_charset', 'UTF-8');
+date_default_timezone_set('America/El_Salvador');
 
 $envFile = __DIR__ . '/.env';
 if (file_exists($envFile)) {

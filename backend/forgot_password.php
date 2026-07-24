@@ -45,13 +45,6 @@ if ($action === "send_code") {
     }
 
     $codigo = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-    $token = bin2hex(random_bytes(32));
-
-    $limpiar = $conn->prepare("DELETE FROM reset_tokens WHERE email=?");
-    $limpiar->execute([$email]);
-
-    $insert = $conn->prepare("INSERT INTO reset_tokens (email, token, codigo, expira_en) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 15 MINUTE))");
-    $insert->execute([$email, $token, $codigo]);
 
     require_once "PHPMailer/src/PHPMailer.php";
     require_once "PHPMailer/src/SMTP.php";
@@ -216,6 +209,13 @@ HTML;
 
         $mail->Body = $html;
         $mail->send();
+
+        $limpiar = $conn->prepare("DELETE FROM reset_tokens WHERE email=?");
+        $limpiar->execute([$email]);
+
+        $insert = $conn->prepare("INSERT INTO reset_tokens (email, token, codigo, expira_en) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 15 MINUTE))");
+        $token = bin2hex(random_bytes(32));
+        $insert->execute([$email, $token, $codigo]);
 
         echo json_enc(["success" => true, "message" => "Codigo enviado correctamente"]);
 

@@ -95,6 +95,7 @@ const Header = () => {
     const divisionesLinks = [
         { href: "/primera", label: "Primera División" },
         { href: "/ascenso", label: "Liga de Ascenso" },
+        { href: "/reservas", label: "Liga Fedecredito" },
     ];
 
     const isDivisionesActive = () => divisionesLinks.some(link => isActive(link.href));

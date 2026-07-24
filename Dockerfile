@@ -8,7 +8,8 @@ RUN npm run build
 FROM php:8.2-apache
 RUN docker-php-ext-install pdo pdo_mysql mysqli \
  && a2enmod rewrite \
- && echo 'default_charset = "UTF-8"' > /usr/local/etc/php/conf.d/charset.ini
+ && echo 'default_charset = "UTF-8"' > /usr/local/etc/php/conf.d/charset.ini \
+ && echo 'date.timezone = "America/El_Salvador"' >> /usr/local/etc/php/conf.d/charset.ini
 
 COPY --from=builder /app/dist /var/www/html
 COPY backend /var/www/html/backend

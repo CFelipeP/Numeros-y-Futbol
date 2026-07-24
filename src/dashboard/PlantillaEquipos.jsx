@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useMemo, memo, useRef } from "react";
+﻿import { useState, useEffect, useCallback, useMemo, memo, useRef } from "react";
+import AdminSidebar from "../components/AdminSidebar";
 import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
@@ -922,49 +923,7 @@ const handlers = useMemo(() => ({ onStats: openStats, onEdit: openEdit, onDelete
 return (
   <div className={"admin-layout" + (sidebarOpen ? " sidebar-closed" : "")}>
     {/* SIDEBAR */}
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <div className="logo-icon">
-          <img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="" />
-        </div>
-        <h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2>
-      </div>
-      <nav className="sidebar-nav">
-        <ul>
-          {navItems.map((item, i) => {
-            if (item.type === "dropdown") {
-              const a = item.children.some(c => location.pathname === c.path);
-              const isSel = item.label === "Selecciones";
-              const isOpen = isSel ? seleccionesOpen : ddOpen;
-              const toggle = isSel ? () => setSeleccionesOpen(!seleccionesOpen) : () => setDdOpen(!ddOpen);
-              return (
-                <li key={i}>
-                  <button className={"nav-item" + (a ? " active" : "")} onClick={toggle} style={{ width: "100%", justifyContent: "space-between" }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 14 }}>{item.icon} {item.label}</span>
-                    <ChevronDown size={16} style={{ transform: isOpen ? "rotate(180deg)" : "", transition: "transform .2s" }} />
-                  </button>
-                  <ul className={"teams-dropdown" + (isOpen ? " dropdown-visible" : "")}>
-                    {item.children.map(c => (
-                      <li key={c.path}>
-                        <Link to={c.path} className={"nav-item nav-subitem" + (location.pathname === c.path ? " active" : "")} onClick={navClick}>{c.label}</Link>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              );
-            }
-            return (
-              <li key={item.path}>
-                <Link to={item.path} className={"nav-item" + (location.pathname === item.path ? " active" : "")} onClick={navClick}>{item.icon} {item.label}</Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-      <div className="sidebar-footer">
-        <button className="nav-item btn-logout-sidebar" onClick={handleLogout}><LogOut size={20} className="nav-icon" /> Cerrar sesion</button>
-      </div>
-    </aside>
+    <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout} />
 
     {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
 

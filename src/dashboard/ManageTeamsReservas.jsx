@@ -1,0 +1,724 @@
+﻿// ========== ManageTeamsReservas.jsx ==========
+import React, { useState, useEffect } from "react";
+import AdminSidebar from "../components/AdminSidebar";
+import { Link, useLocation } from "react-router-dom";
+import "../admin.css";
+import Swal from "sweetalert2";
+import 'animate.css';
+
+import {
+  LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut, Menu,
+  CircleDot, Target, Trophy, ChevronDown, Plus, Pencil, Trash2, Save, X,
+  Goal, Search, User, Swords, Eye as EyeIcon, Star, ArrowRightLeft, UploadCloud, CheckCircle2, Image as ImageIcon, RotateCcw, StarOff, Filter, Zap, MessageCircle, BarChart3
+} from "lucide-react";
+import { apiPostForm } from "../apiHelper";
+import { API_BASE } from "../config";
+
+const API = API_BASE;
+
+const DIVISIONES = [
+  { key: "reservas", label: "Liga Fedecredito" },
+];
+
+const ManageTeamsReservas = () => {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [teamsOpen, setTeamsOpen] = useState(true);
+  const [seleccionesOpen, setSeleccionesOpen] = useState(false);
+    const location = useLocation();
+
+    // Detectar división desde la URL: /teams/primera, /teams/ascenso
+    const pathParts = location.pathname.split("/");
+    const currentDivision = pathParts[2] || "reservas";
+    const divisionLabel = DIVISIONES.find(d => d.key === currentDivision)?.label || "Liga Fedecredito";
+
+    const [teams, setTeams] = useState([]);
+    const [search, setSearch] = useState("");
+    const [loading, setLoading] = useState(true);
+
+    // Si navegas a cualquier /teams/*, abrir el dropdown
+    useEffect(() => {
+        if (location.pathname.startsWith("/teams/")) setTeamsOpen(true);
+    }, [location.pathname]);
+
+    useEffect(() => {
+        if (window.innerWidth <= 1024) {
+            document.body.classList.toggle("sidebar-open-lock", sidebarOpen);
+        }
+        return () => document.body.classList.remove("sidebar-open-lock");
+    }, [sidebarOpen]);
+
+    // Cargar equipos de la división actual
+    useEffect(() => {
+        setLoading(true);
+        fetch(`${API}get_teams_reservas.php?division=${currentDivision}`)
+            .then(res => res.json())
+            .then(data => {
+                setTeams(Array.isArray(data) ? data : []);
+                setLoading(false);
+            })
+            .catch(() => {
+                setTeams([]);
+                setLoading(false);
+            });
+    }, [currentDivision]);
+
+    const filteredTeams = teams.filter(t =>
+        t.nombre?.toLowerCase().includes(search.toLowerCase()) ||
+        t.ciudad?.toLowerCase().includes(search.toLowerCase()) ||
+        t.estadio?.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const [showAdd, setShowAdd] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+
+    const [showEdit, setShowEdit] = useState(false);
+    const [editingTeam, setEditingTeam] = useState(null);
+    const [editSubmitting, setEditSubmitting] = useState(false);
+
+    const [formNombre, setFormNombre] = useState("");
+    const [formCiudad, setFormCiudad] = useState("");
+    const [formEstadio, setFormEstadio] = useState("");
+    const [formLogo, setFormLogo] = useState(null);
+    const [logoPreview, setLogoPreview] = useState(null);
+
+    const [editNombre, setEditNombre] = useState("");
+    const [editCiudad, setEditCiudad] = useState("");
+    const [editEstadio, setEditEstadio] = useState("");
+    const [editLogo, setEditLogo] = useState(null);
+    const [editLogoPreview, setEditLogoPreview] = useState(null);
+
+    const handleLogout = () => {
+        Swal.fire({
+            title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir",
+            confirmButtonColor: "#d33"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.removeItem("user"); localStorage.removeItem("token");
+                Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; });
+            }
+        });
+    };
+
+    const openAdd = () => {
+        setFormNombre(""); setFormCiudad(""); setFormEstadio("");
+        setFormLogo(null); setLogoPreview(null);
+        setShowAdd(true);
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const allowed = ["image/jpeg", "image/png", "image/jpg", "image/webp", "image/svg+xml"];
+        if (!allowed.includes(file.type)) {
+            Swal.fire({ icon: "error", title: "Formato no válido", text: "Solo JPG, PNG, WEBP o SVG", toast: true, position: "top-end", timer: 2000, showConfirmButton: false });
+            return;
+        }
+        setFormLogo(file);
+        setLogoPreview(URL.createObjectURL(file));
+    };
+
+    const addTeam = () => {
+        if (!formNombre.trim()) {
+            Swal.fire({ icon: "info", title: "El nombre es obligatorio", toast: true, position: "top-end", timer: 2000, showConfirmButton: false });
+            return;
+        }
+        setSubmitting(true);
+        const form = new FormData();
+        form.append("nombre", formNombre);
+        form.append("ciudad", formCiudad);
+        form.append("estadio", formEstadio);
+        form.append("division", currentDivision);
+        if (formLogo) form.append("logo", formLogo);
+
+        apiPostForm(`${API}add_team_reservas.php`, form)
+            .then(res => res.json())
+            .then(data => {
+                setSubmitting(false);
+                if (!data.success) { Swal.fire("Error", data.error || "No se pudo crear", "error"); return; }
+                setShowAdd(false);
+                Swal.fire({ icon: "success", title: "Equipo creado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false })
+                    .then(() => window.location.reload());
+            })
+            .catch(() => { setSubmitting(false); Swal.fire("Error", "Error de conexión", "error"); });
+    };
+
+    const openEdit = (team) => {
+        setEditingTeam(team);
+        setEditNombre(team.nombre || "");
+        setEditCiudad(team.ciudad || "");
+        setEditEstadio(team.estadio || "");
+        setEditLogo(null);
+        setEditLogoPreview(team.logo ? `${API}${team.logo}` : null);
+        setShowEdit(true);
+    };
+
+    const handleEditFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const allowed = ["image/jpeg", "image/png", "image/jpg", "image/webp", "image/svg+xml"];
+        if (!allowed.includes(file.type)) {
+            Swal.fire({ icon: "error", title: "Formato no válido", text: "Solo JPG, PNG, WEBP o SVG", toast: true, position: "top-end", timer: 2000, showConfirmButton: false });
+            return;
+        }
+        setEditLogo(file);
+        setEditLogoPreview(URL.createObjectURL(file));
+    };
+
+    const saveEdit = () => {
+        if (!editNombre.trim()) {
+            Swal.fire({ icon: "info", title: "El nombre es obligatorio", toast: true, position: "top-end", timer: 2000, showConfirmButton: false });
+            return;
+        }
+
+        setEditSubmitting(true);
+        const form = new FormData();
+        form.append("id", editingTeam.id);
+        form.append("nombre", editNombre);
+        form.append("ciudad", editCiudad);
+        form.append("estadio", editEstadio);
+        form.append("division", currentDivision);
+        if (editLogo) form.append("logo", editLogo);
+
+        apiPostForm(`${API}update_team_reservas.php`, form)
+            .then(res => res.json())
+            .then(data => {
+                setEditSubmitting(false);
+                if (data.error) {
+                    Swal.fire("Error", data.error, "error");
+                } else {
+                    setShowEdit(false);
+                    Swal.fire({ icon: "success", title: "Equipo actualizado", toast: true, position: "top-end", timer: 1500, showConfirmButton: false })
+                        .then(() => window.location.reload());
+                }
+            })
+            .catch(() => { setEditSubmitting(false); Swal.fire("Error", "Error de conexión", "error"); });
+    };
+
+    const deleteTeam = (id, nombre) => {
+        Swal.fire({
+            title: `¿Eliminar ${nombre}?`,
+            html: `<p style="color:#94a3b8;font-size:14px;margin:0">Se eliminará de <b style="color:#60a5fa">${divisionLabel}</b> y su escudo será borrado del servidor.</p>`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sí, eliminar",
+            cancelButtonText: "Cancelar",
+            confirmButtonColor: "#d33",
+            background: "#0f172a",
+            color: "#e2e8f0",
+            iconColor: "#ef4444"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = new FormData();
+                form.append("id", id);
+                form.append("division", currentDivision);
+
+                apiPostForm(`${API}delete_team_reservas.php`, form)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        Swal.fire("Error", data.error, "error");
+                    } else {
+                        setTeams(prev => prev.filter(t => t.id !== id));
+                        Swal.fire({
+                            icon: "success",
+                            title: `${nombre} eliminado`,
+                            toast: true,
+                            position: "top-end",
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.fire("Error", "Error de conexión", "error");
+                });
+            }
+        });
+    };
+
+    const navItems = [
+      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
+      { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+      { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
+      { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
+      {
+         type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
+         children: [
+           { path: "/teams/primera", label: "Primera División" },
+           { path: "/teams/ascenso", label: "Liga de Ascenso" },
+           { path: "/teams/reservas", label: "Liga Fedecredito" },
+           { path: "/teams/femenina", label: "Femenina" },
+         ]
+      },
+      {
+        type: "dropdown", icon: <Shield size={20} />, label: "Selecciones",
+        children: [
+          { path: "/manage-seleccion", label: "Masculina" },
+          { path: "/manage-seleccion-femenina", label: "Femenina" },
+          { path: "/manage-seleccion-sub20", label: "Sub-20" },
+            { path: "/manage-seleccion-sub17", label: "Sub-17" },
+        ]
+      },
+      { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
+      { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
+      { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
+      { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
+      { path: "/manage-comments", icon: <MessageCircle size={20} />, label: "Gestionar Comentarios" },
+      { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
+      { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
+      { path: "/", icon: <EyeIcon size={20} />, label: "Ver Sitio" },
+    ];
+
+    const inputStyle = {
+        width: '100%', padding: '12px 14px', borderRadius: '10px',
+        border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)',
+        color: '#e2e8f0', fontSize: '14px', outline: 'none', transition: 'all 0.2s',
+        boxSizing: 'border-box',
+    };
+
+    const blueInputStyle = {
+        width: '100%', padding: '12px 14px', borderRadius: '10px',
+        border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)',
+        color: '#e2e8f0', fontSize: '14px', outline: 'none', transition: 'all 0.2s',
+        boxSizing: 'border-box',
+    };
+
+    return (
+        <div className={`admin-layout ${sidebarOpen ? "sidebar-closed" : ""}`}>
+            <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout} />
+
+            <main className="main-content">
+                <header className="top-bar">
+                    <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={24} /></button>
+                    <div className="search-bar">
+                        <input type="text" placeholder="Buscar equipo..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                    </div>
+                </header>
+
+                <div className="content-wrapper">
+                    {/* Header con badge de división */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "1.2rem", flexWrap: "wrap" }}>
+                        <h1 className="admin-title" style={{ margin: 0 }}>Gestionar Equipos</h1>
+                        <span style={{
+                            display: "inline-flex", alignItems: "center", gap: "6px",
+                            padding: "6px 14px", borderRadius: "8px",
+                            background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)",
+                            color: "#60a5fa", fontSize: "13px", fontWeight: 700,
+                        }}>
+                            <Shield size={13} /> {divisionLabel}
+                        </span>
+                    </div>
+
+                    <div className="table-container">
+                        <div className="table-header">
+                            <h2>
+                                Lista de Equipos
+                                {search && (
+                                    <span style={{ fontSize: '13px', fontWeight: '500', color: '#64748b', marginLeft: '10px' }}>
+                                        {filteredTeams.length} resultado{filteredTeams.length !== 1 ? 's' : ''}
+                                    </span>
+                                )}
+                            </h2>
+                            <button className="btn-add" onClick={openAdd}>
+                                <Plus size={18} /> Nuevo Equipo
+                            </button>
+                        </div>
+
+                        {loading ? (
+                            <div style={{ textAlign: "center", padding: "3rem", color: "#64748b" }}>
+                                <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid rgba(255,255,255,0.08)", borderTopColor: "#3b82f6", animation: "tmSpin 0.8s linear infinite", margin: "0 auto 1rem" }} />
+                                <span style={{ fontSize: "0.85rem" }}>Cargando equipos...</span>
+                            </div>
+                        ) : (
+                            <table className="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style={{ width: '60px' }}>Escudo</th>
+                                        <th>Nombre</th>
+                                        <th className="hide-on-mobile">Ciudad</th>
+                                        <th className="hide-on-mobile">Estadio</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredTeams.map((team) => (
+                                        <tr key={team.id}>
+                                            <td>
+                                                {team.logo ? <img
+                                                    src={`${API}${team.logo}`}
+                                                    alt={team.nombre}
+                                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                                    style={{ width: '38px', height: '38px', objectFit: 'contain', borderRadius: '8px', background: '#fff', padding: '2px' }}
+                                                /> : <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#475569' }}>N/A</div>}
+                                            </td>
+                                            <td style={{ fontWeight: '700' }}>{team.nombre}</td>
+                                            <td className="hide-on-mobile" style={{ color: '#94a3b8' }}>{team.ciudad || '—'}</td>
+                                            <td className="hide-on-mobile" style={{ color: '#94a3b8' }}>{team.estadio || '—'}</td>
+                                            <td>
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <button className="team-btn-edit" onClick={() => openEdit(team)} title="Editar equipo">
+                                                        <Save size={14} />
+                                                        <span>Editar</span>
+                                                    </button>
+                                                    <button className="btn-delete" onClick={() => deleteTeam(team.id, team.nombre)} title="Eliminar">
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+
+                        {!loading && filteredTeams.length === 0 && (
+                            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#475569' }}>
+                                <Shield size={40} style={{ margin: '0 auto 0.75rem', display: 'block', opacity: 0.2 }} />
+                                <p style={{ fontWeight: 600, color: '#64748b' }}>
+                                    {search ? 'Sin resultados para "' + search + '"' : 'No hay equipos en ' + divisionLabel}
+                                </p>
+                                <p style={{ fontSize: '13px', marginTop: '4px' }}>
+                                    {search ? 'Intenta con otro término de búsqueda' : 'Agrega tu primer equipo'}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </main>
+
+            {/* MODAL NUEVO EQUIPO */}
+            {showAdd && (
+                <div className="tm-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAdd(false); }}>
+                    <div className="tm-card animate__animated animate__fadeInUp">
+                        <div className="tm-header tm-header-red">
+                            <div>
+                                <h2><Plus size={18} style={{ color: '#ef4444' }} /> Nuevo Equipo</h2>
+                                <p className="tm-division-hint">Se agregará a <b>{divisionLabel}</b></p>
+                            </div>
+                            <button className="tm-close" onClick={() => setShowAdd(false)}><X size={18} /></button>
+                        </div>
+                        <div className="tm-body">
+                            <div className="tm-grid">
+                                <div className="tm-fields">
+                                    <div className="tm-field">
+                                        <label>Nombre del Equipo <span className="tm-required">*</span></label>
+                                        <input type="text" value={formNombre} onChange={(e) => setFormNombre(e.target.value)}
+                                            placeholder="Ej: C.D. Águila" style={inputStyle}
+                                            onFocus={(e) => { e.target.style.borderColor = '#ef4444'; e.target.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.1)'; }}
+                                            onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
+                                        />
+                                    </div>
+                                    <div className="tm-field">
+                                        <label>Ciudad</label>
+                                        <input type="text" value={formCiudad} onChange={(e) => setFormCiudad(e.target.value)}
+                                            placeholder="Ej: San Miguel" style={inputStyle}
+                                            onFocus={(e) => { e.target.style.borderColor = '#ef4444'; e.target.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.1)'; }}
+                                            onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
+                                        />
+                                    </div>
+                                    <div className="tm-field">
+                                        <label>Estadio</label>
+                                        <input type="text" value={formEstadio} onChange={(e) => setFormEstadio(e.target.value)}
+                                            placeholder="Ej: Estadio Juan Francisco Barraza" style={inputStyle}
+                                            onFocus={(e) => { e.target.style.borderColor = '#ef4444'; e.target.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.1)'; }}
+                                            onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="tm-logo-section">
+                                    <div className="tm-logo-preview-wrap">
+                                        {logoPreview ? (
+                                            <img src={logoPreview} alt="Preview" className="tm-logo-preview-img" />
+                                        ) : (
+                                            <div className="tm-logo-preview-empty">
+                                                <ImageIcon size={32} style={{ color: "#1e293b" }} />
+                                                <span style={{ fontSize: '11px', color: '#334155', marginTop: '4px' }}>Sin escudo</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="tm-upload-area">
+                                        <input type="file" id="tm-logo-input" accept="image/jpeg,image/png,image/jpg,image/webp,image/svg+xml" onChange={handleFileChange} />
+                                        <label htmlFor="tm-logo-input" className="tm-upload-label tm-upload-red">
+                                            <UploadCloud size={18} />
+                                            <span>{formLogo ? formLogo.name : "Seleccionar escudo"}</span>
+                                        </label>
+                                        <span className="tm-upload-hint">JPG, PNG, WEBP o SVG</span>
+                                    </div>
+                                    {formLogo && (
+                                        <button className="tm-remove-logo" onClick={() => { setFormLogo(null); setLogoPreview(null); document.getElementById('tm-logo-input').value = ''; }}>
+                                            Quitar escudo
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="tm-footer">
+                            <button className="tm-btn-cancel" onClick={() => setShowAdd(false)}>Cancelar</button>
+                            <button className="tm-btn-save tm-btn-red" onClick={addTeam}
+                                disabled={submitting || !formNombre.trim()}
+                                style={{ opacity: (!formNombre.trim() || submitting) ? 0.35 : 1, cursor: (!formNombre.trim() || submitting) ? 'not-allowed' : 'pointer' }}>
+                                {submitting ? <span className="tm-spin" /> : <><CheckCircle2 size={16} /> Crear Equipo</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL EDITAR EQUIPO */}
+            {showEdit && editingTeam && (
+                <div className="tm-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowEdit(false); }}>
+                    <div className="tm-card animate__animated animate__fadeInUp">
+                        <div className="tm-header tm-header-blue">
+                            <div>
+                                <h2><Save size={18} style={{ color: '#3b82f6' }} /> Editar Equipo</h2>
+                                <p className="tm-division-hint">Editando en <b>{divisionLabel}</b></p>
+                            </div>
+                            <button className="tm-close" onClick={() => setShowEdit(false)}><X size={18} /></button>
+                        </div>
+                        <div className="tm-body">
+                            <div className="tm-grid">
+                                <div className="tm-fields">
+                                    <div className="tm-field">
+                                        <label>Nombre del Equipo <span className="tm-required-blue">*</span></label>
+                                        <input type="text" value={editNombre} onChange={(e) => setEditNombre(e.target.value)}
+                                            style={blueInputStyle}
+                                            onFocus={(e) => { e.target.style.borderColor = '#3b82f6'; e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.1)'; }}
+                                            onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
+                                        />
+                                    </div>
+                                    <div className="tm-field">
+                                        <label>Ciudad</label>
+                                        <input type="text" value={editCiudad} onChange={(e) => setEditCiudad(e.target.value)}
+                                            style={blueInputStyle}
+                                            onFocus={(e) => { e.target.style.borderColor = '#3b82f6'; e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.1)'; }}
+                                            onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
+                                        />
+                                    </div>
+                                    <div className="tm-field">
+                                        <label>Estadio</label>
+                                        <input type="text" value={editEstadio} onChange={(e) => setEditEstadio(e.target.value)}
+                                            style={blueInputStyle}
+                                            onFocus={(e) => { e.target.style.borderColor = '#3b82f6'; e.target.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.1)'; }}
+                                            onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="tm-logo-section">
+                                    <div className="tm-logo-preview-wrap tm-logo-preview-blue">
+                                        {editLogoPreview ? (
+                                            <img src={editLogoPreview} alt="Preview" className="tm-logo-preview-img"
+                                                onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=EQ&background=1e293b&color=475569&size=80&bold=true"; }}
+                                            />
+                                        ) : (
+                                            <div className="tm-logo-preview-empty">
+                                                <ImageIcon size={32} style={{ color: "#1e293b" }} />
+                                                <span style={{ fontSize: '11px', color: '#334155', marginTop: '4px' }}>Sin escudo</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="tm-upload-area">
+                                        <input type="file" id="tm-edit-logo-input" accept="image/jpeg,image/png,image/jpg,image/webp,image/svg+xml" onChange={handleEditFileChange} />
+                                        <label htmlFor="tm-edit-logo-input" className="tm-upload-label tm-upload-blue">
+                                            <UploadCloud size={18} />
+                                            <span>{editLogo ? editLogo.name : "Cambiar escudo"}</span>
+                                        </label>
+                                        <span className="tm-upload-hint">JPG, PNG, WEBP o SVG</span>
+                                    </div>
+                                    {editLogo && (
+                                        <button className="tm-remove-logo tm-remove-blue" onClick={() => {
+                                            setEditLogo(null);
+                                            setEditLogoPreview(editingTeam.logo ? `${API}${editingTeam.logo}` : null);
+                                            document.getElementById('tm-edit-logo-input').value = '';
+                                        }}>
+                                            Restaurar original
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="tm-footer">
+                            <button className="tm-btn-cancel" onClick={() => setShowEdit(false)}>Cancelar</button>
+                            <button className="tm-btn-save tm-btn-blue" onClick={saveEdit}
+                                disabled={editSubmitting || !editNombre.trim()}
+                                style={{ opacity: (!editNombre.trim() || editSubmitting) ? 0.35 : 1, cursor: (!editNombre.trim() || editSubmitting) ? 'not-allowed' : 'pointer' }}>
+                                {editSubmitting ? <span className="tm-spin" /> : <><Save size={16} /> Guardar Cambios</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <style>{`
+                .tm-division-hint {
+                    margin: 4px 0 0 0;
+                    font-size: 12px;
+                    color: #475569;
+                    font-weight: 500;
+                }
+                .tm-division-hint b {
+                    color: #64748b;
+                }
+                .team-btn-edit {
+                    display: inline-flex; align-items: center; gap: 5px;
+                    padding: 6px 14px; border-radius: 6px; font-size: 12px;
+                    font-weight: 700; cursor: pointer; transition: all 0.2s;
+                    border: 1px solid rgba(59,130,246,0.25);
+                    background: rgba(59,130,246,0.1);
+                    color: #60a5fa; white-space: nowrap;
+                }
+                .team-btn-edit:hover {
+                    background: rgba(59,130,246,0.2);
+                    border-color: rgba(59,130,246,0.4);
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 14px rgba(59,130,246,0.2);
+                }
+                .tm-overlay {
+                    position: fixed; inset: 0; background: rgba(2,6,15,0.82);
+                    backdrop-filter: blur(10px); display: flex;
+                    justify-content: center; align-items: center; z-index: 1000;
+                }
+                .tm-card {
+                    background: #0b1120; border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 18px; width: 560px; max-width: 95vw;
+                    max-height: 92vh; display: flex; flex-direction: column;
+                    box-shadow: 0 25px 60px -12px rgba(0,0,0,0.7);
+                    overflow: hidden;
+                }
+                .tm-header {
+                    display: flex; justify-content: space-between; align-items: center;
+                    padding: 18px 24px; border-bottom: 1px solid rgba(255,255,255,0.06);
+                    background: rgba(255,255,255,0.015);
+                }
+                .tm-header h2 {
+                    margin: 0; font-size: 1.05rem; color: #f1f5f9;
+                    display: flex; align-items: center; gap: 8px;
+                }
+                .tm-header-red { border-bottom-color: rgba(239,68,68,0.08); background: rgba(239,68,68,0.02); }
+                .tm-header-blue { border-bottom-color: rgba(59,130,246,0.08); background: rgba(59,130,246,0.02); }
+                .tm-close {
+                    background: none; border: 1px solid rgba(255,255,255,0.1);
+                    border-radius: 8px; cursor: pointer; display: flex;
+                    align-items: center; justify-content: center;
+                    width: 32px; height: 32px; color: #64748b; transition: all 0.25s;
+                }
+                .tm-close:hover {
+                    background: rgba(239,68,68,0.15); color: #ef4444;
+                    border-color: rgba(239,68,68,0.3); transform: rotate(90deg);
+                }
+                .tm-body { padding: 24px; overflow-y: auto; flex: 1; }
+                .tm-body::-webkit-scrollbar { width: 5px; }
+                .tm-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+                .tm-grid { display: grid; grid-template-columns: 1fr 160px; gap: 24px; }
+                .tm-fields { display: grid; gap: 16px; }
+                .tm-field label { display: block; margin-bottom: 7px; font-weight: 600; color: #94a3b8; font-size: 13px; }
+                .tm-required { color: #ef4444; }
+                .tm-required-blue { color: #3b82f6; }
+                .tm-field input::placeholder { color: #334155; }
+                .tm-logo-section { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+                .tm-logo-preview-wrap {
+                    width: 120px; height: 120px; border-radius: 14px;
+                    background: rgba(255,255,255,0.02); border: 2px dashed rgba(255,255,255,0.06);
+                    display: flex; align-items: center; justify-content: center;
+                    overflow: hidden; transition: all 0.3s;
+                }
+                .tm-logo-preview-wrap:has(img) { border-style: solid; background: rgba(239,68,68,0.04); }
+                .tm-logo-preview-wrap.tm-logo-preview-blue:has(img) { border-color: rgba(59,130,246,0.2); background: rgba(59,130,246,0.04); }
+                .tm-logo-preview-img { width: 100%; height: 100%; object-fit: contain; padding: 12px; }
+                .tm-logo-preview-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+                .tm-upload-area { width: 100%; }
+                .tm-upload-area input[type="file"] { position: absolute; opacity: 0; width: 0; height: 0; }
+                .tm-upload-label {
+                    display: flex; align-items: center; gap: 8px;
+                    padding: 10px 12px; border-radius: 8px;
+                    border: 1px dashed rgba(255,255,255,0.1);
+                    background: rgba(255,255,255,0.03);
+                    font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+                }
+                .tm-upload-label span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #94a3b8; font-weight: 500; }
+                .tm-upload-red { border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.04); color: #f87171; }
+                .tm-upload-red:hover { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.08); box-shadow: 0 0 16px rgba(239,68,68,0.1); }
+                .tm-upload-blue { border-color: rgba(59,130,246,0.2); background: rgba(59,130,246,0.04); color: #60a5fa; }
+                .tm-upload-blue:hover { border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.08); box-shadow: 0 0 16px rgba(59,130,246,0.1); }
+                .tm-upload-hint { display: block; text-align: center; font-size: 11px; color: #334155; margin-top: 4px; }
+                .tm-remove-logo {
+                    padding: 5px 12px; border-radius: 6px; font-size: 11px;
+                    font-weight: 600; color: #475569; background: transparent;
+                    border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: all 0.2s;
+                }
+                .tm-remove-logo:hover { color: #f87171; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.06); }
+                .tm-remove-blue:hover { color: #60a5fa; border-color: rgba(59,130,246,0.2); background: rgba(59,130,246,0.06); }
+                .tm-footer {
+                    display: flex; justify-content: flex-end; gap: 10px;
+                    padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.06);
+                    background: rgba(255,255,255,0.015);
+                }
+                .tm-btn-cancel {
+                    padding: 10px 22px; border: 1px solid rgba(255,255,255,0.1);
+                    border-radius: 8px; background: transparent; color: #64748b;
+                    font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;
+                }
+                .tm-btn-cancel:hover { background: rgba(255,255,255,0.04); color: #94a3b8; }
+                .tm-btn-save {
+                    display: inline-flex; align-items: center; gap: 7px;
+                    padding: 10px 24px; border-radius: 8px; border: none;
+                    color: #fff; font-weight: 700; font-size: 14px;
+                    cursor: pointer; transition: all 0.2s;
+                }
+                .tm-btn-red {
+                    background: linear-gradient(135deg, #dc2626, #b91c1c);
+                    box-shadow: 0 4px 16px rgba(220,38,38,0.3);
+                }
+                .tm-btn-red:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(220,38,38,0.4); }
+                .tm-btn-blue {
+                    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+                    box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+                }
+                .tm-btn-blue:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(37,99,235,0.4); }
+                .tm-spin {
+                    display: inline-block; width: 18px; height: 18px;
+                    border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff;
+                    border-radius: 50%; animation: tmSpin 0.6s linear infinite;
+                }
+                @keyframes tmSpin { to { transform: rotate(360deg); } }
+                button.nav-item {
+                    background: none;
+                    border: none;
+                    color: var(--text-muted);
+                    font-family: inherit;
+                }
+                .hide-on-mobile { display: table-cell; }
+                @media (max-width: 768px) {
+                    .hide-on-mobile { display: none !important; }
+                    .tm-card { width: 100%; max-width: 100vw; max-height: 100dvh; border-radius: 0; }
+                    .tm-grid { grid-template-columns: 1fr; }
+                    .tm-logo-section { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+                    .tm-logo-preview-wrap { width: 100px; height: 100px; }
+                    .tm-upload-area { flex: 1; min-width: 140px; }
+                    .tm-footer { flex-direction: column-reverse; }
+                    .tm-btn-cancel, .tm-btn-save { width: 100%; text-align: center; justify-content: center; }
+                    .team-btn-edit span { display: none; }
+                }
+                @media (max-width: 480px) {
+                    .tm-body { padding: 16px; }
+                    .tm-header { padding: 14px 16px; }
+                    .tm-header h2 { font-size: 0.95rem; }
+                    .tm-footer { padding: 12px 16px; }
+                    .tm-logo-preview-wrap { width: 80px; height: 80px; }
+                    .tm-field label { font-size: 12px; }
+                    .data-table { min-width: 350px !important; }
+                    .data-table th, .data-table td { padding: 8px 6px; font-size: 12px; }
+                }
+                @media (max-width: 375px) {
+                    .tm-body { padding: 14px 12px; }
+                    .tm-header { padding: 12px 14px; }
+                    .tm-logo-preview-wrap { width: 70px; height: 70px; }
+                    .tm-logo-preview-img { padding: 8px; }
+                    .tm-upload-label { padding: 8px 10px; font-size: 11px; }
+                    .data-table { min-width: 320px !important; }
+                }
+            `}</style>
+        </div>
+    );
+};
+
+export default ManageTeamsReservas;

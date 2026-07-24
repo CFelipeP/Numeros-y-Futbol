@@ -31,7 +31,7 @@ if (!empty($body['email'])) {
     $fields[] = "email = ?";
     $params[]  = trim(strtolower($body['email']));
 }
-if (!empty($body['password'])) {
+if (!empty($body['new_password'])) {
     $action = $body['action'] ?? '';
     if ($action === 'change_password') {
         $currentPassword = $body['current_password'] ?? '';
@@ -44,7 +44,7 @@ if (!empty($body['password'])) {
         }
     }
     $fields[] = "password = ?";
-    $params[]  = password_hash(trim($body['password']), PASSWORD_BCRYPT);
+    $params[]  = password_hash(trim($body['new_password']), PASSWORD_BCRYPT);
 }
 
 if (empty($fields)) {

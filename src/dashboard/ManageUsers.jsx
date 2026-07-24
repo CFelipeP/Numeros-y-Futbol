@@ -1,5 +1,6 @@
-// ========== ManageUsers.jsx ==========
+﻿// ========== ManageUsers.jsx ==========
 import React, { useState, useEffect } from "react";
+import AdminSidebar from "../components/AdminSidebar";
 import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
@@ -22,7 +23,7 @@ const ManageUsers = () => {
   const location = useLocation();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const currentUser = JSON.parse(localStorage.getItem("user"));
+  const currentUser = (() => { try { return JSON.parse(localStorage.getItem("user") || "null"); } catch { return null; } })();
 
   useEffect(() => {
     if (location.pathname.startsWith("/teams/")) setTeamsOpen(true);
@@ -289,74 +290,7 @@ const ManageUsers = () => {
 
   return (
     <div className={`admin-layout ${sidebarOpen ? "sidebar-closed" : ""}`}>
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <div className="logo-icon">
-            <img src="/numeros-y-futbol.svg" alt="Logo Números y Fútbol" />
-          </div>
-          <h2 className="sidebar-title">
-            Números y Fútbol <span className="accent-text">Admin</span>
-          </h2>
-        </div>
-
-        <nav className="sidebar-nav">
-          <ul>
-            {navItems.map((item, idx) => {
-              if (item.type === "dropdown") {
-                return (
-                  <li key={idx}>
-                    <button
-                      className="nav-item"
-                      onClick={() => { const s = item.label === "Selecciones"; s ? setSeleccionesOpen(!seleccionesOpen) : setTeamsOpen(!teamsOpen); }}
-                      style={{ width: "100%", justifyContent: "space-between" }}
-                    >
-                      <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                        {item.icon} {item.label}
-                      </span>
-                      <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
-                    </button>
-                    <ul style={{
-                      maxHeight: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "400px" : "0",
-                      opacity: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "1" : "0",
-                      overflow: "hidden",
-                      transition: "max-height 0.3s ease, opacity 0.2s ease",
-                      listStyle: "none", padding: (item.label === "Selecciones" ? seleccionesOpen : teamsOpen) ? "2px 0 4px 0" : "0", margin: 0,
-                    }}>
-                      {item.children.map(child => (
-                        <li key={child.path}>
-                          <Link
-                            to={child.path}
-                            className={`nav-item${location.pathname === child.path ? " active" : ""}`}
-                            style={{ paddingLeft: "48px", fontSize: "13.5px" }}
-                          >
-                            {child.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                );
-              }
-              return (
-                <li key={item.path}>
-                  <Link
-                    to={item.path}
-                    className={`nav-item${location.pathname === item.path ? " active" : ""}`}
-                  >
-                    {item.icon} {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
-        <div className="sidebar-footer">
-          <button className="nav-item btn-logout-sidebar" onClick={handleLogout}>
-            <LogOut size={20} className="nav-icon" /> Cerrar sesión
-          </button>
-        </div>
-      </aside>
+      <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout} />
 
       <main className="main-content">
         <header className="top-bar">

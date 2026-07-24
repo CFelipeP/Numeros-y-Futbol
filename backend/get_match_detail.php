@@ -73,6 +73,16 @@ try {
             $selectFormacion = 'el.formacion AS local_formacion, ev.formacion AS visitante_formacion';
             $selectPosiciones = 'COALESCE(pos_x, posicion_x) AS pos_x, COALESCE(pos_y, posicion_y) AS pos_y';
             break;
+        case 'reservas':
+            $tPartidos  = 'partidos_reservas';
+            $tEquipos   = 'equipos_reservas';
+            $tJugadores = 'jugadores';
+            $colLocal   = 'equipo_local';
+            $colVisit   = 'equipo_visitante';
+            $colEstado  = 'estado';
+            $selectFormacion = 'el.formacion AS local_formacion, ev.formacion AS visitante_formacion';
+            $selectPosiciones = 'COALESCE(pos_x, posicion_x) AS pos_x, COALESCE(pos_y, posicion_y) AS pos_y';
+            break;
         default:
             $tPartidos  = 'partidos';
             $tEquipos   = 'equipos';

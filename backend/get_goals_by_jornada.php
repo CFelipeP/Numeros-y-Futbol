@@ -14,9 +14,26 @@ if ($division === 'primera') {
 } elseif ($division === 'femenina') {
     $tablaPartidos = 'partidos_femenina';
     $colEstado = 'estado';
+} elseif ($division === 'reservas') {
+    $tablaPartidos = 'partidos_reservas';
+    $colEstado = 'estado';
 } else {
     $sufijo = ($division === 'segunda' || $division === 'ascenso') ? '_segunda' : '_tercera';
     $tablaPartidos = 'partidos' . $sufijo;
+    $colEstado = 'status';
+}
+
+if ($division === 'primera') {
+    $tablaPartidos = 'partidos';
+    $colEstado = 'estado';
+} elseif ($division === 'femenina') {
+    $tablaPartidos = 'partidos_femenina';
+    $colEstado = 'estado';
+} elseif ($division === 'reservas') {
+    $tablaPartidos = 'partidos_reservas';
+    $colEstado = 'estado';
+} else {
+    $tablaPartidos = 'partidos_ascenso';
     $colEstado = 'status';
 }
 

@@ -268,9 +268,12 @@ $mysqli->query("CREATE TABLE IF NOT EXISTS `partidos_femenina` (
     `jugado` TINYINT(1) DEFAULT 0,
     `fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `estado` VARCHAR(20) DEFAULT 'Pendiente',
-    `featured` TINYINT(1) NOT NULL DEFAULT 0,
+    `featured`        TINYINT(1) NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+try { $mysqli->query("ALTER TABLE partidos_femenina ADD COLUMN `jornada` INT DEFAULT NULL AFTER `fecha`"); } catch (Exception $e) {}
+try { $mysqli->query("ALTER TABLE partidos_femenina ADD COLUMN `hora` TIME DEFAULT NULL AFTER `jornada`"); } catch (Exception $e) {}
 
 $mysqli->query("CREATE TABLE IF NOT EXISTS `tabla_posiciones_femenina` (
     `id` INT NOT NULL AUTO_INCREMENT,
@@ -573,6 +576,71 @@ $mysqli->query("CREATE TABLE IF NOT EXISTS `tabla_posiciones` (
     UNIQUE KEY `equipo_id` (`equipo_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+// --- Tablas Liga Fedecredito (Reservas) ---
+$mysqli->query("CREATE TABLE IF NOT EXISTS `partidos_reservas` (
+    `id`              INT NOT NULL AUTO_INCREMENT,
+    `equipo_local`    INT DEFAULT NULL,
+    `equipo_visitante` INT DEFAULT NULL,
+    `goles_local`     INT DEFAULT 0,
+    `goles_visitante` INT DEFAULT 0,
+    `fecha`           DATE DEFAULT NULL,
+    `hora`            TIME DEFAULT NULL,
+    `jornada`         INT DEFAULT NULL,
+    `estado`          VARCHAR(20) DEFAULT 'Pendiente',
+    `featured`        TINYINT(1) NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `tabla_posiciones_reservas` (
+    `id`                INT NOT NULL AUTO_INCREMENT,
+    `equipo_id`         INT NOT NULL,
+    `partidos_jugados`  INT NOT NULL DEFAULT 0,
+    `ganados`           INT NOT NULL DEFAULT 0,
+    `empatados`         INT NOT NULL DEFAULT 0,
+    `perdidos`          INT NOT NULL DEFAULT 0,
+    `goles_favor`       INT NOT NULL DEFAULT 0,
+    `goles_contra`      INT NOT NULL DEFAULT 0,
+    `puntos`            INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `equipo_id` (`equipo_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `equipos_reservas` (
+    `id`         INT NOT NULL AUTO_INCREMENT,
+    `nombre`     VARCHAR(100) NOT NULL,
+    `ciudad`     VARCHAR(100) DEFAULT NULL,
+    `estadio`    VARCHAR(150) DEFAULT NULL,
+    `logo`       VARCHAR(255) DEFAULT NULL,
+    `formacion`  VARCHAR(10) DEFAULT '4-4-2',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+try {
+    $count = $mysqli->query("SELECT COUNT(*) FROM equipos_reservas");
+    if ((int)$count->fetch_row()[0] === 0) {
+        $equiposReservas = [
+            ['L.A. Firpo', 'Usulután'],
+            ['Alianza F.C.', 'San Salvador'],
+            ['C.D. Águila', 'San Miguel'],
+            ['C.D. Municipal Limeño', 'Santa Rosa de Lima'],
+            ['Inter Tecla', 'Santa Tecla'],
+            ['A.D. Isidro Metapán', 'Metapán'],
+            ['C.D. Cacahuatique', 'Ciudad Barrios'],
+            ['C.D. Platense', 'Zacatecoluca'],
+            ['C.D. Fuerte San Francisco', 'San Francisco Gotera'],
+            ['C.D. FAS', 'Santa Ana'],
+            ['CD ATL.BALBOA', 'La Unión'],
+            ['CD Inca Aruba', 'Entre Ríos'],
+        ];
+        $stmt = $mysqli->prepare("INSERT INTO equipos_reservas (nombre, ciudad) VALUES (?, ?)");
+        foreach ($equiposReservas as $eq) {
+            $stmt->bind_param('ss', $eq[0], $eq[1]);
+            $stmt->execute();
+        }
+        $stmt->close();
+    }
+} catch (Exception $e) {}
+
 $mysqli->query("CREATE TABLE IF NOT EXISTS `jugadores` (
     `id`              INT NOT NULL AUTO_INCREMENT,
     `equipo_id`       INT NOT NULL,
@@ -742,6 +810,19 @@ $mysqli->query("CREATE TABLE IF NOT EXISTS `reset_tokens` (
 try {
     $check = $mysqli->query("SELECT COUNT(*) FROM usuarios WHERE email = 'admin@numerosyfutbol.com'");
     if ((int)$check->fetch_row()[0] === 0) {
-        $mysqli->query("INSERT INTO usuarios (nombre, apodo, email, password, rol) VALUES ('Administrador', 'admin', 'admin@numerosyfutbol.com', '" . password_hash('Admin2026', PASSWORD_DEFAULT) . "', 'admin')");
+        $adminPass = env('ADMIN_DEFAULT_PASS', '');
+        if ($adminPass === '') {
+            $adminPass = substr(bin2hex(random_bytes(12)), 0, 16);
+            error_log('[NYF] Admin creado con contraseña: ' . $adminPass . ' (cámbiala inmediatamente)');
+        }
+        $hash = password_hash($adminPass, PASSWORD_DEFAULT);
+        $stmt = $mysqli->prepare("INSERT INTO usuarios (nombre, apodo, email, password, rol) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param('sssss', $nombre, $apodo, $email, $hash, $rol);
+        $nombre = 'Administrador';
+        $apodo = 'admin';
+        $email = 'admin@numerosyfutbol.com';
+        $rol = 'admin';
+        $stmt->execute();
+        $stmt->close();
     }
 } catch (Exception $e) {}

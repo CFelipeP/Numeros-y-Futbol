@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
+import AdminSidebar from "../components/AdminSidebar";
 import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
@@ -563,31 +564,7 @@ export default function ManageMatchComments() {
 
   return (
     <div className={`admin-layout ${sidebarOpen?"sidebar-closed":""}`}>
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <div className="logo-icon"><img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="Logo"/></div>
-          <h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2>
-        </div>
-        <nav className="sidebar-nav"><ul>
-          {SIDEBAR_ITEMS.map((item,idx)=>{
-            if(item.type==="dropdown") return (
-              <li key={idx}>
-                <button className="nav-item" onClick={()=>{const s=item.label==="Selecciones";s?setSeleccionesOpen(!seleccionesOpen):setTeamsOpen(!teamsOpen);}} style={{width:"100%",justifyContent:"space-between"}}>
-                  <span style={{display:"flex",alignItems:"center",gap:14}}>{item.icon} {item.label}</span>
-                  <ChevronDown size={16} style={{transition:"transform .25s",transform:(item.label==="Selecciones"?seleccionesOpen:teamsOpen)?"rotate(180deg)":"rotate(0deg)",opacity:.4}}/>
-                </button>
-                <ul style={{maxHeight:(item.label==="Selecciones"?seleccionesOpen:teamsOpen)?"400px":"0",opacity:(item.label==="Selecciones"?seleccionesOpen:teamsOpen)?"1":"0",overflow:"hidden",transition:"max-height .3s,opacity .2s",listStyle:"none",padding:(item.label==="Selecciones"?seleccionesOpen:teamsOpen)?"2px 0 4px":"0",margin:0}}>
-                  {item.children.map(c=>(<li key={c.path}><Link to={c.path} className={`nav-item${location.pathname===c.path?" active":""}`} style={{paddingLeft:48,fontSize:"13.5px"}}>{c.label}</Link></li>))}
-                </ul>
-              </li>
-            );
-            return (<li key={item.path}><Link to={item.path} className={`nav-item${location.pathname===item.path?" active":""}`}>{item.icon} {item.label}</Link></li>);
-          })}
-        </ul></nav>
-        <div className="sidebar-footer">
-          <button className="nav-item btn-logout-sidebar" onClick={handleLogout}><LogOut size={20}/> Cerrar sesión</button>
-        </div>
-      </aside>
+      <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout} />
 
       <main className="main-content">
         <header className="top-bar">
