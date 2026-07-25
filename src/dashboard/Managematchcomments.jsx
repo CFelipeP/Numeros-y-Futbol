@@ -162,8 +162,12 @@ export default function ManageMatchComments() {
   const [seleccionesOpen, setSeleccionesOpen] = useState(false);
   const location = useLocation();
 
-  const [selectedDiv,     setSelectedDiv]     = useState("primera");
-  const [selectedPartido, setSelectedPartido] = useState("");
+  const params = new URLSearchParams(location.search);
+  const urlDivision = params.get("division") || "primera";
+  const urlPartido   = params.get("partido") || "";
+
+  const [selectedDiv,     setSelectedDiv]     = useState(urlDivision);
+  const [selectedPartido, setSelectedPartido] = useState(urlPartido);
   const [matches,         setMatches]         = useState([]);
   const [loadingMatches,  setLoadingMatches]  = useState(true);
 
@@ -260,7 +264,7 @@ export default function ManageMatchComments() {
   const fetchMatches = async () => {
     setLoadingMatches(true);
     try {
-      const suf = selectedDiv==="ascenso"?"_ascenso":selectedDiv==="femenina"?"_femenina":"";
+      const suf = selectedDiv==="ascenso"?"_ascenso":selectedDiv==="femenina"?"_femenina":selectedDiv==="reservas"?"_reservas":selectedDiv==="burgerking"?"_burgerking":"";
       const res  = await apiPost(`${API}get_matches${suf}.php`);
       const data = await res.json();
       setMatches(Array.isArray(data) ? data : []);
@@ -583,7 +587,7 @@ export default function ManageMatchComments() {
               <div className="table-container" style={{padding:18}}>
                 <p style={{margin:"0 0 10px",fontSize:12,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1}}>División</p>
                 <div style={{display:"flex",gap:8}}>
-                  {["primera","ascenso","femenina"].map(d=>(
+                  {["primera","ascenso","femenina","reservas","burgerking"].map(d=>(
                     <button key={d} onClick={()=>{clearTimerData();setSelectedDiv(d);setSelectedPartido("");setPartido(null);setComentarios([]);setCronActivo(false);setCronSegundos(0);setSemitiem(1);}}
                       style={{flex:1,padding:"8px 4px",border:`1px solid ${selectedDiv===d?"var(--accent-red)":"var(--border)"}`,borderRadius:8,background:selectedDiv===d?"rgba(239,68,68,0.15)":"transparent",color:selectedDiv===d?"var(--accent-red)":"var(--text-muted)",fontWeight:700,fontSize:12,cursor:"pointer",textTransform:"capitalize",transition:"all .2s",fontFamily:"inherit"}}>
                       {d.charAt(0).toUpperCase()+d.slice(1)}

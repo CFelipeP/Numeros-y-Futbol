@@ -11,147 +11,56 @@ $conn = $mysqli;
 $id = (int)($_POST['match_id'] ?? 0);
 $g1 = $_POST['goles_local'] ?? null;
 $g2 = $_POST['goles_visitante'] ?? null;
+$fecha = $_POST['fecha'] ?? null;
+$hora = $_POST['hora'] ?? null;
+$jornada = $_POST['jornada'] ?? null;
 
 if (!$id) {
     echo json_enc(["error" => "ID requerido"]);
     exit;
 }
 
-// ====================== MODO RESET ======================
 if ((string)$g1 === '-1') {
     $stmt = $conn->prepare("SELECT equipo_local, equipo_visitante, goles_local, goles_visitante, estado FROM partidos_femenina WHERE id=?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $res = $stmt->get_result();
-    $m = $res->fetch_assoc();
-    $stmt->close();
-
+    $stmt->bind_param("i", $id); $stmt->execute(); $res = $stmt->get_result(); $m = $res->fetch_assoc(); $stmt->close();
     if ($m && $m['estado'] === 'Finalizado' && $m['goles_local'] !== null) {
-        $l = (int)$m['equipo_local'];
-        $v = (int)$m['equipo_visitante'];
-        $gl = (int)$m['goles_local'];
-        $gv = (int)$m['goles_visitante'];
-
-        $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET partidos_jugados = GREATEST(partidos_jugados - 1, 0) WHERE equipo_id IN (?, ?)");
-        $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
-
-        $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET goles_favor = GREATEST(goles_favor - ?, 0), goles_contra = GREATEST(goles_contra - ?, 0) WHERE equipo_id = ?");
-        $stmt->bind_param("iii", $gl, $gv, $l); $stmt->execute(); $stmt->close();
-
-        $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET goles_favor = GREATEST(goles_favor - ?, 0), goles_contra = GREATEST(goles_contra - ?, 0) WHERE equipo_id = ?");
-        $stmt->bind_param("iii", $gv, $gl, $v); $stmt->execute(); $stmt->close();
-
-        if ($gl > $gv) {
-            $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET ganados = GREATEST(ganados - 1, 0), puntos = GREATEST(puntos - 3, 0) WHERE equipo_id = ?");
-            $stmt->bind_param("i", $l); $stmt->execute(); $stmt->close();
-            $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET perdidos = GREATEST(perdidos - 1, 0) WHERE equipo_id = ?");
-            $stmt->bind_param("i", $v); $stmt->execute(); $stmt->close();
-        } elseif ($gl < $gv) {
-            $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET ganados = GREATEST(ganados - 1, 0), puntos = GREATEST(puntos - 3, 0) WHERE equipo_id = ?");
-            $stmt->bind_param("i", $v); $stmt->execute(); $stmt->close();
-            $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET perdidos = GREATEST(perdidos - 1, 0) WHERE equipo_id = ?");
-            $stmt->bind_param("i", $l); $stmt->execute(); $stmt->close();
-        } else {
-            $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET empatados = GREATEST(empatados - 1, 0), puntos = GREATEST(puntos - 1, 0) WHERE equipo_id IN (?, ?)");
-            $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
-        }
+        $l=(int)$m['equipo_local'];$v=(int)$m['equipo_visitante'];$gl=(int)$m['goles_local'];$gv=(int)$m['goles_visitante'];
+        $conn->prepare("UPDATE tabla_posiciones_femenina SET partidos_jugados=GREATEST(partidos_jugados-1,0) WHERE equipo_id IN (?,?)")->execute([$l,$v]);
+        $conn->prepare("UPDATE tabla_posiciones_femenina SET goles_favor=GREATEST(goles_favor-?,0),goles_contra=GREATEST(goles_contra-?,0) WHERE equipo_id=?")->execute([$gl,$gv,$l]);
+        $conn->prepare("UPDATE tabla_posiciones_femenina SET goles_favor=GREATEST(goles_favor-?,0),goles_contra=GREATEST(goles_contra-?,0) WHERE equipo_id=?")->execute([$gv,$gl,$v]);
+        if($gl>$gv){$conn->prepare("UPDATE tabla_posiciones_femenina SET ganados=GREATEST(ganados-1,0),puntos=GREATEST(puntos-3,0) WHERE equipo_id=?")->execute([$l]);$conn->prepare("UPDATE tabla_posiciones_femenina SET perdidos=GREATEST(perdidos-1,0) WHERE equipo_id=?")->execute([$v]);}
+        elseif($gl<$gv){$conn->prepare("UPDATE tabla_posiciones_femenina SET ganados=GREATEST(ganados-1,0),puntos=GREATEST(puntos-3,0) WHERE equipo_id=?")->execute([$v]);$conn->prepare("UPDATE tabla_posiciones_femenina SET perdidos=GREATEST(perdidos-1,0) WHERE equipo_id=?")->execute([$l]);}
+        else{$conn->prepare("UPDATE tabla_posiciones_femenina SET empatados=GREATEST(empatados-1,0),puntos=GREATEST(puntos-1,0) WHERE equipo_id IN (?,?)")->execute([$l,$v]);}
     }
-
-    $stmt = $conn->prepare("UPDATE partidos_femenina SET goles_local = NULL, goles_visitante = NULL, estado = 'Pendiente' WHERE id = ?");
-    $stmt->bind_param("i", $id); $stmt->execute(); $stmt->close();
-
-    echo json_enc(["success" => true, "reset" => true]);
-    $conn->close();
-    exit;
+    $conn->prepare("UPDATE partidos_femenina SET goles_local=NULL,goles_visitante=NULL,estado='Pendiente' WHERE id=?")->execute([$id]);
+    echo json_enc(["success"=>true,"reset"=>true]);$conn->close();exit;
 }
 
-// ====================== MODO NORMAL ======================
 if ($g1 === "" || $g2 === "" || $g1 === null || $g2 === null) {
     echo json_enc(["error" => "Goles inválidos"]);
     exit;
 }
 
-$g1 = (int)$g1;
-$g2 = (int)$g2;
-
-$conn->begin_transaction();
-
-try {
-$stmt = $conn->prepare("SELECT equipo_local, equipo_visitante, goles_local, goles_visitante, estado FROM partidos_femenina WHERE id=?");
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$res = $stmt->get_result();
-$m = $res->fetch_assoc();
-$stmt->close();
-
-if (!$m) {
-    echo json_enc(["error" => "Partido no encontrado"]);
-    exit;
+$g1=(int)$g1;$g2=(int)$g2;
+$stmt=$conn->prepare("SELECT equipo_local,equipo_visitante,goles_local,goles_visitante,estado FROM partidos_femenina WHERE id=?");$stmt->bind_param("i",$id);$stmt->execute();$res=$stmt->get_result();$m=$res->fetch_assoc();$stmt->close();
+if(!$m){echo json_enc(["error"=>"Partido no encontrado"]);exit;}
+$l=(int)$m['equipo_local'];$v=(int)$m['equipo_visitante'];$old_gl=$m['goles_local']!==null?(int)$m['goles_local']:null;$old_gv=$m['goles_visitante']!==null?(int)$m['goles_visitante']:0;$wasFinal=strtolower(trim($m['estado']??''))==='finalizado';
+if($wasFinal&&$old_gl!==null){
+    $conn->prepare("UPDATE tabla_posiciones_femenina SET partidos_jugados=GREATEST(partidos_jugados-1,0) WHERE equipo_id IN (?,?)")->execute([$l,$v]);
+    $conn->prepare("UPDATE tabla_posiciones_femenina SET goles_favor=GREATEST(goles_favor-?,0),goles_contra=GREATEST(goles_contra-?,0) WHERE equipo_id=?")->execute([$old_gl,$old_gv,$l]);
+    $conn->prepare("UPDATE tabla_posiciones_femenina SET goles_favor=GREATEST(goles_favor-?,0),goles_contra=GREATEST(goles_contra-?,0) WHERE equipo_id=?")->execute([$old_gv,$old_gl,$v]);
+    if($old_gl>$old_gv){$conn->prepare("UPDATE tabla_posiciones_femenina SET ganados=GREATEST(ganados-1,0),puntos=GREATEST(puntos-3,0) WHERE equipo_id=?")->execute([$l]);$conn->prepare("UPDATE tabla_posiciones_femenina SET perdidos=GREATEST(perdidos-1,0) WHERE equipo_id=?")->execute([$v]);}
+    elseif($old_gl<$old_gv){$conn->prepare("UPDATE tabla_posiciones_femenina SET ganados=GREATEST(ganados-1,0),puntos=GREATEST(puntos-3,0) WHERE equipo_id=?")->execute([$v]);$conn->prepare("UPDATE tabla_posiciones_femenina SET perdidos=GREATEST(perdidos-1,0) WHERE equipo_id=?")->execute([$l]);}
+    else{$conn->prepare("UPDATE tabla_posiciones_femenina SET empatados=GREATEST(empatados-1,0),puntos=GREATEST(puntos-1,0) WHERE equipo_id IN (?,?)")->execute([$l,$v]);}
 }
-
-$l = (int)$m['equipo_local'];
-$v = (int)$m['equipo_visitante'];
-$old_gl = $m['goles_local'] !== null ? (int)$m['goles_local'] : null;
-$old_gv = $m['goles_visitante'] !== null ? (int)$m['goles_visitante'] : 0;
-$wasFinal = strtolower(trim($m['estado'] ?? '')) === 'finalizado';
-
-if ($wasFinal && $old_gl !== null) {
-    $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET partidos_jugados = GREATEST(partidos_jugados - 1, 0) WHERE equipo_id IN (?, ?)");
-    $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
-
-    $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET goles_favor = GREATEST(goles_favor - ?, 0), goles_contra = GREATEST(goles_contra - ?, 0) WHERE equipo_id = ?");
-    $stmt->bind_param("iii", $old_gl, $old_gv, $l); $stmt->execute(); $stmt->close();
-
-    $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET goles_favor = GREATEST(goles_favor - ?, 0), goles_contra = GREATEST(goles_contra - ?, 0) WHERE equipo_id = ?");
-    $stmt->bind_param("iii", $old_gv, $old_gl, $v); $stmt->execute(); $stmt->close();
-
-    if ($old_gl > $old_gv) {
-        $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET ganados = GREATEST(ganados - 1, 0), puntos = GREATEST(puntos - 3, 0) WHERE equipo_id = ?");
-        $stmt->bind_param("i", $l); $stmt->execute(); $stmt->close();
-        $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET perdidos = GREATEST(perdidos - 1, 0) WHERE equipo_id = ?");
-        $stmt->bind_param("i", $v); $stmt->execute(); $stmt->close();
-    } elseif ($old_gl < $old_gv) {
-        $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET ganados = GREATEST(ganados - 1, 0), puntos = GREATEST(puntos - 3, 0) WHERE equipo_id = ?");
-        $stmt->bind_param("i", $v); $stmt->execute(); $stmt->close();
-        $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET perdidos = GREATEST(perdidos - 1, 0) WHERE equipo_id = ?");
-        $stmt->bind_param("i", $l); $stmt->execute(); $stmt->close();
-    } else {
-        $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET empatados = GREATEST(empatados - 1, 0), puntos = GREATEST(puntos - 1, 0) WHERE equipo_id IN (?, ?)");
-        $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
-    }
-}
-
-$stmt = $conn->prepare("UPDATE partidos_femenina SET goles_local = ?, goles_visitante = ?, estado = 'Finalizado' WHERE id = ?");
-$stmt->bind_param("iii", $g1, $g2, $id); $stmt->execute(); $stmt->close();
-
-$stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET partidos_jugados = partidos_jugados + 1 WHERE equipo_id IN (?, ?)");
-$stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
-
-$stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET goles_favor = goles_favor + ?, goles_contra = goles_contra + ? WHERE equipo_id = ?");
-$stmt->bind_param("iii", $g1, $g2, $l); $stmt->execute(); $stmt->close();
-
-$stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET goles_favor = goles_favor + ?, goles_contra = goles_contra + ? WHERE equipo_id = ?");
-$stmt->bind_param("iii", $g2, $g1, $v); $stmt->execute(); $stmt->close();
-
-if ($g1 > $g2) {
-    $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET ganados = ganados + 1, puntos = puntos + 3 WHERE equipo_id = ?");
-    $stmt->bind_param("i", $l); $stmt->execute(); $stmt->close();
-    $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET perdidos = perdidos + 1 WHERE equipo_id = ?");
-    $stmt->bind_param("i", $v); $stmt->execute(); $stmt->close();
-} elseif ($g1 < $g2) {
-    $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET ganados = ganados + 1, puntos = puntos + 3 WHERE equipo_id = ?");
-    $stmt->bind_param("i", $v); $stmt->execute(); $stmt->close();
-    $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET perdidos = perdidos + 1 WHERE equipo_id = ?");
-    $stmt->bind_param("i", $l); $stmt->execute(); $stmt->close();
-} else {
-    $stmt = $conn->prepare("UPDATE tabla_posiciones_femenina SET empatados = empatados + 1, puntos = puntos + 1 WHERE equipo_id IN (?, ?)");
-    $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
-}
-
-echo json_enc(["success" => true]);
-    $conn->commit();
-} catch (Exception $e) {
-    $conn->rollback();
-    echo json_enc(["error" => "Error al actualizar: " . $e->getMessage()]);
-}
+$conn->prepare("UPDATE partidos_femenina SET goles_local=?,goles_visitante=?,estado='Finalizado' WHERE id=?")->execute([$g1,$g2,$id]);
+if($fecha&&$hora){$conn->prepare("UPDATE partidos_femenina SET fecha=? WHERE id=?")->execute([$fecha.' '.$hora.':00',$id]);}
+if($jornada!==null&&$jornada!==''){$conn->prepare("UPDATE partidos_femenina SET jornada=? WHERE id=?")->execute([(int)$jornada,$id]);}
+$conn->prepare("UPDATE tabla_posiciones_femenina SET partidos_jugados=partidos_jugados+1 WHERE equipo_id IN (?,?)")->execute([$l,$v]);
+$conn->prepare("UPDATE tabla_posiciones_femenina SET goles_favor=goles_favor+?,goles_contra=goles_contra+? WHERE equipo_id=?")->execute([$g1,$g2,$l]);
+$conn->prepare("UPDATE tabla_posiciones_femenina SET goles_favor=goles_favor+?,goles_contra=goles_contra+? WHERE equipo_id=?")->execute([$g2,$g1,$v]);
+if($g1>$g2){$conn->prepare("UPDATE tabla_posiciones_femenina SET ganados=ganados+1,puntos=puntos+3 WHERE equipo_id=?")->execute([$l]);$conn->prepare("UPDATE tabla_posiciones_femenina SET perdidos=perdidos+1 WHERE equipo_id=?")->execute([$v]);}
+elseif($g1<$g2){$conn->prepare("UPDATE tabla_posiciones_femenina SET ganados=ganados+1,puntos=puntos+3 WHERE equipo_id=?")->execute([$v]);$conn->prepare("UPDATE tabla_posiciones_femenina SET perdidos=perdidos+1 WHERE equipo_id=?")->execute([$l]);}
+else{$conn->prepare("UPDATE tabla_posiciones_femenina SET empatados=empatados+1,puntos=puntos+1 WHERE equipo_id IN (?,?)")->execute([$l,$v]);}
+echo json_enc(["success"=>true]);
 $conn->close();

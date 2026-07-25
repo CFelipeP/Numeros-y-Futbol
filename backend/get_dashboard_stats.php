@@ -10,7 +10,8 @@ $validDivisions = ['primera' => ['partidos', 'estado', 'tabla_posiciones', '_'],
                    'ascenso' => ['partidos_ascenso', 'status', 'tabla_posiciones_ascenso', '_ascenso'],
                    'tercera' => ['partidos_tercera', 'status', 'tabla_posiciones_tercera', '_tercera'],
                    'femenina' => ['partidos_femenina', 'estado', 'tabla_posiciones_femenina', '_femenina'],
-                   'reservas' => ['partidos_reservas', 'estado', 'tabla_posiciones_reservas', '_reservas']];
+                   'reservas' => ['partidos_reservas', 'estado', 'tabla_posiciones_reservas', '_reservas'],
+                   'burgerking' => ['partidos_burgerking', 'estado', 'tabla_posiciones_burgerking', '_burgerking']];
 
 if (!isset($validDivisions[$division])) {
     echo json_enc(['error' => 'División inválida']);

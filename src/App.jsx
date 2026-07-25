@@ -23,9 +23,11 @@ import SeleccionFemenina from "./Divisiones/SeleccionFemenina";
 import SeleccionSub20 from "./Divisiones/SeleccionSub20";
 import SeleccionSub17 from "./Divisiones/SeleccionSub17";
 import Fedecredito from "./Divisiones/Fedecredito";
+import BurgerKing from "./Divisiones/BurgerKing";
 import ManageSeleccion from "./dashboard/ManageSeleccion";
 import ManageTeamsFemenina from "./dashboard/ManageTeamsFemenina";
 import ManageTeamsReservas from "./dashboard/ManageTeamsReservas";
+import ManageTeamsBurgerKing from "./dashboard/ManageTeamsBurgerKing";
 import ManageSeleccionFemenina from "./dashboard/ManageSeleccionFemenina";
 import ManageSeleccionSub20 from "./dashboard/ManageSeleccionSub20";
 import ManageSeleccionSub17 from "./dashboard/ManageSeleccionSub17";
@@ -93,6 +95,7 @@ function App() {
         <Route path="/seleccion-sub17" element={<SeleccionSub17 />} />
         <Route path="/femenina" element={<Femenina />} />
         <Route path="/reservas" element={<Fedecredito />} />
+        <Route path="/burgerking" element={<BurgerKing />} />
         <Route path="/admin/plantilla" element={
           <ProtectedRoute>
             <PlantillaEquipos />
@@ -194,6 +197,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ManageTeamsReservas />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teams/burgerking"
+          element={
+            <ProtectedRoute>
+              <ManageTeamsBurgerKing />
             </ProtectedRoute>
           }
         />

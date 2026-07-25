@@ -16,7 +16,7 @@ export default function ProtectedRoute({ children }) {
   const adminRoutes = [
     "/dashboard", "/matches", "/manage-comments", "/manage-news",
     "/users", "/settings", "/admin", "/posiciones", "/analytics",
-    "/manage-seleccion", "/teams/primera", "/teams/ascenso", "/teams/femenina", "/teams/reservas",
+    "/manage-seleccion", "/teams/primera", "/teams/ascenso", "/teams/femenina", "/teams/reservas", "/teams/burgerking",
   ];
   const isAdminRoute = adminRoutes.some((r) => location.pathname.startsWith(r));
 

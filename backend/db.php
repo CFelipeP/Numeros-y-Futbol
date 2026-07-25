@@ -275,6 +275,12 @@ $mysqli->query("CREATE TABLE IF NOT EXISTS `partidos_femenina` (
 try { $mysqli->query("ALTER TABLE partidos_femenina ADD COLUMN `jornada` INT DEFAULT NULL AFTER `fecha`"); } catch (Exception $e) {}
 try { $mysqli->query("ALTER TABLE partidos_femenina ADD COLUMN `hora` TIME DEFAULT NULL AFTER `jornada`"); } catch (Exception $e) {}
 
+try { $mysqli->query("ALTER TABLE partidos_femenina MODIFY COLUMN fecha DATETIME DEFAULT NULL"); } catch (Exception $e) {}
+try { $mysqli->query("ALTER TABLE partidos MODIFY COLUMN fecha DATETIME DEFAULT NULL"); } catch (Exception $e) {}
+try { $mysqli->query("ALTER TABLE partidos_reservas MODIFY COLUMN fecha DATETIME DEFAULT NULL"); } catch (Exception $e) {}
+try { $mysqli->query("ALTER TABLE partidos_burgerking MODIFY COLUMN fecha DATETIME DEFAULT NULL"); } catch (Exception $e) {}
+try { $mysqli->query("ALTER TABLE partidos_ascenso MODIFY COLUMN fecha DATETIME DEFAULT NULL"); } catch (Exception $e) {}
+
 $mysqli->query("CREATE TABLE IF NOT EXISTS `tabla_posiciones_femenina` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `equipo_id` INT NOT NULL,
@@ -634,6 +640,71 @@ try {
         ];
         $stmt = $mysqli->prepare("INSERT INTO equipos_reservas (nombre, ciudad) VALUES (?, ?)");
         foreach ($equiposReservas as $eq) {
+            $stmt->bind_param('ss', $eq[0], $eq[1]);
+            $stmt->execute();
+        }
+        $stmt->close();
+    }
+} catch (Exception $e) {}
+
+// --- Tablas Copa Burger King (U17) ---
+$mysqli->query("CREATE TABLE IF NOT EXISTS `equipos_burgerking` (
+    `id`         INT NOT NULL AUTO_INCREMENT,
+    `nombre`     VARCHAR(100) NOT NULL,
+    `ciudad`     VARCHAR(100) DEFAULT NULL,
+    `estadio`    VARCHAR(150) DEFAULT NULL,
+    `logo`       VARCHAR(255) DEFAULT NULL,
+    `formacion`  VARCHAR(10) DEFAULT '4-4-2',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `partidos_burgerking` (
+    `id`              INT NOT NULL AUTO_INCREMENT,
+    `equipo_local`    INT DEFAULT NULL,
+    `equipo_visitante` INT DEFAULT NULL,
+    `goles_local`     INT DEFAULT 0,
+    `goles_visitante` INT DEFAULT 0,
+    `fecha`           DATE DEFAULT NULL,
+    `hora`            TIME DEFAULT NULL,
+    `jornada`         INT DEFAULT NULL,
+    `estado`          VARCHAR(20) DEFAULT 'Pendiente',
+    `featured`        TINYINT(1) NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$mysqli->query("CREATE TABLE IF NOT EXISTS `tabla_posiciones_burgerking` (
+    `id`                INT NOT NULL AUTO_INCREMENT,
+    `equipo_id`         INT NOT NULL,
+    `partidos_jugados`  INT NOT NULL DEFAULT 0,
+    `ganados`           INT NOT NULL DEFAULT 0,
+    `empatados`         INT NOT NULL DEFAULT 0,
+    `perdidos`          INT NOT NULL DEFAULT 0,
+    `goles_favor`       INT NOT NULL DEFAULT 0,
+    `goles_contra`      INT NOT NULL DEFAULT 0,
+    `puntos`            INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `equipo_id` (`equipo_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+try {
+    $count = $mysqli->query("SELECT COUNT(*) FROM equipos_burgerking");
+    if ((int)$count->fetch_row()[0] === 0) {
+        $equiposBK = [
+            ['L.A. Firpo (U17)', 'Usulután'],
+            ['Alianza F.C. (U17)', 'San Salvador'],
+            ['C.D. Águila (U17)', 'San Miguel'],
+            ['C.D. Municipal Limeño (U17)', 'Santa Rosa de Lima'],
+            ['Inter Tecla (U17)', 'Santa Tecla'],
+            ['A.D. Isidro Metapán (U17)', 'Metapán'],
+            ['C.D. Cacahuatique (U17)', 'Ciudad Barrios'],
+            ['C.D. Platense (U17)', 'Zacatecoluca'],
+            ['C.D. Fuerte San Francisco (U17)', 'San Francisco Gotera'],
+            ['C.D. FAS (U17)', 'Santa Ana'],
+            ['CD ATL.BALBOA (U17)', 'La Unión'],
+            ['CD Inca Aruba (U17)', 'Entre Ríos'],
+        ];
+        $stmt = $mysqli->prepare("INSERT INTO equipos_burgerking (nombre, ciudad) VALUES (?, ?)");
+        foreach ($equiposBK as $eq) {
             $stmt->bind_param('ss', $eq[0], $eq[1]);
             $stmt->execute();
         }

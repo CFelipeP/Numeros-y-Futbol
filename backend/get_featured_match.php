@@ -17,6 +17,9 @@ try {
         case 'reservas':
             $tPartidos = 'partidos_reservas'; $tEquipos = 'equipos_reservas';
             $colLocal = 'equipo_local'; $colVisit = 'equipo_visitante'; break;
+        case 'burgerking':
+            $tPartidos = 'partidos_burgerking'; $tEquipos = 'equipos_burgerking';
+            $colLocal = 'equipo_local'; $colVisit = 'equipo_visitante'; break;
         default:
             $tPartidos = 'partidos'; $tEquipos = 'equipos';
             $colLocal = 'equipo_local'; $colVisit = 'equipo_visitante'; break;

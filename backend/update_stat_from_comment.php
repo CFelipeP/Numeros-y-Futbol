@@ -21,6 +21,7 @@ if (!$jugador_id || !$tipo) {
 switch ($division) {
     case 'ascenso':  $tabla = 'estadisticas_jugadores_ascenso';  break;
     case 'femenina': $tabla = 'estadisticas_jugadores_femenina'; break;
+    case 'burgerking': $tabla = 'estadisticas_jugadores';          break;
     default:         $tabla = 'estadisticas_jugadores';          break;
 }
 

@@ -59,6 +59,7 @@ const DIVISIONES = [
   { value: "ascenso", label: "Ascenso" },
   { value: "femenina", label: "Femenina" },
   { value: "reservas", label: "Liga Fedecredito" },
+  { value: "burgerking", label: "Copa Burger King" },
 ];
 
 const AdminDashboard = () => {

@@ -16,6 +16,7 @@ const NAV_ITEMS = [
       { path: "/teams/primera", label: "Primera División" },
       { path: "/teams/ascenso", label: "Liga de Ascenso" },
       { path: "/teams/reservas", label: "Liga Fedecredito" },
+      { path: "/teams/burgerking", label: "Copa Burger King" },
       { path: "/teams/femenina", label: "Femenina" },
     ]
   },

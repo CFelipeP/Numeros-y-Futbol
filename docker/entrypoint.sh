@@ -16,4 +16,8 @@ try {
 done
 
 echo "MariaDB listo. Iniciando Apache..."
+
+mkdir -p /var/www/html/backend/uploads/escudos
+chown -R www-data:www-data /var/www/html/backend/uploads
+
 exec "$@"

@@ -20,6 +20,21 @@ try {
             $colLocal = 'goles_local';
             $colVisit = 'goles_visitante';
             break;
+        case 'femenina':
+            $table    = 'partidos_femenina';
+            $colLocal = 'goles_local';
+            $colVisit = 'goles_visitante';
+            break;
+        case 'reservas':
+            $table    = 'partidos_reservas';
+            $colLocal = 'goles_local';
+            $colVisit = 'goles_visitante';
+            break;
+        case 'burgerking':
+            $table    = 'partidos_burgerking';
+            $colLocal = 'goles_local';
+            $colVisit = 'goles_visitante';
+            break;
         default:
             $table    = 'partidos';
             $colLocal = 'goles_local';

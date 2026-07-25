@@ -21,6 +21,7 @@ const DIVISIONES = [
     { value: "ascenso", label: "Ascenso" },
     { value: "femenina", label: "Femenina" },
     { value: "reservas", label: "Liga Fedecredito" },
+    { value: "burgerking", label: "Copa Burger King" },
 ];
 
 const ManageMatches = () => {
@@ -80,7 +81,7 @@ const ManageMatches = () => {
     }, []);
 
     const getEndpoints = () => {
-        const suffix = division === "ascenso" ? "_ascenso" : division === "femenina" ? "_femenina" : division === "reservas" ? "_reservas" : "";
+        const suffix = division === "ascenso" ? "_ascenso" : division === "femenina" ? "_femenina" : division === "reservas" ? "_reservas" : division === "burgerking" ? "_burgerking" : "";
         return {
             matches: `${API}get_matches${suffix}.php`,
             teams: `${API}get_teams${suffix}.php`,

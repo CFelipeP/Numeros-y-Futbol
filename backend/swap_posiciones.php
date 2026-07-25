@@ -22,6 +22,9 @@ switch ($division) {
     case 'femenina':
         $tabla = 'jugadores_femenina';
         break;
+    case 'reservas':
+        $tabla = 'jugadores';
+        break;
     default:
         $tabla = 'jugadores';
         break;
