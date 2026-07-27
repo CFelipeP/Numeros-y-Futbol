@@ -56,7 +56,7 @@ const ManagePublicNews = () => {
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (!selected) return;
-    const allowed = ["image/jpeg", "image/png", "image/jpg", "video/mp4"];
+    const allowed = ["image/jpeg", "image/png", "image/jpg", "image/webp", "video/mp4"];
     if (!allowed.includes(selected.type)) {
       Swal.fire({ icon: 'error', title: 'Formato no válido', text: 'Solo JPG, PNG o MP4', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
       return;
@@ -240,7 +240,7 @@ const ManagePublicNews = () => {
                       <ImageIcon size={14} /> Imagen / Video
                     </label>
                     <div className="news-upload-area">
-                      <input id="file-input" type="file" accept="image/png,image/jpeg,video/mp4" onChange={handleFileChange} className="news-file-input" />
+                       <input id="file-input" type="file" accept="image/png,image/jpeg,image/webp,video/mp4" onChange={handleFileChange} className="news-file-input" />
                       <div className="news-upload-placeholder">
                         <ImageIcon size={20} />
                         <span>Haz clic o arrastra un archivo aqui</span>

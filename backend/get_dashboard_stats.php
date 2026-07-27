@@ -6,9 +6,7 @@ require_once __DIR__ . '/db.php';
 $division = $_GET['division'] ?? 'primera';
 
 $validDivisions = ['primera' => ['partidos', 'estado', 'tabla_posiciones', '_'],
-                   'segunda' => ['partidos_segunda', 'status', 'tabla_posiciones_segunda', '_segunda'],
                    'ascenso' => ['partidos_ascenso', 'status', 'tabla_posiciones_ascenso', '_ascenso'],
-                   'tercera' => ['partidos_tercera', 'status', 'tabla_posiciones_tercera', '_tercera'],
                    'femenina' => ['partidos_femenina', 'estado', 'tabla_posiciones_femenina', '_femenina'],
                    'reservas' => ['partidos_reservas', 'estado', 'tabla_posiciones_reservas', '_reservas'],
                    'burgerking' => ['partidos_burgerking', 'estado', 'tabla_posiciones_burgerking', '_burgerking']];

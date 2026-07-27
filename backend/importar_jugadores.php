@@ -54,14 +54,10 @@ $headers = array_map('trim', array_map('strtolower', str_getcsv(array_shift($lin
 
 // Determinar tabla
 $table = match($division) {
-    'segunda' => 'jugadores_segunda',
-    'tercera' => 'jugadores_tercera',
     'femenina' => 'jugadores_femenina',
     default   => 'jugadores',
 };
 $statsTable = match($division) {
-    'segunda' => null,
-    'tercera' => null,
     'femenina' => 'estadisticas_jugadores_femenina',
     default   => 'estadisticas_jugadores',
 };
@@ -123,27 +119,7 @@ try {
         }
 
         try {
-            if ($division === 'segunda') {
-                $sql = "INSERT INTO jugadores_segunda
-                    (equipo_id,nombre,posicion,numero_camiseta,edad,nacionalidad,es_titular,
-                     pj,goles,asistencias,goles_penal,goles_cabeza,goles_tiro_libre,
-                     tarjetas_amarillas,tarjetas_rojas,minutos_jugados,goles_recibidos,vaya_invicta)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-                $conn->prepare($sql)->execute([
-                    $equipo_id,$nombre,$posicion,$numero_camiseta,$edad,$nacionalidad,$es_titular_csv,
-                    $pj,$goles,$asistencias,$goles_penal,$goles_cabeza,$goles_tiro_libre,
-                    $tarjetas_amarillas,$tarjetas_rojas,$minutos_jugados,$goles_recibidos,$vaya_invicta
-                ]);
-
-            } elseif ($division === 'tercera') {
-                $sql = "INSERT INTO jugadores_tercera
-                    (equipo_id,nombre,posicion,numero_camiseta,edad,nacionalidad,es_titular)
-                    VALUES (?,?,?,?,?,?,?)";
-                $conn->prepare($sql)->execute([
-                    $equipo_id,$nombre,$posicion,$numero_camiseta,$edad,$nacionalidad,$es_titular_csv
-                ]);
-
-            } elseif ($division === 'femenina') {
+            if ($division === 'femenina') {
                 $sql = "INSERT INTO jugadores_femenina
                     (equipo_id,nombre,posicion,numero_camiseta,edad,nacionalidad,es_titular)
                     VALUES (?,?,?,?,?,?,?)";

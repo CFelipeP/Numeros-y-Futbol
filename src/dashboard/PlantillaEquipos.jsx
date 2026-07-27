@@ -1,5 +1,4 @@
-﻿import { useState, useEffect, useCallback, useMemo, memo, useRef } from "react";
-import AdminSidebar from "../components/AdminSidebar";
+import { useState, useEffect, useCallback, useMemo, memo, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "../admin.css";
 import Swal from "sweetalert2";
@@ -388,7 +387,10 @@ export default function PlantillaAdmin() {
   });
   const [statsForm, setStatsForm] = useState({});
   const debounceRef = useRef(null);
-  const [division, setDivision] = useState(() => localStorage.getItem("admin_division") || "primera");
+  const [division, setDivision] = useState(() => {
+    const stored = localStorage.getItem("admin_division");
+    return DIVISIONES.some(d => d.key === stored) ? stored : "primera";
+  });
   const [divDD, setDivDD] = useState(false);
   const [teamDD, setTeamDD] = useState(false);
   const divRef = useRef(null);
@@ -923,7 +925,49 @@ const handlers = useMemo(() => ({ onStats: openStats, onEdit: openEdit, onDelete
 return (
   <div className={"admin-layout" + (sidebarOpen ? " sidebar-closed" : "")}>
     {/* SIDEBAR */}
-    <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout} />
+    <aside className="sidebar">
+      <div className="sidebar-header">
+        <div className="logo-icon">
+          <img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="" />
+        </div>
+        <h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2>
+      </div>
+      <nav className="sidebar-nav">
+        <ul>
+          {navItems.map((item, i) => {
+            if (item.type === "dropdown") {
+              const a = item.children.some(c => location.pathname === c.path);
+              const isSel = item.label === "Selecciones";
+              const isOpen = isSel ? seleccionesOpen : ddOpen;
+              const toggle = isSel ? () => setSeleccionesOpen(!seleccionesOpen) : () => setDdOpen(!ddOpen);
+              return (
+                <li key={i}>
+                  <button className={"nav-item" + (a ? " active" : "")} onClick={toggle} style={{ width: "100%", justifyContent: "space-between" }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 14 }}>{item.icon} {item.label}</span>
+                    <ChevronDown size={16} style={{ transform: isOpen ? "rotate(180deg)" : "", transition: "transform .2s" }} />
+                  </button>
+                  <ul className={"teams-dropdown" + (isOpen ? " dropdown-visible" : "")}>
+                    {item.children.map(c => (
+                      <li key={c.path}>
+                        <Link to={c.path} className={"nav-item nav-subitem" + (location.pathname === c.path ? " active" : "")} onClick={navClick}>{c.label}</Link>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              );
+            }
+            return (
+              <li key={item.path}>
+                <Link to={item.path} className={"nav-item" + (location.pathname === item.path ? " active" : "")} onClick={navClick}>{item.icon} {item.label}</Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+      <div className="sidebar-footer">
+        <button className="nav-item btn-logout-sidebar" onClick={handleLogout}><LogOut size={20} className="nav-icon" /> Cerrar sesion</button>
+      </div>
+    </aside>
 
     {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
 
@@ -940,7 +984,7 @@ return (
           <h1>Plantillas</h1>
           <div ref={divRef} className="pl-div-dd">
             <button className="pl-div-btn" onClick={() => { setDivDD(!divDD); setTeamDD(false); }}>
-              <Trophy size={14} />{curDiv.icon} {curDiv.label} Division
+              <Trophy size={14} />{curDiv?.icon} {curDiv?.label} Division
               <ChevronDown size={15} className={"pl-div-arrow" + (divDD ? " open" : "")} />
             </button>
             <div className={"pl-div-drop" + (divDD ? " show" : "")}>
@@ -1596,14 +1640,6 @@ button.nav-item{background:none;border:none;color:#94a3b8;font-family:inherit;wi
 .pl-stat-field label{display:block;margin-bottom:6px;font-size:11px;font-weight:700;color:#475569;letter-spacing:.03em;text-transform:uppercase}
 .pl-stat-input{width:100%;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.015);color:#e2e8f0;font-size:14px;font-weight:700;outline:none;box-sizing:border-box;text-align:center;transition:all .25s}
 .pl-stat-input:focus{border-color:rgba(34,211,238,.25);background:rgba(255,255,255,.025)}
-@media(max-width:768px){
-  .pl-header{flex-wrap:wrap;gap:10px}
-  .pl-toolbar{flex-wrap:wrap;gap:8px}
-  .pl-row2{grid-template-columns:1fr;gap:0}
-  .pl-subs-grid{grid-template-columns:1fr}
-  .pl-tabs{width:100%}
-  .pl-tab{flex:1;justify-content:center}
-}
 @media(max-width:640px){
   .pl-page{padding:16px 14px}
   .pl-header{flex-direction:column;align-items:stretch;gap:12px}

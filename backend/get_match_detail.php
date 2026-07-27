@@ -21,7 +21,7 @@ try {
             $colVisit   = 'id';
             $colEstado  = 'estado';
             $selectFormacion = "'4-4-2' AS local_formacion, '4-4-2' AS visitante_formacion";
-            $selectPosiciones = 'NULL AS pos_x, NULL AS pos_y';
+            $selectPosiciones = 'COALESCE(pos_x, NULL) AS pos_x, COALESCE(pos_y, NULL) AS pos_y';
             break;
         case 'seleccion-sub20':
             $tPartidos  = 'partidos_seleccion_sub20';
@@ -31,7 +31,7 @@ try {
             $colVisit   = 'id';
             $colEstado  = 'estado';
             $selectFormacion = "'4-4-2' AS local_formacion, '4-4-2' AS visitante_formacion";
-            $selectPosiciones = 'NULL AS pos_x, NULL AS pos_y';
+            $selectPosiciones = 'COALESCE(pos_x, NULL) AS pos_x, COALESCE(pos_y, NULL) AS pos_y';
             break;
         case 'seleccion-femenina':
             $tPartidos  = 'partidos_seleccion_femenina';
@@ -41,7 +41,7 @@ try {
             $colVisit   = 'id';
             $colEstado  = 'estado';
             $selectFormacion = "'4-4-2' AS local_formacion, '4-4-2' AS visitante_formacion";
-            $selectPosiciones = 'NULL AS pos_x, NULL AS pos_y';
+            $selectPosiciones = 'COALESCE(pos_x, NULL) AS pos_x, COALESCE(pos_y, NULL) AS pos_y';
             break;
         case 'seleccion':
             $tPartidos  = 'partidos_seleccion';
@@ -51,7 +51,7 @@ try {
             $colVisit   = 'id';
             $colEstado  = 'estado';
             $selectFormacion = "'4-4-2' AS local_formacion, '4-4-2' AS visitante_formacion";
-            $selectPosiciones = 'NULL AS pos_x, NULL AS pos_y';
+            $selectPosiciones = 'COALESCE(pos_x, NULL) AS pos_x, COALESCE(pos_y, NULL) AS pos_y';
             break;
         case 'ascenso':
             $tPartidos  = 'partidos_ascenso';
@@ -133,7 +133,7 @@ try {
         // Local = El Salvador
         $partido['local_id'] = -1;
         $partido['local_nombre'] = 'El Salvador';
-        $partido['local_logo'] = '/backend/uploads/escudo_elsalvador.png';
+        $partido['local_logo'] = 'uploads/escudo_elsalvador.png';
         $partido['estadio'] = $partido['lugar'] ?? null;
         $partido['ciudad'] = null;
     } else {
@@ -175,19 +175,29 @@ try {
     function obtenerJugadores($pdo, $tabla, $equipo_id) {
         global $selectPosiciones;
 
-        $sql = "
-            SELECT id, nombre, numero_camiseta, posicion, foto, $selectPosiciones, es_titular
-            FROM $tabla
-            WHERE equipo_id = ?
-            ORDER BY numero_camiseta ASC
-        ";
-        $s = $pdo->prepare($sql);
-        $s->execute([$equipo_id]);
+        if ($equipo_id <= 0) {
+            $sql = "
+                SELECT id, nombre, numero_camiseta, posicion, foto, COALESCE(pos_x, NULL) AS pos_x, COALESCE(pos_y, NULL) AS pos_y, COALESCE(es_titular, 0) AS es_titular
+                FROM $tabla
+                ORDER BY numero_camiseta ASC
+            ";
+            $s = $pdo->prepare($sql);
+            $s->execute();
+        } else {
+            $sql = "
+                SELECT id, nombre, numero_camiseta, posicion, foto, $selectPosiciones, es_titular
+                FROM $tabla
+                WHERE equipo_id = ?
+                ORDER BY numero_camiseta ASC
+            ";
+            $s = $pdo->prepare($sql);
+            $s->execute([$equipo_id]);
+        }
         return $s->fetchAll(PDO::FETCH_ASSOC);
     }
 
     $jugadoresLocal     = obtenerJugadores($pdo, $tJugadores, $partido['local_id'] ?? 0);
-    $jugadoresVisitante = obtenerJugadores($pdo, $tJugadores, $partido['visitante_id'] ?? 0);
+    $jugadoresVisitante = $partido['local_id'] === -1 ? [] : obtenerJugadores($pdo, $tJugadores, $partido['visitante_id'] ?? 0);
 
     // ── Comentarios ──────────────────────────────────────────────
     $stmtC = $pdo->prepare("

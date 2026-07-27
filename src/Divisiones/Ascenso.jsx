@@ -86,6 +86,20 @@ const safeFetch = async (url) => {
 };
 
 const getDG = (gf, gc) => { const d = gf - gc; return d > 0 ? `+${d}` : `${d}`; };
+
+const formatShortDate = (raw) => {
+  if (!raw) return "";
+  try {
+    const d = new Date(raw);
+    if (isNaN(d)) return raw;
+    const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+    const day = d.getDate();
+    const mon = months[d.getMonth()];
+    const h = String(d.getHours()).padStart(2, "0");
+    const m = String(d.getMinutes()).padStart(2, "0");
+    return `${day} ${mon} · ${h}:${m}`;
+  } catch (_) { return raw; }
+};
 const PLAYOFF_BADGE = { bg: "rgba(16,185,129,0.15)", color: "#10b981", label: "PlayOff" };
 const getMatchStatus = (e) => {
   if (!e) return { text: "Por definir", variant: "default" };
@@ -118,17 +132,17 @@ const ResultRow = ({ m, onVerMas }) => {
   const hw = parseInt(m.goles_local) > parseInt(m.goles_visitante), aw = parseInt(m.goles_visitante) > parseInt(m.goles_local);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.7rem 0.8rem", borderRadius: "10px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", transition: "all 0.2s ease", cursor: "default" }}
+      <div className="res-row" style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.7rem 0.8rem", borderRadius: "10px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", transition: "all 0.2s ease", cursor: "default" }}
         onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
         onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)"; }}>
         <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: 3, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{m.home_logo && <img src={logoUrl(m.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div>
-        <span style={{ fontSize: "0.75rem", fontWeight: hw ? 800 : 600, color: hw ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.home_name}</span>
-        <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "var(--color-white)", fontFamily: "var(--font-heading)", letterSpacing: "1px", flexShrink: 0, textShadow: "0 0 10px rgba(34,197,94,0.3)" }}>{m.goles_local ?? "-"} - {m.goles_visitante ?? "-"}</span>
-        <span style={{ fontSize: "0.75rem", fontWeight: aw ? 800 : 600, color: aw ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{m.away_name}</span>
+        <span className="res-name" style={{ fontSize: "0.75rem", fontWeight: hw ? 800 : 600, color: hw ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.home_name}</span>
+        <span className="res-score" style={{ fontSize: "0.8rem", fontWeight: 800, color: "var(--color-white)", fontFamily: "var(--font-heading)", letterSpacing: "1px", flexShrink: 0, textShadow: "0 0 10px rgba(34,197,94,0.3)" }}>{m.goles_local ?? "-"} - {m.goles_visitante ?? "-"}</span>
+        <span className="res-name res-name-away" style={{ fontSize: "0.75rem", fontWeight: aw ? 800 : 600, color: aw ? "var(--color-white)" : "var(--color-text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{m.away_name}</span>
         <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.06)", padding: 3, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{m.away_logo && <img src={logoUrl(m.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div>
       </div>
       {m.id && onVerMas && (
-        <button onClick={() => onVerMas(m.id)} style={{
+        <button onClick={() => onVerMas(m.id)} className="res-more" style={{
           alignSelf: "flex-end", display: "flex", alignItems: "center", gap: "0.35rem",
           background: "none", border: "none", color: "#22c55e",
           fontSize: "0.68rem", fontWeight: 700, cursor: "pointer", padding: "0.25rem 0.6rem",
@@ -136,7 +150,7 @@ const ResultRow = ({ m, onVerMas }) => {
           transition: "all 0.2s ease", marginTop: "0.15rem", marginRight: "0.2rem"
         }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(34,197,94,0.1)"; e.currentTarget.style.gap = "0.5rem"; }}
            onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.gap = "0.35rem"; }}>
-          Ver más información <IconArrowRight />
+          <span className="res-more-text">Ver mas</span> <IconArrowRight />
         </button>
       )}
     </div>
@@ -164,20 +178,20 @@ const FeaturedMatchCard = ({ match, onVerMas }) => {
   const aw = match.goles_local != null && match.goles_visitante != null && match.goles_visitante > match.goles_local;
   const sc = isL ? "#ef4444" : isF ? "#10b981" : "#f59e0b", sb = isL ? "rgba(239,68,68,0.15)" : isF ? "rgba(16,185,129,0.12)" : "rgba(245,158,11,0.12)";
   return (
-    <div className="asc-featured-card" style={{ position: "relative", borderRadius: 20, overflow: "hidden", background: "linear-gradient(160deg,#1a1f35 0%,#0d1117 40%,#111827 100%)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+    <div className="feat-card" style={{ position: "relative", borderRadius: 20, overflow: "hidden", background: "linear-gradient(160deg,#1a1f35 0%,#0d1117 40%,#111827 100%)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
       <div style={{ height: 3, background: `linear-gradient(90deg,transparent 0%,${sc}66 30%,${sc} 50%,${sc}66 70%,transparent 100%)` }} />
       <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 280, height: 180, borderRadius: "50%", background: `radial-gradient(ellipse,${sc}12 0%,transparent 70%)`, pointerEvents: "none" }} />
-      <div style={{ position: "relative", padding: "1.6rem 1.4rem 1.4rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.8rem" }}><div style={{ display: "flex", alignItems: "center", gap: 6 }}><IconStar /><span style={{ fontSize: "0.65rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: 2, color: "rgba(255,255,255,0.4)" }}>Destacado</span></div><span style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", color: sc, background: sb, padding: "4px 12px", borderRadius: 20, border: `1px solid ${sc}25`, animation: isL ? "fp2 2s ease-in-out infinite" : "none" }}>{st.text}</span></div>
-        <div className="asc-featured-teams" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem" }}>
-          <div className="asc-featured-team" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}><div className="asc-featured-logo" style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}><img src={logoUrl(match.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} /></div><span className="asc-featured-name" style={{ fontSize: "0.72rem", fontWeight: hw ? 800 : 600, color: hw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.home_name}</span>{hw && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}</div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "0 0.8rem", flexShrink: 0 }}><div style={{ display: "flex", alignItems: "center", background: "rgba(0,0,0,0.35)", borderRadius: 14, padding: "6px 4px", border: "1px solid rgba(255,255,255,0.04)", boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)" }}><span className="asc-featured-score" style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: hw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_local ?? "-"}</span><span style={{ fontSize: "1rem", color: "rgba(255,255,255,0.2)", margin: "0 2px" }}>:</span><span className="asc-featured-score" style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: aw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_visitante ?? "-"}</span></div><span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, color: "rgba(255,255,255,0.25)" }}>{isS ? "VS" : "FT"}</span></div>
-          <div className="asc-featured-team" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}><div className="asc-featured-logo" style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}><img src={logoUrl(match.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} /></div><span className="asc-featured-name" style={{ fontSize: "0.72rem", fontWeight: aw ? 800 : 600, color: aw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.away_name}</span>{aw && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}</div>
+      <div className="feat-content" style={{ position: "relative", padding: "1.6rem 1.4rem 1.4rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.8rem" }}><div style={{ display: "flex", alignItems: "center", gap: 6 }}><IconStar /><span style={{ fontSize: "0.65rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: 2, color: "rgba(255,255,255,0.4)" }}>Destacado</span></div><span className="feat-status" style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", color: sc, background: sb, padding: "4px 12px", borderRadius: 20, border: `1px solid ${sc}25`, animation: isL ? "fp2 2s ease-in-out infinite" : "none" }}>{st.text}</span></div>
+        <div className="feat-matchup" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem" }}>
+          <div className="feat-team" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}><div className="feat-logo" style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}><img src={logoUrl(match.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} /></div><span className="feat-team-name" style={{ fontSize: "0.72rem", fontWeight: hw ? 800 : 600, color: hw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.home_name}</span>{hw && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}</div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "0 0.8rem", flexShrink: 0 }}><div className="feat-score-box" style={{ display: "flex", alignItems: "center", background: "rgba(0,0,0,0.35)", borderRadius: 14, padding: "6px 4px", border: "1px solid rgba(255,255,255,0.04)", boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)" }}><span className="feat-score-num" style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: hw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_local ?? "-"}</span><span style={{ fontSize: "1rem", color: "rgba(255,255,255,0.2)", margin: "0 2px" }}>:</span><span className="feat-score-num" style={{ fontSize: "1.8rem", fontWeight: 900, fontFamily: "var(--font-heading)", color: aw ? "#fff" : "rgba(255,255,255,0.6)", width: 48, textAlign: "center", lineHeight: 1 }}>{match.goles_visitante ?? "-"}</span></div><span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, color: "rgba(255,255,255,0.25)" }}>{isS ? "VS" : "FT"}</span></div>
+          <div className="feat-team" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, maxWidth: 130 }}><div className="feat-logo" style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "2px solid rgba(255,255,255,0.06)", padding: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}><img src={logoUrl(match.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} /></div><span className="feat-team-name" style={{ fontSize: "0.72rem", fontWeight: aw ? 800 : 600, color: aw ? "#fff" : "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.25, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{match.away_name}</span>{aw && <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#10b981", background: "rgba(16,185,129,0.1)", padding: "2px 8px", borderRadius: 4, border: "1px solid rgba(16,185,129,0.15)" }}>Ganador</span>}</div>
         </div>
         <div style={{ height: 1, margin: "1.4rem 0 1rem", background: "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.06) 30%,rgba(255,255,255,0.06) 70%,transparent 100%)" }} />
-        {match.fecha && <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", marginBottom: "0.8rem" }}><IconCalendar /><span>{match.fecha}</span></div>}
+        {match.fecha && <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", marginBottom: "0.8rem" }}><IconCalendar /><span>{formatShortDate(match.fecha)}</span></div>}
         {match.id && onVerMas && (
-          <button onClick={() => onVerMas(match.id)} style={{
+          <button onClick={() => onVerMas(match.id)} className="feat-btn" style={{
             width: "100%", padding: "0.6rem 1rem",
             background: "linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04))",
             border: "1px solid rgba(34,197,94,0.18)", borderRadius: 10,
@@ -187,11 +201,10 @@ const FeaturedMatchCard = ({ match, onVerMas }) => {
             justifyContent: "center", gap: "0.5rem"
           }} onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(34,197,94,0.25), rgba(34,197,94,0.08))"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(34,197,94,0.2)"; }}
              onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04))"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-            Ver más información <IconArrowRight />
+            <span className="res-more-text">Ver mas</span> <IconArrowRight />
           </button>
         )}
       </div>
-      <style>{`@keyframes fp2{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.3)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}`}</style>
     </div>
   );
 };
@@ -388,9 +401,9 @@ export default function AscensoDivision() {
 
         {activeTab === "clasificacion" && !expandedTeam && (
           <div className="dashboard-grid asc-dashboard-m">
-            <div className="asc-sidebar-col-m" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            <div className="asc-sidebar-col-m pd-sidebar" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
               <div className="asc-featured-wrap">{match && match.home_name ? <FeaturedMatchCard match={match} onVerMas={openMatchDetail} /> : <div className="glass-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}><div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}><span style={{ fontSize: "1.5rem", opacity: 0.3 }}>⚽</span></div><p style={{ fontSize: "0.9rem", margin: "0 0 0.3rem", color: "var(--color-text-muted)", fontWeight: 600 }}>Sin partido destacado</p><p style={{ fontSize: "0.75rem", margin: 0, color: "rgba(255,255,255,0.25)" }}>Se mostrará cuando se configure desde el panel</p></div>}</div>
-              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", boxShadow: "0 0 8px #f59e0b", display: "inline-block" }} />Próximo Partido</div>{sidebar.next ? (<div style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(30,41,59,0.4) 100%)", border: "1px solid rgba(245,158,11,0.12)", borderRadius: 16, padding: "1.5rem 1.2rem" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}><span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#f59e0b", background: "rgba(245,158,11,0.12)", padding: "0.2rem 0.6rem", borderRadius: 6 }}>{getMatchStatus(sidebar.next.status || sidebar.next.estado).text}</span></div><div className="asc-next-teams-m" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0 }}><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}>{sidebar.next.home_logo && <img src={logoUrl(sidebar.next.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sidebar.next.home_name}</span></div><div style={{ flexShrink: 0 }}><span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--color-text-muted)", background: "rgba(255,255,255,0.04)", padding: "0.35rem 0.7rem", borderRadius: 8, letterSpacing: "1px" }}>VS</span></div><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0, justifyContent: "flex-end" }}><span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{sidebar.next.away_name}</span><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }}>{sidebar.next.away_logo && <img src={logoUrl(sidebar.next.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div></div></div>{sidebar.next.fecha && <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.8rem", marginTop: "1rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><IconCalendar /> {sidebar.next.fecha}</div>}
+              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", boxShadow: "0 0 8px #f59e0b", display: "inline-block" }} />Próximo Partido</div>{sidebar.next ? (<div className="nm-card" style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(30,41,59,0.4) 100%)", border: "1px solid rgba(245,158,11,0.12)", borderRadius: 16, padding: "1.5rem 1.2rem" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}><span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#f59e0b", background: "rgba(245,158,11,0.12)", padding: "0.2rem 0.6rem", borderRadius: 6 }}>{getMatchStatus(sidebar.next.status || sidebar.next.estado).text}</span></div><div className="asc-next-teams-m nm-teams" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0 }}><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }} className="nm-logo">{sidebar.next.home_logo && <img src={logoUrl(sidebar.next.home_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div><span className="nm-name" style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sidebar.next.home_name}</span></div><div style={{ flexShrink: 0 }}><span className="nm-vs" style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--color-text-muted)", background: "rgba(255,255,255,0.04)", padding: "0.35rem 0.7rem", borderRadius: 8, letterSpacing: "1px" }}>VS</span></div><div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flex: 1, minWidth: 0, justifyContent: "flex-end" }}><span className="nm-name" style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}>{sidebar.next.away_name}</span><div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.06)", padding: 5, display: "flex", alignItems: "center", justifyContent: "center" }} className="nm-logo">{sidebar.next.away_logo && <img src={logoUrl(sidebar.next.away_logo)} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />}</div></div></div>{sidebar.next.fecha && <div className="nm-date" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.8rem", marginTop: "1rem", display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--color-text-muted)" }}><IconCalendar /> {sidebar.next.fecha}</div>}
               {(sidebar.next.id || sidebar.next.partido_id) && (
                 <button onClick={() => openMatchDetail(sidebar.next.id || sidebar.next.partido_id)} style={{
                   width: "100%", marginTop: "1rem", padding: "0.55rem 1rem",
@@ -402,11 +415,11 @@ export default function AscensoDivision() {
                   justifyContent: "center", gap: "0.45rem"
                 }} onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(34,197,94,0.25), rgba(34,197,94,0.08))"; e.currentTarget.style.transform = "translateY(-1px)"; }}
                    onMouseLeave={e => { e.currentTarget.style.background = "linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04))"; e.currentTarget.style.transform = "translateY(0)"; }}>
-                  Ver más información <IconArrowRight />
+                  <span className="res-more-text">Ver mas</span> <IconArrowRight />
                 </button>
               )}
               </div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📅</div><p style={{ fontSize: "0.85rem", margin: 0, fontWeight: 600 }}>No hay partidos pendientes</p></div>)}</div>
-              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981", display: "inline-block" }} />Últimos Resultados</div>{sidebar.recent?.length > 0 ? (<div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>{sidebar.recent.map(m => (<div key={m.id}><ResultRow m={m} onVerMas={openMatchDetail} />{m.fecha && <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", paddingLeft: "0.8rem", paddingTop: "0.15rem", paddingBottom: "0.3rem", fontSize: "0.65rem", color: "rgba(255,255,255,0.25)" }}><IconClock /> {m.fecha}</div>}</div>))}</div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📋</div><p style={{ fontSize: "0.85rem", margin: 0 }}>No hay resultados aún</p></div>)}</div>
+              <div className="glass-card" style={{ padding: "1.8rem" }}><div className="section-subtitle" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981", display: "inline-block" }} />Últimos Resultados</div>{sidebar.recent?.length > 0 ? (<div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>{sidebar.recent.map(m => (<div key={m.id}><ResultRow m={m} onVerMas={openMatchDetail} />{m.fecha && <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", paddingLeft: "0.8rem", paddingTop: "0.15rem", paddingBottom: "0.3rem", fontSize: "0.65rem", color: "rgba(255,255,255,0.25)" }}><IconClock /> {formatShortDate(m.fecha)}</div>}</div>))}</div>) : (<div style={{ textAlign: "center", padding: "1.5rem 1rem", color: "var(--color-text-muted)" }}><div style={{ fontSize: "1.3rem", marginBottom: "0.4rem", opacity: 0.3 }}>📋</div><p style={{ fontSize: "0.85rem", margin: 0 }}>No hay resultados aún</p></div>)}</div>
               <div className="glass-card asc-m-hide" style={{ padding: "1.5rem" }}><div className="section-subtitle" style={{ marginTop: 0, fontSize: "0.85rem" }}>Leyenda</div><div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>{[{ color: "#10b981", label: "PlayOff — Top 4 de la tabla" }].map((item, i) => (<div key={i} style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}><span style={{ width: 10, height: 10, borderRadius: 2, background: item.color, flexShrink: 0, boxShadow: `0 0 6px ${item.color}40` }} /><span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>{item.label}</span></div>))}<div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}><span style={{ fontSize: "0.7rem", fontWeight: 800, color: "var(--color-text-muted)", width: 18, textAlign: "center", flexShrink: 0 }}>DG</span><span style={{ fontSize: "0.82rem", color: "var(--color-text-muted)" }}>Diferencia de goles</span></div></div></div>
             </div>
             <div className="asc-standings-col-m glass-card" style={{ padding: "1.8rem" }}>
@@ -547,9 +560,9 @@ export default function AscensoDivision() {
   .asc-zona-tabs-m button{padding:.5rem .4rem!important;font-size:.68rem!important;gap:.2rem!important}
   .asc-next-teams-m{flex-direction:column!important;gap:.8rem!important}
   .asc-next-teams-m>div{width:100%!important;justify-content:center!important}
-  .asc-featured-logo{width:48px!important;height:48px!important;padding:6px!important}
-  .asc-featured-score{font-size:1.4rem!important;width:36px!important}
-  .asc-featured-name{font-size:.65rem!important;max-width:80px!important}
+  .feat-logo{width:48px!important;height:48px!important;padding:6px!important}
+  .feat-score-num{font-size:1.4rem!important;width:36px!important}
+  .feat-team-name{font-size:.65rem!important;max-width:80px!important}
   .asc-teams-grid-m{grid-template-columns:1fr!important;gap:1rem!important}
   .asc-teams-header-m h3{font-size:1.15rem!important}
   .glass-card{padding:1.2rem!important}
@@ -582,14 +595,31 @@ export default function AscensoDivision() {
   .pv-pp-name{font-size:.36rem!important;max-width:40px!important}
   .pv-hero-stat strong{font-size:.95rem!important}
   .pv-hero-stat span{font-size:.5rem!important;letter-spacing:.8px!important}
-  .asc-featured-logo{width:40px!important;height:40px!important;padding:5px!important}
-  .asc-featured-score{font-size:1.2rem!important;width:30px!important}
-  .asc-featured-name{font-size:.6rem!important;max-width:65px!important}
+  .feat-logo{width:40px!important;height:40px!important;padding:5px!important}
+  .feat-score-num{font-size:1.2rem!important;width:30px!important}
+  .feat-team-name{font-size:.6rem!important;max-width:65px!important}
 }
 @media(max-width:768px) and (orientation:landscape){
   .pv-pitch-wrap{max-width:220px!important}
   .pv-hero-content{padding:1rem 1.2rem!important}
   .pv-hero-left{flex-direction:row!important;text-align:left!important}
+}
+@media(max-width:375px){
+  .asc-page-title-row h2{font-size:1.1rem!important}
+  .asc-main-tabs button{font-size:.62rem!important;padding:.4rem .3rem!important}
+  .asc-table-m{min-width:280px!important}
+  .asc-table-m th,.asc-table-m td{padding:4px 2px!important;font-size:.6rem!important}
+  .asc-team-name-m{font-size:.62rem!important;max-width:60px!important}
+  .feat-logo{width:34px!important;height:34px!important}
+  .feat-score-num{font-size:1rem!important}
+  .feat-team-name{font-size:.5rem!important;max-width:50px!important}
+  .asc-teams-grid-m{grid-template-columns:1fr!important;gap:.5rem!important}
+  .pv-hero{padding:1.2rem .8rem!important}
+  .pv-hero-logo{width:52px!important;height:52px!important}
+  .pv-hero-name{font-size:1rem!important}
+  .pv-pitch-wrap{max-width:210px!important}
+  .pv-pp-dot{width:20px!important;height:20px!important;font-size:.38rem!important}
+  .pv-pp-name{font-size:.34rem!important;max-width:36px!important}
 }
       `}</style>
     </>

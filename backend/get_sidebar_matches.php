@@ -22,9 +22,8 @@ if ($division === 'primera') {
     $colLocal      = 'equipo_local';
     $colVisitante  = 'equipo_visitante';
 } else {
-    $sufijo = $division === 'segunda' || $division === 'ascenso' ? '_segunda' : '_tercera';
-    $tablaPartidos = 'partidos' . $sufijo;
-    $tablaEquipos  = 'equipos' . $sufijo;
+    $tablaPartidos = 'partidos_ascenso';
+    $tablaEquipos  = 'equipos_ascenso';
     $colEstado     = 'status';
     $colLocal      = 'local_id';
     $colVisitante  = 'visitante_id';
@@ -57,26 +56,45 @@ try {
 }
 
 $next = null;
+$nextMatches = [];
+$nextJornada = null;
 try {
-    $res2 = $conn->query("
-        SELECT p.id, p.fecha,
-               e1.nombre AS home_name, e1.logo AS home_logo,
-               e2.nombre AS away_name, e2.logo AS away_logo
-        FROM $tablaPartidos p
-        LEFT JOIN $tablaEquipos e1 ON p.$colLocal = e1.id
-        LEFT JOIN $tablaEquipos e2 ON p.$colVisitante = e2.id
-        WHERE p.$colEstado IS NULL OR p.$colEstado != 'Finalizado'
-        ORDER BY p.fecha ASC, p.id ASC
-        LIMIT 1
-    ");
-    $row2 = $res2->fetch_assoc();
-    if ($row2) {
-        $next = $row2;
+    $jnRes = $conn->query("SELECT jornada FROM $tablaPartidos WHERE ($colEstado IS NULL OR $colEstado != 'Finalizado') AND jornada IS NOT NULL ORDER BY jornada ASC LIMIT 1");
+    if ($jnRow = $jnRes->fetch_assoc()) {
+        $nextJornada = (int)$jnRow['jornada'];
+    }
+    if ($nextJornada !== null) {
+        $res2 = $conn->query("
+            SELECT p.id, p.fecha, p.jornada,
+                   e1.nombre AS home_name, e1.logo AS home_logo,
+                   e2.nombre AS away_name, e2.logo AS away_logo
+            FROM $tablaPartidos p
+            LEFT JOIN $tablaEquipos e1 ON p.$colLocal = e1.id
+            LEFT JOIN $tablaEquipos e2 ON p.$colVisitante = e2.id
+            WHERE (p.$colEstado IS NULL OR p.$colEstado != 'Finalizado') AND p.jornada = $nextJornada
+            ORDER BY p.fecha ASC, p.id ASC
+            LIMIT 6
+        ");
+        while ($row2 = $res2->fetch_assoc()) { $nextMatches[] = $row2; }
+        if (count($nextMatches) > 0) { $next = $nextMatches[0]; }
+    } else {
+        $res2 = $conn->query("
+            SELECT p.id, p.fecha,
+                   e1.nombre AS home_name, e1.logo AS home_logo,
+                   e2.nombre AS away_name, e2.logo AS away_logo
+            FROM $tablaPartidos p
+            LEFT JOIN $tablaEquipos e1 ON p.$colLocal = e1.id
+            LEFT JOIN $tablaEquipos e2 ON p.$colVisitante = e2.id
+            WHERE p.$colEstado IS NULL OR p.$colEstado != 'Finalizado'
+            ORDER BY p.fecha ASC, p.id ASC LIMIT 1
+        ");
+        $row2 = $res2->fetch_assoc();
+        if ($row2) { $next = $row2; $nextMatches = [$row2]; }
     }
 } catch (Exception $e) {
-    $next = null;
+    $next = null; $nextMatches = [];
 }
 
-echo json_enc(['recent' => $recent, 'next' => $next]);
+echo json_enc(['recent' => $recent, 'next' => $next, 'nextMatches' => $nextMatches, 'nextJornada' => $nextJornada]);
 
 $conn->close();

@@ -746,59 +746,7 @@
       to { opacity: 1; }
     }
 
-    /* =========================================
-       MEDIA QUERIES
-       ========================================= */
-    @media (max-width: 1024px) {
-      .dashboard-grid { grid-template-columns: 1fr; }
-      .glass-card { margin-bottom: 2rem; }
-    }
-
-    @media (max-width: 768px) {
-      .header-nav { display: none; }
-      .menu-toggle { display: block; }
-      .hero h1 { font-size: 2.5rem; }
-      .hero-buttons { flex-direction: column; }
-      .btn { width: 100%; }
-      
-      .hero::after {
-        background: linear-gradient(to top, rgba(15, 23, 42, 1) 0%, rgba(15, 23, 42, 0.6) 80%);
-      }
-      
-      .footer-bottom { flex-direction: column; align-items: center; text-align: center; }
-      .footer-links a { margin: 0 0.5rem; }
-      iframe { min-height: 700px; }
-    }
-
-    @media (max-width: 480px) {
-      .section-header { margin-bottom: var(--spacing-md); }
-      .section-header h2 { font-size: 1.6rem; }
-      .section-header p { font-size: 0.95rem; }
-      .hero { min-height: 60vh; }
-      .hero h1 { font-size: 1.8rem; }
-      .hero-description { font-size: 1rem; max-width: 100%; }
-      .hero-content { max-width: 100%; }
-      .glass-card { padding: 1.5rem; }
-      .dashboard-grid { gap: 1rem; }
-      .match-list { gap: 0.5rem; }
-      .match-item { padding: 0.6rem; font-size: 0.85rem; }
-      .m-team { font-size: 0.8rem; width: 35%; }
-      .compact-match-teams { gap: 0.5rem; }
-      .compact-team-name { font-size: 0.75rem; }
-      .compact-match-score { font-size: 1.4rem; }
-      .news-grid { gap: 1rem; }
-      .news-card-body { padding: 1rem; }
-      .footer { padding: 2.5rem 0 1.5rem; margin-top: 2rem; }
-      .footer-grid { gap: 2rem; }
-      .divisions-grid { gap: 1rem; }
-      .division-card-body { padding: 1rem; }
-      .division-card-body h3 { font-size: 1.25rem; }
-      .standings-table th,
-      .standings-table td { padding: 6px 4px; font-size: 0.75rem; }
-      .team-cell { gap: 4px; }
-      .team-logo { width: 20px; height: 20px; }
-      iframe { min-height: 500px; }
-    }
+    /* (media queries moved to bottom of file) */
 
     .standings-table {
   width: 100%;
@@ -823,15 +771,37 @@
 }
 
 /* ============================================
-   RESPONSIVE - PUBLIC DIVISION PAGES
+   KEYFRAMES (movidos desde componentes)
+   ============================================ */
+@keyframes fp{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.3)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
+@keyframes fp2{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.3)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
+
+/* ============================================
+   RESPONSIVE MEJORADO - DIVISIONES PUBLICAS
    ============================================ */
 
+@media (max-width: 1024px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .glass-card { margin-bottom: 1.5rem; }
+}
+
 @media (max-width: 768px) {
-  /* Dashboard grid - sidebar below on mobile */
+  .header-nav { display: none; }
+  .menu-toggle { display: block; }
+  .hero h1 { font-size: 2.5rem; }
+  .hero-buttons { flex-direction: column; }
+  .btn { width: 100%; }
+  .hero::after {
+    background: linear-gradient(to top, rgba(15, 23, 42, 1) 0%, rgba(15, 23, 42, 0.6) 80%);
+  }
+  iframe { min-height: 700px; }
+
+  /* Dashboard grid - sidebar below on mobile, centered */
   .dashboard-grid {
     display: flex !important;
     flex-direction: column !important;
     gap: 1.2rem !important;
+    align-items: center !important;
   }
   
   /* Glass cards */
@@ -851,7 +821,7 @@
   .team-cell img { width: 22px !important; height: 22px !important; }
   
   /* Featured match card */
-  .feat-card > div:last-child { padding: 1rem !important; }
+  .feat-content { padding: 1rem !important; }
   .feat-logo { width: 40px !important; height: 40px !important; }
   .feat-score-num { font-size: 1.2rem !important; width: 30px !important; }
   
@@ -901,16 +871,116 @@
   /* Live match comments */
   .live-comment-item { padding: 8px 10px !important; }
   .live-comment-text { font-size: 0.8rem !important; }
+
+  /* Container padding */
+  .container { padding-left: 12px !important; padding-right: 12px !important; }
+
+  /* ═══════════════════════════════════════
+     MOBILE CENTERING — ALL DIVISIONS
+     ═══════════════════════════════════════ */
+  .pd-sidebar, .asc-sidebar-col-m { width: 100% !important; align-items: center !important; }
+  .pd-sidebar > *, .asc-sidebar-col-m > * { width: 100% !important; }
+  .pd-featured, .pd-featured .feat-card { width: 100% !important; }
+  .glass-card { text-align: center !important; }
+  .glass-card .section-subtitle { justify-content: center !important; text-align: center !important; }
+  .section-subtitle { text-align: center !important; }
+  .feat-card .feat-content { text-align: center !important; }
+  .feat-matchup { justify-content: center !important; }
+  .feat-content > div:first-child { justify-content: center !important; }
+  .feat-btn { margin: 0 auto !important; }
+  .nm-card, .next-match-card { text-align: center !important; }
+  .nm-teams { justify-content: center !important; }
+  .nm-teams > div { justify-content: center !important; }
+  .next-match-teams { justify-content: center !important; }
+  .next-match-team { justify-content: center !important; }
+  .res-more { margin: 0 auto !important; }
+  .asc-featured-wrap { width: 100% !important; }
+  .asc-featured-wrap .feat-card { width: 100% !important; }
+
+  /* Mobile nav improved */
+  .mobile-nav.open { max-height: 400px; }
+  .mobile-nav a { padding: 0.85rem 0.5rem; font-size: 0.9rem; }
+
+  /* Footer improved */
+  .footer { padding: 2rem 0 1.5rem !important; margin-top: 2rem !important; }
+  .footer-grid { grid-template-columns: 1fr !important; gap: 1.5rem !important; text-align: center; }
+  .footer-bottom { gap: 0.8rem !important; }
+  .footer-links { flex-direction: column; gap: 0.5rem; }
+  .footer-links a { margin: 0 !important; display: block; }
+
+  /* =============================================
+     SIDEBAR MOVIL — FIXES AGRESIVOS
+     ============================================= */
+  .pd-sidebar { display: flex !important; flex-direction: column !important; gap: 1rem !important; }
+  .asc-sidebar-col-m { display: flex !important; flex-direction: column !important; gap: 1rem !important; }
+
+  /* --- Featured Match Card --- */
+  .feat-card { border-radius: 14px !important; }
+  .feat-content { padding: 1rem 0.8rem 0.8rem !important; }
+  .feat-card > div:first-child { height: 2px !important; }
+  .feat-matchup { gap: 0.4rem !important; }
+  .feat-team { max-width: 100px !important; gap: 6px !important; }
+  .feat-logo { width: 44px !important; height: 44px !important; padding: 6px !important; border-width: 1.5px !important; }
+  .feat-team-name { font-size: 0.62rem !important; max-width: 80px !important; line-height: 1.2 !important; }
+  .feat-score-box { padding: 4px 2px !important; border-radius: 10px !important; }
+  .feat-score-num { font-size: 1.3rem !important; width: 32px !important; }
+  .feat-winner-tag { font-size: 0.48rem !important; padding: 1px 5px !important; }
+  .feat-btn { font-size: 0.68rem !important; padding: 0.5rem 0.8rem !important; min-height: 40px !important; letter-spacing: 0.8px !important; }
+  .feat-status { font-size: 0.52rem !important; padding: 3px 8px !important; letter-spacing: 1px !important; }
+
+  /* --- Proximos Partidos --- */
+  .pd-sidebar .pd-next-match-item { padding: 0.6rem 0.7rem !important; border-radius: 10px !important; }
+  .pd-sidebar .pd-next-match-item img { width: 24px !important; height: 24px !important; }
+
+  /* --- ResultRow --- */
+  .res-row { padding: 0.5rem 0.6rem !important; gap: 0.4rem !important; border-radius: 8px !important; }
+  .res-row > div { width: 24px !important; height: 24px !important; }
+  .res-name { font-size: 0.68rem !important; }
+  .res-score { font-size: 0.75rem !important; }
+  .res-more { font-size: 0.6rem !important; padding: 0.2rem 0.4rem !important; }
+
+  /* --- Glass cards dentro del sidebar --- */
+  .pd-sidebar .glass-card { padding: 1rem !important; border-radius: 12px !important; }
+  .pd-sidebar .section-subtitle { font-size: 0.8rem !important; margin-bottom: 0.5rem !important; gap: 0.4rem !important; }
+
+  /* --- Next match teams --- */
+  .next-match-teams { flex-direction: column !important; gap: 0.5rem !important; }
+  .next-match-team, .next-match-team-r { width: 100% !important; justify-content: center !important; }
+  .next-team-name { text-align: center !important; font-size: 0.72rem !important; }
+  .next-match-btn { min-height: 40px !important; width: 100% !important; font-size: 0.7rem !important; }
+
+  /* --- Next match rows (nm-*) --- */
+  .nm-row { padding: 0.6rem 0.7rem !important; border-radius: 10px !important; }
+  .nm-logo { width: 24px !important; height: 24px !important; }
+  .nm-name { font-size: 0.65rem !important; max-width: 70px !important; }
+  .nm-vs { font-size: 0.55rem !important; padding: 2px 6px !important; }
+  .nm-date { font-size: 0.55rem !important; margin-top: 0.3rem !important; }
+  .nm-card { padding: 1rem !important; border-radius: 12px !important; }
+  .nm-teams { gap: 0.5rem !important; }
+  .nm-teams .nm-logo { width: 36px !important; height: 36px !important; }
+  .nm-teams .nm-name { font-size: 0.72rem !important; max-width: 80px !important; }
+
+  /* --- Fecha formateada --- */
+  .pd-date-full { display: inline !important; }
+  .pd-date-short { display: none !important; }
 }
 
 @media (max-width: 480px) {
+  .section-header { margin-bottom: var(--spacing-md); }
+  .section-header h2 { font-size: 1.6rem; }
+  .section-header p { font-size: 0.95rem; }
+  .news-grid { gap: 1rem; }
+  .news-card-body { padding: 1rem; }
+  iframe { min-height: 500px; }
+  .m-team { font-size: 0.8rem; width: 35%; }
+
   .pd-main-title { font-size: 1.1rem !important; }
   .pd-tab { font-size: 0.68rem !important; padding: 0.45rem 0.4rem !important; }
   .standings-table { min-width: 300px !important; }
   .standings-table th, .standings-table td { font-size: 0.65rem !important; padding: 4px 3px !important; }
   .team-cell img { width: 18px !important; height: 18px !important; }
   .glass-card { padding: 0.8rem !important; }
-  .feat-card > div:last-child { padding: 0.8rem !important; }
+  .feat-content { padding: 0.8rem !important; }
   .feat-logo { width: 34px !important; height: 34px !important; }
   .cp-hero { min-height: 300px !important; padding: 60px 12px 24px !important; }
   .cp-hero-stats { grid-template-columns: repeat(2, 1fr) !important; }
@@ -918,4 +988,137 @@
   .cp-match-teams { gap: 4px !important; }
   .cp-team-name { max-width: 50px !important; font-size: 9px !important; }
   .cp-score-nums { font-size: 18px !important; }
+
+  .container { padding-left: 8px !important; padding-right: 8px !important; }
+  .pd-table-scroll { margin: 0 -0.8rem !important; padding: 0 0.8rem !important; width: calc(100% + 1.6rem) !important; }
+
+  /* 480px centering */
+  .pd-sidebar > *, .asc-sidebar-col-m > * { width: 100% !important; }
+  .feat-card .feat-content { text-align: center !important; }
+
+  /* Match items more compact */
+  .match-item { padding: 0.5rem !important; border-radius: 8px !important; }
+  .m-team { width: 38% !important; }
+  .compact-team-name { font-size: 0.7rem !important; }
+  .compact-match-score { font-size: 1.2rem !important; }
+
+  /* Next match */
+  .next-match-teams { gap: 0.5rem !important; }
+
+  /* Result rows */
+  .res-row { font-size: 0.7rem !important; }
+  .res-team-name { max-width: 70px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+
+  /* Next match rows 480px */
+  .nm-row { padding: 0.5rem !important; border-radius: 8px !important; }
+  .nm-logo { width: 22px !important; height: 22px !important; }
+  .nm-name { font-size: 0.6rem !important; max-width: 60px !important; }
+  .nm-vs { font-size: 0.5rem !important; padding: 1px 5px !important; }
+  .nm-date { font-size: 0.5rem !important; }
+  .nm-card { padding: 0.8rem !important; }
+  .nm-teams .nm-logo { width: 30px !important; height: 30px !important; }
+  .nm-teams .nm-name { font-size: 0.65rem !important; max-width: 65px !important; }
+
+  /* Hero section */
+  .hero { min-height: 50vh !important; }
+  .hero h1 { font-size: 1.5rem !important; }
+
+  /* Divisions grid */
+  .divisions-grid { gap: 0.8rem !important; }
+  .division-card { border-radius: 10px !important; }
+  .division-card-body { padding: 0.8rem !important; }
+  .division-card-body h3 { font-size: 1.1rem !important; }
+
+  /* Sidebar even more compact */
+  .pd-sidebar .glass-card { padding: 0.8rem !important; }
+  .pd-sidebar .section-subtitle { font-size: 0.76rem !important; }
+  .feat-content { padding: 0.7rem 0.6rem 0.6rem !important; }
+  .feat-logo { width: 38px !important; height: 38px !important; padding: 4px !important; }
+  .feat-score-num { font-size: 1.1rem !important; width: 28px !important; }
+  .feat-team-name { font-size: 0.55rem !important; max-width: 65px !important; }
+  .feat-team { max-width: 85px !important; }
+  .feat-btn { font-size: 0.6rem !important; padding: 0.4rem 0.6rem !important; letter-spacing: 0.5px !important; }
+  .feat-btn .res-more-text { display: none !important; }
+  .res-row { padding: 0.4rem 0.5rem !important; gap: 0.3rem !important; }
+  .res-row > div { width: 22px !important; height: 22px !important; }
+  .res-name { font-size: 0.62rem !important; }
+  .res-score { font-size: 0.7rem !important; }
+  .res-more .res-more-text { display: none !important; }
+}
+
+/* ===== iPhone SE / Extra small (≤375px) ===== */
+@media (max-width: 375px) {
+  .container { padding-left: 6px !important; padding-right: 6px !important; }
+  .glass-card { padding: 0.6rem !important; border-radius: 10px !important; }
+
+  /* 375px centering */
+  .pd-sidebar, .asc-sidebar-col-m { width: 100% !important; align-items: center !important; }
+  .pd-sidebar > *, .asc-sidebar-col-m > * { width: 100% !important; }
+  
+  .pd-main-title { font-size: 1rem !important; }
+  .pd-main-sub { font-size: 0.72rem !important; }
+  .pd-tabs { gap: 1px !important; border-radius: 8px !important; }
+  .pd-tab { font-size: 0.62rem !important; padding: 0.4rem 0.3rem !important; letter-spacing: 0.3px !important; }
+
+  .standings-table { min-width: 280px !important; }
+  .standings-table th, .standings-table td { font-size: 0.6rem !important; padding: 3px 2px !important; }
+  .team-cell { gap: 3px !important; }
+  .team-cell img { width: 16px !important; height: 16px !important; }
+  .pd-team-name { font-size: 0.65rem !important; max-width: 65px !important; }
+
+  .pd-table-scroll { margin: 0 -0.6rem !important; padding: 0 0.6rem !important; width: calc(100% + 1.2rem) !important; }
+
+  .feat-content { padding: 0.6rem !important; }
+  .feat-logo { width: 30px !important; height: 30px !important; padding: 3px !important; }
+  .feat-score-num { font-size: 1rem !important; width: 26px !important; }
+  .feat-team-name { font-size: 0.55rem !important; max-width: 55px !important; }
+
+  .res-row { padding: 0.4rem !important; font-size: 0.65rem !important; }
+  .res-team-name { max-width: 55px !important; }
+
+  .nm-row { padding: 0.4rem !important; }
+  .nm-logo { width: 20px !important; height: 20px !important; }
+  .nm-name { font-size: 0.55rem !important; max-width: 50px !important; }
+  .nm-vs { font-size: 0.45rem !important; padding: 1px 4px !important; }
+  .nm-date { font-size: 0.45rem !important; }
+  .feat-winner-tag { display: none !important; }
+
+  .match-item { padding: 0.4rem !important; }
+  .m-team { width: 40% !important; font-size: 0.7rem !important; }
+
+  .hero { min-height: 45vh !important; }
+  .hero h1 { font-size: 1.3rem !important; }
+  .hero-description { font-size: 0.85rem !important; }
+
+  .cp-hero { min-height: 260px !important; padding: 50px 8px 20px !important; }
+  .cp-hero-title { font-size: clamp(1.5rem, 6vw, 2.2rem) !important; }
+  .cp-stat-value { font-size: 20px !important; }
+  .cp-stat-label { font-size: 8px !important; }
+  .cp-match-teams { gap: 3px !important; }
+  .cp-team-name { max-width: 42px !important; font-size: 8px !important; }
+  .cp-score-nums { font-size: 16px !important; }
+
+  .footer { padding: 1.5rem 0 1rem !important; margin-top: 1.5rem !important; }
+  .footer-grid { gap: 1rem !important; }
+  .footer-brand h3 { font-size: 1.2rem !important; }
+  .footer-brand p { font-size: 0.8rem !important; }
+  .footer-section h4 { font-size: 0.9rem !important; }
+  .footer-section ul li a { font-size: 0.8rem !important; }
+
+  .section-header h2 { font-size: 1.3rem !important; }
+  .section-header p { font-size: 0.85rem !important; }
+
+  /* Sidebar ultra compact */
+  .pd-sidebar .glass-card { padding: 0.7rem !important; border-radius: 10px !important; }
+  .pd-sidebar .section-subtitle { font-size: 0.72rem !important; }
+  .feat-content { padding: 0.6rem 0.5rem 0.5rem !important; }
+  .feat-logo { width: 34px !important; height: 34px !important; padding: 3px !important; }
+  .feat-score-num { font-size: 1rem !important; width: 26px !important; }
+  .feat-team-name { max-width: 55px !important; font-size: 0.5rem !important; }
+  .feat-team { max-width: 75px !important; gap: 4px !important; }
+  .feat-winner-tag { display: none !important; }
+  .res-row { padding: 0.35rem 0.4rem !important; }
+  .res-row > div { width: 20px !important; height: 20px !important; }
+  .res-name { font-size: 0.58rem !important; }
+  .res-score { font-size: 0.65rem !important; }
 }

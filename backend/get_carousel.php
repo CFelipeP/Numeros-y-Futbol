@@ -15,16 +15,9 @@ try {
             $colLocal  = 'equipo_local';
             $colVisit  = 'equipo_visitante';
             break;
-        case 'segunda':
         case 'ascenso':
-            $tPartidos = 'partidos_segunda';
-            $tEquipos  = 'equipos_segunda';
-            $colLocal  = 'local_id';
-            $colVisit  = 'visitante_id';
-            break;
-        case 'tercera':
-            $tPartidos = 'partidos_tercera';
-            $tEquipos  = 'equipos_tercera';
+            $tPartidos = 'partidos_ascenso';
+            $tEquipos  = 'equipos_ascenso';
             $colLocal  = 'local_id';
             $colVisit  = 'visitante_id';
             break;

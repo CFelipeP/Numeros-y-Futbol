@@ -1132,44 +1132,6 @@ const KnockoutPair = ({ pair, onEdit, onQuickFinish, onDelete, onCreateVuelta, p
   </div>);
 };
 
-/* ─── Sidebar ────────────────────────────────────────────────────────────── */
-const Sidebar = () => {
-  const location = useLocation(); const [teamsOpen, setTeamsOpen] = useState(false);
-  const [seleccionesOpen, setSeleccionesOpen] = useState(false);
-const navItems = [
-      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
-      { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
-      { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
-      { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
-      {
-        type: "dropdown", icon: <Shield size={20} />, label: "Equipos",
-        children: [
-          { path: "/teams/primera", label: "Primera División" },
-          { path: "/teams/ascenso", label: "Liga de Ascenso" },
-          { path: "/teams/femenina", label: "Femenina" },
-        ]
-      },
-      {
-        type: "dropdown", icon: <Shield size={20} />, label: "Selecciones",
-        children: [
-          { path: "/manage-seleccion", label: "Masculina" },
-          { path: "/manage-seleccion-femenina", label: "Femenina" },
-          { path: "/manage-seleccion-sub20", label: "Sub-20" },
-            { path: "/manage-seleccion-sub17", label: "Sub-17" },
-        ]
-      },
-      { path: "/admin/plantilla", icon: <Target size={20} />, label: "Plantillas" },
-      { path: "/posiciones", icon: <Trophy size={20} />, label: "Posiciones" },
-      { path: "/admin/copa", icon: <Trophy size={20} />, label: "Copa Presidente" },
-      { path: "/manage-news", icon: <Newspaper size={20} />, label: "Noticias Públicas" },
-      { path: "/manage-comments", icon: <MessageCircle size={20} />, label: "Gestionar Comentarios" },
-      { path: "/users", icon: <Users size={20} />, label: "Usuarios" },
-      { path: "/settings", icon: <Settings size={20} />, label: "Configuración" },
-      { path: "/", icon: <Eye size={20} />, label: "Ver Sitio" },
-    ];  const handleLogout = () => { Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "Cancelar", background: "#1e293b", color: "#fff" }).then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } }); };
-  return (<AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout} />);
-};
-
 /* ─── COMPONENTE PRINCIPAL ───────────────────────────────────────────────── */
 const AdminCopPresidente = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1187,6 +1149,11 @@ const AdminCopPresidente = () => {
   const [editingMatch, setEditingMatch] = useState(null);
   const [btnAnim, setBtnAnim] = useState(null);
   const [autoGenerating, setAutoGenerating] = useState(false);
+
+  const handleLogout = () => {
+    Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "Cancelar", background: "#1e293b", color: "#fff" })
+      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
+  };
 
   const fetchData = useCallback(() => { setLoading(true); Promise.allSettled([safeFetch(`${API_BASE}copa_get_all_matches.php`), safeFetch(`${API_BASE}copa_get_teams.php`), safeFetch(`${API_BASE}copa_get_stats.php`)]).then(([rM, rT, rS]) => { if (rM.status === "fulfilled") setMatches(rM.value?.data || []); if (rT.status === "fulfilled") setTeams(rT.value?.data || []); if (rS.status === "fulfilled") setStats(rS.value?.data || {}); }).finally(() => setLoading(false)); }, []);
   useEffect(() => { void Promise.resolve().then(fetchData); }, [fetchData]);
@@ -1338,7 +1305,7 @@ const AdminCopPresidente = () => {
 
   return (
     <div className={`admin-layout ${sidebarOpen ? "sidebar-closed" : ""}`}>
-      <Sidebar />
+      <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout} />
       <main className="main-content">
         <header className="top-bar">
           <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}><Menu size={22} /></button>

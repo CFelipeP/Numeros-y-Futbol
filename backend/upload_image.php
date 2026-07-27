@@ -6,10 +6,10 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
 
-$targetDir = "uploads/";
+$targetDir = __DIR__ . "/uploads/";
 
 if (!file_exists($targetDir)) {
-    mkdir($targetDir, 0777, true);
+    mkdir($targetDir, 0755, true);
 }
 
 if (!isset($_FILES['file'])) {
@@ -19,7 +19,7 @@ if (!isset($_FILES['file'])) {
 
 $file = $_FILES['file'] ?? [];
 
-$allowed = ["jpg", "jpeg", "png", "mp4"];
+$allowed = ["jpg", "jpeg", "png", "webp", "mp4"];
 $ext = strtolower(pathinfo($file["name"] ?? '', PATHINFO_EXTENSION));
 
 if (!in_array($ext, $allowed)) {
@@ -41,10 +41,10 @@ $newName = uniqid() . "." . $ext;
 $targetFile = $targetDir . $newName;
 
 if (move_uploaded_file($file["tmp_name"], $targetFile)) {
-    ob_clean(); // 🔥 LIMPIA CUALQUIER BASURA
+    ob_clean();
     echo json_enc([
         "success" => true,
-        "url" => "http://numeros-y-futbol.test/backend/" . $targetFile
+        "url" => "/backend/uploads/" . $newName
     ]);
 } else {
     ob_clean();

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut,
-  Menu, Trophy, Target, ChevronDown, MessageCircle, Eye, BarChart3
+  Menu, Trophy, Target, ChevronDown, MessageCircle, Eye, BarChart3, CircleDot
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -59,7 +59,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, onLogout }) 
       </div>
       <nav className="sidebar-nav">
         <ul>
-          {NAV_ITEMS.map((item, idx) => {
+          {NAV_ITEMS.filter(item => item && item.label).map((item, idx) => {
             if (item.type === "dropdown") {
               const isSelecciones = item.label === "Selecciones";
               const isOpen = isSelecciones ? seleccionesOpen : teamsOpen;
@@ -67,7 +67,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, onLogout }) 
               return (
                 <li key={idx}>
                   <button className="nav-item" onClick={() => setOpen(!isOpen)} style={{ width: "100%", justifyContent: "space-between" }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>{item.icon} {item.label}</span>
+                    <span style={{ display: "flex", alignItems: "center", gap: "14px" }}>{item.icon || <CircleDot size={20} />} {item.label}</span>
                     <ChevronDown size={16} style={{ transition: "transform 0.25s ease", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.4 }} />
                   </button>
                   <ul style={{ maxHeight: isOpen ? "400px" : "0", opacity: isOpen ? "1" : "0", overflow: "hidden", transition: "max-height 0.3s ease, opacity 0.2s ease", listStyle: "none", padding: isOpen ? "2px 0 4px 0" : "0", margin: 0 }}>
@@ -85,7 +85,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, onLogout }) 
             return (
               <li key={item.path}>
                 <Link to={item.path} className={`nav-item${location.pathname === item.path ? " active" : ""}`}>
-                  {item.icon} {item.label}
+                  {item.icon || <CircleDot size={20} />} {item.label}
                 </Link>
               </li>
             );

@@ -113,7 +113,7 @@ export default function ManagePublicNews() {
     const selected = e.target.files[0];
     if (!selected) return;
 
-    const allowed = ["image/jpeg", "image/png", "image/jpg", "video/mp4"];
+    const allowed = ["image/jpeg", "image/png", "image/jpg", "image/webp", "video/mp4"];
 
     if (!allowed.includes(selected.type)) {
       Swal.fire({
@@ -430,7 +430,7 @@ export default function ManagePublicNews() {
                     <input
                       type="file"
                       id="edit-file-input"
-                      accept="image/png, image/jpeg, image/jpg, video/mp4"
+                       accept="image/png, image/jpeg, image/jpg, image/webp, video/mp4"
                       onChange={handleEditFileChange}
                     />
                     <label htmlFor="edit-file-input" className="edit-file-label">

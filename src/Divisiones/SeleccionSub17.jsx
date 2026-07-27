@@ -59,10 +59,7 @@ export default function Seleccion() {
   useEffect(() => {
     fetch(`${API}get_seleccion_detalle_sub17.php`)
       .then(r => r.json())
-      .then(d => {
-        setData(d);
-        setLoading(false);
-      }).catch(() => setLoading(false));
+      .then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
   }, []);
 
   if (loading) {
@@ -72,7 +69,7 @@ export default function Seleccion() {
   const partidos = data?.partidos || [];
   const jugadores = data?.jugadores || [];
   const staff = data?.staff || [];
-  const escudoSV = logoUrl("/uploads/escudo_elsalvador.png");
+  const escudoSV = logoUrl("uploads/escudo_elsalvador.png");
 
   const grupos = {
     portero: jugadores.filter(j => getPosInfo(j.posicion).cat === "portero"),
@@ -204,7 +201,6 @@ export default function Seleccion() {
             </div>
           )}
 
-          {/* ── JUGADORES ── */}
           {activeTab === "jugadores" && (
             <div className="sel-card">
               <div className="sel-card-title">👥 Jugadores convocados ({jugadores.length})</div>

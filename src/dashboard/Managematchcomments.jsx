@@ -190,6 +190,10 @@ export default function ManageMatchComments() {
   const [semitiem,    setSemitiem]    = useState(1); 
   const cronRef = useRef(null);
 
+  const [editandoCron, setEditandoCron] = useState(false);
+  const [cronEditMin, setCronEditMin] = useState(0);
+  const [cronEditSeg, setCronEditSeg] = useState(0);
+
   const [editingComment, setEditingComment] = useState(null);
   const [editTipo, setEditTipo] = useState("comentario");
   const [editMinuto, setEditMinuto] = useState("");
@@ -548,6 +552,23 @@ export default function ManageMatchComments() {
     setCronActivo(true); 
   };
 
+  const abrirCronEdit = () => {
+    setCronEditMin(Math.floor(cronSegundos / 60));
+    setCronEditSeg(cronSegundos % 60);
+    setEditandoCron(true);
+  };
+
+  const salvarCronEdit = () => {
+    const totalSeg = cronEditMin * 60 + cronEditSeg;
+    if (totalSeg < 0 || totalSeg > 7200) return;
+    setCronSegundos(totalSeg);
+    const timerData = getTimerData();
+    if (timerData) {
+      saveTimerData({ ...timerData, baseSeconds: totalSeg, startTime: cronActivo ? Date.now() : null });
+    }
+    setEditandoCron(false);
+  };
+
   const fmtCron = (s) => {
     const m = Math.floor(s/60);
     const ss = s%60;
@@ -626,12 +647,31 @@ export default function ManageMatchComments() {
                 <div className="table-container" style={{padding:18}}>
                   <p style={{margin:"0 0 12px",fontSize:12,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:1}}>⏱ Cronómetro</p>
                   <div style={{textAlign:"center",marginBottom:12}}>
-                    <div style={{fontSize:36,fontWeight:900,fontFamily:"Montserrat,monospace",color:cronActivo?"#22c55e":"#64748b",letterSpacing:2}}>
-                      {fmtCron(cronSegundos)}
-                    </div>
-                    <div style={{fontSize:13,color:"#64748b",fontWeight:600}}>
-                      Minuto actual: <strong style={{color:"#f1f5f9"}}>{minutoActual}'</strong> | {semitiem===1?"1er Tiempo":"2do Tiempo"}
-                    </div>
+                    {editandoCron ? (
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,flexWrap:"wrap"}}>
+                        <input type="number" value={cronEditMin} onChange={e => setCronEditMin(parseInt(e.target.value)||0)} min={0} max={120} style={{width:60,padding:"8px",borderRadius:8,border:"1px solid rgba(59,130,246,0.3)",background:"#0f172a",color:"#f1f5f9",fontSize:22,fontWeight:900,fontFamily:"monospace",textAlign:"center",outline:"none"}} />
+                        <span style={{fontSize:22,fontWeight:900,color:"#64748b"}}>:</span>
+                        <input type="number" value={cronEditSeg} onChange={e => setCronEditSeg(Math.min(59,parseInt(e.target.value)||0))} min={0} max={59} style={{width:60,padding:"8px",borderRadius:8,border:"1px solid rgba(59,130,246,0.3)",background:"#0f172a",color:"#f1f5f9",fontSize:22,fontWeight:900,fontFamily:"monospace",textAlign:"center",outline:"none"}} />
+                        <div style={{display:"flex",gap:4,marginTop:4}}>
+                          <button onClick={salvarCronEdit} style={{padding:"6px 12px",borderRadius:6,border:"none",background:"#22c55e",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer"}}>💾</button>
+                          <button onClick={() => setEditandoCron(false)} style={{padding:"6px 12px",borderRadius:6,border:"1px solid rgba(239,68,68,0.3)",background:"transparent",color:"#ef4444",fontWeight:700,fontSize:12,cursor:"pointer"}}>✕</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{fontSize:36,fontWeight:900,fontFamily:"Montserrat,monospace",color:cronActivo?"#22c55e":"#64748b",letterSpacing:2}}>
+                          {fmtCron(cronSegundos)}
+                        </div>
+                        {(semitiem === 1 || cronSegundos > 0) && (
+                          <button onClick={abrirCronEdit} title="Editar minuto" style={{marginTop:4,padding:"3px 10px",borderRadius:5,border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.03)",color:"#64748b",cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>✏️ Editar</button>
+                        )}
+                      </>
+                    )}
+                    {!editandoCron && (
+                      <div style={{fontSize:13,color:"#64748b",fontWeight:600,marginTop:4}}>
+                        Minuto actual: <strong style={{color:"#f1f5f9"}}>{minutoActual}'</strong> | {semitiem===1?"1er Tiempo":"2do Tiempo"}
+                      </div>
+                    )}
                   </div>
                   <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
                     {!cronActivo && cronSegundos === 0 && semitiem === 1 && (

@@ -24,6 +24,13 @@ $local = (int)$local;
 $visitante = (int)$visitante;
 $jornada = $jornada !== null && $jornada !== '' ? (int)$jornada : null;
 
+if ($jornada !== null) {
+    $chk = $conn->prepare("SELECT COUNT(*) FROM partidos_reservas WHERE jornada = ? AND (equipo_local = ? OR equipo_visitante = ? OR equipo_local = ? OR equipo_visitante = ?)");
+    $chk->bind_param("iiiii", $jornada, $local, $local, $visitante, $visitante);
+    $chk->execute(); $chk->bind_result($cnt); $chk->fetch(); $chk->close();
+    if ($cnt > 0) { echo json_enc(["error" => "Ese equipo ya está en esta jornada"]); exit; }
+}
+
 if ($fecha && $hora) {
     $fecha_hora = $fecha . ' ' . $hora . ':00';
 } else {

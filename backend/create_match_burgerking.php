@@ -8,6 +8,13 @@ $conn = $mysqli;
 $local = $_POST['local'] ?? null; $visitante = $_POST['visitante'] ?? null; $fecha = $_POST['fecha'] ?? null; $hora = $_POST['hora'] ?? null; $jornada = $_POST['jornada'] ?? null;
 if (!$local || !$visitante || $local == $visitante) { http_response_code(400); echo json_enc(["error" => "Datos inválidos"]); exit; }
 $local = (int)$local; $visitante = (int)$visitante; $jornada = $jornada !== null && $jornada !== '' ? (int)$jornada : null;
+
+if ($jornada !== null) {
+    $chk = $conn->prepare("SELECT COUNT(*) FROM partidos_burgerking WHERE jornada = ? AND (equipo_local = ? OR equipo_visitante = ? OR equipo_local = ? OR equipo_visitante = ?)");
+    $chk->bind_param("iiiii", $jornada, $local, $local, $visitante, $visitante);
+    $chk->execute(); $chk->bind_result($cnt); $chk->fetch(); $chk->close();
+    if ($cnt > 0) { echo json_enc(["error" => "Ese equipo ya está en esta jornada"]); exit; }
+}
 $fecha_hora = ($fecha && $hora) ? $fecha . ' ' . $hora . ':00' : date('Y-m-d H:i:s');
 if ($jornada !== null && $jornada !== '') { $stmt = $conn->prepare("INSERT INTO partidos_burgerking (equipo_local, equipo_visitante, fecha, jornada, goles_local, goles_visitante, estado) VALUES (?, ?, ?, ?, 0, 0, 'Pendiente')"); $stmt->bind_param("iisi", $local, $visitante, $fecha_hora, $jornada); }
 else { $stmt = $conn->prepare("INSERT INTO partidos_burgerking (equipo_local, equipo_visitante, fecha, goles_local, goles_visitante, estado) VALUES (?, ?, ?, 0, 0, 'Pendiente')"); $stmt->bind_param("iis", $local, $visitante, $fecha_hora); }

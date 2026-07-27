@@ -18,6 +18,12 @@ if (!$local || !$visitante || $local === $visitante) {
 
 $jornada = $jornada !== null && $jornada !== '' ? (int)$jornada : null;
 
+if ($jornada !== null) {
+    $chk = $conn->prepare("SELECT COUNT(*) FROM partidos_femenina WHERE jornada = ? AND (equipo_local = ? OR equipo_visitante = ? OR equipo_local = ? OR equipo_visitante = ?)");
+    $chk->execute([$jornada, $local, $local, $visitante, $visitante]);
+    if ($chk->fetchColumn() > 0) { echo json_enc(["error" => "Ese equipo ya está en esta jornada"]); exit; }
+}
+
 if ($fecha && $hora) {
     $fecha_hora = $fecha . ' ' . $hora . ':00';
 } else {
