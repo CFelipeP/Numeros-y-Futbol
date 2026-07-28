@@ -677,8 +677,9 @@ export default function Fedecredito() {
     flex-direction:column!important;
     gap:1.5rem!important;
   }
+  .pd-sidebar{display:contents!important}
+  .pd-featured{order:1!important}
   .pd-clasif-col{order:2!important}
-  .pd-sidebar > :nth-child(1){order:1!important}
   .pd-sidebar > :nth-child(2){order:3!important}
   .pd-sidebar > :nth-child(3){order:4!important}
   .pd-sidebar > :nth-child(4){order:5!important}

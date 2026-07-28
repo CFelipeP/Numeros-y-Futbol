@@ -544,7 +544,9 @@ export default function AscensoDivision() {
 .pv-sub-mini-stats small{font-size:.48rem;font-weight:600;color:#334155}
 @media(max-width:768px){
   .asc-dashboard-m{display:flex!important;flex-direction:column!important;gap:1.5rem!important}
-  .asc-sidebar-col-m > :nth-child(1){order:1!important}
+  .asc-sidebar-col-m{display:contents!important}
+  .asc-featured-wrap{order:1!important}
+  .asc-featured-wrap{order:1!important}
   .asc-sidebar-col-m > :nth-child(2){order:3!important}
   .asc-sidebar-col-m > :nth-child(3){order:4!important}
   .asc-sidebar-col-m > :nth-child(4){order:5!important}

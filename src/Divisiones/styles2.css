@@ -1046,15 +1046,17 @@
   .res-more .res-more-text { display: none !important; }
 
   /* ===== Mobile section reorder: Featured → Clasificación → Próximos → Últimos → Leyenda ===== */
+  /* display:contents flattens pd-sidebar children into dashboard-grid */
   .dashboard-grid { display: flex !important; flex-direction: column !important; }
+  .pd-sidebar { display: contents !important; }
+  .pd-featured { order: 1 !important; }
   .pd-clasif-col { order: 2 !important; }
-  .pd-sidebar > :nth-child(1) { order: 1 !important; }
   .pd-sidebar > :nth-child(2) { order: 3 !important; }
   .pd-sidebar > :nth-child(3) { order: 4 !important; }
   .pd-sidebar > :nth-child(4) { order: 5 !important; }
+  .asc-sidebar-col-m { display: contents !important; }
+  .asc-featured-wrap { order: 1 !important; }
   .asc-standings-col-m { order: 2 !important; }
-  .asc-sidebar-col-m { order: 1 !important; }
-  .asc-sidebar-col-m > :nth-child(1) { order: 1 !important; }
   .asc-sidebar-col-m > :nth-child(2) { order: 3 !important; }
   .asc-sidebar-col-m > :nth-child(3) { order: 4 !important; }
   .asc-sidebar-col-m > :nth-child(4) { order: 5 !important; }
