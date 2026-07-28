@@ -10,7 +10,9 @@ RUN docker-php-ext-install pdo pdo_mysql mysqli \
  && a2enmod rewrite \
  && a2enmod headers \
  && echo 'default_charset = "UTF-8"' > /usr/local/etc/php/conf.d/charset.ini \
- && echo 'date.timezone = "America/El_Salvador"' >> /usr/local/etc/php/conf.d/charset.ini
+ && echo 'date.timezone = "America/El_Salvador"' >> /usr/local/etc/php/conf.d/charset.ini \
+ && echo 'upload_max_filesize = 15M' > /usr/local/etc/php/conf.d/upload.ini \
+ && echo 'post_max_size = 20M' >> /usr/local/etc/php/conf.d/upload.ini
 
 COPY --from=builder /app/dist /var/www/html
 COPY backend /var/www/html/backend

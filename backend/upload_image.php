@@ -37,6 +37,12 @@ if (!in_array($mime, $allowedMimes)) {
     exit;
 }
 
+$maxSize = 15 * 1024 * 1024;
+if (($file['size'] ?? 0) > $maxSize) {
+    echo json_enc(["success" => false, "error" => "El archivo excede el limite de 15MB"]);
+    exit;
+}
+
 $newName = uniqid() . "." . $ext;
 $targetFile = $targetDir . $newName;
 

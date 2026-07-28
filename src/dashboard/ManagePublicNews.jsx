@@ -244,7 +244,7 @@ const ManagePublicNews = () => {
                       <div className="news-upload-placeholder">
                         <ImageIcon size={20} />
                         <span>Haz clic o arrastra un archivo aqui</span>
-                        <span className="news-upload-hint">JPG, PNG o MP4 (max 10MB)</span>
+                        <span className="news-upload-hint">JPG, PNG o MP4 (max 15MB)</span>
                       </div>
                     </div>
                     {file && (
