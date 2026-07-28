@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+﻿import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -543,9 +543,12 @@ export default function AscensoDivision() {
 .pv-sub-mini-stats span{display:flex;align-items:baseline;gap:1px}
 .pv-sub-mini-stats small{font-size:.48rem;font-weight:600;color:#334155}
 @media(max-width:768px){
-  .asc-dashboard-m{display:flex!important;flex-direction:column-reverse!important;gap:1.5rem!important}
-  .asc-sidebar-col-m{order:2!important}
-  .asc-standings-col-m{order:1!important}
+  .asc-dashboard-m{display:flex!important;flex-direction:column!important;gap:1.5rem!important}
+  .asc-sidebar-col-m > :nth-child(1){order:1!important}
+  .asc-sidebar-col-m > :nth-child(2){order:3!important}
+  .asc-sidebar-col-m > :nth-child(3){order:4!important}
+  .asc-sidebar-col-m > :nth-child(4){order:5!important}
+  .asc-standings-col-m{order:2!important}
   .asc-page-title-row h2{font-size:1.5rem!important}
   .asc-page-subtitle{font-size:.88rem!important;padding-left:0!important}
   .asc-main-tabs{border-radius:10px!important}
