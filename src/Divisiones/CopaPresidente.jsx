@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+﻿import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "./styles2.css";
@@ -480,13 +480,13 @@ export default function CopaPresidente() {
       <Header/>
       <section className="table-section" style={{paddingBottom:0}}>
 
-        <div style={{position:"relative",minHeight:380,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",padding:"100px 24px 50px"}}>
+        <div className="cp-hero" style={{position:"relative",minHeight:380,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",padding:"100px 24px 50px"}}>
           <HeroBg/>
           <div style={{position:"relative",zIndex:2,textAlign:"center",maxWidth:700,width:"100%"}}>
             <div style={{animation:"fadeInUp .5s ease-out .1s both",display:"inline-flex",alignItems:"center",gap:8,fontSize:8,fontWeight:900,letterSpacing:"4px",color:"var(--color-accent)",textTransform:"uppercase",marginBottom:16,fontFamily:FF,padding:"4px 14px",borderRadius:4,border:"1px solid rgba(255,0,77,0.4)",background:"rgba(255,0,77,0.1)"}}>
               <span style={{width:5,height:5,borderRadius:"50%",background:"var(--color-accent)",animation:"livePulse 1.5s infinite"}}/>Torneo Oficial · El Salvador
             </div>
-            <h1 style={{animation:"fadeInUp .6s ease-out .2s both",margin:"0 0 8px",fontSize:"clamp(3rem,9vw,5.5rem)",fontWeight:900,lineHeight:0.88,fontFamily:FF,letterSpacing:"-2px",textTransform:"uppercase"}}>
+            <h1 className="cp-hero-title" style={{animation:"fadeInUp .6s ease-out .2s both",margin:"0 0 8px",fontSize:"clamp(3rem,9vw,5.5rem)",fontWeight:900,lineHeight:0.88,fontFamily:FF,letterSpacing:"-2px",textTransform:"uppercase"}}>
               <span style={{color:"var(--color-text-main)"}}>COPA </span>
               <span style={{background:"linear-gradient(135deg,var(--color-accent),#ff6b35)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",filter:"drop-shadow(0 0 20px rgba(255,0,77,0.4))"}}>PRESIDENTE</span>
             </h1>
@@ -501,7 +501,7 @@ export default function CopaPresidente() {
 
         <LiveTicker matches={matches}/>
 
-        <div className="container" style={{maxWidth:1100,padding:"28px 16px 64px"}}>
+        <div className="container cp-content" style={{maxWidth:1100,padding:"28px 16px 64px"}}>
           {error&&(<div style={{textAlign:"center",padding:"70px 0"}}><div style={{fontSize:10,color:"var(--color-accent)",marginBottom:12,fontFamily:FF,letterSpacing:"2px"}}>ERROR AL CARGAR DATOS</div><button onClick={loadData} style={{padding:"9px 24px",borderRadius:5,border:"1px solid rgba(255,0,77,0.4)",background:"rgba(255,0,77,0.1)",color:"var(--color-accent)",fontSize:11,fontWeight:800,cursor:"pointer",fontFamily:FF,letterSpacing:"1.5px"}}>REINTENTAR</button></div>)}
           {!error&&(
             <div style={{animation:"fadeInUp .35s ease-out"}}>
@@ -598,48 +598,66 @@ export default function CopaPresidente() {
         .phase-btn.active::after{width:60%;}
         .phase-btn:hover:not(.active){color:#94a3b8;}
 
-        @media(max-width:768px){
-          .cp-hero{min-height:380px!important;padding:80px 16px 40px!important}
-          .cp-hero-title{font-size:clamp(2.2rem,8vw,3.5rem)!important}
-          .cp-hero-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
-          .cp-content{padding:20px 12px 48px!important}
-          .cp-filters-row{flex-direction:column!important;gap:10px!important;align-items:stretch!important}
-          .cp-match-grid{grid-template-columns:1fr!important;gap:10px!important}
-          .cp-group-table{display:block!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
-          .cp-group-table table{min-width:520px!important}
-          .cp-group-table th,.cp-group-table td{padding:6px 7px!important;font-size:10px!important}
-          .cp-th-div,.cp-td-div{display:none!important}
-          .cp-th-gf,.cp-td-gf,.cp-th-gc,.cp-td-gc{display:none!important}
-          .cp-team-name{max-width:90px!important;font-size:10px!important}
-          .cp-phase-bar{justify-content:flex-start!important;-webkit-overflow-scrolling:touch}
-          .phase-btn{padding:10px 12px!important;font-size:10px!important;letter-spacing:1px!important;gap:5px!important}
-          .gf-btn{padding:5px 10px!important;font-size:9px!important;letter-spacing:1px!important}
-          .view-btn{padding:6px 10px!important;font-size:9px!important;letter-spacing:1px!important}
-          .cp-bracket-wrap{padding:16px 8px 16px!important}
-          .cp-bracket-section{gap:10px!important;margin-bottom:18px!important}
-          .cp-bracket-section h2{font-size:17px!important;letter-spacing:0.5px!important}
-          .cp-ticker-label{padding:0 10px!important;font-size:7px!important;letter-spacing:1.5px!important}
-          .cp-ticker-match{font-size:10px!important;gap:24px!important}
-          .cp-match-card-grid{gap:8px!important}
-          .cp-match-logo{width:32px!important;height:32px!important}
-          .cp-match-team-name{max-width:70px!important;font-size:11px!important}
-          .cp-match-score{font-size:24px!important;min-width:65px!important}
-          .cp-match-vs{font-size:10px!important;letter-spacing:3px!important}
-        }
-        @media(max-width:480px){
-          .cp-hero{min-height:340px!important;padding:74px 12px 32px!important}
-          .cp-hero-title{font-size:clamp(1.8rem,7vw,2.8rem)!important}
-          .phase-btn{padding:8px 8px!important;font-size:9px!important;letter-spacing:0.8px!important;gap:4px!important}
-          .cp-group-table table{min-width:380px!important}
-          .cp-team-name{max-width:75px!important;font-size:9px!important}
-          .gf-btn{padding:4px 8px!important;font-size:8px!important}
-          .view-btn{padding:5px 8px!important;font-size:8px!important}
-          .cp-match-logo{width:28px!important;height:28px!important}
-          .cp-match-team-name{max-width:60px!important;font-size:10px!important}
-          .cp-match-score{font-size:20px!important;min-width:55px!important}
-          .cp-match-meta{font-size:8px!important}
-          .cp-match-grp{font-size:8px!important;padding:1px 6px!important}
-        }
+        @media(max-width:900px){
+  .cp-hero{padding:90px 20px 40px!important}
+  .cp-hero-stats{grid-template-columns:repeat(2,1fr)!important}
+  .cp-content{padding:24px 16px 56px!important}
+}
+@media(max-width:768px){
+  .cp-hero{min-height:340px!important;padding:80px 16px 36px!important}
+  .cp-hero-title{font-size:clamp(2rem,8vw,3.2rem)!important;letter-spacing:-1px!important}
+  .cp-hero-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
+  .cp-content{padding:20px 12px 48px!important}
+  .cp-section-divider{flex-wrap:wrap!important;gap:10px!important}
+  .cp-section-divider h2{font-size:17px!important}
+  .cp-filters-row{flex-direction:column!important;gap:10px!important;align-items:stretch!important}
+  .cp-filters-row > div{justify-content:center!important}
+  .cp-match-grid{grid-template-columns:1fr!important;gap:10px!important}
+  .cp-group-table{display:block!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+  .cp-group-table table{min-width:480px!important}
+  .cp-group-table th,.cp-group-table td{padding:6px 7px!important;font-size:10px!important}
+  .cp-th-div,.cp-td-div{display:none!important}
+  .cp-th-gf,.cp-td-gf,.cp-th-gc,.cp-td-gc{display:none!important}
+  .cp-team-name{max-width:90px!important;font-size:10px!important}
+  .cp-phase-bar{justify-content:flex-start!important;-webkit-overflow-scrolling:touch}
+  .phase-btn{padding:10px 12px!important;font-size:10px!important;letter-spacing:1px!important;gap:5px!important}
+  .gf-btn{padding:5px 10px!important;font-size:9px!important;letter-spacing:1px!important}
+  .view-btn{padding:6px 10px!important;font-size:9px!important;letter-spacing:1px!important}
+  .cp-bracket-wrap{padding:16px 6px 16px!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+  .cp-bracket-section{gap:10px!important;margin-bottom:18px!important}
+  .cp-bracket-section h2{font-size:17px!important;letter-spacing:0.5px!important}
+  .cp-ticker-label{padding:0 10px!important;font-size:7px!important;letter-spacing:1.5px!important}
+  .cp-ticker-match{font-size:10px!important;gap:24px!important}
+  .cp-match-card-grid{gap:8px!important}
+  .cp-match-logo{width:32px!important;height:32px!important}
+  .cp-match-team-name{max-width:70px!important;font-size:11px!important}
+  .cp-match-score{font-size:24px!important;min-width:65px!important}
+  .cp-match-vs{font-size:10px!important;letter-spacing:3px!important}
+}
+@media(max-width:480px){
+  .cp-hero{min-height:300px!important;padding:72px 12px 28px!important}
+  .cp-hero-title{font-size:clamp(1.6rem,8vw,2.5rem)!important;letter-spacing:-1px!important}
+  .cp-hero-stats{grid-template-columns:repeat(2,1fr)!important;gap:6px!important}
+  .cp-content{padding:16px 10px 40px!important}
+  .cp-section-divider{gap:8px!important}
+  .cp-section-divider h2{font-size:15px!important}
+  .cp-section-divider > div:first-child{width:32px!important;height:32px!important}
+  .phase-btn{padding:8px 8px!important;font-size:9px!important;letter-spacing:0.8px!important;gap:4px!important}
+  .cp-group-table table{min-width:360px!important}
+  .cp-team-name{max-width:70px!important;font-size:9px!important}
+  .gf-btn{padding:4px 8px!important;font-size:8px!important}
+  .view-btn{padding:5px 8px!important;font-size:8px!important}
+  .cp-match-logo{width:28px!important;height:28px!important}
+  .cp-match-team-name{max-width:55px!important;font-size:10px!important}
+  .cp-match-score{font-size:20px!important;min-width:50px!important}
+  .cp-match-vs{font-size:9px!important;letter-spacing:2px!important}
+  .cp-match-meta{font-size:8px!important}
+  .cp-match-grp{font-size:7px!important;padding:1px 5px!important}
+  .cp-bracket-wrap{padding:12px 4px 12px!important}
+  .cp-bracket-section h2{font-size:15px!important}
+  .cp-bracket-section > div:first-child{width:34px!important;height:34px!important}
+  .stat-box{padding:14px 10px!important}
+}
       `}</style>
     </>
   );
