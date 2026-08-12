@@ -8,7 +8,7 @@ $currentUser = requireAuth();
 $id = intval($_GET['id'] ?? 0);
 if (!$id) { echo json_enc(["error" => "ID requerido"]); exit; }
 
-if ($id !== (int)$currentUser['user_id'] && $currentUser['user_role'] !== 'admin') {
+if ($id !== (int)$currentUser['user_id']) {
     http_response_code(403);
     echo json_enc(["error" => "No autorizado"]);
     exit;

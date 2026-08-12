@@ -26,8 +26,9 @@ function getCurrentUser() {
     if (!$token) return null;
 
     $stmt = $GLOBALS['mysqli']->prepare(
-        "SELECT user_id, user_role FROM auth_tokens
-         WHERE token = ? AND (expires_at IS NULL OR expires_at > NOW())"
+        "SELECT a.user_id, u.rol AS user_role FROM auth_tokens a
+         JOIN usuarios u ON u.id = a.user_id
+         WHERE a.token = ? AND a.expires_at IS NOT NULL AND a.expires_at > NOW()"
     );
     if (!$stmt) return null;
     $stmt->bind_param("s", $token);

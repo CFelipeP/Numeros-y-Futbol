@@ -4,10 +4,12 @@ import {
   LayoutDashboard, CalendarDays, Shield, Newspaper, Users, Settings, LogOut,
   Menu, Trophy, Target, ChevronDown, MessageCircle, Eye, BarChart3, CircleDot
 } from "lucide-react";
+import { API_BASE } from "../config";
+import { getToken } from "../apiHelper";
 
 const NAV_ITEMS = [
-  { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
-  { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+  { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analíticas" },
+  { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Panel" },
   { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
   { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
   {
@@ -43,11 +45,32 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, onLogout }) 
   const location = useLocation();
   const [teamsOpen, setTeamsOpen] = useState(false);
   const [seleccionesOpen, setSeleccionesOpen] = useState(false);
+  const [siteName, setSiteName] = useState('Números y Fútbol');
+
+  useEffect(() => {
+    fetch(`${API_BASE}get_site_settings.php`)
+      .then(r => r.json())
+      .then(d => { if (d.success && d.settings && d.settings.site_name) setSiteName(d.settings.site_name); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (location.pathname.startsWith("/teams/")) setTeamsOpen(true);
     if (location.pathname.startsWith("/manage-seleccion")) setSeleccionesOpen(true);
   }, [location.pathname]);
+
+  const handleLogoutClick = async () => {
+    const token = getToken();
+    if (token) {
+      try {
+        await fetch(`${API_BASE}logout.php`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+      } catch (_) {}
+    }
+    onLogout();
+  };
 
   return (
     <aside className="sidebar">
@@ -55,7 +78,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, onLogout }) 
         <div className="logo-icon">
           <img src="/numeros-y-futbol.svg" alt="Logo" />
         </div>
-        <h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2>
+        <h2 className="sidebar-title">{siteName} <span className="accent-text">Admin</span></h2>
       </div>
       <nav className="sidebar-nav">
         <ul>
@@ -93,7 +116,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen, onLogout }) 
         </ul>
       </nav>
       <div className="sidebar-footer">
-        <button className="nav-item btn-logout-sidebar" onClick={onLogout}>
+        <button className="nav-item btn-logout-sidebar" onClick={handleLogoutClick}>
           <LogOut size={20} className="nav-icon" /> Cerrar sesión
         </button>
       </div>

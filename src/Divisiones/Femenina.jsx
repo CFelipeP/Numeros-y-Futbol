@@ -214,7 +214,7 @@ function getPosInfo(v) {
   if (p) return p;
   const fb = { portero: "portero", defensa: "defensa", medio: "medio", delantero: "delantero" }; const c = fb[v];
   if (c) return { label: v.charAt(0).toUpperCase() + v.slice(1), cat: c, color: catCfg[c].color, abbr: v.substring(0, 2).toUpperCase() };
-  return { label: v || "?", cat: "delantero", color: "#64748b", abbr: "??" };
+  return { label: v || "—", cat: "delantero", color: "#64748b", abbr: "—" };
 }
 
 const formations = {

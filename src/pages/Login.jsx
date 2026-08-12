@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -8,12 +8,20 @@ import { API_BASE } from "../config";
 
 export default function Login() {
     const navigate = useNavigate();
+    const [siteName, setSiteName] = useState("Números y Fútbol");
     const [usuario, setUsuario] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const isEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+
+    useEffect(() => {
+        fetch(`${API_BASE}get_site_settings.php`)
+            .then(r => r.json())
+            .then(d => { if (d.success && d.settings && d.settings.site_name) setSiteName(d.settings.site_name); })
+            .catch(() => {});
+    }, []);
 
     const login = async (e) => {
         e.preventDefault();
@@ -104,10 +112,10 @@ export default function Login() {
                 <motion.div className="login-logo" variants={itemVariants}>
                     <img 
                         src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" 
-                        alt="Logo Números y Fútbol" 
+                        alt={`Logo ${siteName}`} 
                         className="login-logo-img"
                     />
-                    <span>Números y Fútbol</span>
+                    <span>{siteName}</span>
                 </motion.div>
 
                 <motion.h1 className="login-title" variants={itemVariants}>¡Bienvenido de vuelta!</motion.h1>

@@ -4,9 +4,10 @@ Options -Indexes
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "DENY"
-  Header always set X-XSS-Protection "0"
-  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Referrer-Policy "strict-origin"
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; media-src 'self'"
 </IfModule>
 
 # Bloquear archivos sensibles (.env, .bak, .sql, etc)
@@ -14,10 +15,8 @@ Options -Indexes
   RewriteEngine On
   RewriteBase /
   
-  # Bloquear acceso a .env y otros archivos sensibles
-  RewriteRule \.env$ - [F,L]
-  RewriteRule \.bak$ - [F,L]
-  RewriteRule \.sql$ - [F,L]
+  # Bloquear acceso a archivos sensibles
+  RewriteRule \.(env|bak|sql|save|old|tmp|swp|dist|ini|log|md|zip|tar|gz)$ - [F,L]
   RewriteRule ^backend/PHPMailer/get_oauth_token\.php$ - [F,L]
   
   RewriteRule ^index\.html$ - [L]

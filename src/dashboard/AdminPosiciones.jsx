@@ -141,7 +141,7 @@ const AdminPosiciones = () => {
 
     const handleLogout = () => {
         Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir", cancelButtonText: "Cancelar", background: "#1e293b", color: "#fff" })
-            .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
+            .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Sesión cerrada", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
     };
 
     const filteredTabla = tabla;
@@ -170,8 +170,8 @@ const AdminPosiciones = () => {
     ];
 
     const navItems = [
-      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
-      { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analíticas" },
+      { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Panel" },
       { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
       { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
       {
@@ -290,8 +290,8 @@ const AdminPosiciones = () => {
                     </div>
                 </header>
 
-                <div className="content-wrapper" style={{ padding: "1rem" }}>
-                    <div className="header-responsive-container" style={{
+                <div className="content-wrapper">
+                    <div className="pos-header-container" style={{
                         background: "linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(139,92,246,0.06) 50%, rgba(16,185,129,0.05) 100%)",
                         border: "1px solid rgba(59,130,246,0.1)", borderRadius: "16px",
                         padding: "1.5rem", marginBottom: "1.5rem",
@@ -349,7 +349,7 @@ const AdminPosiciones = () => {
                     {/* GRID TARJETAS MEJORADO */}
                     <div className="stats-grid" style={{ marginBottom: "1.5rem" }}>
                         {statCards.map((s) => (
-                            <div key={s.label} style={{ background: s.gradient, border: `1px solid ${s.border}`, borderRadius: "14px", padding: "1.2rem 1.3rem", transition: "all 0.3s ease" }}
+                            <div key={s.label} className="pos-stat-card" style={{ background: s.gradient, border: `1px solid ${s.border}`, borderRadius: "14px", padding: "1.2rem 1.3rem", transition: "all 0.3s ease" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = `0 8px 25px ${s.border}`; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
                                 <div style={{ width: 38, height: 38, borderRadius: "10px", background: `${s.color}15`, display: "flex", alignItems: "center", justifyContent: "center", color: s.color, marginBottom: "0.8rem" }}>{s.icon}</div>
@@ -373,7 +373,7 @@ const AdminPosiciones = () => {
                                 <p style={{ fontSize: "0.85rem", margin: 0, opacity: 0.5 }}>Agrega equipos desde la sección de Equipos</p>
                             </div>
                         ) : (
-                            <table style={{ width: "100%", borderCollapse: "collapse", userSelect: "none", minWidth: "650px" }}>
+                            <><div className="desktop-table-wrapper"><table style={{ width: "100%", borderCollapse: "collapse", userSelect: "none", minWidth: "650px" }}>
                                 <thead>
                                     <tr style={{ background: "rgba(255,255,255,0.02)" }}>
                                         <th style={{ padding: "1rem 0.5rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "#475569", width: 50 }}>Pos</th>
@@ -411,11 +411,54 @@ const AdminPosiciones = () => {
                                         return renderTeamRow(row, row.displayPos);
                                     })}
                                 </tbody>
-                            </table>
+                            </table></div>
+                            <div className="mobile-cards">
+                                {displayRows.map((row, i) => {
+                                    if (row.isGroupHeader) {
+                                        return (
+                                            <div key={`gh-${row.label}`} className="pos-mc-group-header" style={{ background: row.borderColor, borderBottom: `1px solid ${row.borderColor}` }}>
+                                                <span style={{ width: 7, height: 7, borderRadius: "50%", background: row.color, boxShadow: `0 0 6px ${row.color}40` }} />
+                                                <span style={{ fontSize: "0.65rem", fontWeight: 800, color: row.color, textTransform: "uppercase" }}>{row.label}</span>
+                                                <span style={{ fontSize: "0.6rem", color: "#475569" }}>{row.count} equipos</span>
+                                            </div>
+                                        );
+                                    }
+                                    const pos = i + 1;
+                                    const posColor = getPosColor(pos - 1);
+                                    const posLabel = getPosLabel(pos - 1);
+                                    const dg = getDG(row.dg);
+                                    return (
+                                        <div key={row.id} className="pos-mobile-card" style={{ borderLeft: posColor ? `3px solid ${posColor}` : "3px solid transparent" }}>
+                                            <div className="pos-mc-top">
+                                                <div className="pos-mc-pos" style={{ background: posColor ? `${posColor}18` : "transparent", color: posColor || "#475569", border: posColor ? `1px solid ${posColor}25` : "1px solid transparent" }}>
+                                                    {pos}
+                                                </div>
+                                                <div className="pos-mc-team">
+                                                    <img src={logoUrl(row.logo)} alt="" className="pos-mc-logo" />
+                                                    <span className="pos-mc-name">{row.nombre}</span>
+                                                </div>
+                                                <div className="pos-mc-pts">{row.pts}<small>PTS</small></div>
+                                            </div>
+                                            <div className="pos-mc-stats">
+                                                <div className="pos-mc-stat"><span className="pos-mc-stat-v">{row.pj}</span><span className="pos-mc-stat-l">PJ</span></div>
+                                                <div className="pos-mc-stat" style={{ color: "#10b981" }}><span className="pos-mc-stat-v">{row.pg}</span><span className="pos-mc-stat-l">G</span></div>
+                                                <div className="pos-mc-stat" style={{ color: "#f59e0b" }}><span className="pos-mc-stat-v">{row.pe}</span><span className="pos-mc-stat-l">E</span></div>
+                                                <div className="pos-mc-stat" style={{ color: "#ef4444" }}><span className="pos-mc-stat-v">{row.pp}</span><span className="pos-mc-stat-l">P</span></div>
+                                                <div className="pos-mc-stat"><span className="pos-mc-stat-v">{row.gf}</span><span className="pos-mc-stat-l">GF</span></div>
+                                                <div className="pos-mc-stat"><span className="pos-mc-stat-v">{row.gc}</span><span className="pos-mc-stat-l">GC</span></div>
+                                                <div className="pos-mc-stat" style={{ color: row.dg > 0 ? "#10b981" : row.dg < 0 ? "#ef4444" : "#475569" }}>
+                                                    <span className="pos-mc-stat-v">{dg}</span><span className="pos-mc-stat-l">DG</span>
+                                                </div>
+                                            </div>
+                                            {posLabel && <span className="pos-mc-badge" style={{ color: posColor, background: `${posColor}10`, borderColor: `${posColor}25` }}>{posLabel}</span>}
+                                        </div>
+                                    );
+                                })}
+                            </div></>
                         )}
 
                         {tabla.length > 0 && (
-                            <div style={{ padding: "1rem 1.5rem", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+                            <div className="pos-legend" style={{ padding: "1rem 1.5rem", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
                                 <div style={{ display: "flex", gap: "1.2rem", flexWrap: "wrap" }}>
                                     {([
                                             { color: "#10b981", label: "Concacaf" },
@@ -449,42 +492,65 @@ const AdminPosiciones = () => {
                 @keyframes spin { to { transform: rotate(360deg); } }
                 @keyframes ddFadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
                 button.nav-item { background: none; border: none; color: var(--text-muted); font-family: inherit; }
-                
-                /* Grid de tarjetas estadísticas */
-                .stats-grid {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 1rem;
-                }
-                @media (min-width: 768px) {
-                    .stats-grid {
-                        grid-template-columns: repeat(3, 1fr);
-                    }
-                }
-                @media (min-width: 1024px) {
-                    .stats-grid {
-                        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-                    }
-                }
 
-                /* Ocultar columnas no esenciales en pantallas pequeñas */
-                .hide-on-mobile {
-                    display: table-cell; /* Asegura que se muestre en PC */
-                }
-                .show-on-mobile {
-                    display: none;
-                }
+                .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+                @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+                @media (min-width: 1024px) { .stats-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); } }
+
+                .hide-on-mobile { display: table-cell; }
+                .show-on-mobile { display: none; }
+
+                .desktop-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+                .mobile-cards { display: none; }
+
+                .pos-mobile-card { background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); border-radius: 10px; padding: 10px 12px; }
+                .pos-mc-group-header { padding: 8px 12px; display: flex; align-items: center; gap: 6px; border-radius: 6px; margin-bottom: 2px; }
+                .pos-mc-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+                .pos-mc-pos { width: 26px; height: 26px; border-radius: 7px; font-size: 0.7rem; font-weight: 800; font-family: monospace; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+                .pos-mc-team { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+                .pos-mc-logo { width: 24px; height: 24px; border-radius: 6px; object-fit: contain; background: rgba(255,255,255,0.04); padding: 2px; flex-shrink: 0; }
+                .pos-mc-name { font-size: 0.78rem; font-weight: 700; color: #e2e8f0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+                .pos-mc-pts { font-size: 1.1rem; font-weight: 900; font-family: monospace; color: #f1f5f9; text-align: right; flex-shrink: 0; }
+                .pos-mc-pts small { font-size: 0.55rem; font-weight: 600; color: #475569; display: block; }
+                .pos-mc-stats { display: flex; gap: 6px; flex-wrap: wrap; }
+                .pos-mc-stat { text-align: center; min-width: 30px; color: #94a3b8; }
+                .pos-mc-stat-v { display: block; font-size: 0.75rem; font-weight: 800; font-family: monospace; line-height: 1; }
+                .pos-mc-stat-l { display: block; font-size: 0.5rem; font-weight: 600; color: #64748b; text-transform: uppercase; }
+                .pos-mc-badge { display: inline-block; margin-top: 6px; font-size: 0.55rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 4px; border: 1px solid; }
 
                 @media (max-width: 768px) {
-                    .hide-on-mobile {
-                        display: none !important;
-                    }
-                    .show-on-mobile {
-                        display: block !important;
-                    }
+                    .hide-on-mobile { display: none !important; }
+                    .show-on-mobile { display: block !important; }
+                    .pos-header-container { padding: 1rem !important; margin-bottom: 1rem !important; }
+                    .pos-stat-card { padding: 0.9rem 1rem !important; }
+                }
+                @media (max-width: 640px) {
+                    .desktop-table-wrapper { display: none; }
+                    .mobile-cards { display: flex; flex-direction: column; gap: 8px; }
                 }
                 @media (max-width: 480px) {
                     .stats-grid { gap: 0.6rem; }
+                    .pos-header-container { padding: 0.8rem !important; gap: 0.6rem !important; }
+                    .pos-stat-card { padding: 0.8rem 0.8rem !important; }
+                    .pos-stat-card [style*="font-size: 1.6rem"] { font-size: 1.3rem !important; }
+                    .pos-legend { padding: 0.6rem 0.8rem !important; gap: 0.6rem !important; }
+                    .pos-legend [style*="gap: 1.2rem"] { gap: 0.6rem !important; }
+                    .pos-legend [style*="font-size: 0.72rem"] { font-size: 0.62rem !important; }
+                }
+                @media (max-width: 375px) {
+                    .pos-header-container { padding: 0.6rem !important; border-radius: 12px !important; }
+                    .pos-header-container [style*="font-size: 1.3rem"] { font-size: 1rem !important; }
+                    .pos-header-container [style*="width: 42px"] { width: 32px !important; height: 32px !important; }
+                    .pos-stat-card { padding: 0.6rem 0.7rem !important; }
+                    .pos-stat-card [style*="width: 38px"] { width: 28px !important; height: 28px !important; margin-bottom: 0.4rem !important; }
+                    .pos-stat-card [style*="font-size: 1.6rem"] { font-size: 1.1rem !important; }
+                    .pos-stat-card [style*="font-size: 0.78rem"] { font-size: 0.68rem !important; }
+                    .pos-mobile-card { padding: 8px 10px !important; }
+                    .pos-mc-stats { gap: 4px; }
+                    .pos-mc-stat-v { font-size: 0.7rem; }
+                    .pos-mc-stat-l { font-size: 0.45rem; }
+                    .pos-mc-name { font-size: 0.72rem; }
+                    .pos-legend { padding: 0.5rem 0.6rem !important; }
                 }
             `}</style>
         </div>

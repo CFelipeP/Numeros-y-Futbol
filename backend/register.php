@@ -2,6 +2,7 @@
 error_reporting(0); ini_set('display_errors', 0);
 require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/db.php';
+requirePost();
 
 try {
 
@@ -17,12 +18,28 @@ try {
     }
 
     $nombre = trim($data->nombre);
+    if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $nombre)) {
+        http_response_code(422);
+        echo json_enc(["success" => false, "error" => "El nombre solo puede contener letras"]);
+        exit;
+    }
     $apodo = trim(strtolower($data->apodo));
     $email = trim(strtolower($data->email));
     $password = $data->password;
+    $acceptTerms = $data->accept_terms ?? false;
+
+    if (!$acceptTerms) {
+        http_response_code(422);
+        echo json_enc(["success" => false, "error" => "Debes aceptar los términos y condiciones"]);
+        exit;
+    }
 
     // Rate limiting: max 5 registros por IP en 1 hora
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
+    if ($forwarded && filter_var($forwarded, FILTER_VALIDATE_IP)) {
+        $ip = $forwarded;
+    }
     $rateCheck = $conn->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND intento > DATE_SUB(NOW(), INTERVAL 1 HOUR) AND email_apodo LIKE 'register_%'");
     $rateCheck->execute([$ip]);
     if ($rateCheck->fetchColumn() >= 5) {
@@ -43,11 +60,11 @@ try {
     }
 
     // Validar longitud y complejidad de contraseña
-    if (strlen($password) < 5 || strlen($password) > 12) {
+    if (strlen($password) < 8) {
         http_response_code(422);
         echo json_enc([
             "success" => false,
-            "error" => "La contraseña debe tener entre 5 y 12 caracteres"
+            "error" => "La contraseña debe tener al menos 8 caracteres"
         ]);
         exit;
     }
@@ -118,7 +135,7 @@ try {
     }
 
     // Hashear contraseña
-    $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     // Insertar usuario
     $sql = $conn->prepare("INSERT INTO usuarios (nombre, apodo, email, password, rol) VALUES (?, ?, ?, ?, 'usuario')");

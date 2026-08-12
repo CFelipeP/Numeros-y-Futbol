@@ -157,7 +157,7 @@ const ManageMatches = () => {
 
     const handleLogout = () => {
         Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir", confirmButtonColor: "#d33" })
-            .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
+            .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Sesión cerrada", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
     };
 
     const getActiveGrupo = () => {
@@ -235,6 +235,16 @@ const ManageMatches = () => {
                     }).catch(() => Swal.fire("Error", "No se pudo eliminar.", "error"));
                 }
             });
+    };
+
+    const quickChangeStatus = (match, newStatus) => {
+        const oldStatus = getStatus(match);
+        if (oldStatus === newStatus) return;
+        setMatches(prev => prev.map(m => m.id === match.id ? { ...m, status: newStatus, estado: newStatus } : m));
+        const form = new FormData(); form.append("match_id", match.id); form.append("estado", newStatus); form.append("goles_local", match.goles_local ?? 0); form.append("goles_visitante", match.goles_visitante ?? 0);
+        apiPostForm(getEndpoints().update, form).then(safeJson).then(data => {
+            if (data.error) { setMatches(prev => prev.map(m => m.id === match.id ? { ...m, status: oldStatus, estado: oldStatus } : m)); }
+        }).catch(() => { setMatches(prev => prev.map(m => m.id === match.id ? { ...m, status: oldStatus, estado: oldStatus } : m)); });
     };
 
     const toggleFeatured = (match) => {
@@ -351,8 +361,8 @@ const ManageMatches = () => {
     const currentDiv = DIVISIONES.find(d => d.value === division);
 
     const navItems = [
-      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
-      { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analíticas" },
+      { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Panel" },
       { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
       { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
       {
@@ -548,6 +558,9 @@ const ManageMatches = () => {
                                         const score = getScore(match);
                                         const isFin = status === "Finalizado";
                                         const isLive = status === "En Curso";
+                                        const isAplazado = status === "Aplazado";
+                                        const isPorProg = status === "Por programar";
+                                        const statusClass = isFin ? "done" : isLive ? "live" : isAplazado ? "aplazado" : isPorProg ? "por-programar" : "pending";
                                         const isFeat = match.featured == 1 || match.destacado == 1;
                                         return (
                                             <tr key={match.id}>
@@ -559,7 +572,19 @@ const ManageMatches = () => {
                                                     {isLive && <div style={{fontSize:9,fontWeight:800,color:"#22c55e",letterSpacing:1,marginTop:2}}>🔴 EN VIVO</div>}
                                                 </td>
                                                 <td><div className="td-team td-team-right"><span className="td-team-name">{match.visitante_nombre || "—"}</span><img src={escVisit || fallbackImg} alt="" onError={e => { e.target.src = fallbackImg; }} className="td-team-img" /></div></td>
-                                                <td className="hide-on-mobile"><span className={`status ${isFin ? "done" : isLive ? "live" : "pending"}`}>{status}</span></td>
+                                                <td className="hide-on-mobile">
+                                                    <select
+                                                        value={status}
+                                                        onChange={e => quickChangeStatus(match, e.target.value)}
+                                                        className={`status-select ${statusClass}`}
+                                                    >
+                                                        <option value="Pendiente">Pendiente</option>
+                                                        <option value="Por programar">Por programar</option>
+                                                        <option value="Aplazado">Aplazado</option>
+                                                        <option value="En Curso">En Curso</option>
+                                                        <option value="Finalizado">Finalizado</option>
+                                                    </select>
+                                                </td>
                                                 <td>
                                                     <div className="td-actions">
                                                         <button className={`mm-star-btn ${isFeat ? "mm-star-active" : ""}`} onClick={() => toggleFeatured(match)} disabled={submitting} title={isFeat ? "Quitar de destacado" : "Marcar como destacado"} style={{ opacity: submitting ? 0.5 : 1, cursor: submitting ? "wait" : "pointer" }}>
@@ -685,7 +710,7 @@ const ManageMatches = () => {
                             <button className="nm-close" onClick={() => setShowResult(false)}><X size={18} /></button>
                         </div>
                         <div className="nm-body nm-score-body">
-                            <div className="mm-match-info"><span>{selectedMatch.date}</span><span className={`status ${selectedMatch.status === "Finalizado" ? "done" : "pending"}`} style={{ fontSize: "11px", padding: "3px 10px" }}>{selectedMatch.status || "Pendiente"}</span></div>
+                            <div className="mm-match-info"><span>{selectedMatch.date}</span><span className={`status ${selectedMatch.status === "Finalizado" ? "done" : selectedMatch.status === "En Curso" ? "live" : selectedMatch.status === "Aplazado" ? "aplazado" : selectedMatch.status === "Por programar" ? "por-programar" : "pending"}`} style={{ fontSize: "11px", padding: "3px 10px" }}>{selectedMatch.status || "Pendiente"}</span></div>
                             <div className="nm-date-row" style={{ marginTop: 0, marginBottom: 20 }}>
                                 <div className="nm-date-field">
                                     <label className="nm-date-label">FECHA</label>
@@ -838,7 +863,74 @@ const ManageMatches = () => {
     .mm-reset-single-btn:hover { background: rgba(245,158,11,0.18); border-color: rgba(245,158,11,0.35); }
     .mm-narrar-btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(99,102,241,0.25); background: rgba(99,102,241,0.08); color: #818cf8; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
     .mm-narrar-btn:hover { background: rgba(99,102,241,0.18); border-color: rgba(99,102,241,0.4); }
-    .status.live { background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.25); }
+    .status.live { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+    .status.aplazado { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+    .status.por-programar { background: rgba(59,130,246,0.1); color: #93c5fd; border: 1px solid rgba(59,130,246,0.2); }
+
+    .status-select {
+        appearance: none; -webkit-appearance: none; -moz-appearance: none;
+        padding: 7px 32px 7px 14px;
+        border-radius: 100px; border: 1px solid rgba(255,255,255,0.08);
+        font-size: 11.5px; font-weight: 700;
+        letter-spacing: 0.3px;
+        cursor: pointer; outline: none;
+        font-family: inherit;
+        text-align: left;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        transition: all 0.25s ease;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+    .status-select:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.12);
+        filter: brightness(1.15);
+    }
+    .status-select:focus {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 3px rgba(226,179,64,0.12);
+    }
+    .status-select option {
+        background: #0f172a; color: #e2e8f0;
+        font-weight: 600; padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    .status-select.done { 
+        background: linear-gradient(135deg, rgba(239,68,68,0.18), rgba(239,68,68,0.08));
+        color: #f87171; 
+        border-color: rgba(239,68,68,0.25);
+    }
+    .status-select.pending { 
+        background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(59,130,246,0.08));
+        color: #60a5fa; 
+        border-color: rgba(59,130,246,0.25);
+    }
+    .status-select.live { 
+        background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(59,130,246,0.1));
+        color: #60a5fa;
+        border-color: rgba(59,130,246,0.3);
+        animation: livePulse 2s ease-in-out infinite;
+    }
+    .status-select.aplazado { 
+        background: linear-gradient(135deg, rgba(239,68,68,0.18), rgba(239,68,68,0.08));
+        color: #fca5a5; 
+        border-color: rgba(239,68,68,0.25);
+    }
+    .status-select.por-programar { 
+        background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(59,130,246,0.05));
+        color: #93c5fd; 
+        border-color: rgba(59,130,246,0.18);
+    }
+
+    @keyframes livePulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.3); }
+        50% { box-shadow: 0 0 0 4px rgba(59,130,246,0.08); }
+    }
+    .status-select.aplazado { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.25); }
+    .status-select.por-programar { background: rgba(100,116,139,0.15); color: #94a3b8; border: 1px solid rgba(100,116,139,0.25); }
     .mm-star-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.03); color: #475569; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
     .mm-star-btn:hover { background: rgba(226,179,64,0.08); border-color: rgba(226,179,64,0.2); color: #e2b340; }
     .mm-star-active { background: rgba(226,179,64,0.12) !important; border-color: rgba(226,179,64,0.3) !important; color: #e2b340 !important; box-shadow: 0 0 12px rgba(226,179,64,0.15); }

@@ -5,6 +5,7 @@ require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
+requirePost();
 
 $conn = $mysqli;
 
@@ -14,6 +15,13 @@ $g2 = $_POST['goles_visitante'] ?? null;
 $fecha = $_POST['fecha'] ?? null;
 $hora = $_POST['hora'] ?? null;
 $jornada = $_POST['jornada'] ?? null;
+$estado = $_POST['estado'] ?? null;
+
+$validEstados = ['Pendiente', 'En Curso', 'Finalizado', 'Por programar', 'Aplazado'];
+if ($estado !== null && !in_array($estado, $validEstados, true)) {
+    echo json_enc(["error" => "Estado invalido"]);
+    exit;
+}
 
 if (!$id) {
     echo json_enc(["error" => "ID requerido"]);
@@ -118,8 +126,11 @@ if ($wasFinal && $old_gl !== null) {
     }
 }
 
-$stmt = $conn->prepare("UPDATE partidos SET goles_local=?, goles_visitante=?, estado='Finalizado' WHERE id=?");
-$stmt->bind_param("iii", $g1, $g2, $id); $stmt->execute(); $stmt->close();
+// Determinar nuevo estado
+$nuevoEstado = ($estado && in_array($estado, $validEstados, true)) ? $estado : 'Finalizado';
+
+$stmt = $conn->prepare("UPDATE partidos SET goles_local=?, goles_visitante=?, estado=? WHERE id=?");
+$stmt->bind_param("iisi", $g1, $g2, $nuevoEstado, $id); $stmt->execute(); $stmt->close();
 
 if ($fecha && $hora) {
     $fecha_hora = $fecha . ' ' . $hora . ':00';
@@ -133,6 +144,7 @@ if ($jornada !== null && $jornada !== '') {
     $stmt->bind_param("ii", $jornadaInt, $id); $stmt->execute(); $stmt->close();
 }
 
+if ($nuevoEstado === 'Finalizado') {
 $stmt = $conn->prepare("UPDATE tabla_posiciones SET partidos_jugados = partidos_jugados + 1 WHERE equipo_id IN (?, ?)");
 $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
 
@@ -156,6 +168,7 @@ if ($g1 > $g2) {
     $stmt = $conn->prepare("UPDATE tabla_posiciones SET empatados=empatados+1, puntos=puntos+1 WHERE equipo_id IN (?, ?)");
     $stmt->bind_param("ii", $l, $v); $stmt->execute(); $stmt->close();
 }
+} // Fin Finalizado
 
 echo json_enc(["success" => true]);
 $conn->close();

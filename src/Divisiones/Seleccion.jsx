@@ -40,7 +40,7 @@ function getPosInfo(v) {
   if (v === "centrocampista") v = "medio_central";
   if (v === "defensa") v = "central";
   if (v === "delantero") v = "centrodelantero";
-  return posiciones.find(p => p.value === v) || { label: v || "?", cat: "medio", color: "#64748b", abbr: "??" };
+  return posiciones.find(p => p.value === v) || { label: v || "—", cat: "medio", color: "#64748b", abbr: "—" };
 }
 
 const catCfg = {
@@ -131,13 +131,44 @@ export default function Seleccion() {
           .sel-escudo { width:76px; height:76px; padding:8px; }
           .sel-hero h1 { font-size:1.5rem; }
           .sel-staff-grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); }
+          .sel-content { padding:20px 14px 50px; }
+          .sel-card { padding:16px; }
+          .sel-tabs { max-width:100%; }
+          .sel-tab { padding:10px 12px; font-size:12px; }
+          .sel-hero-inner { padding:26px 16px 30px; }
         }
         @media(max-width:480px) {
           .sel-escudo { width:60px; height:60px; padding:6px; }
           .sel-hero h1 { font-size:1.2rem; }
-          .sel-match-row { flex-wrap:wrap; }
-          .sel-match-score { font-size:16px; }
+          .sel-match-row { flex-wrap:wrap; gap:8px; padding:10px; }
+          .sel-match-score { font-size:14px; }
           .sel-staff-grid { grid-template-columns:1fr 1fr; }
+          .sel-content { padding:16px 10px 40px; }
+          .sel-card { padding:12px; }
+          .sel-tab { font-size:11px; padding:8px 8px; gap:5px; }
+          .sel-hero-inner { padding:20px 12px 24px; }
+          .sel-player-row { gap:6px; padding:6px 8px; flex-wrap:wrap; }
+          .sel-player-club { font-size:9px; width:100%; margin-left:36px; }
+          .sel-match-row .sel-badge { font-size:8px; padding:2px 6px; }
+        }
+        @media(max-width:375px) {
+          .sel-tab { font-size:10px; padding:6px 6px; }
+          .sel-tab span:last-child { font-size:10px; }
+          .sel-card { padding:10px; border-radius:12px; }
+          .sel-match-row { padding:8px; gap:6px; }
+          .sel-player-row { padding:5px 6px; }
+          .sel-rival-logo { width:24px; height:24px; }
+          .sel-escudo { width:50px; height:50px; padding:4px; }
+          .sel-hero h1 { font-size:1rem; }
+          .sel-hero-inner { padding:16px 10px 20px; }
+          .sel-content { padding:12px 8px 32px; }
+          .sel-match-score { font-size:12px; }
+          .sel-staff-card { padding:12px 8px; }
+          .sel-staff-avatar { width:48px; height:48px; }
+          .sel-staff-name { font-size:12px; }
+          .sel-group-header { font-size:9px; padding:6px 8px; }
+          .sel-player-num { font-size:11px; min-width:20px; }
+          .sel-player-name { font-size:11px; }
         }
       `}</style>
 

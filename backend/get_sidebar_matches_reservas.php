@@ -13,11 +13,11 @@ $selectFields = "p.id, p.equipo_local, p.equipo_visitante, p.goles_local, p.gole
 $joinEquipos = " LEFT JOIN equipos_reservas e1 ON p.equipo_local = e1.id LEFT JOIN equipos_reservas e2 ON p.equipo_visitante = e2.id";
 
 if ($jornada) {
-    $stmt = $conn->prepare("SELECT $selectFields FROM partidos_reservas p$joinEquipos WHERE p.jornada = ? AND p.estado = 'Finalizado' ORDER BY p.fecha ASC");
+    $stmt = $conn->prepare("SELECT $selectFields FROM partidos_reservas p$joinEquipos WHERE p.jornada = ? AND p.estado = 'Finalizado' ORDER BY p.fecha DESC, p.id DESC LIMIT 6");
     $stmt->bind_param("i", $jornada); $stmt->execute(); $res = $stmt->get_result();
     while ($row = $res->fetch_assoc()) $recent[] = $row;
 } else {
-    $res = $conn->query("SELECT $selectFields FROM partidos_reservas p$joinEquipos WHERE p.estado = 'Finalizado' ORDER BY p.fecha DESC, p.id DESC LIMIT 10");
+    $res = $conn->query("SELECT $selectFields FROM partidos_reservas p$joinEquipos WHERE p.estado = 'Finalizado' ORDER BY p.fecha DESC, p.id DESC LIMIT 6");
     if ($res) while ($row = $res->fetch_assoc()) $recent[] = $row;
 }
 

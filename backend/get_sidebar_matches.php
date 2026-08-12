@@ -43,10 +43,7 @@ try {
     if ($jornadaFilter !== null && $division === 'primera') {
         $sql .= " AND p.jornada = $jornadaFilter";
     }
-    $sql .= " ORDER BY p.fecha DESC, p.id DESC";
-    if (!$jornadaFilter) {
-        $sql .= " LIMIT 5";
-    }
+    $sql .= " ORDER BY p.fecha DESC, p.id DESC LIMIT 6";
     $res = $conn->query($sql);
     while ($row = $res->fetch_assoc()) {
         $recent[] = $row;

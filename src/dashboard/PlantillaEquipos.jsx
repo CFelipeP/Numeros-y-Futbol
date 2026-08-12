@@ -223,8 +223,8 @@ function autoAssign(jugadores, fKey) {
 
 // ─── Nav ──────────────────────────────────────────────────────────────────────
 const navItems = [
-      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
-      { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analíticas" },
+      { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Panel" },
       { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
       { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
       {
@@ -361,6 +361,7 @@ const PosSection = memo(function PosSection({ cat, jugadores, slotIds, ...h }) {
 // ─── Componente principal ─────────────────────────────────────────────────────
 export default function PlantillaAdmin() {
   const location = useLocation();
+  const [siteName, setSiteName] = useState('Números y Fútbol');
   const [initFromDB, setInitFromDB] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [ddOpen, setDdOpen] = useState(false);
@@ -414,6 +415,13 @@ export default function PlantillaAdmin() {
     const h = e => { if (divRef.current && !divRef.current.contains(e.target)) setDivDD(false); };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  useEffect(() => {
+    fetch(`${API_BASE}get_site_settings.php`)
+      .then(r => r.json())
+      .then(d => { if (d.success && d.settings && d.settings.site_name) setSiteName(d.settings.site_name); })
+      .catch(() => {});
   }, []);
 
   // ─── Construir slots cuando cambia plantilla o formación ──────────────────
@@ -915,7 +923,7 @@ const importPlayers = useCallback(async () => {
 
 const handleLogout = () => {
   Swal.fire({ background: "#1e293b", color: "#fff", title: "Cerrar sesion?", icon: "warning", showCancelButton: true, confirmButtonText: "Si", cancelButtonText: "No" })
-    .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
+    .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Sesión cerrada", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
 };
 
 const navClick = useCallback(() => { if (window.innerWidth <= 768) setSidebarOpen(false); setDdOpen(false); }, []);
@@ -930,7 +938,7 @@ return (
         <div className="logo-icon">
           <img src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" alt="" />
         </div>
-        <h2 className="sidebar-title">Números y Fútbol <span className="accent-text">Admin</span></h2>
+        <h2 className="sidebar-title">{siteName} <span className="accent-text">Admin</span></h2>
       </div>
       <nav className="sidebar-nav">
         <ul>

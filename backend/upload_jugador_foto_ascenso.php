@@ -4,6 +4,7 @@ require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
+requirePost();
 
 $directorio = __DIR__ . "/uploads/jugadores_ascenso/";
 if (!is_dir($directorio)) {
@@ -24,16 +25,16 @@ if (!in_array($extension, $permitidas)) {
     exit;
 }
 
-if ($archivo["size"] > 70 * 1024 * 1024) {
-    echo json_enc(["success" => false, "error" => "El archivo supera los 70MB"]);
+if ($archivo["size"] > 5 * 1024 * 1024) {
+    echo json_enc(["success" => false, "error" => "El archivo supera los 5MB"]);
     exit;
 }
 
 $finfo = new finfo(FILEINFO_MIME_TYPE);
 $mime = $finfo->file($archivo["tmp_name"]);
-$allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4'];
+$allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 if (!in_array($mime, $allowedMimes)) {
-    echo json_enc(["success" => false, "error" => "Solo se permiten imágenes (JPG, PNG, WEBP, GIF) y video (MP4)"]);
+    echo json_enc(["success" => false, "error" => "Solo se permiten imágenes (JPG, PNG, WEBP, GIF)"]);
     exit;
 }
 

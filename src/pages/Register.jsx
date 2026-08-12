@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { ArrowLeft, User, Mail, Lock, Eye, EyeOff, AtSign } from "lucide-react";
+import { ArrowLeft, User, Mail, Lock, Eye, EyeOff, AtSign, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import { API_BASE } from "../config";
 
 export default function Register() {
     const navigate = useNavigate();
 
+    const [siteName, setSiteName] = useState("Números y Fútbol");
     const [nombre, setNombre] = useState("");
     const [apodo, setApodo] = useState("");
     const [email, setEmail] = useState("");
@@ -17,6 +18,7 @@ export default function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [acceptTerms, setAcceptTerms] = useState(false);
 
     useEffect(() => {
         setNombre("");
@@ -26,6 +28,13 @@ export default function Register() {
         setConfirmPassword("");
         setShowPassword(false);
         setShowConfirmPassword(false);
+    }, []);
+
+    useEffect(() => {
+        fetch(`${API_BASE}get_site_settings.php`)
+            .then(r => r.json())
+            .then(d => { if (d.success && d.settings && d.settings.site_name) setSiteName(d.settings.site_name); })
+            .catch(() => {});
     }, []);
 
     const register = async (e) => {
@@ -76,10 +85,21 @@ export default function Register() {
             return;
         }
 
+        if (!acceptTerms) {
+            setLoading(false);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Debes aceptar los términos y condiciones.",
+                confirmButtonText: "Entendido"
+            });
+            return;
+        }
+
         try {
             const res = await axios.post(
                 `${API_BASE}register.php`,
-                { nombre, apodo, email, password }
+                { nombre, apodo, email, password, accept_terms: true }
             );
 
             if (!res.data.success) {
@@ -154,7 +174,7 @@ export default function Register() {
 
             {/* Contenedor principal animado */}
             <motion.div 
-                className="login-card register-card"
+                className="login-card"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
@@ -162,10 +182,10 @@ export default function Register() {
                 <motion.div className="login-logo" variants={itemVariants}>
                     <img
                         src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a"
-                        alt="Logo Números y Fútbol"
+                        alt={`Logo ${siteName}`}
                         className="login-logo-img"
                     />
-                    <span>Números y Fútbol</span>
+                    <span>{siteName}</span>
                 </motion.div>
 
                 <motion.h1 className="login-title" variants={itemVariants}>Crear Cuenta</motion.h1>
@@ -180,6 +200,8 @@ export default function Register() {
                             value={nombre}
                             onChange={(e) => setNombre(e.target.value)}
                             required
+                            pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+"
+                            title="Solo letras"
                         />
                     </motion.div>
 
@@ -227,6 +249,23 @@ export default function Register() {
                         </button>
                     </motion.div>
 
+                    {password && (
+                        <motion.div variants={itemVariants} style={{margin:"-6px 0 4px 0",padding:"0 4px"}}>
+                            <div style={{fontSize:11,color:"#94a3b8",marginBottom:6,fontWeight:600}}>Requisitos:</div>
+                            {[
+                                {check:password.length>=5,label:"Mínimo 5 caracteres"},
+                                {check:/[A-Z]/.test(password),label:"Al menos una mayúscula"},
+                                {check:/[a-z]/.test(password),label:"Al menos una minúscula"},
+                                {check:/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),label:"Al menos un carácter especial"},
+                            ].map((r,i)=>(
+                                <div key={i} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:r.check?"#22c55e":"#64748b",marginBottom:3}}>
+                                    <span style={{fontSize:14}}>{r.check?"✓":"✗"}</span>
+                                    <span>{r.label}</span>
+                                </div>
+                            ))}
+                        </motion.div>
+                    )}
+
                     <motion.div className="input-group" variants={itemVariants}>
                         <Lock className="input-icon" />
                         <input
@@ -243,6 +282,29 @@ export default function Register() {
                         >
                             {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                         </button>
+                    </motion.div>
+
+                    <motion.div className="input-group" variants={itemVariants}>
+                        <FileText className="input-icon" size={20} />
+                        <div style={{
+                            width:"100%", padding:"0.95rem 1rem 0.95rem 3rem",
+                            display:"flex", alignItems:"flex-start", gap:8,
+                            boxSizing:"border-box"
+                        }}>
+                            <input
+                                type="checkbox"
+                                id="accept-terms"
+                                checked={acceptTerms}
+                                onChange={(e) => setAcceptTerms(e.target.checked)}
+                                style={{accentColor:"#ef4444",width:16,height:16,margin:0,marginTop:2,flexShrink:0}}
+                            />
+                            <label htmlFor="accept-terms" style={{color:"rgba(255,255,255,0.6)",fontSize:"0.85rem",cursor:"pointer",margin:0,lineHeight:"1.5"}}>
+                                Acepto los{" "}
+                                <a href="/terms" onClick={(e) => { e.preventDefault(); navigate("/terms"); }} style={{color:"#4ade80",textDecoration:"none"}}>términos y condiciones</a>
+                                {" "}y la{" "}
+                                <a href="/privacy" onClick={(e) => { e.preventDefault(); navigate("/privacy"); }} style={{color:"#4ade80",textDecoration:"none"}}>política de privacidad</a>
+                            </label>
+                        </div>
                     </motion.div>
 
                     <motion.button

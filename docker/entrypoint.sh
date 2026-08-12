@@ -5,7 +5,7 @@ echo "Esperando a MySQL en $DB_HOST:$DB_PORT..."
 
 until php -r "
 try {
-    new PDO('mysql:host=$DB_HOST;port=$DB_PORT;dbname=$DB_NAME;charset=utf8mb4', '$DB_USER', '$DB_PASS');
+    new PDO('mysql:host=' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT') . ';dbname=' . getenv('DB_NAME') . ';charset=utf8mb4', getenv('DB_USER'), getenv('DB_PASS'));
     echo 'conectado';
 } catch (Exception \$e) {
     exit(1);

@@ -6,29 +6,31 @@ $conn = null;
 try {
     $pdo = new PDO(
         getDsn(),
-        env('DB_USER', 'root'),
-        env('DB_PASS', '')
+        env('DB_USER'),
+        env('DB_PASS')
     );
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->exec("SET NAMES utf8mb4");
     $conn = $pdo;
 } catch (PDOException $e) {
+    error_log('PDO Connection Error: ' . $e->getMessage());
     http_response_code(500);
-    echo json_enc(["error" => "Error de conexión PDO: " . $e->getMessage()]);
+    echo json_enc(["error" => "Error interno del servidor"]);
     exit;
 }
 
 $mysqli = new mysqli(
     env('DB_HOST', '127.0.0.1'),
-    env('DB_USER', 'root'),
-    env('DB_PASS', ''),
+    env('DB_USER'),
+    env('DB_PASS'),
     env('DB_NAME', 'numeros-y-futbol'),
     (int)env('DB_PORT', '3306')
 );
 
 if ($mysqli->connect_error) {
+    error_log('MySQLi Connection Error: ' . $mysqli->connect_error);
     http_response_code(500);
-    echo json_enc(["error" => "Error de conexión MySQLi: " . $mysqli->connect_error]);
+    echo json_enc(["error" => "Error interno del servidor"]);
     exit;
 }
 
@@ -720,11 +722,14 @@ $mysqli->query("CREATE TABLE IF NOT EXISTS `usuarios` (
     `email`      VARCHAR(100) NOT NULL,
     `password`   VARCHAR(255) NOT NULL,
     `rol`        VARCHAR(20) NOT NULL DEFAULT 'usuario',
+    `activo`     TINYINT(1) NOT NULL DEFAULT 1,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `email` (`email`),
     UNIQUE KEY `apodo` (`apodo`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+try { $mysqli->query("ALTER TABLE usuarios ADD COLUMN activo TINYINT(1) NOT NULL DEFAULT 1 AFTER rol"); } catch (Exception $e) {}
+try { $mysqli->query("ALTER TABLE usuarios ADD COLUMN justificacion_desactivacion TEXT DEFAULT NULL AFTER activo"); } catch (Exception $e) {}
 
 // --- Tabla match_comments ---
 $mysqli->query("CREATE TABLE IF NOT EXISTS `match_comments` (
@@ -762,23 +767,6 @@ $mysqli->query("CREATE TABLE IF NOT EXISTS `reset_tokens` (
     KEY `idx_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-// --- Admin por defecto (solo si la tabla está vacía) ---
-try {
-    $check = $mysqli->query("SELECT COUNT(*) FROM usuarios WHERE email = 'admin@numerosyfutbol.com'");
-    if ((int)$check->fetch_row()[0] === 0) {
-        $adminPass = env('ADMIN_DEFAULT_PASS', '');
-        if ($adminPass === '') {
-            $adminPass = substr(bin2hex(random_bytes(12)), 0, 16);
-            error_log('[NYF] Admin creado con contraseña: ' . $adminPass . ' (cámbiala inmediatamente)');
-        }
-        $hash = password_hash($adminPass, PASSWORD_DEFAULT);
-        $stmt = $mysqli->prepare("INSERT INTO usuarios (nombre, apodo, email, password, rol) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param('sssss', $nombre, $apodo, $email, $hash, $rol);
-        $nombre = 'Administrador';
-        $apodo = 'admin';
-        $email = 'admin@numerosyfutbol.com';
-        $rol = 'admin';
-        $stmt->execute();
-        $stmt->close();
-    }
-} catch (Exception $e) {}
+// --- Admin por defecto deshabilitado por seguridad ---
+// Usar un script de setup separado para crear el admin inicial
+// El email admin@numerosyfutbol.com ya no se crea automáticamente

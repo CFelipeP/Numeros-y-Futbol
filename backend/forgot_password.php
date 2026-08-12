@@ -3,6 +3,7 @@ error_reporting(0); ini_set('display_errors', 0);
 require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/config.php';
+requirePost();
 
 
  $data = json_decode(file_get_contents("php://input"));
@@ -40,7 +41,7 @@ if ($action === "send_code") {
     $rateCheck = $conn->prepare("SELECT COUNT(*) FROM reset_tokens WHERE email=? AND creado_en > DATE_SUB(NOW(), INTERVAL 5 MINUTE)");
     $rateCheck->execute([$email]);
     if ($rateCheck->fetchColumn() > 0) {
-        echo json_enc(["success" => false, "error" => "Ya se envió un código recientemente. Espera 5 minutos antes de solicitar otro."]);
+        echo json_enc(["success" => true, "message" => "Si el correo está registrado, recibirás un código de verificación."]);
         exit;
     }
 
@@ -217,7 +218,7 @@ HTML;
         $token = bin2hex(random_bytes(32));
         $insert->execute([$email, $token, $codigo]);
 
-        echo json_enc(["success" => true, "message" => "Codigo enviado correctamente"]);
+        echo json_enc(["success" => true, "message" => "Si el correo está registrado, recibirás un código de verificación."]);
 
     } catch (Exception $e) {
         echo json_enc([
@@ -240,6 +241,14 @@ if ($action === "verify_code") {
         echo json_enc(["success" => false, "error" => "Datos incompletos"]);
         exit;
     }
+
+    $rateCheck = $conn->prepare("SELECT COUNT(*) FROM login_attempts WHERE email_apodo = ? AND intento > DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
+    $rateCheck->execute([$email]);
+    if ($rateCheck->fetchColumn() >= 10) {
+        echo json_enc(["success" => false, "error" => "Demasiados intentos. Solicita un nuevo código."]);
+        exit;
+    }
+    $conn->prepare("INSERT INTO login_attempts (ip, email_apodo) VALUES (?, ?)")->execute([$_SERVER['REMOTE_ADDR'] ?? 'unknown', $email]);
 
     $stmt = $conn->prepare("SELECT * FROM reset_tokens WHERE email=? AND codigo=? AND usado=0 AND expira_en > NOW()");
     $stmt->execute([$email, $codigo]);
@@ -282,7 +291,7 @@ if ($action === "reset_password") {
         exit;
     }
 
-    $hashedPassword = password_hash($new_password, PASSWORD_BCRYPT);
+    $hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
 
     $update = $conn->prepare("UPDATE usuarios SET password=? WHERE email=?");
     $update->execute([$hashedPassword, $email]);

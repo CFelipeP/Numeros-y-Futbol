@@ -9,7 +9,7 @@ header("Content-Type: application/json; charset=UTF-8");
 
 $targetDir = __DIR__ . '/uploads/';
 if (!is_dir($targetDir)) {
-    mkdir($targetDir, 0777, true);
+    mkdir($targetDir, 0755, true);
 }
 
 if (!isset($_FILES['foto']) || $_FILES['foto']['error'] !== UPLOAD_ERR_OK) {
@@ -23,6 +23,20 @@ $allowed = ['jpg', 'jpeg', 'png', 'webp'];
 
 if (!in_array($ext, $allowed)) {
     echo json_enc(["success" => false, "error" => "Formato no permitido. Usa JPG, PNG o WEBP"]);
+    exit;
+}
+
+if ($file['size'] > 5 * 1024 * 1024) {
+    echo json_enc(["success" => false, "error" => "La imagen excede el límite de 5MB"]);
+    exit;
+}
+
+$finfo = finfo_open(FILEINFO_MIME_TYPE);
+$mime = finfo_file($finfo, $file['tmp_name']);
+finfo_close($finfo);
+$allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
+if (!in_array($mime, $allowedMimes)) {
+    echo json_enc(["success" => false, "error" => "Tipo de archivo no permitido"]);
     exit;
 }
 

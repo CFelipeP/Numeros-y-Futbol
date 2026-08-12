@@ -1,18 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { ArrowLeft, Mail, KeyRound, CheckCircle } from "lucide-react";
+import { ArrowLeft, Mail, KeyRound, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { API_BASE } from "../config";
 
 export default function ForgotPassword() {
     const navigate = useNavigate();
+    const [siteName, setSiteName] = useState("Números y Fútbol");
     const [step, setStep] = useState(1);
     const [email, setEmail] = useState("");
     const [codigo, setCodigo] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+
+    useEffect(() => {
+        fetch(`${API_BASE}get_site_settings.php`)
+            .then(r => r.json())
+            .then(d => { if (d.success && d.settings && d.settings.site_name) setSiteName(d.settings.site_name); })
+            .catch(() => {});
+    }, []);
 
     const enviarCodigo = async (e) => {
     e.preventDefault();
@@ -124,7 +134,7 @@ export default function ForgotPassword() {
                         src="https://z-cdn-media.chatglm.cn/files/aa6f8301-58a7-4d02-aea3-d5603893b404.png?auth_key=1806010258-4a8f0f1a17844cf0902596eed27d9063-0-c60b297f2fc1e661b8f94e60ba8c9b0a" 
                         alt="Logo" className="login-logo-img"
                     />
-                    <span>Números y Fútbol</span>
+                    <span>{siteName}</span>
                 </div>
 
                 {/* Indicador de pasos */}
@@ -198,16 +208,45 @@ export default function ForgotPassword() {
                         <form onSubmit={cambiarPassword}>
                             <div className="input-group">
                                 <KeyRound className="input-icon" />
-                                <input type="password" placeholder="Nueva contraseña (mín. 6 caracteres)"
+                                <input type={showPassword ? "text" : "password"} placeholder="Nueva contraseña (mín. 5 caracteres)"
                                     value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                                    required minLength={6} />
+                                    required minLength={5} />
+                                <button type="button" className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
                             </div>
+                            {newPassword && (
+                                <div style={{ margin: "-6px 0 8px 0", padding: "0 4px" }}>
+                                    <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 6, fontWeight: 600 }}>Requisitos:</div>
+                                    {[
+                                        { check: newPassword.length >= 5, label: "Mínimo 5 caracteres" },
+                                        { check: /[A-Z]/.test(newPassword), label: "Al menos una mayúscula" },
+                                        { check: /[a-z]/.test(newPassword), label: "Al menos una minúscula" },
+                                        { check: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword), label: "Al menos un carácter especial" },
+                                    ].map((r, i) => (
+                                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: r.check ? "#22c55e" : "#64748b", marginBottom: 3 }}>
+                                            <span style={{ fontSize: 14 }}>{r.check ? "✓" : "✗"}</span>
+                                            <span>{r.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                             <div className="input-group">
                                 <KeyRound className="input-icon" />
-                                <input type="password" placeholder="Confirmar nueva contraseña"
+                                <input type={showConfirm ? "text" : "password"} placeholder="Confirmar nueva contraseña"
                                     value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                                    required minLength={6} />
+                                    required minLength={5} />
+                                <button type="button" className="toggle-password" onClick={() => setShowConfirm(!showConfirm)}>
+                                    {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
                             </div>
+                            {confirmPassword && (
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, margin: "-3px 0 8px 4px", padding: "0 4px",
+                                    color: newPassword === confirmPassword ? "#22c55e" : "#ef4444" }}>
+                                    <span style={{ fontSize: 14 }}>{newPassword === confirmPassword ? "✓" : "✗"}</span>
+                                    <span>{newPassword === confirmPassword ? "Las contraseñas coinciden" : "Las contraseñas no coinciden"}</span>
+                                </div>
+                            )}
                             <button type="submit" className="login-btn" disabled={loading}>
                                 {loading ? "Actualizando..." : "Actualizar Contraseña"}
                             </button>

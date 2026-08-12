@@ -22,8 +22,8 @@ import {
 } from "lucide-react";
 
 const SIDEBAR_ITEMS = [
-  { path:"/analytics",       icon:<BarChart3 size={20}/>,      label:"Analiticas" },
-  { path:"/dashboard",       icon:<LayoutDashboard size={20}/>, label:"Dashboard" },
+  { path:"/analytics",       icon:<BarChart3 size={20}/>,      label:"Analíticas" },
+  { path:"/dashboard",       icon:<LayoutDashboard size={20}/>, label:"Panel" },
   { path:"/matches",         icon:<CalendarDays size={20}/>,    label:"Gestionar Partidos" },
   { path:"/mynews",          icon:<CalendarDays size={20}/>,    label:"Crear Noticias" },
   { type:"dropdown", icon:<Shield size={20}/>, label:"Equipos", children:[
@@ -68,6 +68,7 @@ export default function SettingsPage() {
   const [showPassCurrent, setShowPassCurrent] = useState(false);
   const [showPassNew, setShowPassNew]         = useState(false);
   const bannerRef = useRef();
+  const logoRef = useRef();
   const location  = useLocation();
 
   const [s, setS] = useState({
@@ -114,6 +115,18 @@ export default function SettingsPage() {
   const handleBannerFile = (e) => {
     const f = e.target.files[0];
     if (!f) return;
+    const ext = f.name.split('.').pop().toLowerCase();
+    const allowed = ['jpg', 'jpeg', 'png', 'webp'];
+    if (!allowed.includes(ext)) {
+      Swal.fire("Error","Formato no permitido. Usa JPG, PNG o WebP","error");
+      e.target.value = '';
+      return;
+    }
+    if (!f.type.startsWith('image/')) {
+      Swal.fire("Error","Solo se permiten imágenes (JPG, PNG, WebP)","error");
+      e.target.value = '';
+      return;
+    }
     setBannerFile(f);
     const reader = new FileReader();
     reader.onload = ev => setBannerPreview(ev.target.result);
@@ -125,11 +138,49 @@ export default function SettingsPage() {
     const fd = new FormData();
     fd.append("file", bannerFile);
     try {
-      const res  = await apiPostForm(`${API_BASE}upload_image.php`, fd);
+      const res  = await apiPostForm(`${API_BASE}upload_banner.php`, fd);
       const data = await res.json();
       if (data.success) return data.url;
     } catch (_) {}
     return s.hero_banner_url;
+  };
+
+  const handleLogoFile = (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const ext = f.name.split('.').pop().toLowerCase();
+    const allowed = ['jpg', 'jpeg', 'png', 'webp'];
+    if (!allowed.includes(ext)) {
+      Swal.fire("Error","Formato no permitido. Usa JPG, PNG o WebP","error");
+      e.target.value = '';
+      return;
+    }
+    if (!f.type.startsWith('image/')) {
+      Swal.fire("Error","Solo se permiten imágenes (JPG, PNG, WebP)","error");
+      e.target.value = '';
+      return;
+    }
+    if (f.size > 2 * 1024 * 1024) {
+      Swal.fire("Error","El logo debe pesar menos de 2MB","error");
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = ev => upd("site_logo_url", ev.target.result);
+    reader.readAsDataURL(f);
+  };
+
+  const uploadLogo = async () => {
+    const logoInput = logoRef.current;
+    if (!logoInput || !logoInput.files[0]) return s.site_logo_url;
+    const fd = new FormData();
+    fd.append("file", logoInput.files[0]);
+    try {
+      const res = await apiPostForm(`${API_BASE}upload_image.php`, fd);
+      const data = await res.json();
+      if (data.success) return data.url;
+    } catch (_) {}
+    return s.site_logo_url;
   };
 
   const handleSave = async () => {
@@ -139,7 +190,13 @@ export default function SettingsPage() {
       let bannerUrl = s.hero_banner_url;
       if (bannerFile) { bannerUrl = await uploadBanner(); upd("hero_banner_url", bannerUrl); }
 
-      const toSave = { ...s, hero_banner_url: bannerUrl };
+      let logoUrl = s.site_logo_url;
+      if (logoRef.current && logoRef.current.files[0]) {
+        logoUrl = await uploadLogo();
+        upd("site_logo_url", logoUrl);
+      }
+
+      const toSave = { ...s, hero_banner_url: bannerUrl, site_logo_url: logoUrl };
       const res  = await fetch(`${API_BASE}save_site_settings.php`, {
         method:"POST",
         headers: getAuthHeaders("application/json"),
@@ -173,7 +230,7 @@ export default function SettingsPage() {
 
   const handleLogout = () => {
     Swal.fire({ title:"¿Cerrar sesión?", icon:"warning", showCancelButton:true, confirmButtonText:"Sí, salir", confirmButtonColor:"#d33" })
-      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href="/login"; }); }});
+      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Sesión cerrada", timer: 1500, showConfirmButton: false }).then(() => { window.location.href="/login"; }); }});
   };
 
   const inp = { width:"100%", padding:"10px 14px", borderRadius:8, border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"#f1f5f9", fontSize:14, fontFamily:"inherit", outline:"none" };
@@ -237,11 +294,24 @@ export default function SettingsPage() {
                 <div><label style={lbl}>Nombre del Sitio</label><input value={s.site_name} onChange={e=>upd("site_name",e.target.value)} style={inp}/></div>
                 <div><label style={lbl}>Descripción Corta</label><textarea value={s.site_description} onChange={e=>upd("site_description",e.target.value)} rows={3} style={{...inp,resize:"vertical"}}/></div>
                 <div>
-                  <label style={lbl}>URL del Logo (opcional)</label>
-                  <input value={s.site_logo_url} onChange={e=>upd("site_logo_url",e.target.value)} placeholder="https://..." style={inp}/>
-                  {s.site_logo_url && <img src={s.site_logo_url} alt="logo" style={{marginTop:8,height:48,objectFit:"contain",borderRadius:8,border:"1px solid rgba(255,255,255,0.1)"}} onError={e=>e.target.style.display="none"}/>}
+                  <label style={lbl}>Logo del Sitio</label>
+                  <div style={{display:"flex",alignItems:"center",gap:16}}>
+                    <div style={{position:"relative",width:80,height:48,borderRadius:8,overflow:"hidden",border:"2px dashed rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.02)",cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={()=>logoRef.current?.click()}>
+                      {s.site_logo_url && !s.site_logo_url.startsWith('data:')
+                        ? <img src={s.site_logo_url} alt="logo" style={{width:"100%",height:"100%",objectFit:"contain"}} onError={e=>{e.target.style.display='none'}}/>
+                        : s.site_logo_url
+                          ? <img src={s.site_logo_url} alt="preview" style={{width:"100%",height:"100%",objectFit:"contain"}}/>
+                          : <Upload size={18} style={{color:"#64748b"}}/>
+                      }
+                    </div>
+                    <div>
+                      <p style={{margin:0,fontSize:12,fontWeight:600,color:"#94a3b8"}}>Click para subir logo</p>
+                      <p style={{margin:"2px 0 0",fontSize:11,color:"#475569"}}>JPG, PNG, WebP — máx 2MB</p>
+                    </div>
+                  </div>
+                  <input ref={logoRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleLogoFile} style={{display:"none"}}/>
                 </div>
-                <div><label style={lbl}>Email de Contacto</label><input value={s.contact_email} onChange={e=>upd("contact_email",e.target.value)} placeholder="contacto@ejemplo.com" style={inp}/></div>
+                <div><label style={lbl}>Email de Contacto</label><input type="email" value={s.contact_email} onChange={e=>upd("contact_email",e.target.value)} placeholder="contacto@ejemplo.com" style={inp}/></div>
               </div>
             </div>
           )}
@@ -268,7 +338,7 @@ export default function SettingsPage() {
                         <span style={{fontSize:11,color:"#475569",marginTop:4}}>JPG, PNG — recomendado 1920×600px</span>
                       </div>
                     </div>
-                    <input ref={bannerRef} type="file" accept="image/*" onChange={handleBannerFile} style={{display:"none"}}/>
+                    <input ref={bannerRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleBannerFile} style={{display:"none"}}/>
                     {bannerFile && <p style={{marginTop:8,fontSize:12,color:"#10b981",fontWeight:500}}>✓ {bannerFile.name} seleccionado (se subirá al guardar)</p>}
                   </div>
                   <div><label style={lbl}>O pega URL del banner</label><input value={s.hero_banner_url} onChange={e=>upd("hero_banner_url",e.target.value)} placeholder="https://..." style={inp}/></div>
@@ -337,7 +407,7 @@ export default function SettingsPage() {
 
               <div style={{marginBottom:18}}>
                 <label style={lbl}>Mensaje de Mantenimiento</label>
-                <textarea value={s.maintenance_msg} onChange={e=>upd("maintenance_msg",e.target.value)} rows={3} style={{...inp,resize:"vertical"}} placeholder="Mensaje que verán los visitantes..."/>
+                <textarea value={s.maintenance_msg} onChange={e=>upd("maintenance_msg",e.target.value)} rows={3} maxLength={100} style={{...inp,resize:"vertical"}} placeholder="Mensaje que verán los visitantes..."/>
               </div>
 
               {/* Preview de página de mantenimiento */}

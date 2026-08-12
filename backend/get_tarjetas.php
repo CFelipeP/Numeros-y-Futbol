@@ -22,7 +22,7 @@ try {
         $valorCol = "s.tarjetas_amarillas AS valor";
     }
 
-    $stmt = $pdo->query("
+    $stmt = $pdo->prepare("
         SELECT 
             j.id,
             j.nombre,
@@ -38,13 +38,13 @@ try {
         FROM estadisticas_jugadores s
         INNER JOIN jugadores j ON j.id = s.jugador_id
         INNER JOIN equipos e ON e.id = j.equipo_id
-        WHERE s.temporada = '$temporada' $whereExtra
+        WHERE s.temporada = ? $whereExtra
         ORDER BY $orderBy
         LIMIT 10
     ");
+    $stmt->execute([$temporada]);
     echo json_enc($stmt->fetchAll(PDO::FETCH_ASSOC));
 } catch (Exception $e) {
-    echo json_enc([
-        'error' => "Error interno del servidor"
-    ]);
+    error_log('Error get_tarjetas: ' . $e->getMessage());
+    echo json_enc(['error' => 'Error interno del servidor']);
 }

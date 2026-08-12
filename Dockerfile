@@ -11,8 +11,10 @@ RUN docker-php-ext-install pdo pdo_mysql mysqli \
  && a2enmod headers \
  && echo 'default_charset = "UTF-8"' > /usr/local/etc/php/conf.d/charset.ini \
  && echo 'date.timezone = "America/El_Salvador"' >> /usr/local/etc/php/conf.d/charset.ini \
- && echo 'upload_max_filesize = 15M' > /usr/local/etc/php/conf.d/upload.ini \
- && echo 'post_max_size = 20M' >> /usr/local/etc/php/conf.d/upload.ini
+  && echo 'upload_max_filesize = 15M' > /usr/local/etc/php/conf.d/upload.ini \
+  && echo 'post_max_size = 20M' >> /usr/local/etc/php/conf.d/upload.ini \
+  && echo 'expose_php = Off' > /usr/local/etc/php/conf.d/security.ini \
+  && echo 'display_errors = Off' >> /usr/local/etc/php/conf.d/security.ini
 
 COPY --from=builder /app/dist /var/www/html
 COPY backend /var/www/html/backend
@@ -20,8 +22,11 @@ COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh \
- && mkdir -p /var/www/html/backend/uploads \
- && chown -R www-data:www-data /var/www/html/backend/uploads
+  && mkdir -p /var/www/html/backend/uploads \
+  && chown -R www-data:www-data /var/www/html/backend/uploads \
+  && echo 'ServerTokens Prod' >> /etc/apache2/apache2.conf \
+  && echo 'ServerSignature Off' >> /etc/apache2/apache2.conf \
+  && echo 'TraceEnable Off' >> /etc/apache2/apache2.conf
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apache2-foreground"]

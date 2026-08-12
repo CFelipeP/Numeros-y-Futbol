@@ -30,7 +30,7 @@ $res = $conn->query("
     LEFT JOIN equipos_ascenso t2 ON p.visitante_id = t2.id
     WHERE p.goles_local IS NOT NULL
     ORDER BY p.fecha DESC, p.id DESC
-    LIMIT 5
+    LIMIT 6
 ");
 while ($row = $res->fetch_assoc()) {
     $recent[] = $row;

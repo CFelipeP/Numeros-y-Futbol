@@ -26,13 +26,13 @@ try {
     $pVisit = isset($body['penales_visitante']) && $body['penales_visitante'] !== '' ? (int)$body['penales_visitante'] : null;
 
     $validFases = ['grupos', 'octavos', 'cuartos', 'semis', 'final'];
-    $validEstados = ['Pendiente', 'En Curso', 'Finalizado'];
+    $validEstados = ['Pendiente', 'En Curso', 'Finalizado', 'Por programar', 'Aplazado'];
     if (!in_array($fase, $validFases, true)) throw new Exception("Fase invalida");
     if (!in_array($estado, $validEstados, true)) throw new Exception("Estado invalido");
     if (!$team1 || !$team2) throw new Exception("Equipos requeridos");
     if ($team1 === $team2) throw new Exception("Un equipo no puede jugar contra si mismo");
     if (($fecha && !$hora) || (!$fecha && $hora)) throw new Exception("Fecha y hora deben completarse juntas");
-    if ($estado !== 'Pendiente' && (!$fecha || !$hora)) throw new Exception("Fecha y hora requeridas para partidos en curso o finalizados");
+    if ($estado !== 'Pendiente' && $estado !== 'Por programar' && $estado !== 'Aplazado' && (!$fecha || !$hora)) throw new Exception("Fecha y hora requeridas para partidos en curso o finalizados");
     if ($fase === 'grupos' && !preg_match('/^[A-Z]$/', $grupo)) throw new Exception("Grupo requerido");
     if (in_array($fase, ['octavos', 'cuartos', 'semis'], true) && !in_array($jornada, ['ida', 'vuelta'], true)) {
         throw new Exception("Jornada ida/vuelta requerida");

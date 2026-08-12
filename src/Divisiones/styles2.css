@@ -906,7 +906,8 @@
   .footer-grid { grid-template-columns: 1fr !important; gap: 1.5rem !important; text-align: center; }
   .footer-bottom { gap: 0.8rem !important; }
   .footer-links { flex-direction: column; gap: 0.5rem; }
-  .footer-links a { margin: 0 !important; display: block; }
+  .footer-links a,
+  .footer-links span { margin: 0 !important; display: block; }
 
   /* =============================================
      SIDEBAR MOVIL — FIXES AGRESIVOS

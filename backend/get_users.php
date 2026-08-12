@@ -3,11 +3,12 @@ error_reporting(0); ini_set('display_errors', 0);
 require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth_check.php';
-requireAdmin();
+$user = requireAdmin();
 
-$sql = "SELECT id, nombre, email, rol FROM usuarios";
-$stmt = $conn->query($sql);
-if (!$stmt) { echo json_enc([]); exit; }
+$currentUserId = (int)($user['user_id'] ?? 0);
+$sql = "SELECT id, nombre, email, rol FROM usuarios WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->execute([$currentUserId]);
 
 $users = [];
 

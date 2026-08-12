@@ -72,7 +72,7 @@ function getPosInfo(v) {
   if (v === "centrocampista" || v === "medio") v = "medio_central";
   if (v === "defensa") v = "central";
   if (v === "delantero") v = "centrodelantero";
-  return posiciones.find(p => p.value === v) || { label: v || "?", cat: "medio", color: "#64748b", abbr: "??" };
+  return posiciones.find(p => p.value === v) || { label: v || "—", cat: "medio", color: "#64748b", abbr: "—" };
 }
 
 const formations = {

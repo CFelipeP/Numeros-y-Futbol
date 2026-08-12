@@ -10,7 +10,7 @@ $startYear = ($month >= 7) ? $year : $year - 1;
 $temporada = $startYear . '-' . ($startYear + 1);
 
 try {
-    $stmt = $pdo->query("
+    $stmt = $pdo->prepare("
         SELECT 
             j.id,
             j.nombre,
@@ -25,13 +25,13 @@ try {
         FROM estadisticas_jugadores s
         INNER JOIN jugadores j ON j.id = s.jugador_id
         INNER JOIN equipos e ON e.id = j.equipo_id
-        WHERE s.temporada = '$temporada' AND s.goles > 0
+        WHERE s.temporada = ? AND s.goles > 0
         ORDER BY s.goles DESC
         LIMIT 15
     ");
+    $stmt->execute([$temporada]);
     echo json_enc($stmt->fetchAll(PDO::FETCH_ASSOC));
 } catch (Exception $e) {
-    echo json_enc([
-        'error' => "Error interno del servidor"
-    ]);
+    error_log('Error get_goleadores: ' . $e->getMessage());
+    echo json_enc(['error' => 'Error interno del servidor']);
 }

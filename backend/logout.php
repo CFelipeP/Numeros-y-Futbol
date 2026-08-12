@@ -3,6 +3,7 @@ error_reporting(0); ini_set('display_errors', 0);
 require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth_check.php';
+requirePost();
 $currentUser = requireAuth();
 
 $headers = getallheaders();

@@ -18,7 +18,7 @@ if (empty($browserToken) || strlen($browserToken) !== 36) {
     exit;
 }
 
-$salt   = 'NyF_SALT_2026_K3y';
+$salt   = hash('sha256', env('DB_PASS', '') . 'NyF_Visit_Salt_Key', true);
 $ipHash = hash('sha256', $ip . $salt);
 
 $botPatterns = ['/curl/i','/wget/i','/python-requests/i','/python-urllib/i','/go-http-client/i','/nmap/i','/sqlmap/i','/nikto/i','/masscan/i','/zgrab/i','/scan/i','/nessus/i','/headless/i','/phantom/i','/selenium/i','/^$/'];

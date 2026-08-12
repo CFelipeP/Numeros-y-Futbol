@@ -94,7 +94,7 @@ const ManageTeamsBurgerKing = () => {
         }).then((result) => {
             if (result.isConfirmed) {
                 localStorage.removeItem("user"); localStorage.removeItem("token");
-                Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; });
+                Swal.fire({ icon: "success", title: "Sesión cerrada", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; });
             }
         });
     };
@@ -237,8 +237,8 @@ const ManageTeamsBurgerKing = () => {
     };
 
     const navItems = [
-      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
-      { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+      { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analíticas" },
+      { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Panel" },
       { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
       { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
       {

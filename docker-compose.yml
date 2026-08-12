@@ -6,29 +6,33 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
       - DB_HOST=db
       - DB_PORT=3306
       - DB_NAME=numeros-y-futbol
       - DB_USER=numeros
-      - DB_PASS=Info2026/*-
-      - SMTP_HOST=smtp.gmail.com
-      - SMTP_PORT=587
-      - SMTP_USER=alejo.sotomayor0411@gmail.com
-      - SMTP_PASS=edwckmhhfljuzkcj
-      - SMTP_FROM_NAME=Números y Fútbol
+      - DB_PASS=${DB_PASS}
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM_NAME=${SMTP_FROM_NAME:-Números y Fútbol}
     volumes:
       - uploads:/var/www/html/backend/uploads
     restart: unless-stopped
 
   db:
     image: mariadb:10.11
+    env_file:
+      - .env
     environment:
       - TZ=America/El_Salvador
-      - MARIADB_ROOT_PASSWORD=root2026
+      - MARIADB_ROOT_PASSWORD=${DB_ROOT_PASS}
       - MARIADB_DATABASE=numeros-y-futbol
       - MARIADB_USER=numeros
-      - MARIADB_PASSWORD=Info2026/*-
+      - MARIADB_PASSWORD=${DB_PASS}
     volumes:
       - dbdata:/var/lib/mysql
     healthcheck:

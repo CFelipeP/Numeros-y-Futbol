@@ -24,6 +24,15 @@ if (!in_array($extension, $permitidas)) {
     exit;
 }
 
+$finfo = finfo_open(FILEINFO_MIME_TYPE);
+$mime = finfo_file($finfo, $archivo['tmp_name']);
+finfo_close($finfo);
+$allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+if (!in_array($mime, $allowedMimes)) {
+    echo json_enc(["success" => false, "error" => "Tipo de archivo no permitido"]);
+    exit;
+}
+
 if ($archivo["size"] > 5 * 1024 * 1024) {
     echo json_enc(["success" => false, "error" => "El archivo supera los 5MB"]);
     exit;

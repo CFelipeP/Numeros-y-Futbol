@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { API_BASE } from '../config';
 
 const Header = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -10,11 +11,14 @@ const Header = () => {
     const [seleccionOpen, setSeleccionOpen] = useState(false);
     const [divisionesOpen, setDivisionesOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
+    const [siteSettings, setSiteSettings] = useState({});
     const accountRef = useRef(null);
     const seleccionRef = useRef(null);
     const divisionesRef = useRef(null);
     const location = useLocation();
     const navigate = useNavigate();
+    const siteName = siteSettings.site_name || 'Números y Fútbol';
+    const siteLogo = siteSettings.site_logo_url || '/numeros-y-futbol.svg';
 
     const handleLogout = () => {
         localStorage.removeItem("user");
@@ -22,7 +26,7 @@ const Header = () => {
         setCurrentUser(null);
         Swal.fire({
             icon: "success",
-            title: "Deslogueo exitoso",
+            title: "Sesión cerrada",
             timer: 2000,
             showConfirmButton: false,
         }).then(() => {
@@ -37,6 +41,13 @@ const Header = () => {
             else setCurrentUser(null);
         } catch { setCurrentUser(null); }
     }, [location]);
+
+    useEffect(() => {
+        fetch(`${API_BASE}get_site_settings.php`)
+            .then(r => r.json())
+            .then(d => { if (d.success && d.settings) setSiteSettings(d.settings); })
+            .catch(() => {});
+    }, []);
 
     // Cerrar dropdown al hacer click fuera
     useEffect(() => {
@@ -574,13 +585,14 @@ const Header = () => {
                     {/* === BRAND === */}
                     <a href="/" className="hdr-brand" id="driver-header">
                         <img
-                            src="/numeros-y-futbol.svg"
-                            alt="Números y Fútbol"
+                            src={siteLogo}
+                            alt={siteName}
                             className="hdr-brand-img"
                             style={{ animation: 'none', transition: 'none' }}
+                            onError={e => { e.target.src = '/numeros-y-futbol.svg'; }}
                         />
                         <div className="hdr-brand-text">
-                            <span className="hdr-brand-title">Números y Fútbol</span>
+                            <span className="hdr-brand-title">{siteName}</span>
                             <span className="hdr-brand-sub">Portal Oficial</span>
                         </div>
                     </a>

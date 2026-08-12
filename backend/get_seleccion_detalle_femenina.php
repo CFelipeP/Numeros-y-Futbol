@@ -24,5 +24,6 @@ try {
     ]);
 
 } catch (Exception $e) {
-    echo json_enc(["success" => false, "error" => $e->getMessage()]);
+    error_log('Error get_seleccion_detalle_femenina: ' . $e->getMessage());
+    echo json_enc(["success" => false, "error" => "Error interno del servidor"]);
 }

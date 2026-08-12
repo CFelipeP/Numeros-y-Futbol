@@ -54,7 +54,9 @@ try {
     $partidos = $sql->fetchAll(PDO::FETCH_ASSOC);
     echo json_enc(["success" => true, "data" => $partidos]);
 } catch (PDOException $e) {
-    echo json_enc(['success' => false, 'message' => 'Error de base de datos: ' . $e->getMessage()]);
+    error_log('DB Error get_carousel: ' . $e->getMessage());
+    echo json_enc(['success' => false, 'message' => 'Error interno del servidor']);
 } catch (Exception $e) {
-    echo json_enc(['success' => false, 'message' => 'Error interno del servidor: ' . $e->getMessage()]);
+    error_log('Error get_carousel: ' . $e->getMessage());
+    echo json_enc(['success' => false, 'message' => 'Error interno del servidor']);
 }

@@ -1152,7 +1152,7 @@ const AdminCopPresidente = () => {
 
   const handleLogout = () => {
     Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí", cancelButtonText: "Cancelar", background: "#1e293b", color: "#fff" })
-      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
+      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Sesión cerrada", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
   };
 
   const fetchData = useCallback(() => { setLoading(true); Promise.allSettled([safeFetch(`${API_BASE}copa_get_all_matches.php`), safeFetch(`${API_BASE}copa_get_teams.php`), safeFetch(`${API_BASE}copa_get_stats.php`)]).then(([rM, rT, rS]) => { if (rM.status === "fulfilled") setMatches(rM.value?.data || []); if (rT.status === "fulfilled") setTeams(rT.value?.data || []); if (rS.status === "fulfilled") setStats(rS.value?.data || {}); }).finally(() => setLoading(false)); }, []);

@@ -6,7 +6,9 @@ require_once __DIR__ . '/auth_check.php';
 $user = requireAdmin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $stmt = $conn->query("SELECT id, nombre, apodo, email, rol FROM usuarios ORDER BY id");
+    $currentUserId = (int)($user['user_id'] ?? 0);
+    $stmt = $conn->prepare("SELECT id, nombre, apodo, email, rol, activo, justificacion_desactivacion FROM usuarios WHERE rol != 'admin' OR id = ? ORDER BY id");
+    $stmt->execute([$currentUserId]);
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_enc(['users' => $users]);
     exit;
@@ -26,7 +28,7 @@ if ($action === 'create') {
     $apodo    = trim($body['apodo'] ?? '');
     $email    = trim($body['email'] ?? '');
     $password = $body['password'] ?? '';
-    $rol      = trim($body['rol'] ?? 'usuario');
+    $rol      = 'usuario';
 
     if (!$nombre || !$apodo || !$email || !$password) {
         echo json_enc(['success' => false, 'error' => 'Todos los campos son obligatorios']);
@@ -40,8 +42,8 @@ if ($action === 'create') {
         echo json_enc(['success' => false, 'error' => 'Email invalido']);
         exit;
     }
-    if (!in_array($rol, ['usuario', 'editor', 'admin'])) {
-        echo json_enc(['success' => false, 'error' => 'Rol invalido']);
+    if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $nombre)) {
+        echo json_enc(['success' => false, 'error' => 'El nombre solo puede contener letras']);
         exit;
     }
 
@@ -72,8 +74,7 @@ if ($action === 'update') {
     $nombre   = trim($body['nombre'] ?? '');
     $apodo    = trim($body['apodo'] ?? '');
     $email    = trim($body['email'] ?? '');
-    $password = $body['password'] ?? '';
-    $rol      = trim($body['rol'] ?? 'usuario');
+    $rol      = trim($body['rol'] ?? '');
 
     if (!$id || !$nombre || !$apodo || !$email) {
         echo json_enc(['success' => false, 'error' => 'Nombre, apodo y email son obligatorios']);
@@ -83,8 +84,25 @@ if ($action === 'update') {
         echo json_enc(['success' => false, 'error' => 'Email invalido']);
         exit;
     }
-    if (!in_array($rol, ['usuario', 'editor', 'admin'])) {
-        echo json_enc(['success' => false, 'error' => 'Rol invalido']);
+    if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $nombre)) {
+        echo json_enc(['success' => false, 'error' => 'El nombre solo puede contener letras']);
+        exit;
+    }
+
+    if ($rol && !in_array($rol, ['admin', 'editor', 'usuario'])) {
+        echo json_enc(['success' => false, 'error' => 'Rol inválido']);
+        exit;
+    }
+
+    $target = $conn->prepare("SELECT rol FROM usuarios WHERE id = ?");
+    $target->execute([$id]);
+    $targetRol = $target->fetchColumn();
+    if (!$targetRol) {
+        echo json_enc(['success' => false, 'error' => 'Usuario no encontrado']);
+        exit;
+    }
+    if ($targetRol === 'admin' && (int)$id !== (int)($user['user_id'] ?? 0)) {
+        echo json_enc(['success' => false, 'error' => 'No puedes editar a otro administrador']);
         exit;
     }
 
@@ -102,17 +120,15 @@ if ($action === 'update') {
         exit;
     }
 
-    if (!empty($password)) {
-        if (strlen($password) < 6) {
-            echo json_enc(['success' => false, 'error' => 'La contrasena debe tener al menos 6 caracteres']);
-            exit;
-        }
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("UPDATE usuarios SET nombre=?, apodo=?, email=?, password=?, rol=? WHERE id=?");
-        $stmt->execute([$nombre, $apodo, $email, $hash, $rol, $id]);
-    } else {
+    if ($rol && (int)$id !== (int)($user['user_id'] ?? 0)) {
         $stmt = $conn->prepare("UPDATE usuarios SET nombre=?, apodo=?, email=?, rol=? WHERE id=?");
         $stmt->execute([$nombre, $apodo, $email, $rol, $id]);
+        if ($rol !== $targetRol) {
+            $pdo->prepare("DELETE FROM auth_tokens WHERE user_id = ?")->execute([$id]);
+        }
+    } else {
+        $stmt = $conn->prepare("UPDATE usuarios SET nombre=?, apodo=?, email=? WHERE id=?");
+        $stmt->execute([$nombre, $apodo, $email, $id]);
     }
 
     echo json_enc(['success' => true]);
@@ -121,20 +137,50 @@ if ($action === 'update') {
 
 if ($action === 'delete') {
     $id = (int)($body['id'] ?? 0);
+    $justificacion = trim($body['justificacion'] ?? '');
 
     if (!$id) {
         echo json_enc(['success' => false, 'error' => 'ID requerido']);
         exit;
     }
     if ((int)$id === (int)($user['user_id'] ?? 0)) {
-        echo json_enc(['success' => false, 'error' => 'No puedes eliminarte a ti mismo']);
+        echo json_enc(['success' => false, 'error' => 'No puedes desactivarte a ti mismo']);
         exit;
     }
 
-    $stmt = $conn->prepare("DELETE FROM usuarios WHERE id = ?");
+    $target = $conn->prepare("SELECT rol FROM usuarios WHERE id = ?");
+    $target->execute([$id]);
+    $targetRol = $target->fetchColumn();
+    if ($targetRol === 'admin') {
+        echo json_enc(['success' => false, 'error' => 'No puedes desactivar a un administrador']);
+        exit;
+    }
+    if (!$justificacion) {
+        echo json_enc(['success' => false, 'error' => 'Debe proporcionar una justificacion']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("UPDATE usuarios SET activo=0, justificacion_desactivacion=? WHERE id = ? AND rol != 'admin'");
+    $stmt->execute([$justificacion, $id]);
+
+    $pdo->prepare("DELETE FROM auth_tokens WHERE user_id = ?")->execute([$id]);
+
+    echo json_enc(['success' => true, 'message' => 'Usuario desactivado']);
+    exit;
+}
+
+if ($action === 'restore') {
+    $id = (int)($body['id'] ?? 0);
+
+    if (!$id) {
+        echo json_enc(['success' => false, 'error' => 'ID requerido']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("UPDATE usuarios SET activo=1, justificacion_desactivacion=NULL WHERE id = ?");
     $stmt->execute([$id]);
 
-    echo json_enc(['success' => true]);
+    echo json_enc(['success' => true, 'message' => 'Usuario restaurado']);
     exit;
 }
 

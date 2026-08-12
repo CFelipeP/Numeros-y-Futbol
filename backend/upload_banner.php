@@ -20,31 +20,30 @@ if (!isset($_FILES['file'])) {
 
 $file = $_FILES['file'] ?? [];
 
-$allowed = ["jpg", "jpeg", "png", "webp", "mp4"];
+$allowed = ["jpg", "jpeg", "png", "webp"];
 $ext = strtolower(pathinfo($file["name"] ?? '', PATHINFO_EXTENSION));
 
 if (!in_array($ext, $allowed)) {
-    echo json_enc(["success" => false, "error" => "Formato inválido"]);
+    echo json_enc(["success" => false, "error" => "Formato inválido. Solo JPG, PNG, WebP"]);
     exit;
 }
 
-// MIME type validation
 $finfo = finfo_open(FILEINFO_MIME_TYPE);
 $mime = finfo_file($finfo, $file['tmp_name'] ?? '');
 finfo_close($finfo);
-$allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4'];
+$allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 if (!in_array($mime, $allowedMimes)) {
-    echo json_enc(["success" => false, "error" => "Tipo de archivo no permitido"]);
+    echo json_enc(["success" => false, "error" => "El archivo no es una imagen válida"]);
     exit;
 }
 
-$maxSize = 15 * 1024 * 1024;
+$maxSize = 10 * 1024 * 1024;
 if (($file['size'] ?? 0) > $maxSize) {
-    echo json_enc(["success" => false, "error" => "El archivo excede el limite de 15MB"]);
+    echo json_enc(["success" => false, "error" => "El archivo excede el limite de 10MB"]);
     exit;
 }
 
-$newName = uniqid() . "." . $ext;
+$newName = "banner_" . uniqid() . "." . $ext;
 $targetFile = $targetDir . $newName;
 
 if (move_uploaded_file($file["tmp_name"], $targetFile)) {

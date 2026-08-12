@@ -16,7 +16,7 @@ $ip      = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 if (empty($pagina)) { http_response_code(400); echo json_enc(["error"=>"pagina requerida"]); exit; }
 
 // Hashear la IP (nunca se guarda la IP real)
-$salt   = 'NyF_SALT_2026_K3y';
+$salt   = hash('sha256', env('DB_PASS', '') . 'NyF_Visit_Salt_Key', true);
 $ipHash = hash('sha256', $ip . $salt);
 
 // Detección de bot por User-Agent

@@ -245,7 +245,7 @@ function getPosInfo(v) {
   if (p) return p;
   const fb = { portero: "portero", defensa: "defensa", medio: "medio", delantero: "delantero" }; const c = fb[v];
   if (c) return { label: v.charAt(0).toUpperCase() + v.slice(1), cat: c, color: catCfg[c].color, abbr: v.substring(0, 2).toUpperCase() };
-  return { label: v || "?", cat: "delantero", color: "#64748b", abbr: "??" };
+  return { label: v || "—", cat: "delantero", color: "#64748b", abbr: "—" };
 }
 const formations = {
   "4-4-2": [{ sp: "portero", sc: "portero", x: 50, y: 90 }, { sp: "lateral_izquierdo", sc: "defensa", x: 12, y: 70 }, { sp: "central", sc: "defensa", x: 36, y: 74 }, { sp: "central", sc: "defensa", x: 64, y: 74 }, { sp: "lateral_derecho", sc: "defensa", x: 88, y: 70 }, { sp: "extremo_izquierdo", sc: "medio", x: 18, y: 48 }, { sp: "medio_central", sc: "medio", x: 40, y: 46 }, { sp: "medio_central", sc: "medio", x: 60, y: 46 }, { sp: "extremo_derecho", sc: "medio", x: 82, y: 48 }, { sp: "centrodelantero", sc: "delantero", x: 36, y: 22 }, { sp: "centrodelantero", sc: "delantero", x: 64, y: 22 }],

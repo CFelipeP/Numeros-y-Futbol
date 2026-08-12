@@ -40,6 +40,8 @@ import AdminPosiciones from "./dashboard/AdminPosiciones";
 import PlantillaEquipos from "./dashboard/PlantillaEquipos";
 import Admincopa from "./dashboard/Admincoppresidente";
 import ForgotPassword from "./pages/ForgotPassword";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 import MatchDetail from "./Divisiones/MatchDetail";
 import Managecomments from "./dashboard/Managematchcomments";
 import UserProfile from "./pages/UserProfile";
@@ -102,6 +104,8 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
         <Route path="/partido/:id/:division" element={<MatchDetail />} />
         <Route path="/manage-comments" element={
           <ProtectedRoute>
@@ -236,6 +240,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* 404 */}
+        <Route path="*" element={
+          <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#0f172a",color:"#f1f5f9",padding:20,textAlign:"center"}}>
+            <h1 style={{fontSize:80,fontWeight:900,margin:0,color:"#ef4444",textShadow:"0 0 40px rgba(239,68,68,0.3)"}}>404</h1>
+            <p style={{fontSize:18,color:"#94a3b8",margin:"8px 0 24px"}}>Página no encontrada</p>
+            <a href="/" style={{padding:"12px 28px",background:"linear-gradient(135deg,#ef4444,#dc2626)",border:"none",borderRadius:10,color:"#fff",fontWeight:700,textDecoration:"none",fontSize:14}}>Volver al inicio</a>
+          </div>
+        } />
 
       </Routes>
       </MaintenanceGuard>

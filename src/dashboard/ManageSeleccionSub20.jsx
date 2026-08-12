@@ -16,8 +16,8 @@ import { API_BASE } from "../config";
 const API = API_BASE;
 
 const SIDEBAR_ITEMS = [
-  { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analiticas" },
-  { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+  { path: "/analytics", icon: <BarChart3 size={20} />, label: "Analíticas" },
+  { path: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Panel" },
   { path: "/matches", icon: <CalendarDays size={20} />, label: "Gestionar Partidos" },
   { path: "/mynews", icon: <CalendarDays size={20} />, label: "Crear Noticias" },
   {
@@ -99,7 +99,7 @@ export default function ManageSeleccionSub20() {
 
   const handleLogout = () => {
     Swal.fire({ title: "¿Cerrar sesión?", icon: "warning", showCancelButton: true, confirmButtonText: "Sí, salir", confirmButtonColor: "#d33" })
-      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
+      .then(r => { if (r.isConfirmed) { localStorage.removeItem("user"); localStorage.removeItem("token"); Swal.fire({ icon: "success", title: "Sesión cerrada", timer: 1500, showConfirmButton: false }).then(() => { window.location.href = "/login"; }); } });
   };
 
   return (

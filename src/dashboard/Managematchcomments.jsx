@@ -48,7 +48,7 @@ function getPosInfo(v) {
   if (v === "centrocampista" || v === "medio") v = "medio_central";
   if (v === "defensa") v = "central";
   if (v === "delantero") v = "centrodelantero";
-  return posicionesForm.find(p => p.value === v) || { label:v||"?", cat:"medio", color:"#64748b", abbr:"??" };
+  return posicionesForm.find(p => p.value === v) || { label:v||"—", cat:"medio", color:"#64748b", abbr:"—" };
 }
 const formations = {
   "4-4-2":   [{ sp:"portero",sc:"portero",x:50,y:90 },{ sp:"lateral_izquierdo",sc:"defensa",x:12,y:70 },{ sp:"central",sc:"defensa",x:36,y:74 },{ sp:"central",sc:"defensa",x:64,y:74 },{ sp:"lateral_derecho",sc:"defensa",x:88,y:70 },{ sp:"extremo_izquierdo",sc:"medio",x:18,y:48 },{ sp:"medio_central",sc:"medio",x:40,y:46 },{ sp:"medio_central",sc:"medio",x:60,y:46 },{ sp:"extremo_derecho",sc:"medio",x:82,y:48 },{ sp:"centrodelantero",sc:"delantero",x:36,y:22 },{ sp:"centrodelantero",sc:"delantero",x:64,y:22 }],
@@ -110,8 +110,8 @@ const playerOptions = (jugadores, darkOptionStyle, formacion) => {
 };
 
 const SIDEBAR_ITEMS = [
-  { path:"/analytics",       icon:<BarChart3 size={20}/>,      label:"Analiticas" },
-  { path:"/dashboard",       icon:<LayoutDashboard size={20}/>, label:"Dashboard" },
+  { path:"/analytics",       icon:<BarChart3 size={20}/>,      label:"Analíticas" },
+  { path:"/dashboard",       icon:<LayoutDashboard size={20}/>, label:"Panel" },
   { path:"/matches",         icon:<CalendarDays size={20}/>,    label:"Gestionar Partidos" },
   { path:"/mynews",          icon:<CalendarDays size={20}/>,    label:"Crear Noticias" },
   { type:"dropdown", icon:<Shield size={20}/>, label:"Equipos", children:[
@@ -577,7 +577,7 @@ export default function ManageMatchComments() {
 
   const handleLogout = () => {
     Swal.fire({title:"¿Cerrar sesión?",icon:"warning",showCancelButton:true,confirmButtonText:"Sí, salir",confirmButtonColor:"#d33"})
-      .then(r=>{if(r.isConfirmed){localStorage.removeItem("user"); localStorage.removeItem("token");Swal.fire({ icon: "success", title: "Deslogueo exitoso", timer: 1500, showConfirmButton: false }).then(() => {window.location.href="/login";});}});
+      .then(r=>{if(r.isConfirmed){localStorage.removeItem("user"); localStorage.removeItem("token");Swal.fire({ icon: "success", title: "Sesión cerrada", timer: 1500, showConfirmButton: false }).then(() => {window.location.href="/login";});}});
   };
 
   const getMatchName = m => {

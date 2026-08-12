@@ -20,18 +20,58 @@ $fields = [];
 $params = [];
 
 if (!empty($body['nombre'])) {
+    $nombre = trim($body['nombre']);
+    if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $nombre)) {
+        echo json_enc(["success" => false, "error" => "El nombre solo puede contener letras"]);
+        exit;
+    }
     $fields[] = "nombre = ?";
-    $params[]  = trim($body['nombre']);
+    $params[]  = $nombre;
 }
 if (!empty($body['apodo'])) {
+    $apodo = trim($body['apodo']);
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $apodo)) {
+        echo json_enc(["success" => false, "error" => "El apodo solo puede contener letras, números y guiones bajos"]);
+        exit;
+    }
+    if (strlen($apodo) < 3 || strlen($apodo) > 20) {
+        echo json_enc(["success" => false, "error" => "El apodo debe tener entre 3 y 20 caracteres"]);
+        exit;
+    }
+    $dup = $pdo->prepare("SELECT COUNT(*) FROM usuarios WHERE apodo = ? AND id != ?");
+    $dup->execute([$apodo, $id]);
+    if ((int)$dup->fetchColumn() > 0) {
+        echo json_enc(["success" => false, "error" => "Este apodo ya está en uso"]);
+        exit;
+    }
     $fields[] = "apodo = ?";
-    $params[]  = trim($body['apodo']);
+    $params[]  = $apodo;
 }
 if (!empty($body['email'])) {
+    $email = trim(strtolower($body['email']));
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_enc(["success" => false, "error" => "Email inválido"]);
+        exit;
+    }
+    $dup = $pdo->prepare("SELECT COUNT(*) FROM usuarios WHERE email = ? AND id != ?");
+    $dup->execute([$email, $id]);
+    if ((int)$dup->fetchColumn() > 0) {
+        echo json_enc(["success" => false, "error" => "El email ya está en uso"]);
+        exit;
+    }
     $fields[] = "email = ?";
-    $params[]  = trim(strtolower($body['email']));
+    $params[]  = $email;
 }
 if (!empty($body['new_password'])) {
+    $newPassword = trim($body['new_password']);
+    if (strlen($newPassword) < 6 || strlen($newPassword) > 12) {
+        echo json_enc(["success" => false, "error" => "La contraseña debe tener entre 6 y 12 caracteres"]);
+        exit;
+    }
+    if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:\"\\\\|,.<>\/?])/', $newPassword)) {
+        echo json_enc(["success" => false, "error" => "La contraseña debe contener al menos una mayúscula, una minúscula y un carácter especial"]);
+        exit;
+    }
     $action = $body['action'] ?? '';
     if ($action === 'change_password') {
         $currentPassword = $body['current_password'] ?? '';
@@ -44,7 +84,7 @@ if (!empty($body['new_password'])) {
         }
     }
     $fields[] = "password = ?";
-    $params[]  = password_hash(trim($body['new_password']), PASSWORD_BCRYPT);
+    $params[]  = password_hash($newPassword, PASSWORD_DEFAULT);
 }
 
 if (empty($fields)) {

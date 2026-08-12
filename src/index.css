@@ -807,14 +807,21 @@ img {
   font-size: 0.85rem;
 }
 
-.footer-links a {
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-  margin-left: 1.5rem;
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
 }
 
-.footer-links a:hover {
+.footer-links a,
+.footer-links span {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.footer-links a:hover,
+.footer-links span:hover {
   color: var(--color-white);
+  cursor: pointer;
 }
 
 /* MOBILE & ANIMATIONS */
@@ -1024,13 +1031,6 @@ img {
     left: 15px;
     font-size: 0.85rem;
     padding: 6px 12px;
-  }
-
-  .register-card {
-    width: 100%;
-    max-width: 340px;
-    padding: 30px 24px;
-    margin-top: 60px;
   }
 
   .register-navbar {
@@ -1299,20 +1299,6 @@ img {
   box-shadow: 0 0 10px red;
 }
 
-/* CARD */
-
-.register-card {
-  margin-top: 80px;
-  background: #0b0f1d;
-  padding: 40px;
-  width: 360px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 0, 0, 0.4);
-  box-shadow:
-    0 0 15px rgba(255, 0, 0, 0.3),
-    0 0 30px rgba(255, 0, 0, 0.2);
-}
-
 /* TITULO */
 
 .register-title {
@@ -1378,13 +1364,6 @@ img {
   text-shadow: 0 0 8px red;
 }
 
-/* ====================== REGISTER PAGE ====================== */
-
-/* Pequeños ajustes para que se vea aún mejor en registro */
-.register-card {
-  max-width: 400px;
-}
-
 .login-title {
   font-size: 2.1rem;
 }
@@ -1432,6 +1411,22 @@ img {
   background-color: transparent !important;
   border: 1px solid #374151 !important;
   color: #9ca3af !important;
+}
+
+.swal-deactivate-popup {
+  background: #0f172a !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+  border-radius: 16px !important;
+}
+.swal-btn-danger.swal2-confirm {
+  background: #dc2626 !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  padding: 10px 24px !important;
+}
+.swal-btn-cancel.swal2-cancel {
+  border-radius: 10px !important;
+  padding: 10px 24px !important;
 }
 
 .swal2-input {

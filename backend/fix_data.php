@@ -3,6 +3,7 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth_check.php';
 requireAdmin();
+requirePost();
 
 header('Content-Type: text/plain; charset=UTF-8');
 
